@@ -3,9 +3,13 @@
                             frame
                             native!
                             show!
+                            horizontal-panel
+                            vertical-panel
                             left-right-split
                             top-bottom-split
                             scrollable
+                            button
+                            text
                             tree
                             tabbed-panel]]
         [clojure.java.io :only [resource
@@ -13,30 +17,77 @@
         [nightcode.utils :only [get-tree-model]])
   (:gen-class))
 
-(defn get-window-content []
-  (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
-        text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)
-        project-tree (tree)]
-    ; load dark theme
-    (-> (resource "dark.xml")
-        (input-stream)
-        (org.fife.ui.rsyntaxtextarea.Theme/load)
-        (.apply text-area))
-    ; create project tree
+(defn get-project-pane
+  []
+  (let [project-tree (tree)]
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
           (.setModel (get-tree-model project-tree)))
-    ; create entire window
-    (left-right-split
-      (top-bottom-split
-        (scrollable project-tree)
-        (tabbed-panel :placement :top
-                      :overflow :scroll
-                      :tabs [])
-        :divider-location 0.5)
-      text-area-scroll
-      :divider-location 0.4)))
+    (vertical-panel
+      :items [(horizontal-panel
+                :items [(button :text "New Project")
+                        (button :text "New File")
+                        (button :text "Import")
+                        (button :text "Remove")
+                        :fill-h])
+              (scrollable project-tree)])))
+
+(defn get-tool-pane
+  []
+  (let [run-tab (vertical-panel
+                  :items [(horizontal-panel
+                            :items [(button :text "Run")
+                                    (button :text "Build")
+                                    (button :text "Test")
+                                    (button :text "Halt")
+                                    (button :text "Clean")
+                                    :fill-h])])
+        repl-tab (vertical-panel
+                  :items [(horizontal-panel
+                            :items [(button :text "Restart")
+                                    (button :text "Clear")
+                                    :fill-h])])
+        help-tab (vertical-panel
+                  :items [(horizontal-panel
+                            :items [])])]
+    (tabbed-panel :placement :top
+                  :overflow :scroll
+                  :tabs [{:title "Run"
+                          :content run-tab}
+                         {:title "REPL"
+                          :content repl-tab}
+                         {:title "Help"
+                          :content help-tab}])))
+
+(defn get-editor-pane
+  []
+  (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
+        text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)]
+    (-> (resource "dark.xml")
+        (input-stream)
+        (org.fife.ui.rsyntaxtextarea.Theme/load)
+        (.apply text-area))
+    (vertical-panel
+      :items [(horizontal-panel
+                :items [(button :text "Save"
+                                :enabled? false)
+                        (button :text "Move/Rename")
+                        (button :text "Undo"
+                                :enabled? false)
+                        (button :text "Redo"
+                                :enabled? false)
+                        :fill-h])
+              text-area-scroll])))
+
+(defn get-window-content []
+  (left-right-split
+    (top-bottom-split
+      (get-project-pane)
+      (get-tool-pane)
+      :divider-location 0.5)
+    (get-editor-pane)
+    :divider-location 0.4))
 
 (defn -main
   "Launches the main window."
