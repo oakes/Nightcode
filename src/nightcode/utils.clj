@@ -13,9 +13,13 @@
 
 (defn file-node
   [file-obj]
-  (let [children (delay (vec (.listFiles file-obj)))]
+  (let [children (->> (reify java.io.FilenameFilter
+                        (accept [this dir filename]
+                          (not (.startsWith filename "."))))
+                      (.listFiles file-obj)
+                      delay)]
     (proxy [javax.swing.tree.DefaultMutableTreeNode] [file-obj]
-      (getChildAt [i] (file-node (@children i)))
+      (getChildAt [i] (file-node (get @children i)))
       (getChildCount [] (count @children))
       (isLeaf [] (not (.isDirectory file-obj)))
       (toString [] (.getName file-obj)))))

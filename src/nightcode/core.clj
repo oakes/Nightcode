@@ -5,6 +5,7 @@
                             show!
                             left-right-split
                             top-bottom-split
+                            scrollable
                             tree
                             tabbed-panel]]
         [clojure.java.io :only [resource
@@ -29,7 +30,7 @@
     ; create entire window
     (left-right-split
       (top-bottom-split
-        project-tree
+        (scrollable project-tree)
         (tabbed-panel :placement :top
                       :overflow :scroll
                       :tabs [])
