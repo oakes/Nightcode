@@ -8,19 +8,28 @@
                             tree
                             tabbed-panel]]
         [clojure.java.io :only [resource
-                                input-stream]])
+                                input-stream]]
+        [nightcode.utils :only [get-tree-model]])
   (:gen-class))
 
 (defn get-window-content []
   (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
         text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)
-        theme (-> (resource "dark.xml")
-                  (input-stream)
-                  (org.fife.ui.rsyntaxtextarea.Theme/load))]
-    (.apply theme text-area)
+        project-tree (tree)]
+    ; load dark theme
+    (-> (resource "dark.xml")
+        (input-stream)
+        (org.fife.ui.rsyntaxtextarea.Theme/load)
+        (.apply text-area))
+    ; create project tree
+    (doto project-tree
+          (.setRootVisible false)
+          (.setShowsRootHandles true)
+          (.setModel (get-tree-model project-tree)))
+    ; create entire window
     (left-right-split
       (top-bottom-split
-        (tree)
+        project-tree
         (tabbed-panel :placement :top
                       :overflow :scroll
                       :tabs [])
