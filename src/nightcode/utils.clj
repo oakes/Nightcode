@@ -37,8 +37,8 @@
 
 (defn get-tree-model
   []
-  (-> (sort-by #(.getName (file %))
-               (read-pref :project-set))
+  (-> #(.getName (file %))
+      (sort-by (read-pref :project-set))
       vec
       root-node
       (javax.swing.tree.DefaultTreeModel. false)))
@@ -65,3 +65,11 @@
                  show!))
       (write-pref :project-set (set (remove #(= % path) project-set)))
       true)))
+
+(defn get-path-from-tree-path
+  [tree-path]
+  (-> tree-path
+      .getPath
+      last
+      .getUserObject
+      .getAbsolutePath))

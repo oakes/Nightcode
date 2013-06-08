@@ -14,7 +14,12 @@
                             tabbed-panel]]
         [clojure.java.io :only [resource
                                 input-stream]]
-        [nightcode.actions :only [new-project
+        [nightcode.actions :only [add-expansion
+                                  remove-expansion
+                                  set-selection
+                                  new-project
+                                  new-file
+                                  import-project
                                   remove-project]]
         [nightcode.utils :only [get-tree-model]])
   (:gen-class))
@@ -25,13 +30,22 @@
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
-          (.setModel (get-tree-model)))
+          (.setModel (get-tree-model))
+          (.addTreeExpansionListener
+            (proxy [javax.swing.event.TreeExpansionListener] []
+              (treeCollapsed [e] (remove-expansion e))
+              (treeExpanded [e] (add-expansion e))))
+          (.addTreeSelectionListener
+            (proxy [javax.swing.event.TreeSelectionListener] []
+              (valueChanged [e] (set-selection e)))))
     (vertical-panel
       :items [(horizontal-panel
                 :items [(button :text "New Project"
                                 :listen [:action new-project])
-                        (button :text "New File")
-                        (button :text "Import")
+                        (button :text "New File"
+                                :listen [:action new-file])
+                        (button :text "Import"
+                                :listen [:action import-project])
                         (button :text "Remove"
                                 :listen [:action remove-project])
                         :fill-h])
