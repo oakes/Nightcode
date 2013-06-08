@@ -14,30 +14,32 @@
                             tabbed-panel]]
         [clojure.java.io :only [resource
                                 input-stream]]
-        [nightcode.actions :only [add-expansion
-                                  remove-expansion
-                                  set-selection
-                                  new-project
-                                  new-file
-                                  import-project
-                                  remove-project]]
-        [nightcode.utils :only [get-tree-model]])
+        [nightcode.projects :only [add-expansion
+                                   remove-expansion
+                                   set-selection
+                                   init-project-tree
+                                   update-project-tree
+                                   new-project
+                                   new-file
+                                   import-project
+                                   remove-project]])
   (:gen-class))
 
 (defn get-project-pane
   []
   (let [project-tree (tree :id :project-tree)]
+    (init-project-tree)
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
-          (.setModel (get-tree-model))
           (.addTreeExpansionListener
             (proxy [javax.swing.event.TreeExpansionListener] []
               (treeCollapsed [e] (remove-expansion e))
               (treeExpanded [e] (add-expansion e))))
           (.addTreeSelectionListener
             (proxy [javax.swing.event.TreeSelectionListener] []
-              (valueChanged [e] (set-selection e)))))
+              (valueChanged [e] (set-selection e))))
+          update-project-tree)
     (vertical-panel
       :items [(horizontal-panel
                 :items [(button :text "New Project"
