@@ -64,13 +64,6 @@
     (getChildAt [i] (file-node (file (nth project-vec i))))
     (getChildCount [] (count project-vec))))
 
-(defn init-project-tree
-  []
-  (when-let [expansion-set (read-pref :expansion-set)]
-    (reset! tree-expansions expansion-set))
-  (when-let [selection (read-pref :selection)]
-    (reset! tree-selection selection)))
-
 (defn create-project-tree
   []
   (-> #(.getName (file %))
@@ -105,13 +98,19 @@
 (defn update-project-tree
   [tree]
   (.setModel tree (create-project-tree))
-  (doseq [i (range) :while (< i (.getRowCount tree))]
-    (let [tree-path (.getPathForRow tree i)
-          str-path (tree-path-to-str tree-path)]
-      (when (contains? @tree-expansions str-path)
-        (.expandPath tree tree-path))
-      (when (= @tree-selection str-path)
-        (.setSelectionPath tree tree-path)))))
+  (reset! tree-expansions #{})
+  (reset! tree-selection nil)
+  (let [expansion-set (read-pref :expansion-set)
+        selection (read-pref :selection)]
+    (doseq [i (range) :while (< i (.getRowCount tree))]
+      (let [tree-path (.getPathForRow tree i)
+            str-path (tree-path-to-str tree-path)]
+        (when (contains? expansion-set str-path)
+          (.expandPath tree tree-path)
+          (swap! tree-expansions conj str-path))
+        (when (= selection str-path)
+          (.setSelectionPath tree tree-path)
+          (reset! tree-selection str-path))))))
 
 ; actions for project tree buttons
 

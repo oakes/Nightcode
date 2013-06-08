@@ -17,7 +17,6 @@
         [nightcode.projects :only [add-expansion
                                    remove-expansion
                                    set-selection
-                                   init-project-tree
                                    update-project-tree
                                    new-project
                                    new-file
@@ -28,7 +27,6 @@
 (defn get-project-pane
   []
   (let [project-tree (tree :id :project-tree)]
-    (init-project-tree)
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
