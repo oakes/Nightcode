@@ -14,22 +14,26 @@
                             tabbed-panel]]
         [clojure.java.io :only [resource
                                 input-stream]]
+        [nightcode.actions :only [new-project
+                                  remove-project]]
         [nightcode.utils :only [get-tree-model]])
   (:gen-class))
 
 (defn get-project-pane
   []
-  (let [project-tree (tree)]
+  (let [project-tree (tree :id :project-tree)]
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
-          (.setModel (get-tree-model project-tree)))
+          (.setModel (get-tree-model)))
     (vertical-panel
       :items [(horizontal-panel
-                :items [(button :text "New Project")
+                :items [(button :text "New Project"
+                                :listen [:action new-project])
                         (button :text "New File")
                         (button :text "Import")
-                        (button :text "Remove")
+                        (button :text "Remove"
+                                :listen [:action remove-project])
                         :fill-h])
               (scrollable project-tree)])))
 
@@ -48,7 +52,7 @@
                             :items [(button :text "Restart")
                                     (button :text "Clear")
                                     :fill-h])])
-        help-tab (vertical-panel
+        docs-tab (vertical-panel
                   :items [(horizontal-panel
                             :items [])])]
     (tabbed-panel :placement :top
@@ -57,8 +61,8 @@
                           :content run-tab}
                          {:title "REPL"
                           :content repl-tab}
-                         {:title "Help"
-                          :content help-tab}])))
+                         {:title "Docs"
+                          :content docs-tab}])))
 
 (defn get-editor-pane
   []
@@ -70,13 +74,10 @@
         (.apply text-area))
     (vertical-panel
       :items [(horizontal-panel
-                :items [(button :text "Save"
-                                :enabled? false)
+                :items [(button :text "Save")
                         (button :text "Move/Rename")
-                        (button :text "Undo"
-                                :enabled? false)
-                        (button :text "Redo"
-                                :enabled? false)
+                        (button :text "Undo")
+                        (button :text "Redo")
                         :fill-h])
               text-area-scroll])))
 
