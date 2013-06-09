@@ -1,19 +1,24 @@
 (ns nightcode.projects
-  (:use [seesaw.core :only [dialog
+  (:use [seesaw.core :only [alert
+                            dialog
                             button
                             return-from-dialog
                             pack!
                             show!
                             config!
                             select
-                            to-root]]
+                            to-root
+                            text
+                            vertical-panel]]
         [seesaw.chooser :only [choose-file]]
-        [clojure.java.io :only [file
-                                delete-file]]
+        [clojure.java.io :only [file]]
         [nightcode.utils :only [ui-root
                                 write-pref
                                 read-pref
-                                tree-path-to-str]]))
+                                tree-path-to-str
+                                get-relative-path
+                                get-relative-dir
+                                delete-file-recursively]]))
 
 ; keep track of expansions and selections
 
@@ -103,58 +108,91 @@
                  show!))
       (if is-project?
         (write-pref :project-set (set (remove #(= % path) project-set)))
-        (delete-file (file path)))
+        (delete-file-recursively (-> #(.startsWith path %)
+                                     (filter @tree-projects)
+                                     first)
+                                 path))
       true)))
 
 (defn update-project-tree
-  [tree]
-  ; put new data in the tree
-  (.setModel tree (create-project-tree))
-  ; wipe out the in-memory expansion/selection
-  (reset! tree-expansions #{})
-  (reset! tree-selection nil)
-  ; read the on-disk expansion/selection and apply them to the tree
-  (let [expansion-set (read-pref :expansion-set)
-        selection (read-pref :selection)]
-    (doseq [i (range) :while (< i (.getRowCount tree))]
-      (let [tree-path (.getPathForRow tree i)
-            str-path (tree-path-to-str tree-path)]
-        (when (contains? expansion-set str-path)
-          (.expandPath tree tree-path)
-          (swap! tree-expansions conj str-path))
-        (when (= selection str-path)
-          (.setSelectionPath tree tree-path)
-          (reset! tree-selection str-path)))))
-  ; select the first project if there is nothing selected
-  (when (nil? @tree-selection)
-    (.setSelectionRow tree 0))
-  ; disable buttons if there is still nothing selected
-  (doseq [btn [:#remove-button :#new-file-button]]
-    (config! (select @ui-root [btn])
-             :enabled? (not (nil? @tree-selection)))))
+  ([tree] (update-project-tree tree nil))
+  ([tree new-selection]
+   ; put new data in the tree
+   (.setModel tree (create-project-tree))
+   ; wipe out the in-memory expansion/selection
+   (reset! tree-expansions #{})
+   (reset! tree-selection nil)
+   ; read the on-disk expansion/selection and apply them to the tree
+   (let [expansion-set (read-pref :expansion-set)
+         selection (or new-selection (read-pref :selection))]
+     (doseq [i (range) :while (< i (.getRowCount tree))]
+       (let [tree-path (.getPathForRow tree i)
+             str-path (tree-path-to-str tree-path)]
+         (when (contains? expansion-set str-path)
+           (.expandPath tree tree-path)
+           (swap! tree-expansions conj str-path))
+         (when (= selection str-path)
+           (.setSelectionPath tree tree-path)
+           (reset! tree-selection str-path)))))
+   ; select the first project if there is nothing selected
+   (when (nil? @tree-selection)
+     (.setSelectionRow tree 0))
+   ; disable buttons if there is still nothing selected
+   (doseq [btn [:#remove-button :#new-file-button]]
+     (config! (select @ui-root [btn])
+              :enabled? (not (nil? @tree-selection))))))
 
 ; actions for project tree buttons
 
 (defn new-project
   [e]
   (when-let [dir (choose-file :type :save)]
-    (add-to-project-tree (.getAbsolutePath dir))
-    (update-project-tree (select (to-root e) [:#project-tree]))))
+    (let [dir-path (.getAbsolutePath dir)]
+      (add-to-project-tree dir-path)
+      (update-project-tree (select (to-root e) [:#project-tree]) dir-path))))
 
 (defn new-file
-  [e])
+  [e]
+  (let [project-tree (select (to-root e) [:#project-tree])]
+    (when-let [selected-path (-> (.getSelectionPath project-tree)
+                                 tree-path-to-str)]
+      (let [project-path (-> #(.startsWith selected-path %)
+                             (filter @tree-projects)
+                             first)
+            default-path (str (get-relative-dir project-path selected-path)
+                              "example.clj")]
+        (-> (dialog :content (vertical-panel
+                               :items ["Enter a path relative to the project."
+                                       (text :id :new-file-path
+                                             :text default-path)])
+                    :option-type :ok-cancel
+                    :success-fn
+                    (fn [pane]
+                      (let [new-file (->> (text (select pane [:#new-file-path]))
+                                          (file project-path))
+                            new-file-path (.getAbsolutePath new-file)]
+                        (if (.exists new-file)
+                          (alert "File already exists.")
+                          (do
+                            (.mkdirs (.getParentFile new-file))
+                            (.createNewFile new-file)
+                            (update-project-tree project-tree
+                                                 new-file-path))))))
+            pack!
+            show!)))))
 
 (defn import-project
   [e]
   (when-let [dir (choose-file :type :open
                               :selection-mode :dirs-only)]
-    (add-to-project-tree (.getAbsolutePath dir))
-    (update-project-tree (select (to-root e) [:#project-tree]))))
+    (let [dir-path (.getAbsolutePath dir)]
+      (add-to-project-tree dir-path)
+      (update-project-tree (select (to-root e) [:#project-tree]) dir-path))))
 
 (defn remove-project-or-file
   [e]
-  (let [project-tree (select (to-root e) [:#project-tree])]
-    (when-let [selection-path (.getSelectionPath project-tree)]
-      (let [path (tree-path-to-str selection-path)]
-        (when (remove-from-project-tree path)
-          (update-project-tree project-tree))))))
+  (let [project-tree (select (to-root e) [:#project-tree])
+        selected-path (-> (.getSelectionPath project-tree)
+                          tree-path-to-str)]
+    (when (remove-from-project-tree selected-path)
+      (update-project-tree project-tree))))

@@ -1,4 +1,5 @@
-(ns nightcode.utils)
+(ns nightcode.utils
+  (:use [clojure.java.io :only [file]]))
 
 (def ui-root (atom nil))
 (def prefs (.node (java.util.prefs.Preferences/userRoot) "nightcode"))
@@ -19,3 +20,25 @@
       last
       .getUserObject
       .getAbsolutePath))
+
+(defn get-relative-path [project-path selected-path]
+  (-> (.toURI (file project-path))
+      (.relativize (.toURI (file selected-path)))
+      (.getPath)))
+
+(defn get-relative-dir [project-path selected-path]
+  (let [selected-dir (if (.isDirectory (file selected-path))
+                       selected-path
+                       (-> (file selected-path)
+                           .getParentFile
+                           .getAbsolutePath))]
+    (get-relative-path project-path selected-dir)))
+
+(defn delete-file-recursively [project-path path]
+  (when (and (= 0 (count (.listFiles (file path))))
+             (not= project-path path))
+    (.delete (file path))
+    (delete-file-recursively project-path
+                             (-> (file path)
+                                 .getParentFile
+                                 .getAbsolutePath))))
