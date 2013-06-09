@@ -6,6 +6,7 @@
                             pack!
                             show!
                             config!
+                            request-focus!
                             select
                             to-root
                             text
@@ -147,52 +148,61 @@
 (defn new-project
   [e]
   (when-let [dir (choose-file :type :save)]
-    (let [dir-path (.getAbsolutePath dir)]
+    (let [dir-path (.getAbsolutePath dir)
+          project-tree (select (to-root e) [:#project-tree])]
       (add-to-project-tree dir-path)
-      (update-project-tree (select (to-root e) [:#project-tree]) dir-path))))
+      (update-project-tree project-tree dir-path)
+      (request-focus! project-tree))))
 
 (defn new-file
   [e]
-  (let [project-tree (select (to-root e) [:#project-tree])]
-    (when-let [selected-path (-> (.getSelectionPath project-tree)
-                                 tree-path-to-str)]
-      (let [project-path (-> #(.startsWith selected-path %)
-                             (filter @tree-projects)
-                             first)
-            default-path (str (get-relative-dir project-path selected-path)
-                              "example.clj")]
-        (-> (dialog :content (vertical-panel
-                               :items ["Enter a path relative to the project."
-                                       (text :id :new-file-path
-                                             :text default-path)])
-                    :option-type :ok-cancel
-                    :success-fn
-                    (fn [pane]
-                      (let [new-file (->> (text (select pane [:#new-file-path]))
-                                          (file project-path))
-                            new-file-path (.getAbsolutePath new-file)]
-                        (if (.exists new-file)
-                          (alert "File already exists.")
-                          (do
-                            (.mkdirs (.getParentFile new-file))
-                            (.createNewFile new-file)
-                            (update-project-tree project-tree
-                                                 new-file-path))))))
-            pack!
-            show!)))))
+  (let [project-tree (select (to-root e) [:#project-tree])
+        selected-path (-> (.getSelectionPath project-tree)
+                          tree-path-to-str)
+        project-path (-> #(.startsWith selected-path %)
+                         (filter @tree-projects)
+                         first)
+        default-path (str (get-relative-dir project-path selected-path)
+                          "example.clj")]
+    (-> (dialog :content (vertical-panel
+                           :items ["Enter a path relative to the project."
+                                   (text :id :new-file-path
+                                         :text default-path)])
+                :option-type :ok-cancel
+                :success-fn
+                (fn [pane]
+                  (let [new-file (->> (text (select pane [:#new-file-path]))
+                                      (file project-path))
+                        new-file-path (.getAbsolutePath new-file)]
+                    (if (.exists new-file)
+                      (alert "File already exists.")
+                      (do
+                        (.mkdirs (.getParentFile new-file))
+                        (.createNewFile new-file)
+                        (update-project-tree project-tree
+                                             new-file-path))))))
+        pack!
+        show!)
+    (request-focus! project-tree)))
 
 (defn import-project
   [e]
-  (when-let [dir (choose-file :type :open
-                              :selection-mode :dirs-only)]
-    (let [dir-path (.getAbsolutePath dir)]
-      (add-to-project-tree dir-path)
-      (update-project-tree (select (to-root e) [:#project-tree]) dir-path))))
+  (let [project-tree (select (to-root e) [:#project-tree])]
+    (when-let [dir (choose-file :type :open
+                                :selection-mode :dirs-only)]
+      (let [dir-path (.getAbsolutePath dir)]
+        (add-to-project-tree dir-path)
+        (update-project-tree project-tree dir-path)))
+    (request-focus! project-tree)))
 
 (defn remove-project-or-file
   [e]
   (let [project-tree (select (to-root e) [:#project-tree])
         selected-path (-> (.getSelectionPath project-tree)
-                          tree-path-to-str)]
+                          tree-path-to-str)
+        project-path (-> #(.startsWith selected-path %)
+                         (filter @tree-projects)
+                         first)]
     (when (remove-from-project-tree selected-path)
-      (update-project-tree project-tree))))
+      (update-project-tree project-tree project-path))
+    (request-focus! project-tree)))
