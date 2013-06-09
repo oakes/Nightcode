@@ -1,8 +1,10 @@
 (ns nightcode.core
   (:use [seesaw.core :only [invoke-later
                             frame
+                            select
                             native!
                             show!
+                            request-focus!
                             horizontal-panel
                             vertical-panel
                             left-right-split
@@ -26,7 +28,8 @@
 
 (defn get-project-pane
   []
-  (let [project-tree (tree :id :project-tree)]
+  (let [project-tree (tree :id :project-tree
+                           :focusable? true)]
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
@@ -111,9 +114,10 @@
   (org.pushingpixels.substance.api.SubstanceLookAndFeel/setSkin
     (org.pushingpixels.substance.api.skin.GraphiteSkin.))
   (invoke-later
-    (-> (frame :title "Nightcode"
-               :content (get-window-content)
-               :width 1024
-               :height 768
-               :on-close :exit)
-        show!)))
+    (let [root (-> (frame :title "Nightcode"
+                          :content (get-window-content)
+                          :width 1024
+                          :height 768
+                          :on-close :exit)
+                   show!)]
+      (request-focus! (select root [:#project-tree])))))
