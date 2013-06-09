@@ -16,6 +16,7 @@
                             tabbed-panel]]
         [clojure.java.io :only [resource
                                 input-stream]]
+        [nightcode.utils :only [ui-root]]
         [nightcode.projects :only [add-expansion
                                    remove-expansion
                                    set-selection
@@ -23,7 +24,7 @@
                                    new-project
                                    new-file
                                    import-project
-                                   remove-project]])
+                                   remove-project-or-file]])
   (:gen-class))
 
 (defn get-project-pane
@@ -39,18 +40,21 @@
               (treeExpanded [e] (add-expansion e))))
           (.addTreeSelectionListener
             (proxy [javax.swing.event.TreeSelectionListener] []
-              (valueChanged [e] (set-selection e))))
-          update-project-tree)
+              (valueChanged [e] (set-selection e)))))
     (vertical-panel
       :items [(horizontal-panel
-                :items [(button :text "New Project"
+                :items [(button :id :new-project-button
+                                :text "New Project"
                                 :listen [:action new-project])
-                        (button :text "New File"
+                        (button :id :new-file-button
+                                :text "New File"
                                 :listen [:action new-file])
-                        (button :text "Import"
+                        (button :id :import-button
+                                :text "Import"
                                 :listen [:action import-project])
-                        (button :text "Remove"
-                                :listen [:action remove-project])
+                        (button :id :remove-button
+                                :text "Remove"
+                                :listen [:action remove-project-or-file])
                         :fill-h])
               (scrollable project-tree)])))
 
@@ -114,10 +118,12 @@
   (org.pushingpixels.substance.api.SubstanceLookAndFeel/setSkin
     (org.pushingpixels.substance.api.skin.GraphiteSkin.))
   (invoke-later
-    (let [root (-> (frame :title "Nightcode"
+    (reset! ui-root (-> (frame :title "Nightcode"
                           :content (get-window-content)
                           :width 1024
                           :height 768
                           :on-close :exit)
-                   show!)]
-      (request-focus! (select root [:#project-tree])))))
+                    show!))
+    (let [project-tree (select @ui-root [:#project-tree])]
+      (update-project-tree project-tree)
+      (request-focus! project-tree))))

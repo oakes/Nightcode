@@ -4,43 +4,43 @@
                             return-from-dialog
                             pack!
                             show!
+                            config!
                             select
                             to-root]]
         [seesaw.chooser :only [choose-file]]
-        [clojure.java.io :only [file]]
-        [nightcode.utils :only [write-pref
+        [clojure.java.io :only [file
+                                delete-file]]
+        [nightcode.utils :only [ui-root
+                                write-pref
                                 read-pref
                                 tree-path-to-str]]))
 
 ; keep track of expansions and selections
 
+(def tree-projects (atom #{}))
 (def tree-expansions (atom #{}))
 (def tree-selection (atom nil))
 
 (defn add-expansion
   [e]
-  (swap! tree-expansions
-         conj
-         (-> e
-             .getPath
-             tree-path-to-str))
+  (swap! tree-expansions conj (-> e .getPath tree-path-to-str))
   (write-pref :expansion-set @tree-expansions))
 
 (defn remove-expansion
   [e]
-  (swap! tree-expansions
-         disj
-         (-> e
-             .getPath
-             tree-path-to-str))
+  (swap! tree-expansions disj (-> e .getPath tree-path-to-str))
   (write-pref :expansion-set @tree-expansions))
 
 (defn set-selection
   [e]
-  (reset! tree-selection
-          (-> e
-              .getPath
-              tree-path-to-str))
+  (let [path (-> e .getPath tree-path-to-str)]
+    (config! (select @ui-root [:#remove-button])
+             :enabled?
+             (or (contains? @tree-projects path)
+                 (.isFile (file path))))
+    (config! (select @ui-root [:#new-file-button])
+             :enabled? true)
+    (reset! tree-selection path))
   (write-pref :selection @tree-selection))
 
 ; create and manipulate project tree
@@ -66,8 +66,11 @@
 
 (defn create-project-tree
   []
-  (-> #(.getName (file %))
-      (sort-by (read-pref :project-set))
+  (reset! tree-projects
+          (-> #(.getName (file %))
+              (sort-by (read-pref :project-set))
+              (set)))
+  (-> @tree-projects
       vec
       root-node
       (javax.swing.tree.DefaultTreeModel. false)))
@@ -79,11 +82,17 @@
 
 (defn remove-from-project-tree
   [path]
-  (let [cancel-button (button :text "Cancel"
+  (let [is-project? (contains? @tree-projects path)
+        cancel-button (button :text "Cancel"
                               :listen [:action #(return-from-dialog % :cancel)])
-        remove-button (button :text "Remove Project"
+        remove-button (button :text (if is-project?
+                                      "Remove Project"
+                                      "Remove File")
                               :listen [:action #(return-from-dialog % :remove)])
-        dialog-text "Remove this project? It WILL NOT be deleted from the disk."
+        dialog-text
+        (if is-project?
+          "Remove this project? It WILL NOT be deleted from the disk."
+          "Remove this file? It WILL be deleted from the disk.")
         project-set (read-pref :project-set)]
     (when (= :remove
              (-> (dialog :content dialog-text
@@ -92,14 +101,19 @@
                          :default-option remove-button)
                  pack!
                  show!))
-      (write-pref :project-set (set (remove #(= % path) project-set)))
+      (if is-project?
+        (write-pref :project-set (set (remove #(= % path) project-set)))
+        (delete-file (file path)))
       true)))
 
 (defn update-project-tree
   [tree]
+  ; put new data in the tree
   (.setModel tree (create-project-tree))
+  ; wipe out the in-memory expansion/selection
   (reset! tree-expansions #{})
   (reset! tree-selection nil)
+  ; read the on-disk expansion/selection and apply them to the tree
   (let [expansion-set (read-pref :expansion-set)
         selection (read-pref :selection)]
     (doseq [i (range) :while (< i (.getRowCount tree))]
@@ -110,7 +124,14 @@
           (swap! tree-expansions conj str-path))
         (when (= selection str-path)
           (.setSelectionPath tree tree-path)
-          (reset! tree-selection str-path))))))
+          (reset! tree-selection str-path)))))
+  ; select the first project if there is nothing selected
+  (when (nil? @tree-selection)
+    (.setSelectionRow tree 0))
+  ; disable buttons if there is still nothing selected
+  (doseq [btn [:#remove-button :#new-file-button]]
+    (config! (select @ui-root [btn])
+             :enabled? (not (nil? @tree-selection)))))
 
 ; actions for project tree buttons
 
@@ -130,12 +151,10 @@
     (add-to-project-tree (.getAbsolutePath dir))
     (update-project-tree (select (to-root e) [:#project-tree]))))
 
-(defn remove-project
+(defn remove-project-or-file
   [e]
-  (let [project-tree (select (to-root e) [:#project-tree])
-        selection-path (.getSelectionPath project-tree)]
-    (when (and selection-path
-               (-> selection-path
-                   tree-path-to-str
-                   remove-from-project-tree))
-      (update-project-tree project-tree))))
+  (let [project-tree (select (to-root e) [:#project-tree])]
+    (when-let [selection-path (.getSelectionPath project-tree)]
+      (let [path (tree-path-to-str selection-path)]
+        (when (remove-from-project-tree path)
+          (update-project-tree project-tree))))))

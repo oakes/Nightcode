@@ -1,5 +1,6 @@
 (ns nightcode.utils)
 
+(def ui-root (atom nil))
 (def prefs (.node (java.util.prefs.Preferences/userRoot) "nightcode"))
 
 (defn write-pref
