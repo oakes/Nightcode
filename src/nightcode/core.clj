@@ -4,7 +4,6 @@
                             select
                             native!
                             show!
-                            request-focus!
                             horizontal-panel
                             vertical-panel
                             left-right-split
@@ -113,5 +112,4 @@
                           :on-close :exit)
                     show!))
     (let [project-tree (select @ui-root [:#project-tree])]
-      (update-project-tree project-tree)
-      (request-focus! project-tree))))
+      (update-project-tree project-tree))))

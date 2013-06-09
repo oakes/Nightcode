@@ -184,8 +184,7 @@
                         (update-project-tree project-tree
                                              new-file-path))))))
         pack!
-        show!)
-    (request-focus! project-tree)))
+        show!)))
 
 (defn import-project
   [e]
