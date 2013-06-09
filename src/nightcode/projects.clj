@@ -13,6 +13,7 @@
                             vertical-panel]]
         [seesaw.chooser :only [choose-file]]
         [clojure.java.io :only [file]]
+        [nightcode.editors :only [show-editor]]
         [nightcode.utils :only [ui-root
                                 write-pref
                                 read-pref
@@ -21,7 +22,7 @@
                                 get-relative-dir
                                 delete-file-recursively]]))
 
-; keep track of expansions and selections
+; keep track of projects, expansions and the selection
 
 (def tree-projects (atom #{}))
 (def tree-expansions (atom #{}))
@@ -46,7 +47,8 @@
                  (.isFile (file path))))
     (config! (select @ui-root [:#new-file-button])
              :enabled? true)
-    (reset! tree-selection path))
+    (reset! tree-selection path)
+    (show-editor path))
   (write-pref :selection @tree-selection))
 
 ; create and manipulate project tree
@@ -147,12 +149,12 @@
 
 (defn new-project
   [e]
-  (when-let [dir (choose-file :type :save)]
-    (let [dir-path (.getAbsolutePath dir)
-          project-tree (select (to-root e) [:#project-tree])]
-      (add-to-project-tree dir-path)
-      (update-project-tree project-tree dir-path)
-      (request-focus! project-tree))))
+  (let [project-tree (select (to-root e) [:#project-tree])]
+    (when-let [dir (choose-file :type :save)]
+      (let [dir-path (.getAbsolutePath dir)]
+        (add-to-project-tree dir-path)
+        (update-project-tree project-tree dir-path)))
+      (request-focus! project-tree)))
 
 (defn new-file
   [e]

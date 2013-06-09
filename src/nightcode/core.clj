@@ -12,10 +12,10 @@
                             scrollable
                             button
                             text
+                            label
                             tree
-                            tabbed-panel]]
-        [clojure.java.io :only [resource
-                                input-stream]]
+                            tabbed-panel
+                            card-panel]]
         [nightcode.utils :only [ui-root]]
         [nightcode.projects :only [add-expansion
                                    remove-expansion
@@ -87,20 +87,8 @@
 
 (defn get-editor-pane
   []
-  (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
-        text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)]
-    (-> (resource "dark.xml")
-        (input-stream)
-        (org.fife.ui.rsyntaxtextarea.Theme/load)
-        (.apply text-area))
-    (vertical-panel
-      :items [(horizontal-panel
-                :items [(button :text "Save")
-                        (button :text "Move/Rename")
-                        (button :text "Undo")
-                        (button :text "Redo")
-                        :fill-h])
-              text-area-scroll])))
+  (card-panel :id :editor-pane
+              :items [["" :default-card]]))
 
 (defn get-window-content []
   (left-right-split
