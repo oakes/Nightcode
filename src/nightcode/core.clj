@@ -22,6 +22,7 @@
                                    update-project-tree
                                    new-project
                                    new-file
+                                   rename-file
                                    import-project
                                    remove-project-or-file]])
   (:gen-class))
@@ -34,12 +35,12 @@
           (.setRootVisible false)
           (.setShowsRootHandles true)
           (.addTreeExpansionListener
-            (proxy [javax.swing.event.TreeExpansionListener] []
-              (treeCollapsed [e] (remove-expansion e))
-              (treeExpanded [e] (add-expansion e))))
+            (reify javax.swing.event.TreeExpansionListener
+              (treeCollapsed [this e] (remove-expansion e))
+              (treeExpanded [this e] (add-expansion e))))
           (.addTreeSelectionListener
-            (proxy [javax.swing.event.TreeSelectionListener] []
-              (valueChanged [e] (set-selection e)))))
+            (reify javax.swing.event.TreeSelectionListener
+              (valueChanged [this e] (set-selection e)))))
     (vertical-panel
       :items [(horizontal-panel
                 :items [(button :id :new-project-button
@@ -48,6 +49,10 @@
                         (button :id :new-file-button
                                 :text "New File"
                                 :listen [:action new-file])
+                        (button :id :rename-file-button
+                                :text "Rename File"
+                                :listen [:action rename-file]
+                                :visible? false)
                         (button :id :import-button
                                 :text "Import"
                                 :listen [:action import-project])

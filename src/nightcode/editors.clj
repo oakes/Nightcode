@@ -4,6 +4,7 @@
                             add!
                             show-card!
                             remove!
+                            config!
                             request-focus!
                             select
                             button
@@ -38,7 +39,9 @@
         editor (get-editor selected-path)]
     (with-open [w (writer (file selected-path))]
       (.write editor w))
-    (request-focus! editor)))
+    (request-focus! editor)
+    (config! (select (get @editors selected-path) [:#save-button])
+             :enabled? false)))
 
 ; create and show editors for each file
 
@@ -64,24 +67,35 @@
                (not (contains? @editors path)))
       (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
             text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)
-            text-area-group
-            (vertical-panel
-              :items [(horizontal-panel
-                        :items [(button :text "Save"
-                                        :listen [:action save-file])
-                                (button :text "Move/Rename")
-                                (button :text "Undo")
-                                (button :text "Redo")
-                                :fill-h])
-                      text-area-scroll])]
+            text-group (vertical-panel
+                         :items [(horizontal-panel
+                                   :items [(button :id :save-button
+                                                   :text "Save"
+                                                   :listen [:action save-file]
+                                                   :enabled? false)
+                                           (button :text "Undo")
+                                           (button :text "Redo")
+                                           :fill-h])
+                                 text-area-scroll])]
         (.read text-area (reader (file path)) nil)
+        (.discardAllEdits text-area)
+        (.setAntiAliasingEnabled text-area true)
+        (.addDocumentListener (.getDocument text-area)
+                              (reify javax.swing.event.DocumentListener
+                                (changedUpdate [this e])
+                                (insertUpdate [this e]
+                                  (config! (select text-group [:#save-button])
+                                           :enabled? true))
+                                (removeUpdate [this e]
+                                  (config! (select text-group [:#save-button])
+                                           :enabled? true))))
         (.setSyntaxEditingStyle text-area (get-syntax-style path))
         (-> (resource "dark.xml")
             (input-stream)
             (org.fife.ui.rsyntaxtextarea.Theme/load)
             (.apply text-area))
-        (swap! editors assoc path text-area-group)
-        (.add editor-pane text-area-group path)))
+        (swap! editors assoc path text-group)
+        (.add editor-pane text-group path)))
     ; display the correct card and give it focus
     (show-card! editor-pane (if (contains? @editors path) path :default-card))
     (when-let [editor (get-editor path)]

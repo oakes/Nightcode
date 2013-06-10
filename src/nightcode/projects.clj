@@ -46,7 +46,9 @@
              (or (contains? @tree-projects path)
                  (.isFile (file path))))
     (config! (select @ui-root [:#new-file-button])
-             :enabled? true)
+             :visible? (.isDirectory (file path)))
+    (config! (select @ui-root [:#rename-file-button])
+             :visible? (.isFile (file path)))
     (reset! tree-selection path)
     (show-editor path))
   (write-pref :selection @tree-selection))
@@ -131,7 +133,8 @@
      (doseq [i (range) :while (< i (.getRowCount tree))]
        (let [tree-path (.getPathForRow tree i)
              str-path (tree-path-to-str tree-path)]
-         (when (contains? expansion-set str-path)
+         (when (or (contains? expansion-set str-path)
+                   (.startsWith selection str-path))
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)
@@ -141,9 +144,34 @@
    (when (nil? @tree-selection)
      (.setSelectionRow tree 0))
    ; disable buttons if there is still nothing selected
-   (doseq [btn [:#remove-button :#new-file-button]]
+   (doseq [btn [:#remove-button :#new-file-button :#rename-file-button]]
      (config! (select @ui-root [btn])
               :enabled? (not (nil? @tree-selection))))))
+
+(defn enter-file-path
+  [project-tree default-file-name callback]
+  (let [selected-path (-> (.getSelectionPath project-tree)
+                          tree-path-to-str)
+        project-path (-> #(.startsWith selected-path %)
+                         (filter @tree-projects)
+                         first)
+        default-path (str (get-relative-dir project-path selected-path)
+                          (or default-file-name
+                              (.getName (file selected-path))))]
+    (-> (dialog :content (vertical-panel
+                           :items ["Enter a path relative to the project."
+                                   (text :id :new-file-path
+                                         :text default-path)])
+                :option-type :ok-cancel
+                :success-fn
+                (fn [pane]
+                  (let [new-file (->> (text (select pane [:#new-file-path]))
+                                      (file project-path))]
+                    (callback project-path
+                              selected-path
+                              (.getAbsolutePath new-file)))))
+        pack!
+        show!)))
 
 ; actions for project tree buttons
 
@@ -158,33 +186,28 @@
 
 (defn new-file
   [e]
-  (let [project-tree (select (to-root e) [:#project-tree])
-        selected-path (-> (.getSelectionPath project-tree)
-                          tree-path-to-str)
-        project-path (-> #(.startsWith selected-path %)
-                         (filter @tree-projects)
-                         first)
-        default-path (str (get-relative-dir project-path selected-path)
-                          "example.clj")]
-    (-> (dialog :content (vertical-panel
-                           :items ["Enter a path relative to the project."
-                                   (text :id :new-file-path
-                                         :text default-path)])
-                :option-type :ok-cancel
-                :success-fn
-                (fn [pane]
-                  (let [new-file (->> (text (select pane [:#new-file-path]))
-                                      (file project-path))
-                        new-file-path (.getAbsolutePath new-file)]
-                    (if (.exists new-file)
-                      (alert "File already exists.")
-                      (do
-                        (.mkdirs (.getParentFile new-file))
-                        (.createNewFile new-file)
-                        (update-project-tree project-tree
-                                             new-file-path))))))
-        pack!
-        show!)))
+  (let [project-tree (select (to-root e) [:#project-tree])]
+    (enter-file-path
+      project-tree
+      "example.clj"
+      (fn [project-path selected-path new-path]
+        (if (.exists (file new-path))
+          (alert "File already exists.")
+          (do
+            (.mkdirs (.getParentFile (file new-path)))
+            (.createNewFile (file new-path))
+            (update-project-tree project-tree new-path)))))))
+
+(defn rename-file
+  [e]
+  (let [project-tree (select (to-root e) [:#project-tree])]
+    (enter-file-path project-tree
+                     nil
+                     (fn [project-path selected-path new-path]
+                       (.mkdirs (.getParentFile (file new-path)))
+                       (.renameTo (file selected-path) (file new-path))
+                       (delete-file-recursively project-path selected-path)
+                       (update-project-tree project-tree new-path)))))
 
 (defn import-project
   [e]
