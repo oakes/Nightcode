@@ -19,7 +19,7 @@
       .getPath
       last
       .getUserObject
-      .getAbsolutePath))
+      .getCanonicalPath))
 
 (defn get-relative-path [project-path selected-path]
   (-> (.toURI (file project-path))
@@ -31,7 +31,7 @@
                        selected-path
                        (-> (file selected-path)
                            .getParentFile
-                           .getAbsolutePath))]
+                           .getCanonicalPath))]
     (get-relative-path project-path selected-dir)))
 
 (defn delete-file-recursively [project-path path]
@@ -41,4 +41,4 @@
     (delete-file-recursively project-path
                              (-> (file path)
                                  .getParentFile
-                                 .getAbsolutePath))))
+                                 .getCanonicalPath))))

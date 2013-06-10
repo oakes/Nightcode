@@ -134,7 +134,8 @@
        (let [tree-path (.getPathForRow tree i)
              str-path (tree-path-to-str tree-path)]
          (when (or (contains? expansion-set str-path)
-                   (.startsWith selection str-path))
+                   (and new-selection
+                        (.startsWith new-selection str-path)))
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)
@@ -169,7 +170,7 @@
                                       (file project-path))]
                     (callback project-path
                               selected-path
-                              (.getAbsolutePath new-file)))))
+                              (.getCanonicalPath new-file)))))
         pack!
         show!)))
 
@@ -179,7 +180,7 @@
   [e]
   (let [project-tree (select (to-root e) [:#project-tree])]
     (when-let [dir (choose-file :type :save)]
-      (let [dir-path (.getAbsolutePath dir)]
+      (let [dir-path (.getCanonicalPath dir)]
         (add-to-project-tree dir-path)
         (update-project-tree project-tree dir-path)))
       (request-focus! project-tree)))
@@ -214,7 +215,7 @@
   (let [project-tree (select (to-root e) [:#project-tree])]
     (when-let [dir (choose-file :type :open
                                 :selection-mode :dirs-only)]
-      (let [dir-path (.getAbsolutePath dir)]
+      (let [dir-path (.getCanonicalPath dir)]
         (add-to-project-tree dir-path)
         (update-project-tree project-tree dir-path)))
     (request-focus! project-tree)))
