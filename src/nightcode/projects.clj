@@ -1,5 +1,7 @@
 (ns nightcode.projects
-  (:use [seesaw.core :only [alert
+  (:use nightcode.editors
+        nightcode.utils
+        [seesaw.core :only [alert
                             dialog
                             button
                             return-from-dialog
@@ -12,15 +14,7 @@
                             text
                             vertical-panel]]
         [seesaw.chooser :only [choose-file]]
-        [clojure.java.io :only [file]]
-        [nightcode.editors :only [show-editor]]
-        [nightcode.utils :only [ui-root
-                                write-pref
-                                read-pref
-                                tree-path-to-str
-                                get-relative-path
-                                get-relative-dir
-                                delete-file-recursively]]))
+        [clojure.java.io :only [file]]))
 
 ; keep track of projects, expansions and the selection
 
