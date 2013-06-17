@@ -1,6 +1,5 @@
 (ns nightcode.editors
-  (:use nightcode.utils
-        [seesaw.core :only [vertical-panel
+  (:use [seesaw.core :only [vertical-panel
                             horizontal-panel
                             add!
                             show-card!
@@ -14,7 +13,9 @@
                                 resource
                                 input-stream
                                 reader
-                                writer]])
+                                writer]]
+        [nightcode.utils :only [ui-root
+                                tree-path-to-str]])
   (:import org.fife.ui.rsyntaxtextarea.SyntaxConstants))
 
 ; keep track of the editors

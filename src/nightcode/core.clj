@@ -1,7 +1,5 @@
 (ns nightcode.core
-  (:use nightcode.utils
-        nightcode.projects
-        [seesaw.core :only [invoke-later
+  (:use [seesaw.core :only [invoke-later
                             frame
                             select
                             native!
@@ -16,7 +14,17 @@
                             label
                             tree
                             tabbed-panel
-                            card-panel]])
+                            card-panel]]
+        [nightcode.utils :only [ui-root]]
+        [nightcode.projects :only [add-expansion
+                                   remove-expansion
+                                   set-selection
+                                   update-project-tree
+                                   new-project
+                                   new-file
+                                   rename-file
+                                   import-project
+                                   remove-project-or-file]])
   (:gen-class))
 
 (defn get-project-pane
