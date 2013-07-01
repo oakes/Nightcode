@@ -36,6 +36,22 @@
     (editors/show-editor path))
   (utils/write-pref :selection @tree-selection))
 
+; get project tree and items within it
+
+(defn get-project-tree
+  []
+  (s/select @utils/ui-root [:#project-tree]))
+
+(defn get-selected-path
+  []
+  (utils/tree-path-to-str (.getSelectionPath (get-project-tree))))
+
+(defn get-project-path
+  []
+  (-> #(.startsWith (get-selected-path) %)
+      (filter @tree-projects)
+      first))
+
 ; create and manipulate project tree
 
 (defn file-node
@@ -105,7 +121,10 @@
       true)))
 
 (defn update-project-tree
-  ([tree] (update-project-tree tree nil))
+  ([]
+   (update-project-tree (get-project-tree) nil))
+  ([new-selection]
+   (update-project-tree (get-project-tree) new-selection))
   ([tree new-selection]
    ; put new data in the tree
    (.setModel tree (create-project-tree))
@@ -119,8 +138,7 @@
        (let [tree-path (.getPathForRow tree i)
              str-path (utils/tree-path-to-str tree-path)]
          (when (or (contains? expansion-set str-path)
-                   (and new-selection
-                        (.startsWith new-selection str-path)))
+                   (and new-selection (.startsWith new-selection str-path)))
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)
@@ -132,90 +150,73 @@
    ; disable buttons if there is still nothing selected
    (doseq [btn [:#remove-button :#new-file-button :#rename-file-button]]
      (s/config! (s/select @utils/ui-root [btn])
-              :enabled? (not (nil? @tree-selection))))))
+              :enabled? (not (nil? @tree-selection))))
+   ; focus on the tree
+   (s/request-focus! tree)))
 
 (defn enter-file-path
-  [project-tree default-file-name callback]
-  (let [selected-path (-> (.getSelectionPath project-tree)
-                          utils/tree-path-to-str)
-        project-path (-> #(.startsWith selected-path %)
-                         (filter @tree-projects)
-                         first)
-        default-path (str (utils/get-relative-dir project-path selected-path)
-                          (or default-file-name
-                              (.getName (java.io/file selected-path))))]
-    (-> (s/dialog :content (s/vertical-panel
-                             :items ["Enter a path relative to the project."
-                                     (s/text :id :new-file-path
-                                             :text default-path)])
-                  :option-type :ok-cancel
-                  :success-fn
-                  (fn [pane]
-                    (let [new-file (->> (s/select pane [:#new-file-path])
-                                        s/text
-                                        (java.io/file project-path))]
-                      (callback project-path
-                                selected-path
-                                (.getCanonicalPath new-file)))))
-        s/pack!
-        s/show!)))
+  ([callback]
+   (enter-file-path callback nil))
+  ([callback default-file-name]
+   (let [selected-path (get-selected-path)
+         project-path (get-project-path)
+         default-path (str (utils/get-relative-dir project-path selected-path)
+                           (or default-file-name
+                               (.getName (java.io/file selected-path))))]
+     (-> (s/dialog :content (s/vertical-panel
+                              :items ["Enter a path relative to the project."
+                                      (s/text :id :new-file-path
+                                              :text default-path)])
+                   :option-type :ok-cancel
+                   :success-fn
+                   (fn [pane]
+                     (let [new-file (->> (s/select pane [:#new-file-path])
+                                         s/text
+                                         (java.io/file project-path))]
+                       (callback project-path
+                                 selected-path
+                                 (.getCanonicalPath new-file)))))
+         s/pack!
+         s/show!))))
 
 ; actions for project tree buttons
 
 (defn new-project
   [e]
-  (let [project-tree (s/select (s/to-root e) [:#project-tree])]
-    (when-let [dir (chooser/choose-file :type :save)]
-      (let [dir-path (.getCanonicalPath dir)]
-        (add-to-project-tree dir-path)
-        (update-project-tree project-tree dir-path)))
-      (s/request-focus! project-tree)))
+  (when-let [dir (chooser/choose-file :type :save)]
+    (let [dir-path (.getCanonicalPath dir)]
+      (add-to-project-tree dir-path)
+      (update-project-tree dir-path))))
 
 (defn new-file
   [e]
-  (let [project-tree (s/select (s/to-root e) [:#project-tree])]
-    (enter-file-path
-      project-tree
-      "example.clj"
-      (fn [project-path selected-path new-path]
-        (if (.exists (java.io/file new-path))
-          (s/alert "File already exists.")
-          (do
-            (.mkdirs (.getParentFile (java.io/file new-path)))
-            (.createNewFile (java.io/file new-path))
-            (update-project-tree project-tree new-path)))))))
+  (enter-file-path (fn [project-path selected-path new-path]
+                     (if (.exists (java.io/file new-path))
+                       (s/alert "File already exists.")
+                       (do
+                         (.mkdirs (.getParentFile (java.io/file new-path)))
+                         (.createNewFile (java.io/file new-path))
+                         (update-project-tree new-path))))
+                   "example.clj"))
 
 (defn rename-file
   [e]
-  (let [project-tree (s/select (s/to-root e) [:#project-tree])]
-    (enter-file-path project-tree
-                     nil
-                     (fn [project-path selected-path new-path]
-                       (.mkdirs (.getParentFile (java.io/file new-path)))
-                       (.renameTo (java.io/file selected-path)
-                                  (java.io/file new-path))
-                       (utils/delete-file-recursively project-path
-                                                      selected-path)
-                       (update-project-tree project-tree new-path)))))
+  (enter-file-path (fn [project-path selected-path new-path]
+                     (.mkdirs (.getParentFile (java.io/file new-path)))
+                     (.renameTo (java.io/file selected-path)
+                                (java.io/file new-path))
+                     (utils/delete-file-recursively project-path selected-path)
+                     (update-project-tree new-path))))
 
 (defn import-project
   [e]
-  (let [project-tree (s/select (s/to-root e) [:#project-tree])]
-    (when-let [dir (chooser/choose-file :type :open
-                                        :selection-mode :dirs-only)]
-      (let [dir-path (.getCanonicalPath dir)]
-        (add-to-project-tree dir-path)
-        (update-project-tree project-tree dir-path)))
-    (s/request-focus! project-tree)))
+  (when-let [dir (chooser/choose-file :type :open
+                                      :selection-mode :dirs-only)]
+    (let [dir-path (.getCanonicalPath dir)]
+      (add-to-project-tree dir-path)
+      (update-project-tree dir-path))))
 
 (defn remove-project-or-file
   [e]
-  (let [project-tree (s/select (s/to-root e) [:#project-tree])
-        selected-path (-> (.getSelectionPath project-tree)
-                          utils/tree-path-to-str)
-        project-path (-> #(.startsWith selected-path %)
-                         (filter @tree-projects)
-                         first)]
-    (when (remove-from-project-tree selected-path)
-      (update-project-tree project-tree project-path))
-    (s/request-focus! project-tree)))
+  (when (remove-from-project-tree (get-selected-path))
+    (update-project-tree (get-project-path))))

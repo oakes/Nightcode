@@ -94,5 +94,4 @@
                          :height 768
                          :on-close :exit)
               s/show!))
-    (let [project-tree (s/select @utils/ui-root [:#project-tree])]
-      (p/update-project-tree project-tree))))
+    (p/update-project-tree)))
