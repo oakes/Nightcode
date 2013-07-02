@@ -150,9 +150,7 @@
    ; disable buttons if there is still nothing selected
    (doseq [btn [:#remove-button :#new-file-button :#rename-file-button]]
      (s/config! (s/select @utils/ui-root [btn])
-              :enabled? (not (nil? @tree-selection))))
-   ; focus on the tree
-   (s/request-focus! tree)))
+              :enabled? (not (nil? @tree-selection))))))
 
 (defn enter-file-path
   ([callback]
