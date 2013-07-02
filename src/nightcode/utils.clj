@@ -1,8 +1,9 @@
 (ns nightcode.utils
-  (:require [clojure.java.io :as java.io]))
+  (:require [clojure.java.io :as java.io])
+  (:import [java.util.prefs Preferences]))
 
 (def ui-root (atom nil))
-(def prefs (.node (java.util.prefs.Preferences/userRoot) "nightcode"))
+(def prefs (.node (Preferences/userRoot) "nightcode"))
 
 (defn write-pref
   [k v]

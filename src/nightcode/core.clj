@@ -2,6 +2,7 @@
   (:require [seesaw.core :as s]
             [nightcode.utils :as utils]
             [nightcode.projects :as p])
+  (:import [bsh.util JConsole])
   (:gen-class))
 
 (defn get-project-pane
@@ -39,43 +40,36 @@
                         :fill-h])
               (s/scrollable project-tree)])))
 
-(defn get-tool-pane
+(defn get-repl-pane
   []
-  (let [run-tab (s/vertical-panel
-                  :items [(s/horizontal-panel
-                            :items [(s/button :text "Run")
-                                    (s/button :text "Build")
-                                    (s/button :text "Test")
-                                    (s/button :text "Halt")
-                                    (s/button :text "Clean")
-                                    :fill-h])])
-        repl-tab (s/vertical-panel
-                  :items [(s/horizontal-panel
-                            :items [(s/button :text "Restart")
-                                    (s/button :text "Clear")
-                                    :fill-h])])
-        docs-tab (s/vertical-panel
-                  :items [(s/horizontal-panel
-                            :items [])])]
-    (s/tabbed-panel :placement :top
-                    :overflow :scroll
-                    :tabs [{:title "Run"
-                            :content run-tab}
-                           {:title "REPL"
-                            :content repl-tab}
-                           {:title "Docs"
-                            :content docs-tab}])))
+  (s/vertical-panel
+    :items [(s/horizontal-panel
+              :items [(s/button :text "Restart")
+                      (s/button :text "Clear")
+                      :fill-h])
+            (JConsole.)]))
 
 (defn get-editor-pane
   []
-  (s/card-panel :id :editor-pane
-                :items [["" :default-card]]))
+  (s/top-bottom-split
+    (s/card-panel :id :editor-pane
+                  :items [["" :default-card]])
+    (s/vertical-panel
+      :items [(s/horizontal-panel
+                :items [(s/button :text "Run")
+                        (s/button :text "Build")
+                        (s/button :text "Test")
+                        (s/button :text "Halt")
+                        (s/button :text "Clean")
+                        :fill-h])])
+    :divider-location 0.8
+    :resize-weight 1))
 
 (defn get-window-content []
   (s/left-right-split
     (s/top-bottom-split
       (get-project-pane)
-      (get-tool-pane)
+      (get-repl-pane)
       :divider-location 0.5)
     (get-editor-pane)
     :divider-location 0.4))
