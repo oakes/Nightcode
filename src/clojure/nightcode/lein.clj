@@ -14,8 +14,7 @@
             [nightcode.utils :as utils]
             [seesaw.core :as s])
   (:import (clojure.lang LineNumberingPushbackReader)
-           (com.hypirion.io ClosingPipe Pipe)
-           (java.io PrintWriter))
+           (com.hypirion.io ClosingPipe Pipe))
   (:gen-class))
 
 (def threads (atom {}))
@@ -31,7 +30,7 @@
 
 (defn get-output
   [widget-id]
-  (PrintWriter. (.getOut (s/select @utils/ui-root [widget-id]))))
+  (.getOut (s/select @utils/ui-root [widget-id])))
 
 (defn get-input
   [widget-id]
