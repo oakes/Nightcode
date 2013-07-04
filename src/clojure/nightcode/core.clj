@@ -3,7 +3,9 @@
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [nightcode.projects :as p])
-  (:import [bsh.util JConsole])
+  (:import [bsh.util JConsole]
+           [org.pushingpixels.substance.api SubstanceLookAndFeel]
+           [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
 
 (defn get-project-pane
@@ -99,8 +101,7 @@
   "Launches the main window."
   [& args]
   (s/native!)
-  (org.pushingpixels.substance.api.SubstanceLookAndFeel/setSkin
-    (org.pushingpixels.substance.api.skin.GraphiteSkin.))
+  (SubstanceLookAndFeel/setSkin (GraphiteSkin.))
   (s/invoke-later
     (reset! utils/ui-root
             (-> (s/frame :title "Nightcode"
@@ -108,5 +109,6 @@
                          :width 1024
                          :height 768
                          :on-close :exit)
-              s/show!))
-    (p/update-project-tree)))
+                s/show!))
+    (p/update-project-tree)
+    (lein/run-repl)))

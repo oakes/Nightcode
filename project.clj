@@ -8,5 +8,6 @@
                  [leiningen "2.2.0"]
                  [lein-droid "0.1.0-preview5"]
                  [lein-cljsbuild "0.3.2"]]
-  :java-source-paths ["src-java"]
+  :source-paths ["src/clojure"]
+  :java-source-paths ["src/java"]
   :main nightcode.core)

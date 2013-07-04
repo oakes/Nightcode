@@ -57,7 +57,7 @@ import javax.swing.*;
 		including Color and Image support, key press bug workaround
 */
 public class JConsole extends JScrollPane
-	implements GUIConsoleInterface, Runnable, KeyListener,
+	implements Runnable, KeyListener,
 	MouseListener, ActionListener, PropertyChangeListener 
 {
     private final static String	CUT = "Cut";
@@ -611,15 +611,12 @@ public class JConsole extends JScrollPane
 			print( new String(ba, 0, read) );
 			//text.repaint();
 		}
-
-		println("Console: Input	closed...");
 	}
 
 	public void run() {
 		try {
 			inPipeWatcher();
 		} catch	( IOException e	) {
-			print("Console: I/O Error: "+e+"\n", Color.red);
 		}
 	}
 
