@@ -67,6 +67,13 @@
                                                        in
                                                        out
                                                        (p/get-project-path)))])
+                        (s/button :id :run-repl-button
+                                  :text "Run with REPL"
+                                  :listen [:action (fn [e]
+                                                     (lein/run-repl-project
+                                                       in
+                                                       out
+                                                       (p/get-project-path)))])
                         (s/button :id :build-button
                                   :text "Build"
                                   :listen [:action (fn [e]

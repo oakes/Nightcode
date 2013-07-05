@@ -37,7 +37,7 @@
             (catch Exception e nil))
           (println "=== Finished ===")))
       Thread.
-      (doto (.start))))
+      (doto .start)))
 
 (defmacro start-thread
   [in out & body]
@@ -50,12 +50,13 @@
                     (Thread. (fn [] (.destroy @process))))
   (with-open [out (java.io/reader (.getInputStream @process))
               err (java.io/reader (.getErrorStream @process))
-              in (.getOutputStream @process)]
-    (let [pump-out (doto (Pipe. out *out*) .start)
-          pump-err (doto (Pipe. err *err*) .start)
-          pipe-in (ClosingPipe. System/in in)]
-      (.join pump-out)
-      (.join pump-err)
+              in (java.io/writer (.getOutputStream @process))]
+    (let [pipe-out (doto (Pipe. out *out*) .start)
+          pipe-err (doto (Pipe. err *err*) .start)
+          pipe-in (doto (ClosingPipe. *in* in) .start)]
+      (.join pipe-out)
+      (.join pipe-err)
+      (.join pipe-in)
       (.waitFor @process))))
 
 (defn start-process-command
@@ -87,7 +88,7 @@
       (if (is-android-project? path)
         (start-thread in out (start-process-command "run-android" path))
         ;We could do this:
-        ;(start-thread (start-process-command "run" path))
+        ;(start-thread in out (start-process-command "run" path))
         ;But instead we are calling the Leiningen code directly for speed:
         (start-thread
           in
@@ -108,14 +109,16 @@
                 cmd (leiningen.core.eval/shell-command project-map new-form)]
             (start-process cmd)))))))
 
+(defn run-repl-project
+  [in out path]
+  (halt-project)
+  (reset! thread (start-thread in out (start-process-command "repl" path))))
+
 (defn build-project
   [in out path]
   (halt-project)
   (reset! thread
-    (let [project-map (read-project-clj path)
-          cmd (if (is-android-project? path)
-                "build-android"
-                "build")]
+    (let [cmd (if (is-android-project? path) "build-android" "build")]
       (start-thread in out (start-process-command cmd path)))))
 
 (defn test-project
@@ -128,10 +131,10 @@
   [in out path]
   (halt-project)
   (reset! thread
-    (start-thread in
-                  out
-                  (println "Cleaning...")
-                  (leiningen.clean/clean (read-project-clj path)))))
+          (start-thread in
+                        out
+                        (println "Cleaning...")
+                        (leiningen.clean/clean (read-project-clj path)))))
 
 (defn new-project
   ([path project-name project-type]
@@ -158,4 +161,5 @@
                                              "clean-compile-dir"
                                              "build"
                                              "apk")
+      "repl" (leiningen.repl/repl project-map)
       nil)))
