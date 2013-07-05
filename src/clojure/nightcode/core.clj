@@ -4,6 +4,7 @@
             [nightcode.utils :as utils]
             [nightcode.projects :as p])
   (:import [bsh.util JConsole]
+           [clojure.lang LineNumberingPushbackReader]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
@@ -54,34 +55,45 @@
 
 (defn get-build-pane
   []
-  (s/vertical-panel
-    :items [(s/horizontal-panel
-              :items [(s/button :id :run-button
-                                :text "Run"
-                                :listen [:action (fn [e]
-                                                   (-> (p/get-project-path)
-                                                       lein/run-project))])
-                      (s/button :id :build-button
-                                :text "Build"
-                                :listen [:action (fn [e]
-                                                   (-> (p/get-project-path)
-                                                       lein/build-project))])
-                      (s/button :id :test-button
-                                :text "Test"
-                                :listen [:action (fn [e]
-                                                   (-> (p/get-project-path)
-                                                       lein/test-project))])
-                      (s/button :id :halt-button
-                                :text "Halt"
-                                :listen [:action (fn [e]
-                                                   (lein/cancel-action))])
-                      (s/button :id :clean-button
-                                :text "Clean"
-                                :listen [:action (fn [e]
-                                                   (-> (p/get-project-path)
-                                                       lein/clean-project))])
-                      :fill-h])
-            (s/config! (JConsole.) :id :build-console)]))
+  (let [console (JConsole.)
+        in (LineNumberingPushbackReader. (.getIn console))
+        out (.getOut console)]
+    (s/vertical-panel
+      :items [(s/horizontal-panel
+                :items [(s/button :id :run-button
+                                  :text "Run"
+                                  :listen [:action (fn [e]
+                                                     (lein/run-project
+                                                       in
+                                                       out
+                                                       (p/get-project-path)))])
+                        (s/button :id :build-button
+                                  :text "Build"
+                                  :listen [:action (fn [e]
+                                                     (lein/build-project
+                                                       in
+                                                       out
+                                                       (p/get-project-path)))])
+                        (s/button :id :test-button
+                                  :text "Test"
+                                  :listen [:action (fn [e]
+                                                     (lein/test-project
+                                                       in
+                                                       out
+                                                       (p/get-project-path)))])
+                        (s/button :id :clean-button
+                                  :text "Clean"
+                                  :listen [:action (fn [e]
+                                                     (lein/clean-project
+                                                       in
+                                                       out
+                                                       (p/get-project-path)))])
+                        (s/button :id :halt-button
+                                  :text "Halt"
+                                  :listen [:action (fn [e]
+                                                     (lein/halt-project))])
+                        :fill-h])
+              (s/config! console :id :build-console)])))
 
 (defn get-window-content []
   (s/left-right-split
@@ -111,4 +123,6 @@
                          :on-close :exit)
                 s/show!))
     (p/update-project-tree)
-    (lein/run-repl)))
+    (let [repl-console (s/select @utils/ui-root [:#repl-console])]
+      (lein/run-repl (LineNumberingPushbackReader. (.getIn repl-console))
+                     (.getOut repl-console)))))

@@ -10,15 +10,13 @@
             [leiningen.repl]
             [leiningen.run]
             [leiningen.test]
-            [leiningen.uberjar]
-            [nightcode.utils :as utils]
-            [seesaw.core :as s])
-  (:import (clojure.lang LineNumberingPushbackReader)
-           (com.hypirion.io ClosingPipe Pipe))
+            [leiningen.uberjar])
+  (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
-(def threads (atom {}))
+(def thread (atom nil))
 (def process (atom nil))
+(def namespace-name (str *ns*))
 
 (defn get-project-clj-path
   [path]
@@ -28,31 +26,22 @@
   [path]
   (leiningen.core.project/read (get-project-clj-path path)))
 
-(defn get-output
-  [widget-id]
-  (.getOut (s/select @utils/ui-root [widget-id])))
-
-(defn get-input
-  [widget-id]
-  (.getIn (s/select @utils/ui-root [widget-id])))
-
 (defn start-thread*
-  [widget-id func]
-  (->> (fn []
-         (binding [*out* (get-output widget-id)
-                   *err* (get-output widget-id)
-                   *in* (LineNumberingPushbackReader. (get-input widget-id))
-                   leiningen.core.main/*exit-process?* false]
-           (try (func)
-             (catch Exception e nil))
-           (println "=== Finished ===")))
-       Thread.
-       (swap! threads assoc widget-id))
-  (.start (get @threads widget-id)))
+  [in out func]
+  (-> (fn []
+        (binding [*out* out
+                  *err* out
+                  *in* in
+                  leiningen.core.main/*exit-process?* false]
+          (try (func)
+            (catch Exception e nil))
+          (println "=== Finished ===")))
+      Thread.
+      (doto (.start))))
 
 (defmacro start-thread
-  [widget-id & body]
-  `(start-thread* ~widget-id (fn [] ~@body)))
+  [in out & body]
+  `(start-thread* ~in ~out (fn [] ~@body)))
 
 (defn start-process
   [& args]
@@ -75,83 +64,74 @@
   (start-process "java"
                  "-cp"
                  (System/getProperty "java.class.path" ".")
-                 "nightcode.lein"
+                 namespace-name
                  cmd
                  (get-project-clj-path path)))
 
-(defn cancel-action
+(defn halt-project
   []
   (when @process
     (.destroy @process))
-  (when-let [thread (:#build-console @threads)]
-    (.interrupt thread)))
+  (when @thread
+    (.interrupt @thread)))
 
 (defn is-android-project?
-  [path project-map]
-  (let [has-manifest? (-> (java.io/file path "AndroidManifest.xml")
-                          .exists)]
-    (when (and has-manifest? (not (:sdk-path (:android project-map))))
-      (-> (s/dialog
-            :title "Specify Android SDK"
-            :content
-"No Android SDK was found. You can specify it in 
-project.clj, or you can set it globally by putting 
-the following in your ~/.lein/profiles.clj file and 
-restarting the IDE:
-
-{:user {
-  :android {:sdk-path \"/path/to/android-sdk\"}
-}}"
-            :type :plain)
-          s/pack!
-          s/show!)
-      (throw (Throwable. "No Android SDK was found")))
-    has-manifest?))
+  [path]
+  (.exists (java.io/file path "AndroidManifest.xml")))
 
 (defn run-project
-  [path]
-  (cancel-action)
-  (let [project-map (read-project-clj path)]
-    (if (is-android-project? path project-map)
-      (start-thread :#build-console (start-process-command "run-android" path))
-      ;We could do this:
-      ;(start-thread :#build-console (start-process-command "run" path))
-      ;But instead we are calling the Leiningen code directly for speed:
-      (start-thread
-        :#build-console
-        (leiningen.core.eval/prep project-map)
-        (let [given (:main project-map)
-              form (leiningen.run/run-form given nil)
-              main (if (namespace (symbol given))
-                     (symbol given)
-                     (symbol (name given) "-main"))
-              new-form `(do (set! ~'*warn-on-reflection*
-                                  ~(:warn-on-reflection project-map))
-                            ~@(map (fn [[k v]]
-                                     `(set! ~k ~v)) (:global-vars project-map))
-                            ~@(:injections project-map)
-                            ~form)
-              cmd (leiningen.core.eval/shell-command project-map new-form)]
-          (start-process cmd))))))
+  [in out path]
+  (halt-project)
+  (reset! thread
+    (let [project-map (read-project-clj path)]
+      (if (is-android-project? path)
+        (start-thread in out (start-process-command "run-android" path))
+        ;We could do this:
+        ;(start-thread (start-process-command "run" path))
+        ;But instead we are calling the Leiningen code directly for speed:
+        (start-thread
+          in
+          out
+          (leiningen.core.eval/prep project-map)
+          (let [given (:main project-map)
+                form (leiningen.run/run-form given nil)
+                main (if (namespace (symbol given))
+                       (symbol given)
+                       (symbol (name given) "-main"))
+                new-form `(do (set! ~'*warn-on-reflection*
+                                    ~(:warn-on-reflection project-map))
+                              ~@(map (fn [[k v]]
+                                       `(set! ~k ~v))
+                                     (:global-vars project-map))
+                              ~@(:injections project-map)
+                              ~form)
+                cmd (leiningen.core.eval/shell-command project-map new-form)]
+            (start-process cmd)))))))
 
 (defn build-project
-  [path]
-  (cancel-action)
-  (let [project-map (read-project-clj path)
-        cmd (if (is-android-project? path project-map) "build-android" "build")]
-    (start-thread :#build-console (start-process-command cmd path))))
+  [in out path]
+  (halt-project)
+  (reset! thread
+    (let [project-map (read-project-clj path)
+          cmd (if (is-android-project? path)
+                "build-android"
+                "build")]
+      (start-thread in out (start-process-command cmd path)))))
 
 (defn test-project
-  [path]
-  (cancel-action)
-  (start-thread :#build-console (leiningen.test/test (read-project-clj path))))
+  [in out path]
+  (halt-project)
+  (reset! thread
+          (start-thread in out (leiningen.test/test (read-project-clj path)))))
 
 (defn clean-project
-  [path]
-  (cancel-action)
-  (start-thread :#build-console
-                (println "Cleaning...")
-                (leiningen.clean/clean (read-project-clj path))))
+  [in out path]
+  (halt-project)
+  (reset! thread
+    (start-thread in
+                  out
+                  (println "Cleaning...")
+                  (leiningen.clean/clean (read-project-clj path)))))
 
 (defn new-project
   ([path project-name project-type]
@@ -163,8 +143,8 @@ restarting the IDE:
      (leiningen.new/new {} (name project-type) project-name))))
 
 (defn run-repl
-  []
-  (start-thread :#repl-console (clojure.main/repl :prompt #(print "user=> "))))
+  [in out]
+  (start-thread in out (clojure.main/repl :prompt #(print "user=> "))))
 
 (defn -main
   [& args]
