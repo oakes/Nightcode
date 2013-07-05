@@ -57,48 +57,40 @@
   []
   (let [console (JConsole.)
         in (LineNumberingPushbackReader. (.getIn console))
-        out (.getOut console)]
+        out (.getOut console)
+        run-action (fn [e]
+                     (lein/run-project in out (p/get-project-path)))
+        run-repl-action (fn [e]
+                          (lein/run-repl-project in out (p/get-project-path))
+                          (s/request-focus! (.getView (.getViewport console))))
+        build-action (fn [e]
+                       (lein/build-project in out (p/get-project-path)))
+        test-action (fn [e]
+                      (lein/test-project in out (p/get-project-path)))
+        clean-action (fn [e]
+                       (lein/clean-project in out (p/get-project-path)))
+        halt-action (fn [e]
+                      (lein/halt-project))]
     (s/vertical-panel
       :items [(s/horizontal-panel
                 :items [(s/button :id :run-button
                                   :text "Run"
-                                  :listen [:action (fn [e]
-                                                     (lein/run-project
-                                                       in
-                                                       out
-                                                       (p/get-project-path)))])
+                                  :listen [:action run-action])
                         (s/button :id :run-repl-button
                                   :text "Run with REPL"
-                                  :listen [:action (fn [e]
-                                                     (lein/run-repl-project
-                                                       in
-                                                       out
-                                                       (p/get-project-path)))])
+                                  :listen [:action run-repl-action])
                         (s/button :id :build-button
                                   :text "Build"
-                                  :listen [:action (fn [e]
-                                                     (lein/build-project
-                                                       in
-                                                       out
-                                                       (p/get-project-path)))])
+                                  :listen [:action build-action])
                         (s/button :id :test-button
                                   :text "Test"
-                                  :listen [:action (fn [e]
-                                                     (lein/test-project
-                                                       in
-                                                       out
-                                                       (p/get-project-path)))])
+                                  :listen [:action test-action])
                         (s/button :id :clean-button
                                   :text "Clean"
-                                  :listen [:action (fn [e]
-                                                     (lein/clean-project
-                                                       in
-                                                       out
-                                                       (p/get-project-path)))])
+                                  :listen [:action clean-action])
                         (s/button :id :halt-button
                                   :text "Halt"
-                                  :listen [:action (fn [e]
-                                                     (lein/halt-project))])
+                                  :listen [:action halt-action])
                         :fill-h])
               (s/config! console :id :build-console)])))
 
