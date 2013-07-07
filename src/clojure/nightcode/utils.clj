@@ -43,3 +43,10 @@
                              (-> (java.io/file path)
                                  .getParentFile
                                  .getCanonicalPath))))
+
+(defn format-name
+  [name-str]
+  (-> name-str
+      clojure.string/lower-case
+      (clojure.string/replace " " "")
+      (clojure.string/replace "_" "-")))

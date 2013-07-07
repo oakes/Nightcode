@@ -5,7 +5,8 @@
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
             [seesaw.core :as s]
-            [seesaw.icon :as icon]))
+            [seesaw.icon :as icon])
+  (:import [javax.swing JRadioButton]))
 
 ; keep track of projects, expansions and the selection
 
@@ -184,60 +185,59 @@
 (defn new-project
   [e]
   (when-let [dir (chooser/choose-file :type :save)]
-    (let [project-name (clojure.string/lower-case (.getName dir))
+    (let [project-name (utils/format-name (.getName dir))
           parent-dir (.getParent dir)
           project-dir (-> parent-dir
                           (java.io/file project-name)
                           .getCanonicalPath)
           group (s/button-group)
-          package-name (s/text :text (str "com.company." project-name)
-                               :enabled? false)
-          toggle #(s/config! package-name :enabled? (= (s/id-of %) :android))
-          project-types [[:app "Console" "Clojure"]
-                         [:app-java "Console" "Java"]
-                         [:seesaw "Desktop" "Clojure"]
-                         [:cljs-kickoff "Web" "ClojureScript"]
-                         [:android "Android" "Clojure"]
-                         [:android-java "Android" "Java"]
-                         [:simple-game "Simple Game" "Java"]
-                         [:advanced-game "Advanced Game" "Java"]]
-          project-buttons (for [[id name-str lang-str] project-types]
-                            (doto (s/radio :id id
-                                           :text (str "<html>"
-                                                      "<center>"
-                                                      name-str
-                                                      "</center>"
-                                                      "<center>"
-                                                      "(" lang-str ")"
-                                                      "</center>")
-                                           :group group
-                                           :selected? (= id :app)
-                                           :valign :center
-                                           :halign :center
-                                           :listen [:action toggle])
-                                  (.setSelectedIcon
-                                    (icon/icon (str (name id) "2.png")))
-                                  (.setIcon
-                                    (icon/icon (str (name id) ".png")))
-                                  (.setVerticalTextPosition
-                                    javax.swing.JRadioButton/BOTTOM)
-                                  (.setHorizontalTextPosition
-                                    javax.swing.JRadioButton/CENTER)))]
+          package-name (s/text :text (str "com." project-name)
+                               :visible? false
+                               :columns 20)
+          types [[:app "Console" "Clojure"]
+                 [:app-java "Console" "Java"]
+                 [:seesaw "Desktop" "Clojure"]
+                 [:cljs-kickoff "Web" "ClojureScript"]
+                 [:android "Android" "Clojure"]
+                 [:android-java "Android" "Java"]
+                 [:simple-game "Simple Game" "Java"]
+                 [:advanced-game "Advanced Game" "Java"]]
+          toggle (fn [e]
+                   (s/config! package-name
+                              :visible?
+                              (contains? #{:android :android-java} (s/id-of e)))
+                   (s/pack! (s/to-root e)))
+          buttons (for [[id name-str lang-str] types]
+                    (doto (s/radio :id id
+                                   :text (str "<html>"
+                                              "<center>"
+                                              name-str
+                                              "<br>"
+                                              "<i>" lang-str "</i>"
+                                              "</center>")
+                                   :group group
+                                   :selected? (= id :app)
+                                   :valign :center
+                                   :halign :center
+                                   :listen [:action toggle])
+                          (.setSelectedIcon (icon/icon (str (name id) "2.png")))
+                          (.setIcon (icon/icon (str (name id) ".png")))
+                          (.setVerticalTextPosition JRadioButton/BOTTOM)
+                          (.setHorizontalTextPosition JRadioButton/CENTER)))]
       (s/invoke-later
         (-> (s/dialog
-              :id :new-dialog
               :title "Specify Project Type"
               :content (s/vertical-panel
-                         :items [(s/grid-panel
-                                  :columns 4
-                                  :rows 2
-                                  :items project-buttons)
-                                 package-name])
+                         :items [(s/grid-panel :columns 4
+                                               :rows 2
+                                               :items buttons)
+                                 (s/flow-panel :items [package-name])])
               :success-fn (fn [pane]
                             (lein/new-project parent-dir
                                               project-name
                                               (s/id-of (s/selection group))
-                                              (s/text package-name))
+                                              (-> (s/text package-name)
+                                                  utils/format-name))
                             (add-to-project-tree project-dir)
                             (update-project-tree project-dir)))
             s/pack!
