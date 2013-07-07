@@ -195,13 +195,13 @@
                                :visible? false
                                :columns 20)
           types [[:app "Console" "Clojure"]
-                 [:app-java "Console" "Java"]
                  [:seesaw "Desktop" "Clojure"]
                  [:cljs-kickoff "Web" "ClojureScript"]
                  [:android "Android" "Clojure"]
-                 [:android-java "Android" "Java"]
+                 [:app-java "Console" "Java"]
                  [:simple-game "Simple Game" "Java"]
-                 [:advanced-game "Advanced Game" "Java"]]
+                 [:advanced-game "Advanced Game" "Java"]
+                 [:android-java "Android" "Java"]]
           toggle (fn [e]
                    (s/config! package-name
                               :visible?
