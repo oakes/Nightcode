@@ -46,17 +46,16 @@
 (defn start-process
   [& args]
   (reset! process (.exec (Runtime/getRuntime) (into-array (flatten args))))
-  (.addShutdownHook (Runtime/getRuntime)
-                    (Thread. (fn [] (.destroy @process))))
+  (.addShutdownHook (Runtime/getRuntime) (Thread. #(.destroy @process)))
   (with-open [out (java.io/reader (.getInputStream @process))
               err (java.io/reader (.getErrorStream @process))
               in (java.io/writer (.getOutputStream @process))]
-    (let [pipe-out (doto (Pipe. out *out*) .start)
-          pipe-err (doto (Pipe. err *err*) .start)
-          pipe-in (doto (ClosingPipe. *in* in) .start)]
-      (.join pipe-out)
-      (.join pipe-err)
-      (.join pipe-in)
+    (let [pump-out (doto (Pipe. out *out*) .start)
+          pump-err (doto (Pipe. err *err*) .start)
+          pump-in (doto (ClosingPipe. *in* in) .start)]
+      (.join pump-out)
+      (.join pump-err)
+      (.join pump-in)
       (.waitFor @process))))
 
 (defn start-process-command
@@ -145,12 +144,13 @@
      (leiningen.droid.new/new project-name package-name)
      (leiningen.new/new {} (name project-type) project-name))))
 
-(defn run-repl
+(defn repl
   [in out]
   (start-thread in out (clojure.main/repl :prompt #(print "user=> "))))
 
 (defn -main
   [& args]
+  (System/setProperty "jline.terminal" "dumb")
   (let [project-map (leiningen.core.project/read (nth args 1))]
     (case (nth args 0)
       "run" (leiningen.run/run project-map)

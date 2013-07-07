@@ -123,5 +123,5 @@
                 s/show!))
     (p/update-project-tree)
     (let [repl-console (s/select @utils/ui-root [:#repl-console])]
-      (lein/run-repl (LineNumberingPushbackReader. (.getIn repl-console))
-                     (.getOut repl-console)))))
+      (lein/repl (LineNumberingPushbackReader. (.getIn repl-console))
+                 (.getOut repl-console)))))
