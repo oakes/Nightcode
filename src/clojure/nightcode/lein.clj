@@ -136,13 +136,11 @@
                         (leiningen.clean/clean (read-project-clj path)))))
 
 (defn new-project
-  ([path project-name project-type]
-   (new-project path project-name project-type nil))
-  ([path project-name project-type package-name]
-   (System/setProperty "leiningen.original.pwd" path)
-   (if (= project-type :android)
-     (leiningen.droid.new/new project-name package-name)
-     (leiningen.new/new {} (name project-type) project-name))))
+  [parent-path project-name project-type package-name]
+  (System/setProperty "leiningen.original.pwd" parent-path)
+  (if (= project-type :android)
+    (leiningen.droid.new/new project-name package-name)
+    (leiningen.new/new {} (name project-type) project-name)))
 
 (defn repl
   [in out]

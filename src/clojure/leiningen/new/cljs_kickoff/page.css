@@ -1,0 +1,13 @@
+body {
+  width: 900px;
+  margin: 0 auto;
+  background-color: #8eba8e;
+}
+
+div {
+  background: green;
+  margin: 3em;
+  padding: 1em;
+  border: 1px solid gray;
+  background-color: #baf0ba;
+}
