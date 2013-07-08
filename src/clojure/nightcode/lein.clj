@@ -162,10 +162,6 @@
       "run" (leiningen.run/run project-map)
       "run-android" (leiningen.droid/droid project-map "doall")
       "build" (leiningen.uberjar/uberjar project-map)
-      "build-android" (leiningen.droid/droid project-map
-                                             "release"
-                                             "clean-compile-dir"
-                                             "build"
-                                             "apk")
+      "build-android" (leiningen.droid/droid project-map "release")
       "repl" (leiningen.repl/repl project-map)
       nil)))

@@ -194,11 +194,11 @@
           package-name (s/text :text (str "com." project-name)
                                :visible? false
                                :columns 20)
-          types [[:app "Console" "Clojure"]
+          types [[:console "Console" "Clojure"]
                  [:seesaw "Desktop" "Clojure"]
                  [:cljs-kickoff "Web" "ClojureScript"]
                  [:android "Android" "Clojure"]
-                 [:app-java "Console" "Java"]
+                 [:console-java "Console" "Java"]
                  [:mini2dx-java "Simple Game" "Java"]
                  [:libgdx-java "Advanced Game" "Java"]
                  [:android-java "Android" "Java"]]
@@ -216,7 +216,7 @@
                                               "<i>" lang-str "</i>"
                                               "</center>")
                                    :group group
-                                   :selected? (= id :app)
+                                   :selected? (= id :console)
                                    :valign :center
                                    :halign :center
                                    :listen [:action toggle])
