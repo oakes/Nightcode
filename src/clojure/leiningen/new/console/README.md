@@ -1,6 +1,6 @@
 # {{name}}
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure app to ... well, that part is up to you.
 
 ## Usage
 

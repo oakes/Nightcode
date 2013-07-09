@@ -211,8 +211,7 @@
                     (doto (s/radio :id id
                                    :text (str "<html>"
                                               "<center>"
-                                              name-str
-                                              "<br>"
+                                              name-str "<br>"
                                               "<i>" lang-str "</i>"
                                               "</center>")
                                    :group group
