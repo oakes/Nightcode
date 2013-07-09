@@ -185,15 +185,10 @@
 (defn new-project
   [e]
   (when-let [dir (chooser/choose-file :type :save)]
-    (let [project-name (utils/format-name (.getName dir))
+    (let [raw-project-name (.getName dir)
           parent-dir (.getParent dir)
-          project-dir (-> parent-dir
-                          (java.io/file project-name)
-                          .getCanonicalPath)
           group (s/button-group)
-          package-name (s/text :text (str "com." project-name)
-                               :visible? false
-                               :columns 20)
+          package-name-text (s/text :visible? false :columns 20)
           types [[:console "Console" "Clojure"]
                  [:seesaw "Desktop" "Clojure"]
                  [:cljs-kickoff "Web" "ClojureScript"]
@@ -203,9 +198,14 @@
                  [:libgdx-java "Advanced Game" "Java"]
                  [:android-java "Android" "Java"]]
           toggle (fn [e]
-                   (s/config! package-name
+                   (s/config! package-name-text
                               :visible?
-                              (contains? #{:android :android-java} (s/id-of e)))
+                              (let [id (name (s/id-of e))]
+                                (or (>= (.indexOf id "java") 0)
+                                    (>= (.indexOf id "android") 0))))
+                   (s/text! package-name-text
+                            (utils/format-name (str "com." raw-project-name)
+                                               (s/id-of (s/selection group))))
                    (s/pack! (s/to-root e)))
           buttons (for [[id name-str lang-str] types]
                     (doto (s/radio :id id
@@ -231,15 +231,21 @@
                          :items [(s/grid-panel :columns 4
                                                :rows 2
                                                :items buttons)
-                                 (s/flow-panel :items [package-name])])
+                                 (s/flow-panel :items [package-name-text])])
               :success-fn (fn [pane]
-                            (lein/new-project parent-dir
-                                              project-name
-                                              (s/id-of (s/selection group))
-                                              (-> (s/text package-name)
-                                                  utils/format-name))
-                            (add-to-project-tree project-dir)
-                            (update-project-tree project-dir)))
+                            (let [project-type (s/id-of (s/selection group))
+                                  project-name (-> raw-project-name
+                                                   (utils/format-name nil))
+                                  package-name (-> (s/text package-name-text)
+                                                   (utils/format-name
+                                                     project-type))
+                                  project-dir (-> parent-dir
+                                                  (java.io/file project-name)
+                                                  .getCanonicalPath)]
+                              (lein/new-project parent-dir project-type
+                                                project-name package-name)
+                              (add-to-project-tree project-dir)
+                              (update-project-tree project-dir))))
             s/pack!
             s/show!)))))
 

@@ -144,11 +144,11 @@
        (reset! thread)))
 
 (defn new-project
-  [parent-path project-name project-type package-name]
+  [parent-path project-type project-name package-name]
   (System/setProperty "leiningen.original.pwd" parent-path)
   (if (= project-type :android)
     (leiningen.droid.new/new project-name package-name)
-    (leiningen.new/new {} (name project-type) project-name)))
+    (leiningen.new/new {} (name project-type) project-name package-name)))
 
 (defn repl
   [in out]

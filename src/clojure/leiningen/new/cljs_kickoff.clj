@@ -4,7 +4,7 @@
 (def render (renderer "cljs-kickoff"))
 
 (defn cljs-kickoff
-  [name]
+  [name package-name]
   (let [data {:name name
               :sanitized (name-to-path name)}]
     (->files data

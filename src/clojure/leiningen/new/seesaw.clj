@@ -5,7 +5,7 @@
 
 (defn seesaw
   "Creates a new Seesaw app"
-  [name]
+  [name package-name]
   (let [data {:name name
               :sanitized (name-to-path name)
 	      :year (year)}]
