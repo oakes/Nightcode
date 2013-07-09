@@ -49,8 +49,8 @@
   (if (and project-type (>= (.indexOf (name project-type) "java") 0))
     (-> name-str
         (clojure.string/replace "-" "_")
-        (clojure.string/replace "^[a-z0-9_]" ""))
+        (clojure.string/replace #"[^a-zA-Z0-9_.]" ""))
     (-> name-str
         clojure.string/lower-case
         (clojure.string/replace "_" "-")
-        (clojure.string/replace "^[a-z0-9-]" ""))))
+        (clojure.string/replace #"[^a-z0-9-.]" ""))))

@@ -21,7 +21,6 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
     (->files data
              ["project.clj" (render "project.clj" data)]
              ["README.md" (render "README.md" data)]
-             ["doc/intro.md" (render "intro.md" data)]
              [".gitignore" (render "gitignore" data)]
              ["src/{{nested-dirs}}.clj" (render "core.clj" data)]
              ["test/{{nested-dirs}}_test.clj" (render "test.clj" data)]

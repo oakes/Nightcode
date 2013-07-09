@@ -14,7 +14,6 @@
              ["project.clj" (render "project.clj" data)]
 	     ["README.md" (render "README.md" data)]
 	     ["src/{{sanitized}}/core.clj" (render "core.clj" data)]
-	     ["test/{{sanitized}}/core_test.clj" (render "core_test.clj" data)]
-	     ["doc/intro.md" (render "intro.md" data)])
+	     ["test/{{sanitized}}/core_test.clj" (render "core_test.clj" data)])
     (println "Done!")
     (println "You can run " name " by typing 'lein run' in the project directory. Note: it may take a bit longer to start the application the first time you compile it.")))
