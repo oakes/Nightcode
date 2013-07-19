@@ -55,7 +55,6 @@
           pump-in (doto (ClosingPipe. *in* in) .start)]
       (.join pump-out)
       (.join pump-err)
-      (.join pump-in)
       (.waitFor @process))))
 
 (defn start-process-command
@@ -81,7 +80,7 @@
 (defn run-project-fast
   [path]
   ;We could do this:
-  ;(start-thread in out (start-process-command "run" path))
+  ;(start-process-command "run" path)
   ;But instead we are calling the Leiningen code directly for speed:
   (let [project-map (read-project-clj path)
         _ (leiningen.core.eval/prep project-map)
