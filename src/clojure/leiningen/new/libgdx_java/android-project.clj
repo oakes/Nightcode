@@ -1,9 +1,9 @@
 (defproject {{raw-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
+  ;:resource-paths ["libs/android-support-v13.jar"]
   :dependencies [[com.badlogic.gdx/gdx "0.9.9-SNAPSHOT"]
                  [com.badlogic.gdx/gdx-backend-android "0.9.9-SNAPSHOT"]]
   :repositories [["libgdx" "http://libgdx.badlogicgames.com/nightlies/maven/"]]
-  :resource-paths ["libs/armeabi/libgdx.so" "libs/armeabi-v7a/libgdx.so"]
   :java-source-paths ["src" "../common" "gen"]
   :java-only true
   :profiles {:dev {:android {:aot :all-with-unused}}
