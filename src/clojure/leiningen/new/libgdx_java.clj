@@ -20,6 +20,8 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
               :name (project-name name)
               :package-name package-name
               :class-name class-name
+              :desktop-class-name desktop-class-name
+              :android-class-name android-class-name
               :namespace main-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
