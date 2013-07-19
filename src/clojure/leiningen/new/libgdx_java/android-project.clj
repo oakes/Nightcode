@@ -22,4 +22,5 @@
             ;; Uncomment this if dexer fails with OutOfMemoryException
             ;; :force-dex-optimize true
 
+            :native-libraries-paths ["libs"]
             :target-version "15"})

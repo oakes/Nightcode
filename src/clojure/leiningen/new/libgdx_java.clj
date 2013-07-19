@@ -2,7 +2,8 @@
   "Generate a library project."
   (:use [leiningen.new.templates :only [renderer year project-name
                                         ->files sanitize name-to-path
-                                        multi-segment]]))
+                                        multi-segment]])
+  (:require [clojure.java.io :as java.io]))
 
 (defn libgdx-java
   "A general project template for libraries.
@@ -38,14 +39,24 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
              ["common/{{nested-dirs}}.java" (render "Core.java" data)]
              ; desktop
              ["desktop/project.clj" (render "desktop-project.clj" data)]
-             ["desktop/src/{{desktop-dirs}}.java" (render "DesktopLauncher.java" data)]
+             ["desktop/src/{{desktop-dirs}}.java"
+              (render "DesktopLauncher.java" data)]
              ; android
              ["android/AndroidManifest.xml" (render "AndroidManifest.xml" data)]
              ["android/project.clj" (render "android-project.clj" data)]
-             ["android/res/drawable-hdpi/ic_launcher.png" (render "../android_java/ic_launcher_hdpi.png")]
-             ["android/res/drawable-mdpi/ic_launcher.png" (render "../android_java/ic_launcher_mdpi.png")]
-             ["android/res/drawable-ldpi/ic_launcher.png" (render "../android_java/ic_launcher_ldpi.png")]
-             ["android/res/values/strings.xml" (render "../android_java/strings.xml" data)]
-             ["android/res/layout/main.xml" (render "../android_java/main.xml" data)]
-             ["android/src/{{android-dirs}}.java" (render "AndroidLauncher.java" data)]
-             "android/libs")))
+             ["android/res/drawable-hdpi/ic_launcher.png"
+              (render "../android_java/ic_launcher_hdpi.png")]
+             ["android/res/drawable-mdpi/ic_launcher.png"
+              (render "../android_java/ic_launcher_mdpi.png")]
+             ["android/res/drawable-ldpi/ic_launcher.png"
+              (render "../android_java/ic_launcher_ldpi.png")]
+             ["android/res/values/strings.xml"
+              (render "../android_java/strings.xml" data)]
+             ["android/res/layout/main.xml"
+              (render "../android_java/main.xml" data)]
+             ["android/src/{{android-dirs}}.java"
+              (render "AndroidLauncher.java" data)]
+             ["android/libs/armeabi/libgdx.so"
+              (java.io/file (java.io/resource "armeabi-libgdx.so"))]
+             ["android/libs/armeabi-v7a/libgdx.so"
+              (java.io/file (java.io/resource "armeabi-v7a-libgdx.so"))])))
