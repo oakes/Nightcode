@@ -1,7 +1,7 @@
 (ns nightcode.editors
-  (:require [seesaw.core :as s]
-            [clojure.java.io :as java.io]
-            [nightcode.utils :as utils])
+  (:require [clojure.java.io :as java.io]
+            [nightcode.utils :as utils]
+            [seesaw.core :as s])
   (:import org.fife.ui.rsyntaxtextarea.SyntaxConstants))
 
 ; keep track of the editors
@@ -59,10 +59,13 @@
                                                      :text "Save"
                                                      :listen [:action save-file]
                                                      :enabled? false)
-                                           (s/button :text "Undo")
-                                           (s/button :text "Redo")
+                                           (s/button :id :undo-button
+                                                     :text "Undo")
+                                           (s/button :id :redo-button
+                                                     :text "Redo")
                                            :fill-h])
                                  text-area-scroll])]
+        (utils/create-hints text-group)
         (.read text-area (java.io/reader (java.io/file path)) nil)
         (.discardAllEdits text-area)
         (.setAntiAliasingEnabled text-area true)

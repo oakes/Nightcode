@@ -14,7 +14,8 @@
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
-(def thread (atom nil))
+(def main-thread (atom nil))
+(def repl-thread (atom nil))
 (def process (atom nil))
 (def namespace-name (str *ns*))
 
@@ -66,12 +67,12 @@
                  cmd
                  (get-project-clj-path path)))
 
-(defn halt-project
+(defn stop-project
   []
   (when @process
     (.destroy @process))
-  (when @thread
-    (.interrupt @thread)))
+  (when @main-thread
+    (.interrupt @main-thread)))
 
 (defn is-android-project?
   [path]
@@ -101,46 +102,46 @@
 
 (defn run-project
   [in out path]
-  (halt-project)
+  (stop-project)
   (->> (do (println "Running...")
          (if (is-android-project? path)
            (start-process-command "run-android" path)
            (run-project-fast path)))
        (start-thread in out)
-       (reset! thread)))
+       (reset! main-thread)))
 
 (defn run-repl-project
   [in out path]
-  (halt-project)
+  (stop-project)
   (->> (do (println "Running with REPL...")
          (start-process-command "repl" path))
        (start-thread in out)
-       (reset! thread)))
+       (reset! main-thread)))
 
 (defn build-project
   [in out path]
-  (halt-project)
+  (stop-project)
   (->> (do (println "Building...")
          (let [cmd (if (is-android-project? path) "build-android" "build")]
            (start-process-command cmd path)))
        (start-thread in out)
-       (reset! thread)))
+       (reset! main-thread)))
 
 (defn test-project
   [in out path]
-  (halt-project)
+  (stop-project)
   (->> (do (println "Testing...")
          (leiningen.test/test (read-project-clj path)))
        (start-thread in out)
-       (reset! thread)))
+       (reset! main-thread)))
 
 (defn clean-project
   [in out path]
-  (halt-project)
+  (stop-project)
   (->> (do (println "Cleaning...")
          (leiningen.clean/clean (read-project-clj path)))
        (start-thread in out)
-       (reset! thread)))
+       (reset! main-thread)))
 
 (defn new-project
   [parent-path project-type project-name package-name]
@@ -151,7 +152,9 @@
 
 (defn repl
   [in out]
-  (start-thread in out (clojure.main/repl :prompt #(print "user=> "))))
+  (->> (clojure.main/repl :prompt #(print "user=> "))
+       (start-thread in out)
+       (reset! repl-thread)))
 
 (defn -main
   [& args]

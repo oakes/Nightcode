@@ -275,7 +275,7 @@
       (add-to-project-tree dir-path)
       (update-project-tree dir-path))))
 
-(defn remove-project-or-file
+(defn remove-item
   [e]
   (when (remove-from-project-tree (get-selected-path))
     (update-project-tree (get-project-path))))
