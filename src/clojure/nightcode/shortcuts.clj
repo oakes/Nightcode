@@ -21,30 +21,8 @@
    :stop-button "Q"
    :save-button "S"
    :undo-button "Z"
-   :redo-button "Y"})
-
-(defn create-hint
-  [btn text]
-  (when text
-    (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
-          positioner (CenteredPositioner. 0)]
-      (doto (BalloonTip. btn text style false)
-        (.setPositioner positioner)
-        (.setVisible false)))))
-
-(defn is-visible?
-  [widget]
-  (if widget
-    (and (.isVisible widget)
-         (is-visible? (.getParent widget)))
-    true))
-
-(defn toggle-hints
-  [target show?]
-  (doseq [hint (s/select target [:BalloonTip])]
-    (if (and show? (is-visible? (.getAttachedComponent hint)))
-      (s/show! hint)
-      (s/hide! hint))))
+   :redo-button "Y"
+   :repl-console "W"})
 
 (defn create-mappings
   [panel pairs]
@@ -61,11 +39,35 @@
                       :scope :global)))
   panel)
 
+(defn is-visible?
+  [widget]
+  (if widget
+    (and (.isVisible widget)
+         (is-visible? (.getParent widget)))
+    true))
+
+(defn toggle-hints
+  [target show?]
+  (doseq [hint (s/select target [:BalloonTip])]
+    (if (and show? (is-visible? (.getAttachedComponent hint)))
+      (s/show! hint)
+      (s/hide! hint))))
+
+(defn create-hint
+  [btn text]
+  (when text
+    (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
+          positioner (CenteredPositioner. 0)]
+      (doto (BalloonTip. btn text style false)
+        (.setPositioner positioner)
+        (.setVisible false)))))
+
 (defn create-hints
   [target]
   ; create hints and initially hide them
-  (doseq [btn (s/select target [:JButton])]
-    (create-hint btn (get mappings (s/id-of btn))))
+  (doseq [[id mapping] mappings]
+    (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
+      (create-hint btn mapping)))
   ; toggle hints when control key is up/down
   (.addKeyEventDispatcher
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)

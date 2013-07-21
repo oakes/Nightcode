@@ -150,8 +150,10 @@
     (leiningen.droid.new/new project-name package-name)
     (leiningen.new/new {} (name project-type) project-name package-name)))
 
-(defn repl
+(defn run-repl
   [in out]
+  (when @repl-thread
+    (.interrupt @repl-thread))
   (->> (clojure.main/repl :prompt #(print "user=> "))
        (start-thread in out)
        (reset! repl-thread)))

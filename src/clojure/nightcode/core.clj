@@ -53,7 +53,15 @@
 
 (defn get-repl-pane
   []
-  (s/config! (JConsole.) :id :repl-console))
+  (let [console (s/config! (JConsole.) :id :repl-console)
+        in (.getIn console)
+        out (.getOut console)]
+    (lein/run-repl (LineNumberingPushbackReader. in) out)
+    (->> {:repl-console
+          (fn [e]
+            (s/request-focus! (.getView (.getViewport console)))
+            (lein/run-repl (LineNumberingPushbackReader. in) out))}
+         (shortcuts/create-mappings console))))
 
 (defn get-editor-pane
   []
@@ -136,9 +144,4 @@
                 shortcuts/create-hints
                 s/show!))
     ; initialize the project pane
-    (p/update-project-tree)
-    ; initialize the repl pane
-    (let [repl-console (s/select @utils/ui-root [:#repl-console])
-          in (LineNumberingPushbackReader. (.getIn repl-console))
-          out (.getOut repl-console)]
-      (lein/repl in out))))
+    (p/update-project-tree)))
