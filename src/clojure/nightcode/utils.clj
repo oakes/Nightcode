@@ -20,6 +20,7 @@
       .getPath
       last
       .getUserObject
+      :file
       .getCanonicalPath))
 
 (defn get-relative-path [project-path selected-path]

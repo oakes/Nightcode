@@ -71,28 +71,46 @@
 
 ; create and manipulate project tree
 
-(defn file-node
+(defn get-node
   [file]
+  {:name (if (is-project-path? file)
+           (str "<html><b><font color='gray'>"
+                (.getName file)
+                "</font></b></html>")
+           (.getName file))
+   :file file})
+
+(defn get-nodes
+  [node children]
+  (->> (for [child children]
+         (get-node child))
+       (cons (when (and (:file node)
+                        (-> (.getCanonicalPath (:file node))
+                            lein/is-android-project?))
+               {:name "<html><b><font color='green'>LogCat</font></b></html>"
+                :file (java.io/file "*LogCat*")}))
+       (remove nil?)
+       vec))
+
+(defn file-node
+  [node]
   (let [children (->> (reify java.io.FilenameFilter
                         (accept [this dir filename]
                           (not (.startsWith filename "."))))
-                      (.listFiles file)
+                      (.listFiles (:file node))
+                      (get-nodes node)
                       delay)]
-    (proxy [javax.swing.tree.DefaultMutableTreeNode] [file]
+    (proxy [javax.swing.tree.DefaultMutableTreeNode] [node]
       (getChildAt [i] (file-node (get @children i)))
       (getChildCount [] (count @children))
-      (isLeaf [] (not (.isDirectory file)))
-      (toString []
-        (if (is-project-path? file)
-          (str "<html><b><font color='gray'>"
-               (.getName file)
-               "</font></b></html>")
-          (.getName file))))))
+      (isLeaf [] (or (nil? (:file node))
+                     (not (.isDirectory (:file node)))))
+      (toString [] (:name node)))))
 
 (defn root-node
   [project-vec]
   (proxy [javax.swing.tree.DefaultMutableTreeNode] []
-    (getChildAt [i] (file-node (java.io/file (nth project-vec i))))
+    (getChildAt [i] (file-node (get-node (java.io/file (nth project-vec i)))))
     (getChildCount [] (count project-vec))))
 
 (defn create-project-tree
