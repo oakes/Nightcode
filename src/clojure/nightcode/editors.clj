@@ -1,5 +1,6 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as java.io]
+            [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
   (:import org.fife.ui.rsyntaxtextarea.SyntaxConstants))
@@ -65,7 +66,7 @@
                                                      :text "Redo")
                                            :fill-h])
                                  text-area-scroll])]
-        (utils/create-hints text-group)
+        (shortcuts/create-hints text-group)
         (.read text-area (java.io/reader (java.io/file path)) nil)
         (.discardAllEdits text-area)
         (.setAntiAliasingEnabled text-area true)

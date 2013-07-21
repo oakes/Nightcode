@@ -1,11 +1,6 @@
 (ns nightcode.utils
-  (:require [clojure.java.io :as java.io]
-            [seesaw.core :as s])
-  (:import [java.awt Color]
-           [java.util.prefs Preferences]
-           [net.java.balloontip BalloonTip]
-           [net.java.balloontip.positioners CenteredPositioner]
-           [net.java.balloontip.styles ToolTipBalloonStyle]))
+  (:require [clojure.java.io :as java.io])
+  (:import [java.util.prefs Preferences]))
 
 (def ui-root (atom nil))
 (def prefs (.node (Preferences/userRoot) "nightcode"))
@@ -59,38 +54,3 @@
         clojure.string/lower-case
         (clojure.string/replace "_" "-")
         (clojure.string/replace #"[^a-z0-9-.]" ""))))
-
-(defn create-hint
-  [btn text]
-  (when text
-    (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
-          positioner (CenteredPositioner. 0)]
-      (doto (BalloonTip. btn text style false)
-        (.setPositioner positioner)
-        (.setVisible false)))))
-
-(defn toggle-hints
-  [target show?]
-  (doseq [hint (s/select target [:BalloonTip])]
-    (if show? (s/show! hint) (s/hide! hint))))
-
-(defn create-hints
-  [target]
-  (doseq [btn (s/select target [:JButton])]
-    (create-hint btn
-                 (case (s/id-of btn)
-                   :new-project-button "P"
-                   :new-file-button "N"
-                   :rename-file-button "M"
-                   :import-button "O"
-                   :remove-button "I"
-                   :run-button "R"
-                   :run-repl-button "E"
-                   :build-button "B"
-                   :test-button "T"
-                   :clean-button "L"
-                   :stop-button "Q"
-                   :save-button "S"
-                   :undo-button "Z"
-                   :redo-button "Y"
-                   nil))))
