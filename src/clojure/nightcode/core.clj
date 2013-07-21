@@ -125,7 +125,7 @@
     (s/top-bottom-split (get-editor-pane)
                         (get-build-pane)
                         :divider-location 0.8
-                        :resize-weight 1)
+                        :resize-weight 0.5)
     :divider-location 0.4))
 
 (defn -main

@@ -41,6 +41,11 @@
 
 ; get project tree and items within it
 
+(defn is-project-path?
+  [file]
+  (and (.isDirectory file)
+       (.exists (java.io/file file "project.clj"))))
+
 (defn get-project-tree
   []
   (s/select @utils/ui-root [:#project-tree]))
@@ -50,6 +55,15 @@
   (utils/tree-path-to-str (.getSelectionPath (get-project-tree))))
 
 (defn get-project-path
+  ([] (get-project-path (java.io/file (get-selected-path))))
+  ([file]
+   (when file
+     (if (or (is-project-path? file)
+             (contains? @tree-projects (.getCanonicalPath file)))
+       (.getCanonicalPath file)
+       (get-project-path (.getParentFile file))))))
+
+(defn get-project-root-path
   []
   (-> #(.startsWith (get-selected-path) %)
       (filter @tree-projects)
@@ -58,17 +72,22 @@
 ; create and manipulate project tree
 
 (defn file-node
-  [file-obj]
+  [file]
   (let [children (->> (reify java.io.FilenameFilter
                         (accept [this dir filename]
                           (not (.startsWith filename "."))))
-                      (.listFiles file-obj)
+                      (.listFiles file)
                       delay)]
-    (proxy [javax.swing.tree.DefaultMutableTreeNode] [file-obj]
+    (proxy [javax.swing.tree.DefaultMutableTreeNode] [file]
       (getChildAt [i] (file-node (get @children i)))
       (getChildCount [] (count @children))
-      (isLeaf [] (not (.isDirectory file-obj)))
-      (toString [] (.getName file-obj)))))
+      (isLeaf [] (not (.isDirectory file)))
+      (toString []
+        (if (is-project-path? file)
+          (str "<html><b><font color='gray'>"
+               (.getName file)
+               "</font></b></html>")
+          (.getName file))))))
 
 (defn root-node
   [project-vec]
@@ -160,7 +179,7 @@
    (enter-file-path callback nil))
   ([callback default-file-name]
    (let [selected-path (get-selected-path)
-         project-path (get-project-path)
+         project-path (get-project-root-path)
          default-path (str (utils/get-relative-dir project-path selected-path)
                            (or default-file-name
                                (.getName (java.io/file selected-path))))]
@@ -278,4 +297,4 @@
 (defn remove-item
   [e]
   (when (remove-from-project-tree (get-selected-path))
-    (update-project-tree (get-project-path))))
+    (update-project-tree (get-project-root-path))))
