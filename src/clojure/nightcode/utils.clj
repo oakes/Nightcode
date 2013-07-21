@@ -39,8 +39,7 @@
   (let [file (java.io/file path)]
     (when (and (= 0 (count (.listFiles file)))
                (not= project-path path))
-      (when (.isDirectory file)
-        (.delete file))
+      (.delete file)
       (->> file
            .getParentFile
            .getCanonicalPath

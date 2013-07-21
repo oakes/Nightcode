@@ -7,6 +7,7 @@
             [leiningen.clean]
             [leiningen.droid]
             [leiningen.new]
+            [leiningen.new.templates]
             [leiningen.repl]
             [leiningen.run]
             [leiningen.test]
@@ -25,7 +26,10 @@
 
 (defn read-project-clj
   [path]
-  (leiningen.core.project/read (get-project-clj-path path)))
+  (let [project-clj-path (get-project-clj-path path)]
+    (if-not (.exists (java.io/file project-clj-path))
+      (println "Can't find project.clj")
+      (leiningen.core.project/read project-clj-path))))
 
 (defn start-thread*
   [in out func]
@@ -157,6 +161,13 @@
   (->> (clojure.main/repl :prompt #(print "user=> "))
        (start-thread in out)
        (reset! repl-thread)))
+
+(defn create-file-from-template
+  [dir file-name template-namespace data]
+  (let [render (leiningen.new.templates/renderer template-namespace)]
+    (binding [leiningen.new.templates/*dir* dir]
+      (->> [file-name (render file-name data)]
+           (leiningen.new.templates/->files data)))))
 
 (defn -main
   [& args]

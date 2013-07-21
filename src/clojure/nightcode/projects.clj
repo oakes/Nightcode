@@ -127,20 +127,21 @@
           "Remove this project? It WILL NOT be deleted from the disk."
           "Remove this file? It WILL be deleted from the disk.")
         project-set (utils/read-pref :project-set)]
-    (when (= :remove
-             (-> (s/dialog :content dialog-text
-                           :options [remove-btn
-                                     cancel-btn]
-                           :default-option remove-btn)
-                 s/pack!
-                 s/show!))
-      (if is-project?
-        (utils/write-pref :project-set (set (remove #(= % path) project-set)))
-        (utils/delete-file-recursively (-> #(.startsWith path %)
-                                           (filter @tree-projects)
-                                           first)
-                                       path))
-      true)))
+    (-> (s/dialog :content dialog-text
+                  :options [remove-btn
+                            cancel-btn])
+        s/pack!
+        s/show!
+        (= :remove)
+        (when
+          (if is-project?
+            (utils/write-pref :project-set
+                              (set (remove #(= % path) project-set)))
+            (utils/delete-file-recursively (-> #(.startsWith path %)
+                                               (filter @tree-projects)
+                                               first)
+                                           path))
+          true))))
 
 (defn update-project-tree
   ([]
@@ -159,8 +160,7 @@
      (doseq [i (range) :while (< i (.getRowCount tree))]
        (let [tree-path (.getPathForRow tree i)
              str-path (utils/tree-path-to-str tree-path)]
-         (when (or (contains? expansion-set str-path)
-                   (and new-selection (.startsWith new-selection str-path)))
+         (when (contains? expansion-set str-path)
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)
@@ -290,6 +290,31 @@
 (defn import-project
   [e]
   (when-let [dir (chooser/choose-file :type :open :selection-mode :dirs-only)]
+    ; offer to create project.clj if necessary
+    (when (and (.exists (java.io/file dir "src"))
+               (not (.exists (java.io/file dir "project.clj"))))
+      (let [cont-btn (s/button :text "Continue"
+                               :listen [:action
+                                        #(s/return-from-dialog % :cont)])
+            create-btn (s/button :text "Create project.clj"
+                                 :listen [:action
+                                          #(s/return-from-dialog % :create)])]
+        (-> (s/dialog :content
+                      "You need a project.clj file to build this project."
+                      :options [create-btn cont-btn])
+            s/pack!
+            s/show!
+            (= :create)
+            (when
+              (let [template-name (if (lein/is-android-project? dir)
+                                    "android-java"
+                                    "console-java")]
+                (->> {:raw-name (.getName dir)
+                      :namespace "put.your.main.namespace.here"}
+                     (lein/create-file-from-template dir
+                                                     "project.clj"
+                                                     template-name)))))))
+    ; show project root in the tree
     (let [dir-path (.getCanonicalPath dir)]
       (add-to-project-tree dir-path)
       (update-project-tree dir-path))))
