@@ -36,13 +36,15 @@
     (get-relative-path project-path selected-dir)))
 
 (defn delete-file-recursively [project-path path]
-  (when (and (= 0 (count (.listFiles (java.io/file path))))
-             (not= project-path path))
-    (.delete (java.io/file path))
-    (delete-file-recursively project-path
-                             (-> (java.io/file path)
-                                 .getParentFile
-                                 .getCanonicalPath))))
+  (let [file (java.io/file path)]
+    (when (and (= 0 (count (.listFiles file)))
+               (not= project-path path))
+      (when (.isDirectory file)
+        (.delete file))
+      (->> file
+           .getParentFile
+           .getCanonicalPath
+           (delete-file-recursively project-path)))))
 
 (defn format-name
   [name-str project-type]
