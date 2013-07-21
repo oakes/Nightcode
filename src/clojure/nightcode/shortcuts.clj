@@ -32,10 +32,17 @@
         (.setPositioner positioner)
         (.setVisible false)))))
 
+(defn is-visible?
+  [widget]
+  (if widget
+    (and (.isVisible widget)
+         (is-visible? (.getParent widget)))
+    true))
+
 (defn toggle-hints
   [target show?]
   (doseq [hint (s/select target [:BalloonTip])]
-    (if (and show? (s/config (.getAttachedComponent hint) :enabled?))
+    (if (and show? (is-visible? (.getAttachedComponent hint)))
       (s/show! hint)
       (s/hide! hint))))
 
