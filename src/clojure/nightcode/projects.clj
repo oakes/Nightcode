@@ -73,22 +73,24 @@
 
 (defn get-node
   [file]
-  {:name (if (is-project-path? file)
+  {:html (when (is-project-path? file)
            (str "<html><b><font color='gray'>"
                 (.getName file)
-                "</font></b></html>")
-           (.getName file))
+                "</font></b></html>"))
+   :name (.getName file)
    :file file})
 
 (defn get-nodes
   [node children]
   (->> (for [child children]
          (get-node child))
+       (sort-by #(:name %))
        (cons (when (and (:file node)
                         (-> (.getCanonicalPath (:file node))
                             lein/is-android-project?))
-               {:name "<html><b><font color='green'>LogCat</font></b></html>"
-                :file (java.io/file "*LogCat*")}))
+               {:html "<html><b><font color='green'>LogCat</font></b></html>"
+                :name "LogCat"
+                :file (java.io/file (:file node) "*LogCat*")}))
        (remove nil?)
        vec))
 
@@ -105,7 +107,7 @@
       (getChildCount [] (count @children))
       (isLeaf [] (or (nil? (:file node))
                      (not (.isDirectory (:file node)))))
-      (toString [] (:name node)))))
+      (toString [] (or (:html node) (:name node))))))
 
 (defn root-node
   [project-vec]
