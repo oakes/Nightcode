@@ -64,12 +64,14 @@
 
 (defn start-process-command
   [cmd path]
-  (start-process "java"
+  (let [project-map (read-project-clj path)
+        project-path (get-project-clj-path path)]
+  (start-process (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
                  "-cp"
                  (System/getProperty "java.class.path" ".")
                  namespace-name
                  cmd
-                 (get-project-clj-path path)))
+                 project-path)))
 
 (defn stop-project
   []
