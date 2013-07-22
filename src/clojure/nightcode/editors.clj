@@ -35,22 +35,35 @@
 (def ^:const styles {"clj" SyntaxConstants/SYNTAX_STYLE_CLOJURE
                      "cljs" SyntaxConstants/SYNTAX_STYLE_CLOJURE
                      "js" SyntaxConstants/SYNTAX_STYLE_JAVASCRIPT
-                     "java" SyntaxConstants/SYNTAX_STYLE_JAVA})
+                     "java" SyntaxConstants/SYNTAX_STYLE_JAVA
+                     "xml" SyntaxConstants/SYNTAX_STYLE_XML
+                     "html" SyntaxConstants/SYNTAX_STYLE_HTML
+                     "css" SyntaxConstants/SYNTAX_STYLE_CSS
+                     "json" SyntaxConstants/SYNTAX_STYLE_NONE
+                     "md" SyntaxConstants/SYNTAX_STYLE_NONE})
+
+(defn get-extension
+  [path]
+  (->> (.lastIndexOf path ".")
+       (+ 1)
+       (subs path)
+       clojure.string/lower-case))
 
 (defn get-syntax-style
   [path]
-  (let [ext (->> (.lastIndexOf path ".")
-                 (+ 1)
-                 (subs path))]
-    (if (contains? styles ext)
-      (get styles ext)
-      SyntaxConstants/SYNTAX_STYLE_NONE)))
+  (or (get styles (get-extension path))
+      SyntaxConstants/SYNTAX_STYLE_NONE))
+
+(defn should-open?
+  [path]
+  (contains? styles (get-extension path)))
 
 (defn show-editor
   [path]
   (let [editor-pane (s/select @utils/ui-root [:#editor-pane])]
     ; create new editor if necessary
     (when (and (.isFile (java.io/file path))
+               (should-open? path)
                (not (contains? @editors path)))
       (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
             text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)
