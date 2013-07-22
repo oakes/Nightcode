@@ -5,9 +5,7 @@
             [nightcode.lein :as lein]
             [nightcode.projects :as p]
             [nightcode.utils :as utils])
-  (:import [bsh.util JConsole]
-           [clojure.lang LineNumberingPushbackReader]
-           [org.pushingpixels.substance.api SubstanceLookAndFeel]
+  (:import [org.pushingpixels.substance.api SubstanceLookAndFeel]
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
 
@@ -53,14 +51,13 @@
 
 (defn get-repl-pane
   []
-  (let [console (s/config! (JConsole.) :id :repl-console)
-        in (.getIn console)
-        out (.getOut console)]
-    (lein/run-repl (LineNumberingPushbackReader. in) out)
+  (let [console (s/config! (utils/create-console) :id :repl-console)
+        out (utils/get-console-output console)]
+    (lein/run-repl (utils/get-console-input console) out)
     (->> {:repl-console
           (fn [e]
             (s/request-focus! (.getView (.getViewport console)))
-            (lein/run-repl (LineNumberingPushbackReader. in) out))}
+            (lein/run-repl (utils/get-console-input console) out))}
          (shortcuts/create-mappings console))))
 
 (defn get-editor-pane
@@ -71,9 +68,9 @@
 
 (defn get-build-pane
   []
-  (let [console (JConsole.)
-        in (LineNumberingPushbackReader. (.getIn console))
-        out (.getOut console)
+  (let [console (utils/create-console)
+        in (utils/get-console-input console)
+        out (utils/get-console-output console)
         run-action (fn [e]
                      (lein/run-project in out (p/get-project-path)))
         run-repl-action (fn [e]

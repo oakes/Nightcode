@@ -1,6 +1,8 @@
 (ns nightcode.utils
   (:require [clojure.java.io :as java.io])
-  (:import [java.util.prefs Preferences]))
+  (:import [bsh.util JConsole]
+           [clojure.lang LineNumberingPushbackReader]
+           [java.util.prefs Preferences]))
 
 (def ui-root (atom nil))
 (def prefs (.node (Preferences/userRoot) "nightcode"))
@@ -56,3 +58,15 @@
         clojure.string/lower-case
         (clojure.string/replace "_" "-")
         (clojure.string/replace #"[^a-z0-9-.]" ""))))
+
+(defn create-console
+  []
+  (JConsole.))
+
+(defn get-console-input
+  [console]
+  (LineNumberingPushbackReader. (.getIn console)))
+
+(defn get-console-output
+  [console]
+  (.getOut console))

@@ -1,12 +1,11 @@
 (ns nightcode.projects
   (:require [clojure.java.io :as java.io]
+            [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
-            [seesaw.core :as s]
-            [seesaw.icon :as icon])
-  (:import [javax.swing JRadioButton]))
+            [seesaw.core :as s]))
 
 ; keep track of projects, expansions and the selection
 
@@ -133,35 +132,18 @@
 
 (defn remove-from-project-tree
   [path]
-  (let [is-project? (contains? @tree-projects path)
-        cancel-btn (s/button :text "Cancel"
-                             :listen [:action
-                                      #(s/return-from-dialog % :cancel)])
-        remove-btn (s/button :text (if is-project?
-                                     "Remove Project"
-                                     "Remove File")
-                             :listen [:action
-                                      #(s/return-from-dialog % :remove)])
-        dialog-text
-        (if is-project?
-          "Remove this project? It WILL NOT be deleted from the disk."
-          "Remove this file? It WILL be deleted from the disk.")
-        project-set (utils/read-pref :project-set)]
-    (-> (s/dialog :content dialog-text
-                  :options [remove-btn
-                            cancel-btn])
-        s/pack!
-        s/show!
-        (= :remove)
-        (when
-          (if is-project?
-            (utils/write-pref :project-set
-                              (set (remove #(= % path) project-set)))
-            (utils/delete-file-recursively (-> #(.startsWith path %)
-                                               (filter @tree-projects)
-                                               first)
-                                           path))
-          true))))
+  (let [is-project? (contains? @tree-projects path)]
+    (when (dialogs/show-remove-dialog is-project?)
+      (if is-project?
+        (utils/write-pref :project-set
+                          (->> (utils/read-pref :project-set)
+                               (remove #(= % path))
+                               set))
+        (utils/delete-file-recursively (-> #(.startsWith path %)
+                                           (filter @tree-projects)
+                                           first)
+                                       path))
+      true)))
 
 (defn update-project-tree
   ([]
@@ -195,145 +177,62 @@
        (s/config! (s/select @utils/ui-root [btn]) :enabled? false)))))
 
 (defn enter-file-path
-  ([callback]
-   (enter-file-path callback nil))
-  ([callback default-file-name]
-   (let [selected-path (get-selected-path)
-         project-path (get-project-root-path)
-         default-path (str (utils/get-relative-dir project-path selected-path)
-                           (or default-file-name
-                               (.getName (java.io/file selected-path))))]
-     (-> (s/dialog :content (s/vertical-panel
-                              :items ["Enter a path relative to the project."
-                                      (s/text :id :new-file-path
-                                              :text default-path)])
-                   :option-type :ok-cancel
-                   :success-fn
-                   (fn [pane]
-                     (let [new-file (->> (s/select pane [:#new-file-path])
-                                         s/text
-                                         (java.io/file project-path))]
-                       (callback project-path
-                                 selected-path
-                                 (.getCanonicalPath new-file)))))
-         s/pack!
-         s/show!))))
+  [default-file-name]
+  (let [selected-path (get-selected-path)
+        project-path (get-project-root-path)
+        default-path (str (utils/get-relative-dir project-path selected-path)
+                          (or default-file-name
+                              (.getName (java.io/file selected-path))))]
+    (dialogs/show-file-path-dialog default-path)))
 
 ; actions for project tree buttons
 
 (defn new-project
   [e]
   (when-let [dir (chooser/choose-file :type :save)]
-    (let [raw-project-name (.getName dir)
-          parent-dir (.getParent dir)
-          group (s/button-group)
-          package-name-text (s/text :visible? false :columns 20)
-          types [[:console "Console" "Clojure"]
-                 [:seesaw "Desktop" "Clojure"]
-                 [:cljs-kickoff "Web" "ClojureScript"]
-                 [:android "Android" "Clojure"]
-                 [:console-java "Console" "Java"]
-                 [:mini2dx-java "Simple Game" "Java"]
-                 [:libgdx-java "Advanced Game" "Java"]
-                 [:android-java "Android" "Java"]]
-          toggle (fn [e]
-                   (s/config! package-name-text
-                              :visible?
-                              (let [id (name (s/id-of e))]
-                                (or (>= (.indexOf id "java") 0)
-                                    (>= (.indexOf id "android") 0))))
-                   (s/text! package-name-text
-                            (utils/format-name (str "com." raw-project-name)
-                                               (s/id-of (s/selection group))))
-                   (s/pack! (s/to-root e)))
-          buttons (for [[id name-str lang-str] types]
-                    (doto (s/radio :id id
-                                   :text (str "<html>"
-                                              "<center>"
-                                              name-str "<br>"
-                                              "<i>" lang-str "</i>"
-                                              "</center>")
-                                   :group group
-                                   :selected? (= id :console)
-                                   :valign :center
-                                   :halign :center
-                                   :listen [:action toggle])
-                          (.setSelectedIcon (icon/icon (str (name id) "2.png")))
-                          (.setIcon (icon/icon (str (name id) ".png")))
-                          (.setVerticalTextPosition JRadioButton/BOTTOM)
-                          (.setHorizontalTextPosition JRadioButton/CENTER)))]
-      (s/invoke-later
-        (-> (s/dialog
-              :title "Specify Project Type"
-              :content (s/vertical-panel
-                         :items [(s/grid-panel :columns 4
-                                               :rows 2
-                                               :items buttons)
-                                 (s/flow-panel :items [package-name-text])])
-              :success-fn (fn [pane]
-                            (let [project-type (s/id-of (s/selection group))
-                                  project-name (-> raw-project-name
-                                                   (utils/format-name nil))
-                                  package-name (-> (s/text package-name-text)
-                                                   (utils/format-name
-                                                     project-type))
-                                  project-dir (-> parent-dir
-                                                  (java.io/file project-name)
-                                                  .getCanonicalPath)]
-                              (lein/new-project parent-dir project-type
-                                                project-name package-name)
-                              (add-to-project-tree project-dir)
-                              (update-project-tree project-dir))))
-            s/pack!
-            s/show!)))))
+    (when-let [[project-type project-name package-name project-dir]
+               (dialogs/show-project-type-dialog dir)]
+      (lein/new-project (.getParent dir) project-type project-name package-name)
+      (add-to-project-tree project-dir)
+      (update-project-tree project-dir))))
 
 (defn new-file
   [e]
-  (enter-file-path (fn [project-path selected-path new-path]
-                     (if (.exists (java.io/file new-path))
-                       (s/alert "File already exists.")
-                       (do
-                         (.mkdirs (.getParentFile (java.io/file new-path)))
-                         (.createNewFile (java.io/file new-path))
-                         (update-project-tree new-path))))
-                   "example.clj"))
+  (when-let [leaf-path (enter-file-path "example.clj")]
+    (let [project-path (get-project-root-path)
+          new-file (java.io/file project-path leaf-path)]
+      (if (.exists new-file)
+        (s/alert "File already exists.")
+        (do
+          (.mkdirs (.getParentFile new-file))
+          (.createNewFile new-file)
+          (update-project-tree (.getCanonicalPath new-file)))))))
 
 (defn rename-file
   [e]
-  (enter-file-path (fn [project-path selected-path new-path]
-                     (.mkdirs (.getParentFile (java.io/file new-path)))
-                     (.renameTo (java.io/file selected-path)
-                                (java.io/file new-path))
-                     (utils/delete-file-recursively project-path selected-path)
-                     (update-project-tree new-path))))
+  (when-let [leaf-path (enter-file-path nil)]
+    (let [project-path (get-project-root-path)
+          new-file (java.io/file project-path leaf-path)
+          selected-path (get-selected-path)]
+      (.mkdirs (.getParentFile new-file))
+      (.renameTo (java.io/file selected-path) new-file)
+      (utils/delete-file-recursively project-path selected-path)
+      (update-project-tree (.getCanonicalPath new-file)))))
 
 (defn import-project
   [e]
   (when-let [dir (chooser/choose-file :type :open :selection-mode :dirs-only)]
     ; offer to create project.clj if necessary
     (when (and (.exists (java.io/file dir "src"))
-               (not (.exists (java.io/file dir "project.clj"))))
-      (let [cont-btn (s/button :text "Continue"
-                               :listen [:action
-                                        #(s/return-from-dialog % :cont)])
-            create-btn (s/button :text "Create project.clj"
-                                 :listen [:action
-                                          #(s/return-from-dialog % :create)])]
-        (-> (s/dialog :content
-                      "You need a project.clj file to build this project."
-                      :options [create-btn cont-btn])
-            s/pack!
-            s/show!
-            (= :create)
-            (when
-              (let [template-name (if (lein/is-android-project? dir)
-                                    "android-java"
-                                    "console-java")]
-                (->> {:raw-name (.getName dir)
-                      :namespace "put.your.main.namespace.here"}
-                     (lein/create-file-from-template dir
-                                                     "project.clj"
-                                                     template-name)))))))
+               (not (.exists (java.io/file dir "project.clj")))
+               (dialogs/show-project-clj-dialog))
+      (->> {:raw-name (.getName dir)
+            :namespace "put.your.main.namespace.here"}
+           (lein/create-file-from-template dir
+                                           "project.clj"
+                                           (if (lein/is-android-project? dir)
+                                             "android-java"
+                                             "console-java"))))
     ; show project root in the tree
     (let [dir-path (.getCanonicalPath dir)]
       (add-to-project-tree dir-path)

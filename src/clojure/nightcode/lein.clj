@@ -162,6 +162,9 @@
        (start-thread in out)
        (reset! repl-thread)))
 
+(defn run-logcat
+  [in out])
+
 (defn create-file-from-template
   [dir file-name template-namespace data]
   (let [render (leiningen.new.templates/renderer template-namespace)]
