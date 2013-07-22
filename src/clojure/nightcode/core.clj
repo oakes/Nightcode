@@ -117,7 +117,7 @@
   (s/left-right-split
     (s/top-bottom-split (get-project-pane)
                         (get-repl-pane)
-                        :divider-location 0.5
+                        :divider-location 0.8
                         :resize-weight 0.5)
     (s/top-bottom-split (get-editor-pane)
                         (get-build-pane)

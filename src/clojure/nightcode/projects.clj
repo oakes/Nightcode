@@ -162,7 +162,8 @@
      (doseq [i (range) :while (< i (.getRowCount tree))]
        (let [tree-path (.getPathForRow tree i)
              str-path (utils/tree-path-to-str tree-path)]
-         (when (contains? expansion-set str-path)
+         (when (or (contains? expansion-set str-path)
+                   (and new-selection (.startsWith new-selection str-path)))
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)
