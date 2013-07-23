@@ -99,9 +99,11 @@
   [path]
   (when (= (.getName (java.io/file path)) "*LogCat*")
     (let [console (utils/create-console)
+          process (atom nil)
+          thread (atom nil)
           in (utils/get-console-input console)
           out (utils/get-console-output console)]
-      (lein/run-logcat in out)
+      (lein/run-logcat process thread in out (.getParent (java.io/file path)))
       console)))
 
 (defn show-editor

@@ -59,8 +59,8 @@
                [:cljs-kickoff "Web" "ClojureScript"]
                [:android "Android" "Clojure"]
                [:console-java "Console" "Java"]
-               [:mini2dx-java "Simple Game" "Java"]
-               [:libgdx-java "Advanced Game" "Java"]
+               [:mini2dx-java "2D Game" "Java"]
+               [:libgdx-java "3D Game" "Java"]
                [:android-java "Android" "Java"]]
         toggle (fn [e]
                  (s/config! package-name-text

@@ -170,8 +170,12 @@
        (start-thread thread in out)))
 
 (defn run-logcat
-  [thread in out]
-  (stop-thread thread))
+  [process thread in out path]
+  (stop-process process)
+  (stop-thread thread)
+  (let [project-map (read-project-clj path)
+        params (leiningen.droid.utils/get-default-android-params project-map)]
+    (println (:adb-bin params))))
 
 (defn -main
   [& args]

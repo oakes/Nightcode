@@ -52,8 +52,8 @@
 (defn get-repl-pane
   []
   (let [console (s/config! (utils/create-console) :id :repl-console)
-        out (utils/get-console-output console)
-        thread (atom nil)]
+        thread (atom nil)
+        out (utils/get-console-output console)]
     (lein/run-repl thread (utils/get-console-input console) out)
     (->> {:repl-console
           (fn [e]
@@ -70,10 +70,10 @@
 (defn get-build-pane
   []
   (let [console (utils/create-console)
-        in (utils/get-console-input console)
-        out (utils/get-console-output console)
         process (atom nil)
         thread (atom nil)
+        in (utils/get-console-input console)
+        out (utils/get-console-output console)
         run-action (fn [e]
                      (lein/run-project
                        process thread in out (p/get-project-path)))
