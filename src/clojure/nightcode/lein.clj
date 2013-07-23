@@ -11,7 +11,8 @@
             [leiningen.repl]
             [leiningen.run]
             [leiningen.test]
-            [leiningen.uberjar])
+            [leiningen.uberjar]
+            [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
@@ -25,7 +26,7 @@
   [path]
   (let [project-clj-path (get-project-clj-path path)]
     (if-not (.exists (java.io/file project-clj-path))
-      (println "Can't find project.clj")
+      (println (utils/get-string :no_project_clj))
       (leiningen.core.project/read project-clj-path))))
 
 (defn start-thread*
@@ -37,7 +38,7 @@
                    leiningen.core.main/*exit-process?* false]
            (try (func)
              (catch Exception e nil))
-           (println "\n=== Finished ===")))
+           (println "\n===" (utils/get-string :finished) "===")))
        Thread.
        (reset! thread))
   (.start @thread))
@@ -119,7 +120,7 @@
   [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (do (println "Running...")
+  (->> (do (println (utils/get-string :running))
          (if (is-android-project? path)
            (start-process-command process "run-android" path)
            (run-project-fast process path)))
@@ -129,7 +130,7 @@
   [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (do (println "Running with REPL...")
+  (->> (do (println (utils/get-string :running_with_repl))
          (start-process-command process "repl" path))
        (start-thread thread in out)))
 
@@ -137,7 +138,7 @@
   [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (do (println "Building...")
+  (->> (do (println (utils/get-string :building))
          (let [cmd (if (is-android-project? path) "build-android" "build")]
            (start-process-command process cmd path)))
        (start-thread thread in out)))
@@ -145,14 +146,14 @@
 (defn test-project
   [thread in out path]
   (stop-thread thread)
-  (->> (do (println "Testing...")
+  (->> (do (println (utils/get-string :testing))
          (leiningen.test/test (read-project-clj path)))
        (start-thread thread in out)))
 
 (defn clean-project
   [thread in out path]
   (stop-thread thread)
-  (->> (do (println "Cleaning...")
+  (->> (do (println (utils/get-string :cleaning))
          (leiningen.clean/clean (read-project-clj path)))
        (start-thread thread in out)))
 

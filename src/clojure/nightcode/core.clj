@@ -10,6 +10,7 @@
   (:gen-class))
 
 (defn get-project-pane
+  "Returns the pane with the project tree."
   []
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)]
@@ -26,20 +27,20 @@
     (-> (s/vertical-panel
           :items [(s/horizontal-panel
                     :items [(s/button :id :new-project-button
-                                      :text "New Project"
+                                      :text (utils/get-string :new_project)
                                       :listen [:action p/new-project])
                             (s/button :id :new-file-button
-                                      :text "New File"
+                                      :text (utils/get-string :new_file)
                                       :listen [:action p/new-file])
                             (s/button :id :rename-file-button
-                                      :text "Rename File"
+                                      :text (utils/get-string :rename_file)
                                       :listen [:action p/rename-file]
                                       :visible? false)
                             (s/button :id :import-button
-                                      :text "Import"
+                                      :text (utils/get-string :import)
                                       :listen [:action p/import-project])
                             (s/button :id :remove-button
-                                      :text "Remove"
+                                      :text (utils/get-string :remove)
                                       :listen [:action p/remove-item])
                             :fill-h])
                   (s/scrollable project-tree)])
@@ -50,6 +51,7 @@
                                     :remove-button p/remove-item}))))
 
 (defn get-repl-pane
+  "Returns the pane with the REPL."
   []
   (let [console (s/config! (utils/create-console) :id :repl-console)
         thread (atom nil)
@@ -62,12 +64,14 @@
          (shortcuts/create-mappings console))))
 
 (defn get-editor-pane
+  "Returns the pane with the editors."
   []
   (-> (s/card-panel :id :editor-pane
                     :items [["" :default-card]])
       (shortcuts/create-mappings {:save-button editors/save-file})))
 
 (defn get-build-pane
+  "Returns the pane with the build actions."
   []
   (let [console (utils/create-console)
         process (atom nil)
@@ -94,22 +98,22 @@
     (-> (s/vertical-panel
           :items [(s/horizontal-panel
                     :items [(s/button :id :run-button
-                                      :text "Run"
+                                      :text (utils/get-string :run)
                                       :listen [:action run-action])
                             (s/button :id :run-repl-button
-                                      :text "Run with REPL"
+                                      :text (utils/get-string :run_with_repl)
                                       :listen [:action run-repl-action])
                             (s/button :id :build-button
-                                      :text "Build"
+                                      :text (utils/get-string :build)
                                       :listen [:action build-action])
                             (s/button :id :test-button
-                                      :text "Test"
+                                      :text (utils/get-string :test)
                                       :listen [:action test-action])
                             (s/button :id :clean-button
-                                      :text "Clean"
+                                      :text (utils/get-string :clean)
                                       :listen [:action clean-action])
                             (s/button :id :stop-button
-                                      :text "Stop"
+                                      :text (utils/get-string :stop)
                                       :listen [:action stop-action])
                             :fill-h])
                   (s/config! console :id :build-console)])
@@ -121,6 +125,7 @@
                                     :stop-button stop-action}))))
 
 (defn get-window-content []
+  "Returns the entire window with all panes."
   (s/left-right-split
     (s/top-bottom-split (get-project-pane)
                         (get-repl-pane)
@@ -140,7 +145,7 @@
   (s/invoke-later
     ; show the frame
     (reset! utils/ui-root
-            (-> (s/frame :title "Nightcode"
+            (-> (s/frame :title (utils/get-string :app_name)
                          :content (get-window-content)
                          :width 1024
                          :height 768

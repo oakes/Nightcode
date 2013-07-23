@@ -7,16 +7,15 @@
 
 (defn show-remove-dialog
   [is-project?]
-  (-> (s/dialog :content
-                (if is-project?
-                  "Remove this project? It WILL NOT be deleted from the disk."
-                  "Remove this file? It WILL be deleted from the disk.")
+  (-> (s/dialog :content (utils/get-string (if is-project?
+                                             :remove_project_warning
+                                             :remove_file_warning))
                 :options
-                [(s/button :text (if is-project?
-                                   "Remove Project"
-                                   "Remove File")
+                [(s/button :text (utils/get-string (if is-project?
+                                                     :remove_project
+                                                     :remove_file))
                            :listen [:action #(s/return-from-dialog % true)])
-                 (s/button :text "Cancel"
+                 (s/button :text (utils/get-string :cancel)
                            :listen [:action #(s/return-from-dialog % false)])])
       s/pack!
       s/show!))
@@ -25,24 +24,23 @@
   [default-path]
   (let [text-field (s/text :id :new-file-path :text default-path)]
     (-> (s/dialog :content (s/vertical-panel
-                             :items ["Enter a path relative to the project."
-                                     text-field])
+                             :items [(utils/get-string :enter_path) text-field])
                   :options
-                  [(s/button :text "OK"
+                  [(s/button :text (utils/get-string :ok)
                              :listen [:action #(s/return-from-dialog
                                                  % (s/text text-field))])
-                   (s/button :text "Cancel"
+                   (s/button :text (utils/get-string :cancel)
                              :listen [:action #(s/return-from-dialog % nil)])])
         s/pack!
         s/show!)))
 
 (defn show-project-clj-dialog
   []
-  (-> (s/dialog :content "You need a project.clj file to build this project."
-                :options [(s/button :text "Create project.clj"
+  (-> (s/dialog :content (utils/get-string :project_clj_required)
+                :options [(s/button :text (utils/get-string :create_project_clj)
                                     :listen [:action
                                              #(s/return-from-dialog % true)])
-                          (s/button :text "Continue"
+                          (s/button :text (utils/get-string :continue)
                                     :listen [:action
                                              #(s/return-from-dialog % false)])])
       s/pack!
@@ -54,14 +52,14 @@
         parent-dir (.getParent dir)
         group (s/button-group)
         package-name-text (s/text :visible? false :columns 20)
-        types [[:console "Console" "Clojure"]
-               [:seesaw "Desktop" "Clojure"]
-               [:cljs-kickoff "Web" "ClojureScript"]
-               [:android "Android" "Clojure"]
-               [:console-java "Console" "Java"]
-               [:mini2dx-java "2D Game" "Java"]
-               [:libgdx-java "3D Game" "Java"]
-               [:android-java "Android" "Java"]]
+        types [[:console :console "Clojure"]
+               [:seesaw :desktop "Clojure"]
+               [:cljs-kickoff :web "ClojureScript"]
+               [:android :android "Clojure"]
+               [:console-java :console "Java"]
+               [:mini2dx-java :2d_game "Java"]
+               [:libgdx-java :3d_game "Java"]
+               [:android-java :android "Java"]]
         toggle (fn [e]
                  (s/config! package-name-text
                             :visible?
@@ -81,11 +79,11 @@
                        project-dir (-> (java.io/file parent-dir project-name)
                                        .getCanonicalPath)]
                    [project-type project-name package-name project-dir]))
-        buttons (for [[id name-str lang-str] types]
+        buttons (for [[id name-key lang-str] types]
                   (doto (s/radio :id id
                                  :text (str "<html>"
                                             "<center>"
-                                            name-str "<br>"
+                                            (utils/get-string name-key) "<br>"
                                             "<i>" lang-str "</i>"
                                             "</center>")
                                  :group group
@@ -98,13 +96,13 @@
                         (.setVerticalTextPosition JRadioButton/BOTTOM)
                         (.setHorizontalTextPosition JRadioButton/CENTER)))]
     (-> (s/dialog
-          :title "Specify Project Type"
+          :title (utils/get-string :specify_project_type)
           :content (s/vertical-panel
                      :items [(s/grid-panel :columns 4
                                            :rows 2
                                            :items buttons)
                              (s/flow-panel :items [package-name-text])])
-          :options [(s/button :text "Create Project"
+          :options [(s/button :text (utils/get-string :create_project)
                               :listen [:action #(s/return-from-dialog
                                                   % (finish))])])
         s/pack!

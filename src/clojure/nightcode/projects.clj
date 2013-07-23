@@ -203,7 +203,7 @@
     (let [project-path (get-project-root-path)
           new-file (java.io/file project-path leaf-path)]
       (if (.exists new-file)
-        (s/alert "File already exists.")
+        (s/alert (utils/get-string :file_exists))
         (do
           (.mkdirs (.getParentFile new-file))
           (.createNewFile new-file)

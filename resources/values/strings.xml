@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Nightcode</string>
+
+  <string name="new_project">New Project</string>
+  <string name="new_file">New File</string>
+  <string name="rename_file">Rename File</string>
+  <string name="import">Import</string>
+  <string name="remove">Remove</string>
+
+  <string name="run">Run</string>
+  <string name="run_with_repl">Run with REPL</string>
+  <string name="build">Build</string>
+  <string name="test">Test</string>
+  <string name="clean">Clean</string>
+  <string name="stop">Stop</string>
+
+  <string name="ok">OK</string>
+  <string name="cancel">Cancel</string>
+
+  <string name="remove_project_warning">Remove this project? It WILL NOT be deleted from the disk.</string>
+  <string name="remove_file_warning">Remove this file? It WILL be deleted from the disk.</string>
+  <string name="remove_project">Remove Project</string>
+  <string name="remove_file">Remove File</string>
+
+  <string name="enter_path">Enter a path relative to the project.</string>
+  <string name="file_exists">File already exists.</string>
+
+  <string name="project_clj_required">You need a project.clj file to build this project.</string>
+  <string name="create_project_clj">Create project.clj</string>
+  <string name="continue">Continue</string>
+
+  <string name="console">Console</string>
+  <string name="desktop">Desktop</string>
+  <string name="web">Web</string>
+  <string name="android">Android</string>
+  <string name="2d_game">2D Game</string>
+  <string name="3d_game">3D Game</string>
+  <string name="specify_project_type">Specify Project Type</string>
+  <string name="create_project">Create Project</string>
+
+  <string name="no_project_clj">Can\'t find project.clj</string>
+  <string name="finished">Finished</string>
+  <string name="running">Running...</string>
+  <string name="running_with_repl">Running with REPL...</string>
+  <string name="building">Building...</string>
+  <string name="testing">Testing...</string>
+  <string name="cleaning">Cleaning...</string>
+</resources>

@@ -1,10 +1,29 @@
 (ns nightcode.utils
-  (:require [clojure.java.io :as java.io])
+  (:require [clojure.java.io :as java.io]
+            [clojure.xml :as xml])
   (:import [bsh.util JConsole]
            [clojure.lang LineNumberingPushbackReader]
+           [java.util Locale]
            [java.util.prefs Preferences]))
 
+; ui
+
 (def ui-root (atom nil))
+
+(defn create-console
+  []
+  (JConsole.))
+
+(defn get-console-input
+  [console]
+  (LineNumberingPushbackReader. (.getIn console)))
+
+(defn get-console-output
+  [console]
+  (.getOut console))
+
+; preferences
+
 (def prefs (.node (Preferences/userRoot) "nightcode"))
 
 (defn write-pref
@@ -15,6 +34,31 @@
   [k]
   (when-let [string (.get prefs (name k) nil)]
     (read-string string)))
+
+; language
+
+(def lang-files {"en" "values/strings.xml"})
+(def lang-strings (-> (get lang-files (.getLanguage (Locale/getDefault)))
+                      (or (get lang-files "en"))
+                      java.io/resource
+                      .toString
+                      xml/parse
+                      :content))
+
+(defn get-string
+  "Returns the localized string for the given keyword."
+  [res-name]
+  (if (keyword? res-name)
+    (-> (filter #(= (get-in % [:attrs :name]) (name res-name))
+                lang-strings)
+        first
+        :content
+        first
+        (or "")
+        (clojure.string/replace "\\" ""))
+    res-name))
+
+; paths and encodings
 
 (defn tree-path-to-str
   [tree-path]
@@ -58,15 +102,3 @@
         clojure.string/lower-case
         (clojure.string/replace "_" "-")
         (clojure.string/replace #"[^a-z0-9-.]" ""))))
-
-(defn create-console
-  []
-  (JConsole.))
-
-(defn get-console-input
-  [console]
-  (LineNumberingPushbackReader. (.getIn console)))
-
-(defn get-console-output
-  [console]
-  (.getOut console))
