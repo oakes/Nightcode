@@ -52,12 +52,13 @@
 (defn get-repl-pane
   []
   (let [console (s/config! (utils/create-console) :id :repl-console)
-        out (utils/get-console-output console)]
-    (lein/run-repl (utils/get-console-input console) out)
+        out (utils/get-console-output console)
+        thread (atom nil)]
+    (lein/run-repl thread (utils/get-console-input console) out)
     (->> {:repl-console
           (fn [e]
             (s/request-focus! (.getView (.getViewport console)))
-            (lein/run-repl (utils/get-console-input console) out))}
+            (lein/run-repl thread (utils/get-console-input console) out))}
          (shortcuts/create-mappings console))))
 
 (defn get-editor-pane
@@ -71,19 +72,25 @@
   (let [console (utils/create-console)
         in (utils/get-console-input console)
         out (utils/get-console-output console)
+        process (atom nil)
+        thread (atom nil)
         run-action (fn [e]
-                     (lein/run-project in out (p/get-project-path)))
+                     (lein/run-project
+                       process thread in out (p/get-project-path)))
         run-repl-action (fn [e]
-                          (lein/run-repl-project in out (p/get-project-path))
+                          (lein/run-repl-project
+                            process thread in out (p/get-project-path))
                           (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
-                       (lein/build-project in out (p/get-project-path)))
+                       (lein/build-project
+                         process thread in out (p/get-project-path)))
         test-action (fn [e]
-                      (lein/test-project in out (p/get-project-path)))
+                      (lein/test-project thread in out (p/get-project-path)))
         clean-action (fn [e]
-                       (lein/clean-project in out (p/get-project-path)))
+                       (lein/clean-project thread in out (p/get-project-path)))
         stop-action (fn [e]
-                      (lein/stop-project))]
+                      (lein/stop-process process)
+                      (lein/stop-thread thread))]
     (-> (s/vertical-panel
           :items [(s/horizontal-panel
                     :items [(s/button :id :run-button

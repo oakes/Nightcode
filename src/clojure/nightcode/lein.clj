@@ -15,9 +15,6 @@
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
-(def main-thread (atom nil))
-(def repl-thread (atom nil))
-(def process (atom nil))
 (def namespace-name (str *ns*))
 
 (defn get-project-clj-path
@@ -32,24 +29,25 @@
       (leiningen.core.project/read project-clj-path))))
 
 (defn start-thread*
-  [in out func]
-  (-> (fn []
-        (binding [*out* out
-                  *err* out
-                  *in* in
-                  leiningen.core.main/*exit-process?* false]
-          (try (func)
-            (catch Exception e nil))
-          (println "\n=== Finished ===")))
-      Thread.
-      (doto .start)))
+  [thread in out func]
+  (->> (fn []
+         (binding [*out* out
+                   *err* out
+                   *in* in
+                   leiningen.core.main/*exit-process?* false]
+           (try (func)
+             (catch Exception e nil))
+           (println "\n=== Finished ===")))
+       Thread.
+       (reset! thread))
+  (.start @thread))
 
 (defmacro start-thread
-  [in out & body]
-  `(start-thread* ~in ~out (fn [] ~@body)))
+  [thread in out & body]
+  `(start-thread* ~thread ~in ~out (fn [] ~@body)))
 
 (defn start-process
-  [& args]
+  [process & args]
   (reset! process (.exec (Runtime/getRuntime) (into-array (flatten args))))
   (.addShutdownHook (Runtime/getRuntime) (Thread. #(.destroy @process)))
   (with-open [out (java.io/reader (.getInputStream @process))
@@ -63,31 +61,42 @@
       (.waitFor @process))))
 
 (defn start-process-command
-  [cmd path]
+  [process cmd path]
   (let [project-map (read-project-clj path)
         project-path (get-project-clj-path path)]
-  (start-process (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
+  (start-process process
+                 (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
                  "-cp"
                  (System/getProperty "java.class.path" ".")
                  namespace-name
                  cmd
                  project-path)))
 
-(defn stop-project
-  []
+(defn stop-process
+  [process]
   (when @process
-    (.destroy @process))
-  (when @main-thread
-    (.interrupt @main-thread)))
+    (.destroy @process)))
+
+(defn stop-thread
+  [thread]
+  (when @thread
+    (.interrupt @thread)))
 
 (defn is-android-project?
   [path]
   (.exists (java.io/file path "AndroidManifest.xml")))
 
+(defn create-file-from-template
+  [dir file-name template-namespace data]
+  (let [render (leiningen.new.templates/renderer template-namespace)]
+    (binding [leiningen.new.templates/*dir* dir]
+      (->> [file-name (render file-name data)]
+           (leiningen.new.templates/->files data)))))
+
 (defn run-project-fast
-  [path]
+  [process path]
   ;We could do this:
-  ;(start-process-command "run" path)
+  ;(start-process-command process "run" path)
   ;But instead we are calling the Leiningen code directly for speed:
   (let [project-map (read-project-clj path)
         _ (leiningen.core.eval/prep project-map)
@@ -104,50 +113,48 @@
                       ~@(:injections project-map)
                       ~form)
         cmd (leiningen.core.eval/shell-command project-map new-form)]
-    (start-process cmd)))
+    (start-process process cmd)))
 
 (defn run-project
-  [in out path]
-  (stop-project)
+  [process thread in out path]
+  (stop-process process)
+  (stop-thread thread)
   (->> (do (println "Running...")
          (if (is-android-project? path)
-           (start-process-command "run-android" path)
-           (run-project-fast path)))
-       (start-thread in out)
-       (reset! main-thread)))
+           (start-process-command process "run-android" path)
+           (run-project-fast process path)))
+       (start-thread thread in out)))
 
 (defn run-repl-project
-  [in out path]
-  (stop-project)
+  [process thread in out path]
+  (stop-process process)
+  (stop-thread thread)
   (->> (do (println "Running with REPL...")
-         (start-process-command "repl" path))
-       (start-thread in out)
-       (reset! main-thread)))
+         (start-process-command process "repl" path))
+       (start-thread thread in out)))
 
 (defn build-project
-  [in out path]
-  (stop-project)
+  [process thread in out path]
+  (stop-process process)
+  (stop-thread thread)
   (->> (do (println "Building...")
          (let [cmd (if (is-android-project? path) "build-android" "build")]
-           (start-process-command cmd path)))
-       (start-thread in out)
-       (reset! main-thread)))
+           (start-process-command process cmd path)))
+       (start-thread thread in out)))
 
 (defn test-project
-  [in out path]
-  (stop-project)
+  [thread in out path]
+  (stop-thread thread)
   (->> (do (println "Testing...")
          (leiningen.test/test (read-project-clj path)))
-       (start-thread in out)
-       (reset! main-thread)))
+       (start-thread thread in out)))
 
 (defn clean-project
-  [in out path]
-  (stop-project)
+  [thread in out path]
+  (stop-thread thread)
   (->> (do (println "Cleaning...")
          (leiningen.clean/clean (read-project-clj path)))
-       (start-thread in out)
-       (reset! main-thread)))
+       (start-thread thread in out)))
 
 (defn new-project
   [parent-path project-type project-name package-name]
@@ -157,22 +164,14 @@
     (leiningen.new/new {} (name project-type) project-name package-name)))
 
 (defn run-repl
-  [in out]
-  (when @repl-thread
-    (.interrupt @repl-thread))
+  [thread in out]
+  (stop-thread thread)
   (->> (clojure.main/repl :prompt #(print "user=> "))
-       (start-thread in out)
-       (reset! repl-thread)))
+       (start-thread thread in out)))
 
 (defn run-logcat
-  [in out])
-
-(defn create-file-from-template
-  [dir file-name template-namespace data]
-  (let [render (leiningen.new.templates/renderer template-namespace)]
-    (binding [leiningen.new.templates/*dir* dir]
-      (->> [file-name (render file-name data)]
-           (leiningen.new.templates/->files data)))))
+  [thread in out]
+  (stop-thread thread))
 
 (defn -main
   [& args]
