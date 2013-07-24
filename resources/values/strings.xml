@@ -34,8 +34,8 @@
   <string name="desktop">Desktop</string>
   <string name="web">Web</string>
   <string name="android">Android</string>
-  <string name="2d_game">2D Game</string>
-  <string name="3d_game">3D Game</string>
+  <string name="simple_game">Simple Game</string>
+  <string name="advanced_game">Advanced Game</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
 
