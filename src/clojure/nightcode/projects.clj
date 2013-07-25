@@ -41,9 +41,9 @@
 ; get project tree and items within it
 
 (defn is-project-path?
-  [file]
-  (and (.isDirectory file)
-       (.exists (java.io/file file "project.clj"))))
+  [path]
+  (and (.isDirectory (java.io/file path))
+       (.exists (java.io/file path "project.clj"))))
 
 (defn get-project-tree
   []
@@ -57,7 +57,7 @@
   ([] (get-project-path (java.io/file (get-selected-path))))
   ([file]
    (when file
-     (if (or (is-project-path? file)
+     (if (or (is-project-path? (.getCanonicalPath file))
              (contains? @tree-projects (.getCanonicalPath file)))
        (.getCanonicalPath file)
        (get-project-path (.getParentFile file))))))
@@ -72,12 +72,14 @@
 
 (defn get-node
   [file]
-  {:html (when (is-project-path? file)
-           (str "<html><b><font color='gray'>"
-                (.getName file)
-                "</font></b></html>"))
-   :name (.getName file)
-   :file file})
+  (let [path (.getCanonicalPath file)
+        file-name (.getName file)]
+    {:html (cond
+             (is-project-path? path) (str "<html><b><font color='gray'>"
+                                          file-name
+                                          "</font></b></html>"))
+     :name file-name
+     :file file}))
 
 (defn get-nodes
   [node children]
@@ -214,11 +216,14 @@
   (when-let [leaf-path (enter-file-path nil)]
     (let [project-path (get-project-root-path)
           new-file (java.io/file project-path leaf-path)
+          new-path (.getCanonicalPath new-file)
           selected-path (get-selected-path)]
-      (.mkdirs (.getParentFile new-file))
-      (.renameTo (java.io/file selected-path) new-file)
-      (utils/delete-file-recursively project-path selected-path)
-      (update-project-tree (.getCanonicalPath new-file)))))
+      (when (not= new-path selected-path)
+        (editors/save-file e)
+        (.mkdirs (.getParentFile new-file))
+        (.renameTo (java.io/file selected-path) new-file)
+        (utils/delete-file-recursively project-path selected-path)
+        (update-project-tree new-path)))))
 
 (defn import-project
   [e]

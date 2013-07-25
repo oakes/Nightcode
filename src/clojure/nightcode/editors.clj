@@ -4,7 +4,10 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
-  (:import org.fife.ui.rsyntaxtextarea.SyntaxConstants))
+  (:import [javax.swing.event DocumentListener]
+           [org.fife.ui.rsyntaxtextarea
+            FileLocation SyntaxConstants TextEditorPane Theme]
+           [org.fife.ui.rtextarea RTextScrollPane]))
 
 ; keep track of the editors
 
@@ -13,9 +16,14 @@
 (defn get-editor
   [path]
   (when (contains? @editors path)
-    (->> [:<org.fife.ui.rsyntaxtextarea.RSyntaxTextArea>]
+    (->> [:<org.fife.ui.rsyntaxtextarea.TextEditorPane>]
          (s/select (get @editors path))
          first)))
+
+(defn is-unsaved?
+  [path]
+  (when-let [editor (get-editor path)]
+    (.isDirty editor)))
 
 ; actions for editor buttons
 
@@ -25,8 +33,7 @@
         selected-path (-> (.getSelectionPath project-tree)
                           utils/tree-path-to-str)
         editor (get-editor selected-path)]
-    (with-open [w (java.io/writer (java.io/file selected-path))]
-      (.write editor w))
+    (.save editor)
     (s/request-focus! editor)
     (s/config! (s/select (get @editors selected-path) [:#save-button])
                :enabled? false)))
@@ -61,8 +68,8 @@
   [path]
   (when (and (.isFile (java.io/file path))
              (contains? styles (get-extension path)))
-    (let [text-area (org.fife.ui.rsyntaxtextarea.RSyntaxTextArea.)
-          text-area-scroll (org.fife.ui.rtextarea.RTextScrollPane. text-area)
+    (let [text-area (TextEditorPane.)
+          text-area-scroll (RTextScrollPane. text-area)
           text-group (s/vertical-panel
                        :items [(s/horizontal-panel
                                  :items [(s/button :id :save-button
@@ -76,11 +83,11 @@
                                          :fill-h])
                                text-area-scroll])]
       (shortcuts/create-hints text-group)
-      (.read text-area (java.io/reader (java.io/file path)) nil)
+      (.load text-area (FileLocation/create path) "UTF-8")
       (.discardAllEdits text-area)
       (.setAntiAliasingEnabled text-area true)
       (.addDocumentListener (.getDocument text-area)
-                            (reify javax.swing.event.DocumentListener
+                            (reify DocumentListener
                               (changedUpdate [this e])
                               (insertUpdate [this e]
                                 (-> (s/select text-group [:#save-button])
@@ -90,8 +97,8 @@
                                     (s/config! :enabled? true)))))
       (.setSyntaxEditingStyle text-area (get-syntax-style path))
       (-> (java.io/resource "dark.xml")
-          (java.io/input-stream)
-          (org.fife.ui.rsyntaxtextarea.Theme/load)
+          java.io/input-stream
+          Theme/load
           (.apply text-area))
       text-group)))
 
