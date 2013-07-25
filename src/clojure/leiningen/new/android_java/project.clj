@@ -1,15 +1,33 @@
 (defproject {{raw-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
+
+  :warn-on-reflection true
+
   :java-source-paths ["src" "gen"]
+
+  ;; The following two definitions are optional. The default
+  ;; target-path is "target", but you can change it to whatever you like.
+  ;; :target-path "bin"
+  ;; :compile-path "bin/classes"
+
   :java-only true
-  :profiles {:dev {:android {:aot :all-with-unused}}
-             :release {:android
-                       {;; Specify the path to your private
-                        ;; keystore and the the alias of the
-                        ;; key you want to sign APKs with.
-                        ;; :keystore-path "/home/user/.android/private.keystore"
-                        ;; :key-alias "mykeyalias"
-                        :aot :all}}}
+
+  ;; :dependencies []
+  :profiles {:dev {;; :dependencies []
+                   :android {:aot :all-with-unused}}
+             :release {:android {;; Specify the path to your private
+                                 ;; keystore and the the alias of the
+                                 ;; key you want to sign APKs with.
+                                 ;; :keystore-path "/home/user/.android/private.keystore"
+                                 ;; :key-alias "mykeyalias"
+
+                                 ;; You can specify these to avoid
+                                 ;; entering them for each rebuild,
+                                 ;; but generally it's a bad idea.
+                                 ;; :keypass "android"
+                                 ;; :storepass "android"
+
+                                 :aot :all}}}
 
   :android {;; Specify the path to the Android SDK directory either
             ;; here or in your ~/.lein/profiles.clj file.
@@ -49,7 +67,7 @@
             ;; :min-version "10"
 
             ;; Sequence of namespaces that should not be compiled.
-            ;:aot-exclude-ns ["clojure.parallel" "clojure.core.reducers"]
+            ;; :aot-exclude-ns ["clojure.parallel" "clojure.core.reducers"]
 
             ;; Target version affects api used for compilation.
             :target-version "15"})
