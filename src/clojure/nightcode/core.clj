@@ -5,7 +5,8 @@
             [nightcode.lein :as lein]
             [nightcode.projects :as p]
             [nightcode.utils :as utils])
-  (:import [org.pushingpixels.substance.api SubstanceLookAndFeel]
+  (:import [java.awt.event WindowAdapter]
+           [org.pushingpixels.substance.api SubstanceLookAndFeel]
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
 
@@ -151,6 +152,10 @@
                          :height 768
                          :on-close :exit)
                 shortcuts/create-hints
+                (doto (.addWindowListener
+                        (proxy [WindowAdapter] []
+                          (windowActivated [e]
+                            (p/update-project-tree)))))
                 s/show!))
     ; initialize the project pane
     (p/update-project-tree)))
