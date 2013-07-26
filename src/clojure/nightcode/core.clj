@@ -6,6 +6,7 @@
             [nightcode.projects :as p]
             [nightcode.utils :as utils])
   (:import [java.awt.event WindowAdapter]
+           [javax.swing.event TreeExpansionListener TreeSelectionListener]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
@@ -19,11 +20,11 @@
           (.setRootVisible false)
           (.setShowsRootHandles true)
           (.addTreeExpansionListener
-            (reify javax.swing.event.TreeExpansionListener
+            (reify TreeExpansionListener
               (treeCollapsed [this e] (p/remove-expansion e))
               (treeExpanded [this e] (p/add-expansion e))))
           (.addTreeSelectionListener
-            (reify javax.swing.event.TreeSelectionListener
+            (reify TreeSelectionListener
               (valueChanged [this e] (p/set-selection e)))))
     (-> (s/vertical-panel
           :items [(s/horizontal-panel
