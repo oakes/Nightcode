@@ -46,4 +46,9 @@
   <string name="building">Building...</string>
   <string name="testing">Testing...</string>
   <string name="cleaning">Cleaning...</string>
+
+  <string name="save">Save</string>
+  <string name="undo">Undo</string>
+  <string name="redo">Redo</string>
+  <string name="find">Find</string>
 </resources>

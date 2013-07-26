@@ -22,7 +22,8 @@
    :save-button "S"
    :undo-button "Z"
    :redo-button "Y"
-   :repl-console "W"})
+   :repl-console "W"
+   :find-field "F"})
 
 (defn create-mappings
   [panel pairs]

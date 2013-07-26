@@ -70,7 +70,8 @@
   []
   (-> (s/card-panel :id :editor-pane
                     :items [["" :default-card]])
-      (shortcuts/create-mappings {:save-button editors/save-file})))
+      (shortcuts/create-mappings {:save-button editors/save-file
+                                  :find-field editors/focus-on-find})))
 
 (defn get-build-pane
   "Returns the pane with the build actions."

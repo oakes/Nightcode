@@ -4,7 +4,8 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
-  (:import [javax.swing.event DocumentListener]
+  (:import [com.camick TextPrompt]
+           [javax.swing.event DocumentListener]
            [org.fife.ui.rsyntaxtextarea
             FileLocation SyntaxConstants TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane]))
@@ -20,6 +21,20 @@
          (s/select (get @editors path))
          first)))
 
+(defn get-selected-editor
+  []
+  (-> (s/select @utils/ui-root [:#project-tree])
+      .getSelectionPath
+      utils/tree-path-to-str
+      get-editor))
+
+(defn get-selected-editor-pane
+  []
+  (->> (s/select @utils/ui-root [:#project-tree])
+       .getSelectionPath
+       utils/tree-path-to-str
+       (get @editors)))
+
 (defn is-unsaved?
   [path]
   (when-let [editor (get-editor path)]
@@ -29,14 +44,18 @@
 
 (defn save-file
   [e]
-  (let [project-tree (s/select (s/to-root e) [:#project-tree])
-        selected-path (-> (.getSelectionPath project-tree)
-                          utils/tree-path-to-str)
-        editor (get-editor selected-path)]
+  (when-let [editor (get-selected-editor)]
     (.save editor)
     (s/request-focus! editor)
-    (s/config! (s/select (get @editors selected-path) [:#save-button])
+    (s/config! (s/select (get-selected-editor-pane) [:#save-button])
                :enabled? false)))
+
+(defn focus-on-find
+  [e]
+  (when-let [pane (get-selected-editor-pane)]
+    (doto (s/select pane [:#find-field])
+      s/request-focus!
+      .selectAll)))
 
 ; create and show editors for each file
 
@@ -70,18 +89,28 @@
              (contains? styles (get-extension path)))
     (let [text-area (TextEditorPane.)
           text-area-scroll (RTextScrollPane. text-area)
-          text-group (s/vertical-panel
-                       :items [(s/horizontal-panel
-                                 :items [(s/button :id :save-button
-                                                   :text "Save"
-                                                   :listen [:action save-file]
-                                                   :enabled? false)
-                                         (s/button :id :undo-button
-                                                   :text "Undo")
-                                         (s/button :id :redo-button
-                                                   :text "Redo")
-                                         :fill-h])
-                               text-area-scroll])]
+          text-group (s/border-panel
+                       :north (s/flow-panel
+                                :items [(s/button :id :save-button
+                                                  :text
+                                                  (utils/get-string :save)
+                                                  :listen [:action save-file]
+                                                  :enabled? false)
+                                        (s/button :id :undo-button
+                                                  :text
+                                                  (utils/get-string :undo))
+                                        (s/button :id :redo-button
+                                                  :text
+                                                  (utils/get-string :redo))
+                                        (s/text :id :find-field
+                                                :columns 10)]
+                                :align :left
+                                :hgap 0
+                                :vgap 0)
+                       :center text-area-scroll)]
+      (doto (TextPrompt. (utils/get-string :find)
+                         (s/select text-group [:#find-field]))
+        (.changeAlpha 0.5))
       (shortcuts/create-hints text-group)
       (.load text-area (FileLocation/create path) "UTF-8")
       (.discardAllEdits text-area)
