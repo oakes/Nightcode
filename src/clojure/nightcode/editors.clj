@@ -3,12 +3,13 @@
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
+            [seesaw.color :as color]
             [seesaw.core :as s])
   (:import [com.camick TextPrompt]
            [javax.swing.event DocumentListener]
            [org.fife.ui.rsyntaxtextarea
             FileLocation SyntaxConstants TextEditorPane Theme]
-           [org.fife.ui.rtextarea RTextScrollPane]))
+           [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
 
 ; keep track of the editors
 
@@ -57,6 +58,20 @@
       s/request-focus!
       .selectAll)))
 
+(defn search
+  [e]
+  (when-let [editor (get-selected-editor)]
+    (let [is-enter-key? (= (.getKeyCode e) 10)
+          context (SearchContext. (s/text e))]
+      (when-not is-enter-key?
+        (.setCaretPosition editor 0))
+      (when (and is-enter-key? (.isShiftDown e))
+        (.setSearchForward context false))
+      (if (or (SearchEngine/find editor context)
+              (= (count (s/text e)) 0))
+        (s/config! e :background nil)
+        (s/config! e :background (color/color :red))))))
+
 ; create and show editors for each file
 
 (def ^:const styles {"clj" SyntaxConstants/SYNTAX_STYLE_CLOJURE
@@ -103,7 +118,8 @@
                                                   :text
                                                   (utils/get-string :redo))
                                         (s/text :id :find-field
-                                                :columns 10)]
+                                                :columns 10
+                                                :listen [:key-released search])]
                                 :align :left
                                 :hgap 0
                                 :vgap 0)
