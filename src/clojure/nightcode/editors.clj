@@ -145,14 +145,22 @@
                                 :hgap 0
                                 :vgap 0)
                        :center text-area-scroll)]
+      (shortcuts/create-mappings text-group
+                                 {:save-button save-file
+                                  :undo-button undo-file
+                                  :redo-button redo-file
+                                  :find-field focus-on-find})
+      (shortcuts/create-hints text-group)
       (update-buttons text-group text-area)
       (doto (TextPrompt. (utils/get-string :find)
                          (s/select text-group [:#find-field]))
         (.changeAlpha 0.5))
-      (shortcuts/create-hints text-group)
       (.load text-area (FileLocation/create path) "UTF-8")
       (.discardAllEdits text-area)
       (.setAntiAliasingEnabled text-area true)
+      (s/listen text-area
+                :key-released
+                (fn [e] (update-buttons text-group text-area)))
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
                               (changedUpdate [this e]

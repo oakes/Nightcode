@@ -68,12 +68,8 @@
 (defn get-editor-pane
   "Returns the pane with the editors."
   []
-  (-> (s/card-panel :id :editor-pane
-                    :items [["" :default-card]])
-      (shortcuts/create-mappings {:save-button editors/save-file
-                                  :undo-button editors/undo-file
-                                  :redo-button editors/redo-file
-                                  :find-field editors/focus-on-find})))
+  (s/card-panel :id :editor-pane
+                :items [["" :default-card]]))
 
 (defn get-build-pane
   "Returns the pane with the build actions."
