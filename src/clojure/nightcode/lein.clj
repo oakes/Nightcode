@@ -161,7 +161,7 @@
   [parent-path project-type project-name package-name]
   (System/setProperty "leiningen.original.pwd" parent-path)
   (if (= project-type :android)
-    (leiningen.droid.new/new project-name package-name)
+    (leiningen.droid.new/new project-name package-name ":target-sdk" "15")
     (leiningen.new/new {} (name project-type) project-name package-name)))
 
 (defn run-repl

@@ -43,13 +43,33 @@
 
 ; actions for editor buttons
 
+(defn update-buttons
+  [pane editor]
+  (-> (s/select pane [:#save-button])
+      (s/config! :enabled? (.isDirty editor)))
+  (-> (s/select pane [:#undo-button])
+      (s/config! :enabled? (.canUndo editor)))
+  (-> (s/select pane [:#redo-button])
+      (s/config! :enabled? (.canRedo editor))))
+
 (defn save-file
   [e]
   (when-let [editor (get-selected-editor)]
     (.save editor)
     (s/request-focus! editor)
-    (s/config! (s/select (get-selected-editor-pane) [:#save-button])
-               :enabled? false)))
+    (update-buttons (get-selected-editor-pane) editor)))
+
+(defn undo-file
+  [e]
+  (when-let [editor (get-selected-editor)]
+    (.undoLastAction editor)
+    (update-buttons (get-selected-editor-pane) editor)))
+
+(defn redo-file
+  [e]
+  (when-let [editor (get-selected-editor)]
+    (.redoLastAction editor)
+    (update-buttons (get-selected-editor-pane) editor)))
 
 (defn focus-on-find
   [e]
@@ -109,14 +129,15 @@
                                 :items [(s/button :id :save-button
                                                   :text
                                                   (utils/get-string :save)
-                                                  :listen [:action save-file]
-                                                  :enabled? false)
+                                                  :listen [:action save-file])
                                         (s/button :id :undo-button
                                                   :text
-                                                  (utils/get-string :undo))
+                                                  (utils/get-string :undo)
+                                                  :listen [:action undo-file])
                                         (s/button :id :redo-button
                                                   :text
-                                                  (utils/get-string :redo))
+                                                  (utils/get-string :redo)
+                                                  :listen [:action redo-file])
                                         (s/text :id :find-field
                                                 :columns 10
                                                 :listen [:key-released search])]
@@ -124,6 +145,7 @@
                                 :hgap 0
                                 :vgap 0)
                        :center text-area-scroll)]
+      (update-buttons text-group text-area)
       (doto (TextPrompt. (utils/get-string :find)
                          (s/select text-group [:#find-field]))
         (.changeAlpha 0.5))
@@ -133,13 +155,12 @@
       (.setAntiAliasingEnabled text-area true)
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
-                              (changedUpdate [this e])
+                              (changedUpdate [this e]
+                                (update-buttons text-group text-area))
                               (insertUpdate [this e]
-                                (-> (s/select text-group [:#save-button])
-                                    (s/config! :enabled? true)))
+                                (update-buttons text-group text-area))
                               (removeUpdate [this e]
-                                (-> (s/select text-group [:#save-button])
-                                    (s/config! :enabled? true)))))
+                                (update-buttons text-group text-area))))
       (.setSyntaxEditingStyle text-area (get-syntax-style path))
       (-> (java.io/resource "dark.xml")
           java.io/input-stream

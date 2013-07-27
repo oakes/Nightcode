@@ -11,10 +11,10 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
   [name package-name]
   (let [render (renderer "android-java")
         class-name "MainActivity"
-        main-ns (str package-name "." class-name)
+        main-ns (str (sanitize package-name) "." class-name)
         data {:raw-name name
               :name (project-name name)
-              :package-name package-name
+              :package-name (sanitize package-name)
               :class-name class-name
               :namespace main-ns
               :nested-dirs (name-to-path main-ns)

@@ -71,6 +71,8 @@
   (-> (s/card-panel :id :editor-pane
                     :items [["" :default-card]])
       (shortcuts/create-mappings {:save-button editors/save-file
+                                  :undo-button editors/undo-file
+                                  :redo-button editors/redo-file
                                   :find-field editors/focus-on-find})))
 
 (defn get-build-pane
