@@ -25,7 +25,8 @@
    :redo-button "Y"
    :repl-console "G"
    :find-field "F"
-   :close-button "W"})
+   :close-button "W"
+   :project-tree "↑ ↓ ↵"})
 
 (defn create-mappings
   [panel pairs]
@@ -61,6 +62,8 @@
   (when text
     (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
           positioner (CenteredPositioner. 0)]
+      (.enableFixedAttachLocation positioner true)
+      (.setAttachLocation positioner 0.5 0.5)
       (doto (BalloonTip. btn text style false)
         (.setPositioner positioner)
         (.setVisible false)))))
