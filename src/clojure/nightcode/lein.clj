@@ -37,7 +37,8 @@
                    *in* in
                    leiningen.core.main/*exit-process?* false]
            (try (func)
-             (catch Exception e nil))
+             (catch InterruptedException e nil)
+             (catch Exception e (println (.getMessage e))))
            (println "\n===" (utils/get-string :finished) "===")))
        Thread.
        (reset! thread))
