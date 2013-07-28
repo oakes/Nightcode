@@ -22,19 +22,19 @@
          (s/select (get @editors path))
          first)))
 
-(defn get-selected-editor
+(defn get-selected-path
   []
   (-> (s/select @utils/ui-root [:#project-tree])
       .getSelectionPath
-      utils/tree-path-to-str
-      get-editor))
+      utils/tree-path-to-str))
+
+(defn get-selected-editor
+  []
+  (get-editor (get-selected-path)))
 
 (defn get-selected-editor-pane
   []
-  (->> (s/select @utils/ui-root [:#project-tree])
-       .getSelectionPath
-       utils/tree-path-to-str
-       (get @editors)))
+  (get @editors (get-selected-path)))
 
 (defn is-unsaved?
   [path]
@@ -55,7 +55,9 @@
 (defn save-file
   [e]
   (when-let [editor (get-selected-editor)]
-    (.save editor)
+    (with-open [w (java.io/writer (java.io/file (get-selected-path)))]
+      (.write editor w))
+    (.setDirty editor false)
     (s/request-focus! editor)
     (update-buttons (get-selected-editor-pane) editor)))
 
@@ -172,7 +174,7 @@
       (doto (TextPrompt. (utils/get-string :find)
                          (s/select text-group [:#find-field]))
         (.changeAlpha 0.5))
-      (.load text-area (FileLocation/create path) "UTF-8")
+      (.load text-area (FileLocation/create path) nil)
       (.discardAllEdits text-area)
       (.setAntiAliasingEnabled text-area true)
       (s/listen text-area
