@@ -22,6 +22,10 @@
   [console]
   (.getOut console))
 
+(defn shut-down
+  []
+  (System/exit 0))
+
 ; preferences
 
 (def prefs (.node (Preferences/userRoot) "nightcode"))

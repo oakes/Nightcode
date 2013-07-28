@@ -78,6 +78,9 @@
       s/request-focus!
       .selectAll)))
 
+(defn close-file
+  [e])
+
 (defn search
   [e]
   (when-let [editor (get-selected-editor)]
@@ -124,8 +127,8 @@
              (contains? styles (get-extension path)))
     (let [text-area (TextEditorPane.)
           text-area-scroll (RTextScrollPane. text-area)
-          text-group (s/border-panel
-                       :north (s/flow-panel
+          btn-group (s/horizontal-panel
+                      :items [(s/flow-panel
                                 :items [(s/button :id :save-button
                                                   :text
                                                   (utils/get-string :save)
@@ -144,12 +147,22 @@
                                 :align :left
                                 :hgap 0
                                 :vgap 0)
+                              (s/flow-panel
+                                :items [(s/button :id :close-button
+                                                  :text "⨯"
+                                                  :listen [:action close-file])]
+                                :align :right
+                                :hgap 0
+                                :vgap 0)])
+          text-group (s/border-panel
+                       :north btn-group
                        :center text-area-scroll)]
       (shortcuts/create-mappings text-group
                                  {:save-button save-file
                                   :undo-button undo-file
                                   :redo-button redo-file
-                                  :find-field focus-on-find})
+                                  :find-field focus-on-find
+                                  :close-button close-file})
       (shortcuts/create-hints text-group)
       (update-buttons text-group text-area)
       (doto (TextPrompt. (utils/get-string :find)

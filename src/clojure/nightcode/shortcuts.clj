@@ -1,5 +1,6 @@
 (ns nightcode.shortcuts
-  (:require [seesaw.core :as s]
+  (:require [nightcode.utils :as utils]
+            [seesaw.core :as s]
             [seesaw.keymap :as keymap])
   (:import [java.awt Color KeyboardFocusManager KeyEventDispatcher]
            [java.awt.event ActionEvent KeyEvent]
@@ -18,12 +19,13 @@
    :build-button "B"
    :test-button "T"
    :clean-button "L"
-   :stop-button "Q"
+   :stop-button "U"
    :save-button "S"
    :undo-button "Z"
    :redo-button "Y"
-   :repl-console "W"
-   :find-field "F"})
+   :repl-console "G"
+   :find-field "F"
+   :close-button "W"})
 
 (defn create-mappings
   [panel pairs]
@@ -69,13 +71,16 @@
   (doseq [[id mapping] mappings]
     (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
       (create-hint btn mapping)))
-  ; toggle hints when control key is up/down
+  ; set custom key events
   (.addKeyEventDispatcher
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
     (proxy [KeyEventDispatcher] []
       (dispatchKeyEvent [e]
-        (when (= (.getKeyCode e) 17)
-          (toggle-hints target (.isControlDown e)))
+        (case (.getKeyCode e)
+          17 (toggle-hints target (.isControlDown e))
+          81 (when (.isControlDown e)
+               (utils/shut-down))
+          nil)
         false)))
   ; return target
   target)
