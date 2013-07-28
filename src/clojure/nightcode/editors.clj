@@ -132,14 +132,17 @@
                                 :items [(s/button :id :save-button
                                                   :text
                                                   (utils/get-string :save)
+                                                  :focusable? false
                                                   :listen [:action save-file])
                                         (s/button :id :undo-button
                                                   :text
                                                   (utils/get-string :undo)
+                                                  :focusable? false
                                                   :listen [:action undo-file])
                                         (s/button :id :redo-button
                                                   :text
                                                   (utils/get-string :redo)
+                                                  :focusable? false
                                                   :listen [:action redo-file])
                                         (s/text :id :find-field
                                                 :columns 10
@@ -150,6 +153,7 @@
                               (s/flow-panel
                                 :items [(s/button :id :close-button
                                                   :text "⨯"
+                                                  :focusable? false
                                                   :listen [:action close-file])]
                                 :align :right
                                 :hgap 0

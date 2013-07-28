@@ -30,20 +30,25 @@
           :items [(s/horizontal-panel
                     :items [(s/button :id :new-project-button
                                       :text (utils/get-string :new_project)
-                                      :listen [:action p/new-project])
+                                      :listen [:action p/new-project]
+                                      :focusable? false)
                             (s/button :id :new-file-button
                                       :text (utils/get-string :new_file)
-                                      :listen [:action p/new-file])
+                                      :listen [:action p/new-file]
+                                      :focusable? false)
                             (s/button :id :rename-file-button
                                       :text (utils/get-string :rename_file)
                                       :listen [:action p/rename-file]
+                                      :focusable? false
                                       :visible? false)
                             (s/button :id :import-button
                                       :text (utils/get-string :import)
-                                      :listen [:action p/import-project])
+                                      :listen [:action p/import-project]
+                                      :focusable? false)
                             (s/button :id :remove-button
                                       :text (utils/get-string :remove)
-                                      :listen [:action p/remove-item])
+                                      :listen [:action p/remove-item]
+                                      :focusable? false)
                             :fill-h])
                   (s/scrollable project-tree)])
         (shortcuts/create-mappings {:new-project-button p/new-project
@@ -100,22 +105,28 @@
           :items [(s/horizontal-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
-                                      :listen [:action run-action])
+                                      :listen [:action run-action]
+                                      :focusable? false)
                             (s/button :id :run-repl-button
                                       :text (utils/get-string :run_with_repl)
-                                      :listen [:action run-repl-action])
+                                      :listen [:action run-repl-action]
+                                      :focusable? false)
                             (s/button :id :build-button
                                       :text (utils/get-string :build)
-                                      :listen [:action build-action])
+                                      :listen [:action build-action]
+                                      :focusable? false)
                             (s/button :id :test-button
                                       :text (utils/get-string :test)
-                                      :listen [:action test-action])
+                                      :listen [:action test-action]
+                                      :focusable? false)
                             (s/button :id :clean-button
                                       :text (utils/get-string :clean)
-                                      :listen [:action clean-action])
+                                      :listen [:action clean-action]
+                                      :focusable? false)
                             (s/button :id :stop-button
                                       :text (utils/get-string :stop)
-                                      :listen [:action stop-action])
+                                      :listen [:action stop-action]
+                                      :focusable? false)
                             :fill-h])
                   (s/config! console :id :build-console)])
         (shortcuts/create-mappings {:run-button run-action
