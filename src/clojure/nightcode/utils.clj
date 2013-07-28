@@ -1,6 +1,7 @@
 (ns nightcode.utils
   (:require [clojure.java.io :as java.io]
-            [clojure.xml :as xml])
+            [clojure.xml :as xml]
+            [seesaw.core :as s])
   (:import [bsh.util JConsole]
            [clojure.lang LineNumberingPushbackReader]
            [java.util Locale]
@@ -21,6 +22,26 @@
 (defn get-console-output
   [console]
   (.getOut console))
+
+(defn move-project-tree-selection
+  [diff]
+  (let [project-tree (s/select @ui-root [:#project-tree])
+        new-row (-> project-tree
+                    .getSelectionRows
+                    first
+                    (or 0)
+                    (+ diff))]
+    (when (and (>= new-row 0) (< new-row (.getRowCount project-tree)))
+      (.setSelectionRow project-tree new-row)))
+  true)
+
+(defn toggle-project-tree-selection
+  []
+  (let [project-tree (s/select @ui-root [:#project-tree])]
+    (when-let [path (.getSelectionPath project-tree)]
+      (->> (not (.isExpanded project-tree path))
+           (.setExpandedState project-tree path))))
+  true)
 
 (defn shut-down
   []

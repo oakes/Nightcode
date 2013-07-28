@@ -76,11 +76,18 @@
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
     (proxy [KeyEventDispatcher] []
       (dispatchKeyEvent [e]
-        (case (.getKeyCode e)
-          17 (toggle-hints target (.isControlDown e))
-          81 (when (.isControlDown e)
-               (utils/shut-down))
-          nil)
-        false)))
+        (toggle-hints target (.isControlDown e))
+        (if (and (.isControlDown e) (= (.getID e) KeyEvent/KEY_PRESSED))
+          (case (.getKeyCode e)
+            ; enter
+            10 (utils/toggle-project-tree-selection)
+            ; up
+            38 (utils/move-project-tree-selection -1)
+            ; down
+            40 (utils/move-project-tree-selection 1)
+            ; Q
+            81 (utils/shut-down)
+            false)
+          false))))
   ; return target
   target)
