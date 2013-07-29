@@ -25,7 +25,6 @@
    :redo-button "Y"
    :repl-console "G"
    :find-field "F"
-   :close-button "W"
    :project-tree "↑ ↓ ↵"
    :toggle-logcat-button "S"})
 
@@ -37,10 +36,11 @@
                       (str "control " mapping)
                       (fn [e]
                         ; only run the function if the button is enabled
-                        (when (-> panel
-                                  (s/select [(keyword (str "#" (name id)))])
-                                  (s/config :enabled?))
-                          (func e)))
+                        (let [button-id (keyword (str "#" (name id)))
+                              button (s/select panel [button-id])]
+                          (when (and (s/config button :enabled?)
+                                     (s/config button :visible?))
+                            (func e))))
                       :scope :global))))
 
 (defn is-visible?

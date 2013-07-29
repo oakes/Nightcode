@@ -145,14 +145,6 @@
                                                 :listen [:key-released search])]
                                 :align :left
                                 :hgap 0
-                                :vgap 0)
-                              (s/flow-panel
-                                :items [(s/button :id :close-button
-                                                  :text "⨯"
-                                                  :focusable? false
-                                                  :listen [:action close-file])]
-                                :align :right
-                                :hgap 0
                                 :vgap 0)])
           text-group (s/border-panel
                        :north btn-group
@@ -161,8 +153,7 @@
                                  {:save-button save-file
                                   :undo-button undo-file
                                   :redo-button redo-file
-                                  :find-field focus-on-find
-                                  :close-button close-file})
+                                  :find-field focus-on-find})
       (shortcuts/create-hints text-group)
       (update-buttons text-group text-area)
       (doto (TextPrompt. (utils/get-string :find)

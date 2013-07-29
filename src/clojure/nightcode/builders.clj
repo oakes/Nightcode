@@ -34,6 +34,7 @@
         stop-action (fn [e]
                       (lein/stop-process process)
                       (lein/stop-thread thread))
+        is-clojure-project? (not (lein/is-java-project? path))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
@@ -42,7 +43,8 @@
                             (s/button :id :run-repl-button
                                       :text (utils/get-string :run_with_repl)
                                       :listen [:action run-repl-action]
-                                      :focusable? false)
+                                      :focusable? false
+                                      :visible? is-clojure-project?)
                             (s/button :id :build-button
                                       :text (utils/get-string :build)
                                       :listen [:action build-action]
@@ -50,7 +52,8 @@
                             (s/button :id :test-button
                                       :text (utils/get-string :test)
                                       :listen [:action test-action]
-                                      :focusable? false)
+                                      :focusable? false
+                                      :visible? is-clojure-project?)
                             (s/button :id :clean-button
                                       :text (utils/get-string :clean)
                                       :listen [:action clean-action]
@@ -75,13 +78,12 @@
 
 (defn show-builder
   [path]
-  (let [builder-pane (s/select @utils/ui-root [:#builder-pane])]
+  (let [pane (s/select @utils/ui-root [:#builder-pane])]
     ; create new builder if necessary
     (when (and (utils/is-project-path? path)
                (not (contains? @builders path)))
       (when-let [view (create-builder path)]
         (swap! builders assoc path view)
-        (.add builder-pane view path)))
+        (.add pane view path)))
     ; display the correct card
-    (s/show-card! builder-pane
-                  (if (contains? @builders path) path :default-card))))
+    (s/show-card! pane (if (contains? @builders path) path :default-card))))

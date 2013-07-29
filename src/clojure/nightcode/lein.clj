@@ -91,6 +91,14 @@
   [path]
   (.exists (java.io/file path "AndroidManifest.xml")))
 
+(defn is-java-project?
+  [path]
+  (when-let [project-map (read-project-clj path)]
+    (or (:java-only project-map)
+        (= (count (:source-paths project-map)) 0)
+        (clojure.set/subset? (set (:source-paths project-map))
+                             (set (:java-source-paths project-map))))))
+
 (defn create-file-from-template
   [dir file-name template-namespace data]
   (let [render (leiningen.new.templates/renderer template-namespace)]
