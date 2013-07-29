@@ -143,7 +143,8 @@
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running_with_repl))
-         (start-process-command process "repl" path))
+         (let [cmd (if (is-android-project? path) "repl-android" "repl")]
+           (start-process-command process cmd path)))
        (start-thread thread in out)))
 
 (defn build-project
@@ -197,8 +198,11 @@
   (let [project-map (leiningen.core.project/read (nth args 1))]
     (case (nth args 0)
       "run" (leiningen.run/run project-map)
-      "run-android" (leiningen.droid/droid project-map "doall")
+      "run-android" (doseq [cmd ["build" "apk" "install" "run"]]
+                      (leiningen.droid/droid project-map cmd))
       "build" (leiningen.uberjar/uberjar project-map)
       "build-android" (leiningen.droid/droid project-map "release")
       "repl" (leiningen.repl/repl project-map)
+      "repl-android" (doseq [cmd ["doall" "repl"]]
+                       (leiningen.droid/droid project-map cmd))
       nil)))
