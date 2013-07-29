@@ -1,7 +1,6 @@
 (ns nightcode.core
   (:require [seesaw.core :as s]
             [nightcode.shortcuts :as shortcuts]
-            [nightcode.editors :as editors]
             [nightcode.lein :as lein]
             [nightcode.projects :as p]
             [nightcode.utils :as utils])
@@ -15,19 +14,8 @@
   "Returns the pane with the project tree."
   []
   (let [project-tree (s/tree :id :project-tree
-                             :focusable? true)]
-    (doto project-tree
-          (.setRootVisible false)
-          (.setShowsRootHandles true)
-          (.addTreeExpansionListener
-            (reify TreeExpansionListener
-              (treeCollapsed [this e] (p/remove-expansion e))
-              (treeExpanded [this e] (p/add-expansion e))))
-          (.addTreeSelectionListener
-            (reify TreeSelectionListener
-              (valueChanged [this e] (p/set-selection e)))))
-    (-> (s/vertical-panel
-          :items [(s/horizontal-panel
+                             :focusable? true)
+        btn-group (s/horizontal-panel
                     :items [(s/button :id :new-project-button
                                       :text (utils/get-string :new_project)
                                       :listen [:action p/new-project]
@@ -50,12 +38,26 @@
                                       :listen [:action p/remove-item]
                                       :focusable? false)
                             :fill-h])
-                  (s/scrollable project-tree)])
-        (shortcuts/create-mappings {:new-project-button p/new-project
-                                    :new-file-button p/new-file
-                                    :rename-file-button p/rename-file
-                                    :import-button p/import-project
-                                    :remove-button p/remove-item}))))
+        project-group (s/vertical-panel
+                        :items [btn-group
+                                (s/scrollable project-tree)])]
+    (doto project-tree
+          (.setRootVisible false)
+          (.setShowsRootHandles true)
+          (.addTreeExpansionListener
+            (reify TreeExpansionListener
+              (treeCollapsed [this e] (p/remove-expansion e))
+              (treeExpanded [this e] (p/add-expansion e))))
+          (.addTreeSelectionListener
+            (reify TreeSelectionListener
+              (valueChanged [this e] (p/set-selection e)))))
+    (shortcuts/create-mappings project-group
+                               {:new-project-button p/new-project
+                                :new-file-button p/new-file
+                                :rename-file-button p/rename-file
+                                :import-button p/import-project
+                                :remove-button p/remove-item})
+    project-group))
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
@@ -68,7 +70,8 @@
           (fn [e]
             (s/request-focus! (.getView (.getViewport console)))
             (lein/run-repl thread (utils/get-console-input console) out))}
-         (shortcuts/create-mappings console))))
+         (shortcuts/create-mappings console))
+    console))
 
 (defn get-editor-pane
   "Returns the pane with the editors."
@@ -76,65 +79,11 @@
   (s/card-panel :id :editor-pane
                 :items [["" :default-card]]))
 
-(defn get-build-pane
-  "Returns the pane with the build actions."
+(defn get-builder-pane
+  "Returns the pane with the builders."
   []
-  (let [console (utils/create-console)
-        process (atom nil)
-        thread (atom nil)
-        in (utils/get-console-input console)
-        out (utils/get-console-output console)
-        run-action (fn [e]
-                     (lein/run-project
-                       process thread in out (p/get-project-path)))
-        run-repl-action (fn [e]
-                          (lein/run-repl-project
-                            process thread in out (p/get-project-path))
-                          (s/request-focus! (.getView (.getViewport console))))
-        build-action (fn [e]
-                       (lein/build-project
-                         process thread in out (p/get-project-path)))
-        test-action (fn [e]
-                      (lein/test-project thread in out (p/get-project-path)))
-        clean-action (fn [e]
-                       (lein/clean-project thread in out (p/get-project-path)))
-        stop-action (fn [e]
-                      (lein/stop-process process)
-                      (lein/stop-thread thread))]
-    (-> (s/vertical-panel
-          :items [(s/horizontal-panel
-                    :items [(s/button :id :run-button
-                                      :text (utils/get-string :run)
-                                      :listen [:action run-action]
-                                      :focusable? false)
-                            (s/button :id :run-repl-button
-                                      :text (utils/get-string :run_with_repl)
-                                      :listen [:action run-repl-action]
-                                      :focusable? false)
-                            (s/button :id :build-button
-                                      :text (utils/get-string :build)
-                                      :listen [:action build-action]
-                                      :focusable? false)
-                            (s/button :id :test-button
-                                      :text (utils/get-string :test)
-                                      :listen [:action test-action]
-                                      :focusable? false)
-                            (s/button :id :clean-button
-                                      :text (utils/get-string :clean)
-                                      :listen [:action clean-action]
-                                      :focusable? false)
-                            (s/button :id :stop-button
-                                      :text (utils/get-string :stop)
-                                      :listen [:action stop-action]
-                                      :focusable? false)
-                            :fill-h])
-                  (s/config! console :id :build-console)])
-        (shortcuts/create-mappings {:run-button run-action
-                                    :run-repl-button run-repl-action
-                                    :build-button build-action
-                                    :test-button test-action
-                                    :clean-button clean-action
-                                    :stop-button stop-action}))))
+  (s/card-panel :id :builder-pane
+                :items [["" :default-card]]))
 
 (defn get-window-content []
   "Returns the entire window with all panes."
@@ -144,7 +93,7 @@
                         :divider-location 0.8
                         :resize-weight 0.5)
     (s/top-bottom-split (get-editor-pane)
-                        (get-build-pane)
+                        (get-builder-pane)
                         :divider-location 0.8
                         :resize-weight 0.5)
     :divider-location 0.4))

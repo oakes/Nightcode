@@ -1,5 +1,6 @@
 (ns nightcode.projects
   (:require [clojure.java.io :as java.io]
+            [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
@@ -12,6 +13,21 @@
 (def tree-projects (atom #{}))
 (def tree-expansions (atom #{}))
 (def tree-selection (atom nil))
+
+(defn get-project-path
+  ([] (get-project-path (utils/get-selected-path)))
+  ([path]
+   (when-let [file (java.io/file path)]
+     (if (or (utils/is-project-path? (.getCanonicalPath file))
+             (contains? @tree-projects (.getCanonicalPath file)))
+       (.getCanonicalPath file)
+       (get-project-path (.getCanonicalPath (.getParentFile file)))))))
+
+(defn get-project-root-path
+  []
+  (-> #(.startsWith (utils/get-selected-path) %)
+      (filter @tree-projects)
+      first))
 
 (defn add-expansion
   [e]
@@ -35,38 +51,9 @@
     (s/config! (s/select @utils/ui-root [:#rename-file-button])
                :visible? (.isFile (java.io/file path)))
     (reset! tree-selection path)
-    (editors/show-editor path))
+    (editors/show-editor path)
+    (builders/show-builder (get-project-path path)))
   (utils/write-pref :selection @tree-selection))
-
-; get project tree and items within it
-
-(defn is-project-path?
-  [path]
-  (and (.isDirectory (java.io/file path))
-       (.exists (java.io/file path "project.clj"))))
-
-(defn get-project-tree
-  []
-  (s/select @utils/ui-root [:#project-tree]))
-
-(defn get-selected-path
-  []
-  (utils/tree-path-to-str (.getSelectionPath (get-project-tree))))
-
-(defn get-project-path
-  ([] (get-project-path (java.io/file (get-selected-path))))
-  ([file]
-   (when file
-     (if (or (is-project-path? (.getCanonicalPath file))
-             (contains? @tree-projects (.getCanonicalPath file)))
-       (.getCanonicalPath file)
-       (get-project-path (.getParentFile file))))))
-
-(defn get-project-root-path
-  []
-  (-> #(.startsWith (get-selected-path) %)
-      (filter @tree-projects)
-      first))
 
 ; create and manipulate project tree
 
@@ -75,9 +62,9 @@
   (let [path (.getCanonicalPath file)
         file-name (.getName file)]
     {:html (cond
-             (is-project-path? path) (str "<html><b><font color='gray'>"
-                                          file-name
-                                          "</font></b></html>"))
+             (utils/is-project-path? path) (str "<html><b><font color='gray'>"
+                                                file-name
+                                                "</font></b></html>"))
      :name file-name
      :file file}))
 
@@ -149,9 +136,9 @@
 
 (defn update-project-tree
   ([]
-   (update-project-tree (get-project-tree) nil))
+   (update-project-tree (utils/get-project-tree) nil))
   ([new-selection]
-   (update-project-tree (get-project-tree) new-selection))
+   (update-project-tree (utils/get-project-tree) new-selection))
   ([tree new-selection]
    ; put new data in the tree
    (.setModel tree (create-project-tree))
@@ -181,7 +168,7 @@
 
 (defn enter-file-path
   [default-file-name]
-  (let [selected-path (get-selected-path)
+  (let [selected-path (utils/get-selected-path)
         project-path (get-project-root-path)
         default-path (str (utils/get-relative-dir project-path selected-path)
                           (or default-file-name
@@ -217,7 +204,7 @@
     (let [project-path (get-project-root-path)
           new-file (java.io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
-          selected-path (get-selected-path)]
+          selected-path (utils/get-selected-path)]
       (when (not= new-path selected-path)
         (editors/save-file e)
         (.mkdirs (.getParentFile new-file))
@@ -246,5 +233,5 @@
 
 (defn remove-item
   [e]
-  (when (remove-from-project-tree (get-selected-path))
+  (when (remove-from-project-tree (utils/get-selected-path))
     (update-project-tree (get-project-root-path))))

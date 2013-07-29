@@ -22,19 +22,13 @@
          (s/select (get @editors path))
          first)))
 
-(defn get-selected-path
-  []
-  (-> (s/select @utils/ui-root [:#project-tree])
-      .getSelectionPath
-      utils/tree-path-to-str))
-
 (defn get-selected-editor
   []
-  (get-editor (get-selected-path)))
+  (get-editor (utils/get-selected-path)))
 
 (defn get-selected-editor-pane
   []
-  (get @editors (get-selected-path)))
+  (get @editors (utils/get-selected-path)))
 
 (defn is-unsaved?
   [path]
@@ -55,7 +49,7 @@
 (defn save-file
   [e]
   (when-let [editor (get-selected-editor)]
-    (with-open [w (java.io/writer (java.io/file (get-selected-path)))]
+    (with-open [w (java.io/writer (java.io/file (utils/get-selected-path)))]
       (.write editor w))
     (.setDirty editor false)
     (s/request-focus! editor)

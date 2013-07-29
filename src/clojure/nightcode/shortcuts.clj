@@ -40,8 +40,7 @@
                                   (s/select [(keyword (str "#" (name id)))])
                                   (s/config :enabled?))
                           (func e)))
-                      :scope :global)))
-  panel)
+                      :scope :global))))
 
 (defn is-visible?
   [widget]

@@ -7,46 +7,6 @@
            [java.util Locale]
            [java.util.prefs Preferences]))
 
-; ui
-
-(def ui-root (atom nil))
-
-(defn create-console
-  []
-  (JConsole.))
-
-(defn get-console-input
-  [console]
-  (LineNumberingPushbackReader. (.getIn console)))
-
-(defn get-console-output
-  [console]
-  (.getOut console))
-
-(defn move-project-tree-selection
-  [diff]
-  (let [project-tree (s/select @ui-root [:#project-tree])
-        new-row (-> project-tree
-                    .getSelectionRows
-                    first
-                    (or 0)
-                    (+ diff))]
-    (when (and (>= new-row 0) (< new-row (.getRowCount project-tree)))
-      (.setSelectionRow project-tree new-row)))
-  true)
-
-(defn toggle-project-tree-selection
-  []
-  (let [project-tree (s/select @ui-root [:#project-tree])]
-    (when-let [path (.getSelectionPath project-tree)]
-      (->> (not (.isExpanded project-tree path))
-           (.setExpandedState project-tree path))))
-  true)
-
-(defn shut-down
-  []
-  (System/exit 0))
-
 ; preferences
 
 (def prefs (.node (Preferences/userRoot) "nightcode"))
@@ -127,3 +87,58 @@
         clojure.string/lower-case
         (clojure.string/replace "_" "-")
         (clojure.string/replace #"[^a-z0-9-.]" ""))))
+
+; ui
+
+(def ui-root (atom nil))
+
+(defn create-console
+  []
+  (JConsole.))
+
+(defn get-console-input
+  [console]
+  (LineNumberingPushbackReader. (.getIn console)))
+
+(defn get-console-output
+  [console]
+  (.getOut console))
+
+(defn is-project-path?
+  [path]
+  (and (.isDirectory (java.io/file path))
+       (.exists (java.io/file path "project.clj"))))
+
+(defn get-project-tree
+  []
+  (s/select @ui-root [:#project-tree]))
+
+(defn get-selected-path
+  []
+  (-> (get-project-tree)
+      .getSelectionPath
+      tree-path-to-str))
+
+(defn move-project-tree-selection
+  [diff]
+  (let [project-tree (get-project-tree)
+        new-row (-> project-tree
+                    .getSelectionRows
+                    first
+                    (or 0)
+                    (+ diff))]
+    (when (and (>= new-row 0) (< new-row (.getRowCount project-tree)))
+      (.setSelectionRow project-tree new-row)))
+  true)
+
+(defn toggle-project-tree-selection
+  []
+  (let [project-tree (get-project-tree)]
+    (when-let [path (.getSelectionPath project-tree)]
+      (->> (not (.isExpanded project-tree path))
+           (.setExpandedState project-tree path))))
+  true)
+
+(defn shut-down
+  []
+  (System/exit 0))
