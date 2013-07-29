@@ -196,9 +196,25 @@
           process (atom nil)
           thread (atom nil)
           in (utils/get-console-input console)
-          out (utils/get-console-output console)]
-      (lein/run-logcat process thread in out (.getParent (java.io/file path)))
-      console)))
+          out (utils/get-console-output console)
+          toggle-btn (s/button :id :toggle-logcat-button
+                               :text (utils/get-string :start))
+          btn-group (s/horizontal-panel :items [toggle-btn])
+          start (fn []
+                  (->> (.getParent (java.io/file path))
+                       (lein/run-logcat process thread in out))
+                  (s/config! toggle-btn :text (utils/get-string :stop)))
+          stop (fn []
+                 (lein/stop-process process)
+                 (lein/stop-thread thread)
+                 (s/config! toggle-btn :text (utils/get-string :start)))
+          toggle (fn [e]
+                   (if (nil? @process) (start) (stop)))]
+      (s/listen toggle-btn :action toggle)
+      (shortcuts/create-mappings btn-group {:toggle-logcat-button toggle})
+      (shortcuts/create-hints btn-group)
+      (s/border-panel :north btn-group
+                      :center console))))
 
 (defn show-editor
   [path]

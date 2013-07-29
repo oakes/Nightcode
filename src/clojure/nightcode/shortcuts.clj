@@ -26,7 +26,8 @@
    :repl-console "G"
    :find-field "F"
    :close-button "W"
-   :project-tree "↑ ↓ ↵"})
+   :project-tree "↑ ↓ ↵"
+   :toggle-logcat-button "S"})
 
 (defn create-mappings
   [panel pairs]

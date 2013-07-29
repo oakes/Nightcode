@@ -51,4 +51,6 @@
   <string name="undo">Undo</string>
   <string name="redo">Redo</string>
   <string name="find">Find</string>
+
+  <string name="start">Start</string>
 </resources>

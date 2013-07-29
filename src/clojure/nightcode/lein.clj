@@ -51,7 +51,8 @@
 (defn start-process
   [process & args]
   (reset! process (.exec (Runtime/getRuntime) (into-array (flatten args))))
-  (.addShutdownHook (Runtime/getRuntime) (Thread. #(.destroy @process)))
+  (.addShutdownHook (Runtime/getRuntime)
+                    (Thread. #(when @process (.destroy @process))))
   (with-open [out (java.io/reader (.getInputStream @process))
               err (java.io/reader (.getErrorStream @process))
               in (java.io/writer (.getOutputStream @process))]
@@ -77,12 +78,14 @@
 (defn stop-process
   [process]
   (when @process
-    (.destroy @process)))
+    (.destroy @process)
+    (reset! process nil)))
 
 (defn stop-thread
   [thread]
   (when @thread
-    (.interrupt @thread)))
+    (.interrupt @thread)
+    (reset! thread nil)))
 
 (defn is-android-project?
   [path]

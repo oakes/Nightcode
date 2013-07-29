@@ -91,6 +91,7 @@ public class JConsole extends JScrollPane
 	private Vector<String> history = new Vector<String>();
 	private String startedLine;
 	private int histLine = 0;
+	final int HIST_MAX = 100000;
 
 	private JPopupMenu menu;
 	private JTextPane text;
@@ -429,6 +430,13 @@ public class JConsole extends JScrollPane
 		int slen = textLength();
 		text.select(slen, slen);
 		text.replaceSelection(string);
+
+		try {
+			int overLength = slen + string.length() - HIST_MAX;
+			if (overLength > 0) {
+				text.getDocument().remove(0, overLength);
+			}
+		} catch (Exception e) {}
 	}
 
 	private String replaceRange(Object s, int start, int end) {
