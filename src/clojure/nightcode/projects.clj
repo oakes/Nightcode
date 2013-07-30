@@ -188,15 +188,17 @@
 
 (defn new-file
   [e]
-  (when-let [leaf-path (enter-file-path "example.clj")]
-    (let [project-path (get-project-root-path)
-          new-file (java.io/file project-path leaf-path)]
-      (if (.exists new-file)
-        (s/alert (utils/get-string :file_exists))
-        (do
-          (.mkdirs (.getParentFile new-file))
-          (.createNewFile new-file)
-          (update-project-tree (.getCanonicalPath new-file)))))))
+  (let [project-path (get-project-root-path)
+        default-file-name (if (lein/is-java-project? project-path)
+                            "Example.java" "example.clj")]
+    (when-let [leaf-path (enter-file-path default-file-name)]
+      (let [new-file (java.io/file project-path leaf-path)]
+        (if (.exists new-file)
+          (s/alert (utils/get-string :file_exists))
+          (do
+            (.mkdirs (.getParentFile new-file))
+            (.createNewFile new-file)
+            (update-project-tree (.getCanonicalPath new-file))))))))
 
 (defn rename-file
   [e]
