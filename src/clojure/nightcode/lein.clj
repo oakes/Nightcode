@@ -27,7 +27,11 @@
   (let [project-clj-path (get-project-clj-path path)]
     (if-not (.exists (java.io/file project-clj-path))
       (println (utils/get-string :no_project_clj))
-      (leiningen.core.project/read project-clj-path))))
+      (when-let [project-map (leiningen.core.project/read project-clj-path)]
+        (assoc-in project-map
+                  [:android :sdk-path]
+                  (or (get-in project-map [:android :sdk-path])
+                      (utils/read-pref :android-sdk)))))))
 
 (defn start-thread*
   [thread in out func]
@@ -66,14 +70,14 @@
 (defn start-process-command
   [process cmd path]
   (let [project-map (read-project-clj path)
-        project-path (get-project-clj-path path)]
-  (start-process process
-                 (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
-                 "-cp"
-                 (System/getProperty "java.class.path" ".")
-                 namespace-name
-                 cmd
-                 project-path)))
+        java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")]
+    (start-process process
+                   java-cmd
+                   "-cp"
+                   (System/getProperty "java.class.path" ".")
+                   namespace-name
+                   cmd
+                   path)))
 
 (defn stop-process
   [process]
@@ -195,7 +199,7 @@
 (defn -main
   [& args]
   (System/setProperty "jline.terminal" "dumb")
-  (let [project-map (leiningen.core.project/read (nth args 1))]
+  (let [project-map (read-project-clj (nth args 1))]
     (case (nth args 0)
       "run" (leiningen.run/run project-map)
       "run-android" (doseq [cmd ["build" "apk" "install" "run"]]

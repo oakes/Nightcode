@@ -14,6 +14,10 @@
   <string name="test">Test</string>
   <string name="clean">Clean</string>
   <string name="stop">Stop</string>
+  <string name="start">Start</string>
+
+  <string name="android_sdk">Android SDK</string>
+  <string name="android_devices">Android Devices</string>
 
   <string name="ok">OK</string>
   <string name="cancel">Cancel</string>
@@ -51,6 +55,4 @@
   <string name="undo">Undo</string>
   <string name="redo">Redo</string>
   <string name="find">Find</string>
-
-  <string name="start">Start</string>
 </resources>

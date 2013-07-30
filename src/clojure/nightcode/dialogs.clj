@@ -107,3 +107,6 @@
                                                   % (finish))])])
         s/pack!
         s/show!)))
+
+(defn show-sdk-dialog
+  [path])
