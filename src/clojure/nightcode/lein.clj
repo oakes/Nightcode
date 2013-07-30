@@ -203,6 +203,6 @@
       "build" (leiningen.uberjar/uberjar project-map)
       "build-android" (leiningen.droid/droid project-map "release")
       "repl" (leiningen.repl/repl project-map)
-      "repl-android" (doseq [cmd ["doall" "repl"]]
+      "repl-android" (doseq [cmd ["forward-port" "repl"]]
                        (leiningen.droid/droid project-map cmd))
       nil)))
