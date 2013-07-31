@@ -140,7 +140,7 @@
     (start-process process cmd)))
 
 (defn run-project
-  [process thread in out path & args]
+  [process thread in out path args]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running))
@@ -150,7 +150,7 @@
        (start-thread thread in out)))
 
 (defn run-repl-project
-  [process thread in out path & args]
+  [process thread in out path args]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running_with_repl))
@@ -159,7 +159,7 @@
        (start-thread thread in out)))
 
 (defn build-project
-  [process thread in out path & args]
+  [process thread in out path args]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :building))
@@ -216,12 +216,12 @@
   (System/setProperty "jline.terminal" "dumb")
   (let [project-map (read-project-clj path)]
     (case cmd
-      "run" (apply leiningen.run/run project-map args)
+      "run" (leiningen.run/run project-map)
       "run-android" (doseq [sub-cmd ["build" "apk" "install" "run"]]
                       (apply leiningen.droid/droid project-map sub-cmd args))
-      "build" (apply leiningen.uberjar/uberjar project-map args)
+      "build" (leiningen.uberjar/uberjar project-map)
       "build-android" (apply leiningen.droid/droid project-map "release" args)
-      "repl" (apply leiningen.repl/repl project-map args)
+      "repl" (leiningen.repl/repl project-map)
       "repl-android" (doseq [sub-cmd ["doall" "repl"]]
                        (apply leiningen.droid/droid project-map sub-cmd args)
                        (Thread/sleep 10000))
