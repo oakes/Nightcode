@@ -74,7 +74,7 @@
       (.waitFor @process))))
 
 (defn start-process-command
-  [process cmd path]
+  [process cmd path args]
   (let [project-map (read-project-clj path)
         java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")]
     (start-process process
@@ -83,7 +83,8 @@
                    (System/getProperty "java.class.path" ".")
                    namespace-name
                    cmd
-                   path)))
+                   path
+                   (or args []))))
 
 (defn stop-process
   [process]
@@ -139,31 +140,31 @@
     (start-process process cmd)))
 
 (defn run-project
-  [process thread in out path]
+  [process thread in out path & args]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running))
          (if (is-android-project? path)
-           (start-process-command process "run-android" path)
+           (start-process-command process "run-android" path args)
            (run-project-fast process path)))
        (start-thread thread in out)))
 
 (defn run-repl-project
-  [process thread in out path]
+  [process thread in out path & args]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running_with_repl))
          (let [cmd (if (is-android-project? path) "repl-android" "repl")]
-           (start-process-command process cmd path)))
+           (start-process-command process cmd path args)))
        (start-thread thread in out)))
 
 (defn build-project
-  [process thread in out path]
+  [process thread in out path & args]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :building))
          (let [cmd (if (is-android-project? path) "build-android" "build")]
-           (start-process-command process cmd path)))
+           (start-process-command process cmd path args)))
        (start-thread thread in out)))
 
 (defn test-project
@@ -211,17 +212,17 @@
        (start-thread thread in out)))
 
 (defn -main
-  [& args]
+  [cmd path & args]
   (System/setProperty "jline.terminal" "dumb")
-  (let [project-map (read-project-clj (nth args 1))]
-    (case (nth args 0)
-      "run" (leiningen.run/run project-map)
-      "run-android" (doseq [cmd ["build" "apk" "install" "run"]]
-                      (leiningen.droid/droid project-map cmd))
-      "build" (leiningen.uberjar/uberjar project-map)
-      "build-android" (leiningen.droid/droid project-map "release")
-      "repl" (leiningen.repl/repl project-map)
-      "repl-android" (doseq [cmd ["doall" "repl"]]
-                       (leiningen.droid/droid project-map cmd)
+  (let [project-map (read-project-clj path)]
+    (case cmd
+      "run" (apply leiningen.run/run project-map args)
+      "run-android" (doseq [sub-cmd ["build" "apk" "install" "run"]]
+                      (apply leiningen.droid/droid project-map sub-cmd args))
+      "build" (apply leiningen.uberjar/uberjar project-map args)
+      "build-android" (apply leiningen.droid/droid project-map "release" args)
+      "repl" (apply leiningen.repl/repl project-map args)
+      "repl-android" (doseq [sub-cmd ["doall" "repl"]]
+                       (apply leiningen.droid/droid project-map sub-cmd args)
                        (Thread/sleep 10000))
       nil)))
