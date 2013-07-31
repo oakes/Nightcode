@@ -33,17 +33,23 @@
                   (or (get-in project-map [:android :sdk-path])
                       (utils/read-pref :android-sdk)))))))
 
+(defn redirect-io
+  [in out func]
+  (binding [*out* out
+            *err* out
+            *in* in
+            leiningen.core.main/*exit-process?* false]
+    (func)))
+
 (defn start-thread*
   [thread in out func]
   (->> (fn []
-         (binding [*out* out
-                   *err* out
-                   *in* in
-                   leiningen.core.main/*exit-process?* false]
-           (try (func)
-             (catch InterruptedException e nil)
-             (catch Exception e (println (.getMessage e))))
-           (println "\n===" (utils/get-string :finished) "===")))
+         (try (func)
+           (catch InterruptedException e nil)
+           (catch Exception e (println (.getMessage e))))
+         (println "\n===" (utils/get-string :finished) "==="))
+       (redirect-io in out)
+       (fn [])
        Thread.
        (reset! thread))
   (.start @thread))
@@ -175,11 +181,15 @@
        (start-thread thread in out)))
 
 (defn new-project
-  [parent-path project-type project-name package-name]
-  (System/setProperty "leiningen.original.pwd" parent-path)
-  (if (= project-type :android)
-    (leiningen.droid.new/new project-name package-name ":target-sdk" "15")
-    (leiningen.new/new {} (name project-type) project-name package-name)))
+  [in out parent-path project-type project-name package-name]
+  (->> (try
+         (if (= project-type :android)
+           (leiningen.droid.new/new project-name package-name)
+           (leiningen.new/new {} (name project-type) project-name package-name))
+         (catch Exception _))
+       (fn []
+         (System/setProperty "leiningen.original.pwd" parent-path))
+       (redirect-io in out)))
 
 (defn run-repl
   [thread in out]
@@ -191,10 +201,14 @@
   [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (let [project-map (read-project-clj path)
-        params (leiningen.droid.utils/get-default-android-params project-map)]
-    (->> (start-process process (:adb-bin params) "logcat" "*:I")
-         (start-thread thread in out))))
+  (->> (start-process process
+                      (-> (read-project-clj path)
+                          leiningen.droid.utils/get-default-android-params
+                          :adb-bin)
+                      "logcat"
+                      "*:I")
+       (binding [leiningen.core.main/*exit-process?* false])
+       (start-thread thread in out)))
 
 (defn -main
   [& args]
