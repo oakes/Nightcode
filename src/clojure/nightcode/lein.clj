@@ -5,6 +5,7 @@
             [leiningen.core.main]
             [leiningen.core.project]
             [leiningen.clean]
+            [leiningen.cljsbuild]
             [leiningen.droid]
             [leiningen.new]
             [leiningen.new.templates]
@@ -15,6 +16,8 @@
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
+
+(leiningen.cljsbuild/activate)
 
 (def namespace-name (str *ns*))
 
