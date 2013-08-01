@@ -60,8 +60,11 @@
   `(start-thread* ~thread ~in ~out (fn [] ~@body)))
 
 (defn start-process
-  [process & args]
-  (reset! process (.exec (Runtime/getRuntime) (into-array (flatten args))))
+  [process path & args]
+  (reset! process (.exec (Runtime/getRuntime)
+                         (into-array (flatten args))
+                         nil
+                         (java.io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
                     (Thread. #(when @process (.destroy @process))))
   (with-open [out (java.io/reader (.getInputStream @process))
@@ -75,16 +78,16 @@
       (.waitFor @process))))
 
 (defn start-process-command
-  [process cmd path args]
+  [process path cmd args]
   (let [project-map (read-project-clj path)
         java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")]
     (start-process process
+                   path
                    java-cmd
                    "-cp"
                    (System/getProperty "java.class.path")
                    namespace-name
                    cmd
-                   path
                    (or args []))))
 
 (defn stop-process
@@ -123,7 +126,7 @@
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running))
-         (start-process-command process "run" path args))
+         (start-process-command process path "run" args))
        (start-thread thread in out)))
 
 (defn run-repl-project
@@ -131,7 +134,7 @@
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running_with_repl))
-         (start-process-command process "repl" path args))
+         (start-process-command process path "repl" args))
        (start-thread thread in out)))
 
 (defn build-project
@@ -139,21 +142,29 @@
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :building))
-         (start-process-command process "build" path args))
+         (start-process-command process path "build" args))
        (start-thread thread in out)))
 
 (defn test-project
-  [thread in out path]
+  [process thread in out path]
+  (stop-process process)
   (stop-thread thread)
-  (->> (do (println (utils/get-string :testing))
-         (leiningen.test/test (read-project-clj path)))
+  (->> (let [project-map (read-project-clj path)]
+         (println (utils/get-string :testing))
+         (leiningen.test/test project-map)
+         (when (:cljsbuild project-map)
+           (leiningen.cljsbuild/cljsbuild project-map "test")))
        (start-thread thread in out)))
 
 (defn clean-project
-  [thread in out path]
+  [process thread in out path]
+  (stop-process process)
   (stop-thread thread)
-  (->> (do (println (utils/get-string :cleaning))
-         (leiningen.clean/clean (read-project-clj path)))
+  (->> (let [project-map (read-project-clj path)]
+         (println (utils/get-string :cleaning))
+         (leiningen.clean/clean project-map)
+         (when (:cljsbuild project-map)
+           (leiningen.cljsbuild/cljsbuild project-map "clean")))
        (start-thread thread in out)))
 
 (defn new-project
@@ -178,6 +189,7 @@
   (stop-process process)
   (stop-thread thread)
   (->> (start-process process
+                      nil
                       (-> (read-project-clj path)
                           leiningen.droid.utils/get-default-android-params
                           :adb-bin)
@@ -187,20 +199,21 @@
        (start-thread thread in out)))
 
 (defn -main
-  [cmd path & args]
+  [cmd & args]
   (System/setProperty "jline.terminal" "dumb")
-  (when-let [project-map (read-project-clj path)]
-    (when (:cljsbuild project-map)
-      (leiningen.cljsbuild/activate))
+  (let [path "."
+        project-map (leiningen.core.project/init-project
+                      (read-project-clj path))
+        android? (is-android-project? path)]
     (case cmd
-      "run" (if (is-android-project? path)
+      "run" (if android?
               (doseq [sub-cmd ["build" "apk" "install" "run"]]
                 (apply leiningen.droid/droid project-map sub-cmd args))
               (leiningen.run/run project-map))
-      "build" (if (is-android-project? path)
+      "build" (if android?
                 (apply leiningen.droid/droid project-map "release" args)
                 (leiningen.uberjar/uberjar project-map))
-      "repl" (if (is-android-project? path)
+      "repl" (if android?
                (doseq [sub-cmd ["doall" "repl"]]
                  (apply leiningen.droid/droid project-map sub-cmd args)
                  (Thread/sleep 10000))

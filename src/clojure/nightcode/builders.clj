@@ -37,9 +37,9 @@
         build-action (fn [e]
                        (lein/build-project process thread in out path nil))
         test-action (fn [e]
-                      (lein/test-project thread in out path))
+                      (lein/test-project process thread in out path))
         clean-action (fn [e]
-                       (lein/clean-project thread in out path))
+                       (lein/clean-project process thread in out path))
         stop-action (fn [e]
                       (lein/stop-process process)
                       (lein/stop-thread thread))
