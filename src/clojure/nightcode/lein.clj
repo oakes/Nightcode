@@ -181,7 +181,7 @@
 (defn run-repl
   [thread in out]
   (stop-thread thread)
-  (->> (clojure.main/repl :prompt #(print "user=> "))
+  (->> (clojure.main/repl :caught (fn [e] (println)))
        (start-thread thread in out)))
 
 (defn run-logcat

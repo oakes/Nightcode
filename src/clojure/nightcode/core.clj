@@ -10,15 +10,27 @@
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
 
+(defn start-repl
+  [thread console]
+  (s/request-focus! (.getView (.getViewport console)))
+  (lein/run-repl thread
+                 (utils/get-console-input console)
+                 (utils/get-console-output console)))
+
 (defn get-project-pane
   "Returns the pane with the project tree."
-  []
+  [thread]
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)
+        create-new-project (fn [e]
+                             (lein/stop-thread thread)
+                             (p/new-project e)
+                             (->> (s/select @utils/ui-root [:#repl-console])
+                                  (start-repl thread)))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :new-project-button
                                       :text (utils/get-string :new_project)
-                                      :listen [:action p/new-project]
+                                      :listen [:action create-new-project]
                                       :focusable? false)
                             (s/button :id :new-file-button
                                       :text (utils/get-string :new_file)
@@ -52,7 +64,7 @@
             (reify TreeSelectionListener
               (valueChanged [this e] (p/set-selection e)))))
     (shortcuts/create-mappings project-group
-                               {:new-project-button p/new-project
+                               {:new-project-button create-new-project
                                 :new-file-button p/new-file
                                 :rename-file-button p/rename-file
                                 :import-button p/import-project
@@ -61,16 +73,12 @@
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
-  []
-  (let [console (s/config! (utils/create-console) :id :repl-console)
-        thread (atom nil)
-        out (utils/get-console-output console)]
-    (lein/run-repl thread (utils/get-console-input console) out)
-    (->> {:repl-console
-          (fn [e]
-            (s/request-focus! (.getView (.getViewport console)))
-            (lein/run-repl thread (utils/get-console-input console) out))}
-         (shortcuts/create-mappings console))
+  [thread]
+  (let [console (s/config! (utils/create-console) :id :repl-console)]
+    (start-repl thread console)
+    (shortcuts/create-mappings console
+                               {:repl-console (fn [e]
+                                                (start-repl thread console))})
     console))
 
 (defn get-editor-pane
@@ -87,16 +95,17 @@
 
 (defn get-window-content []
   "Returns the entire window with all panes."
-  (s/left-right-split
-    (s/top-bottom-split (get-project-pane)
-                        (get-repl-pane)
-                        :divider-location 0.8
-                        :resize-weight 0.5)
-    (s/top-bottom-split (get-editor-pane)
-                        (get-builder-pane)
-                        :divider-location 0.8
-                        :resize-weight 0.5)
-    :divider-location 0.4))
+  (let [repl-thread (atom nil)]
+    (s/left-right-split
+      (s/top-bottom-split (get-project-pane repl-thread)
+                          (get-repl-pane repl-thread)
+                          :divider-location 0.8
+                          :resize-weight 0.5)
+      (s/top-bottom-split (get-editor-pane)
+                          (get-builder-pane)
+                          :divider-location 0.8
+                          :resize-weight 0.5)
+      :divider-location 0.4)))
 
 (defn -main
   "Launches the main window."
