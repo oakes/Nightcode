@@ -1,8 +1,10 @@
 (ns nightcode.shortcuts
   (:require [nightcode.utils :as utils]
             [seesaw.core :as s]
-            [seesaw.keymap :as keymap])
-  (:import [java.awt Color KeyboardFocusManager KeyEventDispatcher]
+            [seesaw.keymap :as keymap]
+            [seesaw.keystroke :as keystroke])
+  (:import [java.awt Toolkit]
+           [java.awt Color KeyboardFocusManager KeyEventDispatcher]
            [java.awt.event ActionEvent KeyEvent]
            [net.java.balloontip BalloonTip]
            [net.java.balloontip.positioners CenteredPositioner]
@@ -33,7 +35,7 @@
   (doseq [[id func] pairs]
     (when-let [mapping (get mappings id)]
       (keymap/map-key panel
-                      (str "control " mapping)
+                      (str "menu " mapping)
                       (fn [e]
                         ; only run the function if the button is enabled
                         (let [button-id (keyword (str "#" (name id)))
@@ -79,18 +81,21 @@
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
     (proxy [KeyEventDispatcher] []
       (dispatchKeyEvent [e]
-        (toggle-hints target (.isControlDown e))
-        (if (and (.isControlDown e) (= (.getID e) KeyEvent/KEY_PRESSED))
-          (case (.getKeyCode e)
-            ; enter
-            10 (utils/toggle-project-tree-selection)
-            ; up
-            38 (utils/move-project-tree-selection -1)
-            ; down
-            40 (utils/move-project-tree-selection 1)
-            ; Q
-            81 (utils/shut-down)
-            false)
-          false))))
+        (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
+              current-modifier (.getModifiers e)
+              is-down? (= (bit-and modifier current-modifier) modifier)]
+          (toggle-hints target is-down?)
+          (if (and is-down? (= (.getID e) KeyEvent/KEY_PRESSED))
+            (case (.getKeyCode e)
+              ; enter
+              10 (utils/toggle-project-tree-selection)
+              ; up
+              38 (utils/move-project-tree-selection -1)
+              ; down
+              40 (utils/move-project-tree-selection 1)
+              ; Q
+              81 (utils/shut-down)
+              false)
+            false)))))
   ; return target
   target)
