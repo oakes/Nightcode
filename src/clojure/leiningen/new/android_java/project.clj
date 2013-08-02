@@ -1,8 +1,6 @@
 (defproject {{raw-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
 
-  :warn-on-reflection true
-
   :java-source-paths ["src" "gen"]
 
   ;; The following two definitions are optional. The default

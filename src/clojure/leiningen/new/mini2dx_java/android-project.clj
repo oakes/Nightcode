@@ -1,6 +1,5 @@
 (defproject {{raw-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
-  ;:resource-paths ["libs/android-support-v13.jar"]
   :dependencies [[com.badlogic.gdx/gdx "0.9.9-SNAPSHOT"]
                  [com.badlogic.gdx/gdx-backend-android "0.9.9-SNAPSHOT"]
                  [org.mini2Dx/mini2Dx-core "0.8"]

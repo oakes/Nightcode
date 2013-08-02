@@ -3,7 +3,7 @@ package {{package-name}};
 import org.mini2Dx.core.game.BasicGame;
 import org.mini2Dx.core.graphics.Graphics;
 
-public class {{class-name}} implements BasicGame {
+public class {{class-name}} extends BasicGame {
 	public void initialise () {
 	}
 

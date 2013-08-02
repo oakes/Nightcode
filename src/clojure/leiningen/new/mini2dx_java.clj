@@ -57,7 +57,7 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
               (render "../android_java/main.xml" data)]
              ["android/src/{{android-dirs}}.java"
               (render "AndroidLauncher.java" data)]
-             ["android/libs/armeabi/mini2dx.so"
+             ["android/libs/armeabi/libgdx.so"
               (java.io/file (java.io/resource "armeabi-libgdx.so"))]
-             ["android/libs/armeabi-v7a/mini2dx.so"
+             ["android/libs/armeabi-v7a/libgdx.so"
               (java.io/file (java.io/resource "armeabi-v7a-libgdx.so"))])))

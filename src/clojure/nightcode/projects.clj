@@ -41,7 +41,7 @@
 
 (defn set-selection
   [e]
-  (let [path (-> e .getPath utils/tree-path-to-str)]
+  (when-let [path (-> e .getPath utils/tree-path-to-str)]
     (s/config! (s/select @utils/ui-root [:#remove-button])
                :enabled?
                (or (contains? @tree-projects path)
