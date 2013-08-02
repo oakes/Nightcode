@@ -1,8 +1,7 @@
 (ns nightcode.shortcuts
   (:require [nightcode.utils :as utils]
             [seesaw.core :as s]
-            [seesaw.keymap :as keymap]
-            [seesaw.keystroke :as keystroke])
+            [seesaw.keymap :as keymap])
   (:import [java.awt Toolkit]
            [java.awt Color KeyboardFocusManager KeyEventDispatcher]
            [java.awt.event ActionEvent KeyEvent]
