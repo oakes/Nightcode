@@ -15,13 +15,15 @@
 (def tree-selection (atom nil))
 
 (defn get-project-path
-  ([] (get-project-path (utils/get-selected-path)))
+  ([]
+   (get-project-path (utils/get-selected-path)))
   ([path]
-   (when-let [file (java.io/file path)]
-     (if (or (utils/is-project-path? (.getCanonicalPath file))
-             (contains? @tree-projects (.getCanonicalPath file)))
-       (.getCanonicalPath file)
-       (get-project-path (.getCanonicalPath (.getParentFile file)))))))
+   (when path
+     (when-let [file (java.io/file path)]
+       (if (or (utils/is-project-path? (.getCanonicalPath file))
+               (contains? @tree-projects (.getCanonicalPath file)))
+         (.getCanonicalPath file)
+         (get-project-path (.getCanonicalPath (.getParentFile file))))))))
 
 (defn get-project-root-path
   []
