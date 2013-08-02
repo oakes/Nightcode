@@ -23,7 +23,8 @@
        (if (or (utils/is-project-path? (.getCanonicalPath file))
                (contains? @tree-projects (.getCanonicalPath file)))
          (.getCanonicalPath file)
-         (get-project-path (.getCanonicalPath (.getParentFile file))))))))
+         (when-let [parent-file (.getParentFile file)]
+           (get-project-path (.getCanonicalPath parent-file))))))))
 
 (defn get-project-root-path
   []

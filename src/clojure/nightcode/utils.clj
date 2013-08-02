@@ -115,7 +115,8 @@
 
 (defn is-project-path?
   [path]
-  (and (.isDirectory (java.io/file path))
+  (and path
+       (.isDirectory (java.io/file path))
        (.exists (java.io/file path "project.clj"))))
 
 (defn get-project-tree
