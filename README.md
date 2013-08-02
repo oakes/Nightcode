@@ -1,6 +1,6 @@
 ## Introduction
 
-Nightcode is a simple IDE for Clojure and Java. It integrates a copy of Leiningen as well as the lein-droid and cljsbuild plugins. The goal is to provide a simple, all-in-one solution to get started with Clojure/Java programming for the console, the desktop, the web, and Android.
+Nightcode is a simple IDE for Clojure and Java. It integrates a copy of Leiningen as well as the lein-droid and lein-cljsbuild plugins. The goal is to provide a simple, all-in-one solution to get started with Clojure/Java programming for the console, the desktop, the web, and Android.
 
 ## Licensing
 
