@@ -115,7 +115,9 @@
   (s/invoke-later
     ; show the frame
     (reset! utils/ui-root
-            (-> (s/frame :title (utils/get-string :app_name)
+            (-> (s/frame :title (str (utils/get-string :app_name)
+                                     " "
+                                     (utils/get-version))
                          :content (get-window-content)
                          :width 1024
                          :height 768

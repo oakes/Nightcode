@@ -88,6 +88,15 @@
         (clojure.string/replace "_" "-")
         (clojure.string/replace #"[^a-z0-9-.]" ""))))
 
+(defn get-version
+  []
+  (let [project-clj (-> (java.io/resource "project.clj")
+                        (slurp)
+                        (read-string))]
+    (if (= (name (nth project-clj 1)) "nightcode")
+      (nth project-clj 2)
+      "beta")))
+
 ; ui
 
 (def ui-root (atom nil))
