@@ -102,12 +102,13 @@
     (reset! forms [])
     (reset! profiles [])
     (func project-map)
-    (->> (str "["
-              (leiningen.trampoline/trampoline-command-string
-                project-map @forms @profiles)
-              "]")
-         clojure.edn/read-string
-         (start-process process path))))
+    (doseq [i (range (count @forms))]
+      (->> (str "["
+                (leiningen.trampoline/trampoline-command-string
+                  project-map [(nth @forms i)] [(nth @profiles i)])
+                "]")
+           clojure.edn/read-string
+           (start-process process path)))))
 
 (defn stop-process
   [process]
