@@ -1,4 +1,4 @@
-(defproject nightcode "0.0.1"
+(defproject nightcode "0.0.2"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.github.insubstantial/substance "7.1"]
