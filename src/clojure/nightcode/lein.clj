@@ -19,7 +19,7 @@
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
-(def namespace-name (str *ns*))
+; utilities
 
 (defn get-project-clj-path
   [path]
@@ -35,6 +35,15 @@
                   [:android :sdk-path]
                   (or (get-in project-map [:android :sdk-path])
                       (utils/read-pref :android-sdk)))))))
+
+(defn create-file-from-template
+  [dir file-name template-namespace data]
+  (let [render (leiningen.new.templates/renderer template-namespace)]
+    (binding [leiningen.new.templates/*dir* dir]
+      (->> [file-name (render file-name data)]
+           (leiningen.new.templates/->files data)))))
+
+; start/stop thread/processes
 
 (defn redirect-io
   [in out func]
@@ -79,8 +88,10 @@
       (.join pump-err)
       (.waitFor @process))))
 
-(defn start-internal-process
-  [process path cmd args]
+(def namespace-name (str *ns*))
+
+(defn start-slow-process
+  [process path cmd]
   (let [project-map (read-project-clj path)
         java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")]
     (start-process process
@@ -89,25 +100,23 @@
                    "-cp"
                    (System/getProperty "java.class.path")
                    namespace-name
-                   cmd
-                   (or args []))))
+                   cmd)))
 
-(defn start-lein-process
+(defn start-fast-process
   [process path func]
   (let [project-map (-> (read-project-clj path)
-                        leiningen.core.project/init-project
                         (assoc :eval-in :trampoline))
         forms leiningen.core.eval/trampoline-forms
         profiles leiningen.core.eval/trampoline-profiles]
     (reset! forms [])
     (reset! profiles [])
-    (func project-map)
+    (func path project-map)
     (doseq [i (range (count @forms))]
-      (->> (str "["
-                (leiningen.trampoline/trampoline-command-string
-                  project-map [(nth @forms i)] [(nth @profiles i)])
-                "]")
-           clojure.edn/read-string
+      (->> (let [form (nth @forms i)
+                 profile (nth @profiles i)
+                 project-map (leiningen.core.project/set-profiles
+                               project-map [profile])]
+             (leiningen.core.eval/shell-command project-map form))
            (start-process process path)))))
 
 (defn stop-process
@@ -122,6 +131,8 @@
     (.interrupt @thread)
     (reset! thread nil)))
 
+; check project types
+
 (defn is-android-project?
   [path]
   (.exists (java.io/file path "AndroidManifest.xml")))
@@ -134,44 +145,62 @@
         (clojure.set/subset? (set (:source-paths project-map))
                              (set (:java-source-paths project-map))))))
 
-(defn create-file-from-template
-  [dir file-name template-namespace data]
-  (let [render (leiningen.new.templates/renderer template-namespace)]
-    (binding [leiningen.new.templates/*dir* dir]
-      (->> [file-name (render file-name data)]
-           (leiningen.new.templates/->files data)))))
+(defn is-clojurescript-project?
+  [path]
+  (when-let [project-map (read-project-clj path)]
+    (not (nil? (:cljsbuild project-map)))))
+
+; low-level commands
+
+(defn run-project-task
+  [path project-map]
+  (if (is-android-project? path)
+    (doseq [sub-cmd ["build" "apk" "install" "run"]]
+      (leiningen.droid/droid project-map sub-cmd))
+    (leiningen.run/run project-map)))
+
+(defn run-repl-project-task
+  [path project-map]
+  (if (is-android-project? path)
+    (doseq [sub-cmd ["doall" "repl"]]
+      (leiningen.droid/droid project-map sub-cmd)
+      (Thread/sleep 10000))
+    (leiningen.repl/repl project-map)))
+
+(defn build-project-task
+  [path project-map]
+  (if (is-android-project? path)
+    (leiningen.droid/droid project-map "release")
+    (leiningen.uberjar/uberjar project-map)))
+
+; high-level commands
 
 (defn run-project
-  [process thread in out path args]
+  [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (fn [project-map]
-         (if (is-android-project? path)
-           (doseq [sub-cmd ["build" "apk" "install" "run"]]
-             (apply leiningen.droid/droid project-map sub-cmd args))
-           (leiningen.run/run project-map)))
-       (start-lein-process process path)
-       (do (println (utils/get-string :running)))
+  (->> (do (println (utils/get-string :running))
+         (if (is-clojurescript-project? path)
+           (start-slow-process process path "run")
+           (start-fast-process process path run-project-task)))
        (start-thread thread in out)))
 
 (defn run-repl-project
-  [process thread in out path args]
+  [process thread in out path]
   (stop-process process)
   (stop-thread thread)
   (->> (do (println (utils/get-string :running_with_repl))
-         (start-internal-process process path "repl" args))
+         (start-slow-process process path "repl"))
        (start-thread thread in out)))
 
 (defn build-project
-  [process thread in out path args]
+  [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (fn [project-map]
-         (if (is-android-project? path)
-           (apply leiningen.droid/droid project-map "release" args)
-           (leiningen.uberjar/uberjar project-map)))
-       (start-lein-process process path)
-       (do (println (utils/get-string :building)))
+  (->> (do (println (utils/get-string :building))
+         (if (is-clojurescript-project? path)
+           (start-slow-process process path "build")
+           (start-fast-process process path build-project-task)))
        (start-thread thread in out)))
 
 (defn test-project
@@ -227,18 +256,17 @@
        (binding [leiningen.core.main/*exit-process?* false])
        (start-thread thread in out)))
 
+; main function for "slow" processes
+
 (defn -main
   [cmd & args]
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
         project-map (leiningen.core.project/init-project
-                      (read-project-clj path))
-        android? (is-android-project? path)]
+                      (read-project-clj path))]
     (case cmd
-      "repl" (if android?
-               (doseq [sub-cmd ["doall" "repl"]]
-                 (apply leiningen.droid/droid project-map sub-cmd args)
-                 (Thread/sleep 10000))
-               (leiningen.repl/repl project-map))
+      "run" (run-project-task path project-map)
+      "repl" (run-repl-project-task path project-map)
+      "build" (build-project-task path project-map)
       nil))
   (System/exit 0))

@@ -30,12 +30,12 @@
         in (utils/get-console-input console)
         out (utils/get-console-output console)
         run-action (fn [e]
-                     (lein/run-project process thread in out path nil))
+                     (lein/run-project process thread in out path))
         run-repl-action (fn [e]
-                          (lein/run-repl-project process thread in out path nil)
+                          (lein/run-repl-project process thread in out path)
                           (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
-                       (lein/build-project process thread in out path nil))
+                       (lein/build-project process thread in out path))
         test-action (fn [e]
                       (lein/test-project process thread in out path))
         clean-action (fn [e]
