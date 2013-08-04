@@ -98,7 +98,7 @@
                    path
                    java-cmd
                    "-cp"
-                   (System/getProperty "java.class.path")
+                   (str ".:" (System/getProperty "java.class.path"))
                    namespace-name
                    cmd)))
 
