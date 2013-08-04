@@ -83,7 +83,11 @@
         (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
               current-modifier (.getModifiers e)
               is-down? (= (bit-and modifier current-modifier) modifier)]
-          (toggle-hints target is-down?)
+          ; show or hide the shortcut hints
+          (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
+                    (= (.getKeyCode e) KeyEvent/VK_META))
+            (toggle-hints target is-down?))
+          ; provide special actions for certain keys
           (if (and is-down? (= (.getID e) KeyEvent/KEY_PRESSED))
             (case (.getKeyCode e)
               ; enter
