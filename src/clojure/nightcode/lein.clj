@@ -88,8 +88,6 @@
       (.join pump-err)
       (.waitFor @process))))
 
-(def namespace-name (str *ns*))
-
 (defn start-slow-process
   [process path cmd]
   (let [project-map (read-project-clj path)
@@ -99,7 +97,7 @@
                    java-cmd
                    "-cp"
                    (System/getProperty "java.class.path")
-                   namespace-name
+                   (.getCanonicalName nightcode.lein)
                    cmd)))
 
 (defn start-fast-process
