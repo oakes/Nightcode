@@ -183,20 +183,21 @@
 ; actions for project tree buttons
 
 (defn new-project
-  [e]
-  (when-let [console (s/select @utils/ui-root [:#repl-console])]
-    (when-let [dir (chooser/choose-file :type :save)]
-      (when-let [[project-type project-name package-name project-dir]
-                 (dialogs/show-project-type-dialog dir)]
-        (lein/new-project (utils/get-console-input console)
-                          (utils/get-console-output console)
-                          (.getParent dir)
-                          project-type
-                          project-name
-                          package-name)
-        (when (.exists (java.io/file project-dir))
-          (add-to-project-tree project-dir)
-          (update-project-tree project-dir))))))
+  [thread console]
+  (when-let [dir (chooser/choose-file :type :save)]
+    (when-let [[project-type project-name package-name project-dir]
+               (dialogs/show-project-type-dialog dir)]
+      (lein/stop-thread thread)
+      (lein/new-project (utils/get-console-input console)
+                        (utils/get-console-output console)
+                        (.getParent dir)
+                        project-type
+                        project-name
+                        package-name)
+      (when (.exists (java.io/file project-dir))
+        (add-to-project-tree project-dir)
+        (update-project-tree project-dir))
+      console)))
 
 (defn new-file
   [e]

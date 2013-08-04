@@ -12,10 +12,11 @@
 
 (defn start-repl
   [thread console]
-  (s/request-focus! (.getView (.getViewport console)))
-  (lein/run-repl thread
-                 (utils/get-console-input console)
-                 (utils/get-console-output console)))
+  (when console
+    (s/request-focus! (.getView (.getViewport console)))
+    (lein/run-repl thread
+                   (utils/get-console-input console)
+                   (utils/get-console-output console))))
 
 (defn get-project-pane
   "Returns the pane with the project tree."
@@ -23,9 +24,8 @@
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)
         create-new-project (fn [e]
-                             (lein/stop-thread thread)
-                             (p/new-project e)
                              (->> (s/select @utils/ui-root [:#repl-console])
+                                  (p/new-project thread)
                                   (start-repl thread)))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :new-project-button
