@@ -11,6 +11,8 @@
 Accepts a group id in the project name: `lein new foo.bar/baz`"
   [name package-name]
   (let [render (renderer "mini2dx-java")
+        android-render (renderer "android-java")
+        libgdx-render (renderer "libgdx-java")
         class-name "Core"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
@@ -43,18 +45,18 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
               (render "DesktopLauncher.java" data)]
              ; android
              ["android/AndroidManifest.xml"
-              (render "../libgdx_java/AndroidManifest.xml" data)]
+              (libgdx-render "AndroidManifest.xml" data)]
              ["android/project.clj" (render "android-project.clj" data)]
              ["android/res/drawable-hdpi/ic_launcher.png"
-              (render "../android_java/ic_launcher_hdpi.png")]
+              (android-render "ic_launcher_hdpi.png")]
              ["android/res/drawable-mdpi/ic_launcher.png"
-              (render "../android_java/ic_launcher_mdpi.png")]
+              (android-render "ic_launcher_mdpi.png")]
              ["android/res/drawable-ldpi/ic_launcher.png"
-              (render "../android_java/ic_launcher_ldpi.png")]
+              (android-render "ic_launcher_ldpi.png")]
              ["android/res/values/strings.xml"
-              (render "../android_java/strings.xml" data)]
+              (android-render "strings.xml" data)]
              ["android/res/layout/main.xml"
-              (render "../android_java/main.xml" data)]
+              (android-render "main.xml" data)]
              ["android/src/{{android-dirs}}.java"
               (render "AndroidLauncher.java" data)]
              ["android/libs/armeabi/libgdx.so"
