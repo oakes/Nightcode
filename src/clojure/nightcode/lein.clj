@@ -173,6 +173,14 @@
     (leiningen.droid/droid project-map "release")
     (leiningen.uberjar/uberjar project-map)))
 
+(defn test-project-task
+  [path project-map]
+  (leiningen.test/test project-map))
+
+(defn clean-project-task
+  [path project-map]
+  (leiningen.clean/clean project-map))
+
 ; high-level commands
 
 (defn run-project
@@ -207,22 +215,20 @@
   [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (let [project-map (read-project-clj path)]
-         (println (utils/get-string :testing))
-         (leiningen.test/test project-map)
-         (when (:cljsbuild project-map)
-           (leiningen.cljsbuild/cljsbuild project-map "test")))
+  (->> (do (println (utils/get-string :testing))
+         (if (is-clojurescript-project? path)
+           (start-slow-process process path "test")
+           (start-fast-process process path test-project-task)))
        (start-thread thread in out)))
 
 (defn clean-project
   [process thread in out path]
   (stop-process process)
   (stop-thread thread)
-  (->> (let [project-map (read-project-clj path)]
-         (println (utils/get-string :cleaning))
-         (leiningen.clean/clean project-map)
-         (when (:cljsbuild project-map)
-           (leiningen.cljsbuild/cljsbuild project-map "clean")))
+  (->> (do (println (utils/get-string :cleaning))
+         (if (is-clojurescript-project? path)
+           (start-slow-process process path "clean")
+           (start-fast-process process path clean-project-task)))
        (start-thread thread in out)))
 
 (defn new-project
@@ -265,8 +271,10 @@
         project-map (leiningen.core.project/init-project
                       (read-project-clj path))]
     (case cmd
-      "run" (run-project-task path project-map)
-      "repl" (run-repl-project-task path project-map)
       "build" (build-project-task path project-map)
+      "clean" (clean-project-task path project-map)
+      "repl" (run-repl-project-task path project-map)
+      "run" (run-project-task path project-map)
+      "test" (test-project-task path project-map)
       nil))
   (System/exit 0))
