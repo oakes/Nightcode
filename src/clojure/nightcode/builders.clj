@@ -90,7 +90,8 @@
   [path]
   (let [pane (s/select @utils/ui-root [:#builder-pane])]
     ; create new builder if necessary
-    (when (and (utils/is-project-path? path)
+    (when (and path
+               (utils/is-project-path? path)
                (not (contains? @builders path)))
       (when-let [view (create-builder path)]
         (swap! builders assoc path view)

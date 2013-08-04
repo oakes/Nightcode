@@ -164,8 +164,10 @@
    ; select the first project if there is nothing selected
    (when (nil? @tree-selection)
      (.setSelectionRow tree 0))
-   ; disable buttons if there is still nothing selected
+   ; hide panes and disable buttons if there is still nothing selected
    (when (nil? @tree-selection)
+     (editors/show-editor nil)
+     (builders/show-builder nil)
      (doseq [btn [:#remove-button :#new-file-button :#rename-file-button]]
        (s/config! (s/select @utils/ui-root [btn]) :enabled? false)))))
 

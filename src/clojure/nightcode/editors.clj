@@ -211,7 +211,7 @@
   [path]
   (let [editor-pane (s/select @utils/ui-root [:#editor-pane])]
     ; create new editor if necessary
-    (when-not (contains? @editors path)
+    (when (and path (contains? @editors path))
       (when-let [view (or (create-editor path)
                           (create-logcat path))]
         (swap! editors assoc path view)
