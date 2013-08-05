@@ -4,7 +4,7 @@ Nightcode is a simple IDE for Clojure and Java. It integrates a copy of Leininge
 
 ## Working With Source
 
-Nichtcode can be built and run with [Leiningen](http://leiningen.org/), [git](http://git-scm.com/), and the [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html) on your path.
+Nichtcode can be built and run with [Leiningen](http://leiningen.org/), [git](http://git-scm.com/), and the [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html)(version 6 or higher) on your path.
 
 the following commands can be used to build and run Nightcode
 
@@ -15,7 +15,6 @@ the following commands can be used to build and run Nightcode
 and when you want to get the latest source from the repository:
 
     $ git pull
-    
 
 ## Licensing
 
