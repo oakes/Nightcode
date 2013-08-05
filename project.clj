@@ -11,4 +11,5 @@
                  [seesaw "1.4.3"]]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
+  :aot  [nightcode.lein]
   :main nightcode.core)
