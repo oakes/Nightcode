@@ -3,6 +3,7 @@
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
+            [paredit-widget.core :as paredit]
             [seesaw.color :as color]
             [seesaw.core :as s])
   (:import [com.camick TextPrompt]
@@ -121,7 +122,7 @@
   [path]
   (when (and (.isFile (java.io/file path))
              (contains? styles (get-extension path)))
-    (let [text-area (TextEditorPane.)
+    (let [text-area (paredit/paredit-widget (TextEditorPane.))
           text-area-scroll (RTextScrollPane. text-area)
           btn-group (s/horizontal-panel
                       :items [(s/flow-panel
