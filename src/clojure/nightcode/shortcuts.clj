@@ -28,7 +28,9 @@
    :repl-console "G"
    :find-field "F"
    :project-tree "↑ ↓ ↵"
-   :toggle-logcat-button "S"})
+   :toggle-logcat-button "S"
+   :font-enc-button "EQUALS"
+   :font-dec-button "MINUS"})
 
 (defn create-mappings
   [panel pairs]
