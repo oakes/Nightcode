@@ -1,5 +1,6 @@
 (ns nightcode.builders
-  (:require [nightcode.lein :as lein]
+  (:require [nightcode.editors :as editors]
+            [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
@@ -22,6 +23,13 @@
                                       :remember-directory? false)]
     (utils/write-pref :android-sdk (.getCanonicalPath dir))))
 
+(defn toggle-repl-buttons
+  [is-running?]
+  (-> (s/select @utils/ui-root [:#run-repl-button])
+      (s/config! :visible? (not is-running?)))
+  (-> (s/select @utils/ui-root [:#eval-repl-button])
+      (s/config! :visible? is-running?)))
+
 (defn create-builder
   [path]
   (let [console (utils/create-console)
@@ -33,7 +41,12 @@
                      (lein/run-project process thread in out path))
         run-repl-action (fn [e]
                           (lein/run-repl-project process thread in out path)
-                          (s/request-focus! (.getView (.getViewport console))))
+                          (s/request-focus! (.getView (.getViewport console)))
+                          (toggle-repl-buttons true))
+        eval-repl-action (fn [e]
+                           (let [code (editors/get-editor-content)]
+                             (.insertCode console (str "(do " code ")")))
+                           (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
                        (lein/build-project process thread in out path))
         test-action (fn [e]
@@ -42,7 +55,8 @@
                        (lein/clean-project process thread in out path))
         stop-action (fn [e]
                       (lein/stop-process process)
-                      (lein/stop-thread thread))
+                      (lein/stop-thread thread)
+                      (toggle-repl-buttons false))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
@@ -52,6 +66,11 @@
                                       :text (utils/get-string :run_with_repl)
                                       :listen [:action run-repl-action]
                                       :focusable? false)
+                            (s/button :id :eval-repl-button
+                                      :text (utils/get-string :eval_in_repl)
+                                      :listen [:action eval-repl-action]
+                                      :focusable? false
+                                      :visible? false)
                             (s/button :id :build-button
                                       :text (utils/get-string :build)
                                       :listen [:action build-action]
@@ -79,6 +98,7 @@
     (shortcuts/create-mappings build-group
                                {:run-button run-action
                                 :run-repl-button run-repl-action
+                                :eval-repl-button eval-repl-action
                                 :build-button build-action
                                 :test-button test-action
                                 :clean-button clean-action

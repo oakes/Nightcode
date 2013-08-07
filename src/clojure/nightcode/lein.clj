@@ -1,6 +1,5 @@
 (ns nightcode.lein
-  (:require [clojure.edn :as edn]
-            [clojure.java.io :as java.io]
+  (:require [clojure.java.io :as java.io]
             [clojure.main]
             [leiningen.core.eval]
             [leiningen.core.main]

@@ -17,6 +17,7 @@
    :remove-button "U"
    :run-button "R"
    :run-repl-button "E"
+   :eval-repl-button "shift S"
    :build-button "B"
    :test-button "T"
    :clean-button "L"
