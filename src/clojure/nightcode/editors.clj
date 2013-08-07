@@ -15,6 +15,7 @@
 ; open editors
 
 (def editors (atom {}))
+(def font-size (atom (utils/read-pref :font-size)))
 
 (defn get-editor
   [path]
@@ -74,20 +75,25 @@
     (update-buttons (get-selected-editor-pane) editor)))
 
 (defn set-font-size
+  [editor size]
+  (.setFont editor (-> editor .getFont (.deriveFont (float size)))))
+
+(defn set-font-sizes
   [size-fn]
-  (when-let [editor (get-selected-editor)]
-    (let [font (.getFont editor)
-          size (.getSize font)
-          new-font (.deriveFont font (float (size-fn size)))]
-      (.setFont editor new-font))))
+  (when-let [selected-editor (get-selected-editor)]
+    (reset! font-size (-> selected-editor .getFont .getSize size-fn))
+    (utils/write-pref :font-size @font-size)
+    (doseq [[path editor-pane] @editors]
+      (when-let [editor (get-editor path)]
+        (set-font-size editor @font-size)))))
 
 (defn increase-font-size
   [e]
-  (set-font-size inc))
+  (set-font-sizes inc))
 
 (defn decrease-font-size
   [e]
-  (set-font-size dec))
+  (set-font-sizes dec))
 
 (defn focus-on-find
   [e]
@@ -166,12 +172,12 @@
                                         :listen [:action redo-file])
                               (s/button :id :font-enc-button
                                         :text
-                                        (utils/get-string :font-enc)
+                                        (utils/get-string :font_inc)
                                         :focusable? false
                                         :listen [:action increase-font-size])
                               (s/button :id :font-dec-button
                                         :text
-                                        (utils/get-string :font-dec)
+                                        (utils/get-string :font_dec)
                                         :focusable? false
                                         :listen [:action decrease-font-size])
                               (s/text :id :find-field
@@ -211,6 +217,8 @@
           java.io/input-stream
           Theme/load
           (.apply text-area))
+      (when @font-size
+        (set-font-size text-area @font-size))
       text-group)))
 
 (defn create-logcat
