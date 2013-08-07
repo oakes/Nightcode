@@ -73,6 +73,22 @@
     (.redoLastAction editor)
     (update-buttons (get-selected-editor-pane) editor)))
 
+(defn set-font-size
+  [size-fn]
+  (when-let [editor (get-selected-editor)]
+    (let [font (.getFont editor)
+          size (.getSize font)
+          new-font (.deriveFont font (float (size-fn size)))]
+      (.setFont editor new-font))))
+
+(defn increase-font-size
+  [e]
+  (set-font-size inc))
+
+(defn decrease-font-size
+  [e]
+  (set-font-size dec))
+
 (defn focus-on-find
   [e]
   (when-let [pane (get-selected-editor-pane)]
@@ -145,6 +161,16 @@
                                         (utils/get-string :redo)
                                         :focusable? false
                                         :listen [:action redo-file])
+                              (s/button :id :font-enc-button
+                                        :text
+                                        (utils/get-string :font-enc)
+                                        :focusable? false
+                                        :listen [:action increase-font-size])
+                              (s/button :id :font-dec-button
+                                        :text
+                                        (utils/get-string :font-dec)
+                                        :focusable? false
+                                        :listen [:action decrease-font-size])
                               (s/text :id :find-field
                                       :columns 10
                                       :listen [:key-released search])])
@@ -155,7 +181,9 @@
                                  {:save-button save-file
                                   :undo-button undo-file
                                   :redo-button redo-file
-                                  :find-field focus-on-find})
+                                  :find-field focus-on-find
+                                  :font-enc-button increase-font-size
+                                  :font-dec-button decrease-font-size})
       (shortcuts/create-hints text-group)
       (update-buttons text-group text-area)
       (doto (TextPrompt. (utils/get-string :find)
