@@ -129,29 +129,25 @@
              (contains? styles (get-extension path)))
     (let [text-area (paredit/paredit-widget (TextEditorPane.))
           text-area-scroll (RTextScrollPane. text-area)
-          btn-group (s/horizontal-panel
-                      :items [(s/flow-panel
-                                :items [(s/button :id :save-button
-                                                  :text
-                                                  (utils/get-string :save)
-                                                  :focusable? false
-                                                  :listen [:action save-file])
-                                        (s/button :id :undo-button
-                                                  :text
-                                                  (utils/get-string :undo)
-                                                  :focusable? false
-                                                  :listen [:action undo-file])
-                                        (s/button :id :redo-button
-                                                  :text
-                                                  (utils/get-string :redo)
-                                                  :focusable? false
-                                                  :listen [:action redo-file])
-                                        (s/text :id :find-field
-                                                :columns 10
-                                                :listen [:key-released search])]
-                                :align :left
-                                :hgap 0
-                                :vgap 0)])
+          btn-group (utils/wrap-panel
+                      :items [(s/button :id :save-button
+                                        :text
+                                        (utils/get-string :save)
+                                        :focusable? false
+                                        :listen [:action save-file])
+                              (s/button :id :undo-button
+                                        :text
+                                        (utils/get-string :undo)
+                                        :focusable? false
+                                        :listen [:action undo-file])
+                              (s/button :id :redo-button
+                                        :text
+                                        (utils/get-string :redo)
+                                        :focusable? false
+                                        :listen [:action redo-file])
+                              (s/text :id :find-field
+                                      :columns 10
+                                      :listen [:key-released search])])
           text-group (s/border-panel
                        :north btn-group
                        :center text-area-scroll)]

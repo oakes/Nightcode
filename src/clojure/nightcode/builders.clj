@@ -24,11 +24,11 @@
     (utils/write-pref :android-sdk (.getCanonicalPath dir))))
 
 (defn toggle-repl-buttons
-  [is-running?]
-  (-> (s/select @utils/ui-root [:#run-repl-button])
-      (s/config! :visible? (not is-running?)))
-  (-> (s/select @utils/ui-root [:#eval-repl-button])
-      (s/config! :visible? is-running?)))
+  [target is-running?]
+  (-> (s/select target [:#run-repl-button])
+      (s/config! :enabled? (not is-running?)))
+  (-> (s/select target [:#eval-repl-button])
+      (s/config! :enabled? is-running?)))
 
 (defn create-builder
   [path]
@@ -42,7 +42,7 @@
         run-repl-action (fn [e]
                           (lein/run-repl-project process thread in out path)
                           (s/request-focus! (.getView (.getViewport console)))
-                          (toggle-repl-buttons true))
+                          (toggle-repl-buttons @utils/ui-root true))
         eval-repl-action (fn [e]
                            (let [code (editors/get-editor-content)]
                              (.insertCode console (str "(do " code ")")))
@@ -56,8 +56,8 @@
         stop-action (fn [e]
                       (lein/stop-process process)
                       (lein/stop-thread thread)
-                      (toggle-repl-buttons false))
-        btn-group (s/horizontal-panel
+                      (toggle-repl-buttons @utils/ui-root false))
+        btn-group (utils/wrap-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
                                       :listen [:action run-action]
@@ -69,8 +69,7 @@
                             (s/button :id :eval-repl-button
                                       :text (utils/get-string :eval_in_repl)
                                       :listen [:action eval-repl-action]
-                                      :focusable? false
-                                      :visible? false)
+                                      :focusable? false)
                             (s/button :id :build-button
                                       :text (utils/get-string :build)
                                       :listen [:action build-action]
@@ -90,11 +89,11 @@
                             (s/button :id :sdk-button
                                       :text (utils/get-string :android_sdk)
                                       :listen [:action set-android-sdk]
-                                      :focusable? false)
-                            :fill-h])
-        build-group (s/vertical-panel
-                      :items [btn-group
-                              (s/config! console :id :build-console)])]
+                                      :focusable? false)])
+        build-group (s/border-panel
+                      :north btn-group
+                      :center (s/config! console :id :build-console))]
+    (toggle-repl-buttons build-group false)
     (shortcuts/create-mappings build-group
                                {:run-button run-action
                                 :run-repl-button run-repl-action
@@ -124,6 +123,7 @@
             is-clojure-project? (not (lein/is-java-project? path))
             is-android-project? (lein/is-android-project? path)
             buttons {:#run-repl-button is-clojure-project?
+                     :#eval-repl-button is-clojure-project?
                      :#test-button is-clojure-project?
                      :#sdk-button is-android-project?}
             sdk-path (get-in project-map [:android :sdk-path])]

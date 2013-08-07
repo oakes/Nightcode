@@ -4,6 +4,7 @@
             [seesaw.core :as s])
   (:import [bsh.util JConsole]
            [clojure.lang LineNumberingPushbackReader]
+           [com.camick WrapLayout]
            [java.util Locale]
            [java.util.prefs Preferences]))
 
@@ -100,6 +101,15 @@
 ; ui
 
 (def ui-root (atom nil))
+
+(defn wrap-panel
+  [& {:keys [items hgap vgap]}]
+  (let [hgap (or hgap 0)
+        vgap (or vgap 0)
+        panel (s/abstract-panel (WrapLayout. WrapLayout/LEFT hgap vgap) {})]
+    (doseq [item items]
+      (s/add! panel item))
+    panel))
 
 (defn create-console
   []
