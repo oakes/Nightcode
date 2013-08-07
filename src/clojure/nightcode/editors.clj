@@ -126,6 +126,7 @@
                      "json" SyntaxConstants/SYNTAX_STYLE_NONE
                      "md" SyntaxConstants/SYNTAX_STYLE_NONE
                      "txt" SyntaxConstants/SYNTAX_STYLE_NONE})
+(def ^:const paredit-exts #{"clj" "cljs"})
 
 (defn get-extension
   [path]
@@ -143,7 +144,9 @@
   [path]
   (when (and (.isFile (java.io/file path))
              (contains? styles (get-extension path)))
-    (let [text-area (paredit/paredit-widget (TextEditorPane.))
+    (let [text-area (if (contains? paredit-exts (get-extension path))
+                      (paredit/paredit-widget (TextEditorPane.))
+                      (TextEditorPane.))
           text-area-scroll (RTextScrollPane. text-area)
           btn-group (utils/wrap-panel
                       :items [(s/button :id :save-button
