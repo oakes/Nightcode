@@ -16,6 +16,7 @@
 
 (def editors (atom {}))
 (def font-size (atom (utils/read-pref :font-size)))
+(def disable-paredit? (utils/read-pref :disable-paredit))
 
 (defn get-editor
   [path]
@@ -161,7 +162,8 @@
   [path]
   (when (and (.isFile (java.io/file path))
              (contains? styles (get-extension path)))
-    (let [text-area (if (contains? paredit-exts (get-extension path))
+    (let [text-area (if (and (not disable-paredit?)
+                             (contains? paredit-exts (get-extension path)))
                       (paredit/paredit-widget (TextEditorPane.))
                       (TextEditorPane.))
           text-area-scroll (RTextScrollPane. text-area)
