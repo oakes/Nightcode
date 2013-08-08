@@ -12,7 +12,7 @@
             FileLocation SyntaxConstants TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
 
-; open editors
+; dealing with currently-open editors
 
 (def editors (atom {}))
 (def font-size (atom (utils/read-pref :font-size)))
@@ -37,10 +37,15 @@
   (when-let [editor (get-editor path)]
     (.isDirty editor)))
 
-(defn get-editor-content
+(defn get-editor-text
   []
   (when-let [editor (get-selected-editor)]
     (.getText editor)))
+
+(defn get-editor-selected-text
+  []
+  (when-let [editor (get-selected-editor)]
+    (.getSelectedText editor)))
 
 ; actions for editor buttons
 

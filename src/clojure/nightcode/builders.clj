@@ -44,7 +44,8 @@
                           (s/request-focus! (.getView (.getViewport console)))
                           (toggle-repl-buttons @utils/ui-root true))
         eval-repl-action (fn [e]
-                           (let [code (editors/get-editor-content)]
+                           (let [code (or (editors/get-editor-selected-text)
+                                          (editors/get-editor-text))]
                              (.insertCode console (str "(do " code ")")))
                            (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
