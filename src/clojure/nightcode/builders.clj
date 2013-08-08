@@ -120,7 +120,7 @@
     (s/show-card! pane (if (contains? @builders path) path :default-card))
     ; modify pane based on the project
     (when (contains? @builders path)
-      (let [project-map (lein/read-project-clj path)
+      (let [project-map (lein/add-sdk-path (lein/read-project-clj path))
             is-clojure-project? (not (lein/is-java-project? path))
             is-android-project? (lein/is-android-project? path)
             buttons {:#run-repl-button is-clojure-project?

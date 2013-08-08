@@ -29,11 +29,14 @@
   (let [project-clj-path (get-project-clj-path path)]
     (if-not (.exists (java.io/file project-clj-path))
       (println (utils/get-string :no_project_clj))
-      (when-let [project-map (leiningen.core.project/read project-clj-path)]
-        (assoc-in project-map
-                  [:android :sdk-path]
-                  (or (get-in project-map [:android :sdk-path])
-                      (utils/read-pref :android-sdk)))))))
+      (leiningen.core.project/read project-clj-path))))
+
+(defn add-sdk-path
+  [project-map]
+  (assoc-in project-map
+            [:android :sdk-path]
+            (or (get-in project-map [:android :sdk-path])
+                (utils/read-pref :android-sdk))))
 
 (defn create-file-from-template
   [dir file-name template-namespace data]
@@ -153,21 +156,21 @@
   [path project-map]
   (if (is-android-project? path)
     (doseq [sub-cmd ["build" "apk" "install" "run"]]
-      (leiningen.droid/droid project-map sub-cmd))
+      (leiningen.droid/droid (add-sdk-path project-map) sub-cmd))
     (leiningen.run/run project-map)))
 
 (defn run-repl-project-task
   [path project-map]
   (if (is-android-project? path)
     (doseq [sub-cmd ["doall" "repl"]]
-      (leiningen.droid/droid project-map sub-cmd)
+      (leiningen.droid/droid (add-sdk-path project-map) sub-cmd)
       (Thread/sleep 10000))
     (leiningen.repl/repl project-map)))
 
 (defn build-project-task
   [path project-map]
   (if (is-android-project? path)
-    (leiningen.droid/droid project-map "release")
+    (leiningen.droid/droid (add-sdk-path project-map) "release")
     (leiningen.uberjar/uberjar project-map)))
 
 (defn test-project-task
