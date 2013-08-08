@@ -84,21 +84,27 @@
   (.setFont editor (-> editor .getFont (.deriveFont (float size)))))
 
 (defn set-font-sizes
-  [size-fn]
+  [size]
   (when-let [selected-editor (get-selected-editor)]
-    (reset! font-size (-> selected-editor .getFont .getSize size-fn))
-    (utils/write-pref :font-size @font-size)
     (doseq [[path editor-pane] @editors]
       (when-let [editor (get-editor path)]
-        (set-font-size editor @font-size)))))
+        (set-font-size editor size)))))
+
+(add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))
+
+(defn save-font-size
+  [size]
+  (utils/write-pref :font-size size))
+
+(add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))
 
 (defn increase-font-size
-  [e]
-  (set-font-sizes inc))
+  [_]
+  (swap! font-size inc))
 
 (defn decrease-font-size
-  [e]
-  (set-font-sizes dec))
+  [_]
+  (swap! font-size dec))
 
 (defn focus-on-find
   [e]
@@ -222,8 +228,9 @@
           java.io/input-stream
           Theme/load
           (.apply text-area))
-      (when @font-size
-        (set-font-size text-area @font-size))
+      (if @font-size
+        (set-font-size text-area @font-size)
+        (reset! font-size (-> text-area .getFont .getSize)))
       text-group)))
 
 (defn create-logcat
