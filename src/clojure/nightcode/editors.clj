@@ -169,30 +169,25 @@
           text-area-scroll (RTextScrollPane. text-area)
           btn-group (utils/wrap-panel
                       :items [(s/button :id :save-button
-                                        :text
-                                        (utils/get-string :save)
+                                        :text (utils/get-string :save)
                                         :focusable? false
                                         :listen [:action save-file])
                               (s/button :id :undo-button
-                                        :text
-                                        (utils/get-string :undo)
+                                        :text (utils/get-string :undo)
                                         :focusable? false
                                         :listen [:action undo-file])
                               (s/button :id :redo-button
-                                        :text
-                                        (utils/get-string :redo)
+                                        :text (utils/get-string :redo)
                                         :focusable? false
                                         :listen [:action redo-file])
-                              (s/button :id :font-enc-button
-                                        :text
-                                        (utils/get-string :font_inc)
-                                        :focusable? false
-                                        :listen [:action increase-font-size])
                               (s/button :id :font-dec-button
-                                        :text
-                                        (utils/get-string :font_dec)
+                                        :text (utils/get-string :font_dec)
                                         :focusable? false
                                         :listen [:action decrease-font-size])
+                              (s/button :id :font-enc-button
+                                        :text (utils/get-string :font_inc)
+                                        :focusable? false
+                                        :listen [:action increase-font-size])
                               (s/text :id :find-field
                                       :columns 10
                                       :listen [:key-released search])])

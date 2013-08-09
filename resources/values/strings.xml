@@ -55,7 +55,7 @@
   <string name="save">Save</string>
   <string name="undo">Undo</string>
   <string name="redo">Redo</string>
-  <string name="font_inc">Font +</string>
   <string name="font_dec">Font -</string>
+  <string name="font_inc">Font +</string>
   <string name="find">Find</string>
 </resources>
