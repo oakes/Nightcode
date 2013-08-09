@@ -88,6 +88,7 @@
           pump-in (doto (ClosingPipe. *in* in) .start)]
       (.join pump-out)
       (.join pump-err)
+      (.join pump-in)
       (.waitFor @process))))
 
 (defn start-slow-process

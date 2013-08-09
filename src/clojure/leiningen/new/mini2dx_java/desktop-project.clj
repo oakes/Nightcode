@@ -8,7 +8,7 @@
   :repositories [["libgdx" "http://libgdx.badlogicgames.com/nightlies/maven/"]
                  ["mini2Dx-thirdparty"
                   "http://mini2dx.org/nexus/content/repositories/thirdparty"]
-                 ["mini2dx"
+                 ["mini2Dx"
                   "http://mini2dx.org/nexus/content/repositories/releases"]]
   :java-source-paths ["src" "../common"]
   :main {{desktop-namespace}})
