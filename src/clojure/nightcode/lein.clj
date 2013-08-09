@@ -270,8 +270,9 @@
   [cmd & args]
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
-        project-map (leiningen.core.project/init-project
-                      (read-project-clj path))]
+        project-map (-> (read-project-clj path)
+                        add-sdk-path
+                        leiningen.core.project/init-project)]
     (case cmd
       "build" (build-project-task path project-map)
       "clean" (clean-project-task path project-map)
