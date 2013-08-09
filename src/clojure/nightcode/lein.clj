@@ -257,8 +257,10 @@
   (->> (start-process process
                       nil
                       (-> (read-project-clj path)
-                          leiningen.droid.utils/get-default-android-params
-                          :adb-bin)
+                          add-sdk-path
+                          :android
+                          :sdk-path
+                          (leiningen.droid.utils/sdk-binary :adb))
                       "logcat"
                       "*:I")
        (binding [leiningen.core.main/*exit-process?* false])

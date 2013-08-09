@@ -40,9 +40,9 @@
         run-action (fn [e]
                      (lein/run-project process thread in out path))
         run-repl-action (fn [e]
+                          (toggle-repl-buttons @utils/ui-root true)
                           (lein/run-repl-project process thread in out path)
-                          (s/request-focus! (.getView (.getViewport console)))
-                          (toggle-repl-buttons @utils/ui-root true))
+                          (s/request-focus! (.getView (.getViewport console))))
         eval-repl-action (fn [e]
                            (let [code (or (editors/get-editor-selected-text)
                                           (editors/get-editor-text))]
@@ -55,9 +55,9 @@
         clean-action (fn [e]
                        (lein/clean-project process thread in out path))
         stop-action (fn [e]
+                      (toggle-repl-buttons @utils/ui-root false)
                       (lein/stop-process process)
-                      (lein/stop-thread thread)
-                      (toggle-repl-buttons @utils/ui-root false))
+                      (lein/stop-thread thread))
         btn-group (utils/wrap-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
