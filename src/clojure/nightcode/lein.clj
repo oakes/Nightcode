@@ -239,7 +239,7 @@
          (if (= project-type :android)
            (leiningen.droid.new/new project-name package-name)
            (leiningen.new/new {} (name project-type) project-name package-name))
-         (catch Exception _))
+         (catch Exception e (println e)))
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
        (redirect-io in out)))
