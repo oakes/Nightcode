@@ -38,6 +38,7 @@
         in (utils/get-console-input console)
         out (utils/get-console-output console)
         run-action (fn [e]
+                     (toggle-repl-buttons @utils/ui-root false)
                      (lein/run-project process thread in out path))
         run-repl-action (fn [e]
                           (toggle-repl-buttons @utils/ui-root true)
@@ -49,10 +50,13 @@
                              (.insertCode console (str "(do " code ")")))
                            (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
+                       (toggle-repl-buttons @utils/ui-root false)
                        (lein/build-project process thread in out path))
         test-action (fn [e]
+                      (toggle-repl-buttons @utils/ui-root false)
                       (lein/test-project process thread in out path))
         clean-action (fn [e]
+                       (toggle-repl-buttons @utils/ui-root false)
                        (lein/clean-project process thread in out path))
         stop-action (fn [e]
                       (toggle-repl-buttons @utils/ui-root false)
