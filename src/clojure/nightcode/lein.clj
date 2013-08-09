@@ -170,7 +170,9 @@
 (defn build-project-task
   [path project-map]
   (if (is-android-project? path)
-    (leiningen.droid/droid (add-sdk-path project-map) "release")
+    (-> (leiningen.droid/transform-into-release project-map)
+        add-sdk-path
+        leiningen.droid/execute-release-routine)
     (leiningen.uberjar/uberjar project-map)))
 
 (defn test-project-task
