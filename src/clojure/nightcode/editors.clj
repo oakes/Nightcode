@@ -1,5 +1,6 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as java.io]
+            [flatland.ordered.map :as flatland]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
@@ -14,7 +15,7 @@
 
 ; dealing with currently-open editors
 
-(def editors (atom {}))
+(def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
 
 (defn get-editor
@@ -265,7 +266,21 @@
         (swap! editors assoc path view)
         (.add editor-pane view path)))
     ; display the correct card
-    (s/show-card! editor-pane (if (contains? @editors path) path :default-card))
+    (->> (or (when-let [editor (get @editors path)]
+               ; push to the back of the map
+               (swap! editors dissoc path)
+               (swap! editors assoc path editor)
+               path)
+             :default-card)
+         (s/show-card! editor-pane))
     ; give the editor focus if it exists
     (when-let [editor (get-editor path)]
       (s/request-focus! editor))))
+
+(defn remove-editors
+  [path]
+  (let [editor-pane (s/select @utils/ui-root [:#editor-pane])]
+    (doseq [[editor-path editor] @editors]
+      (when (.startsWith editor-path path)
+        (swap! editors dissoc editor-path)
+        (.remove editor-pane editor)))))

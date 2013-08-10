@@ -139,3 +139,11 @@
         ; make SDK button red if it isn't set
         (-> (s/select (get @builders path) [:#sdk-button])
             (s/config! :background (when-not sdk-path (color/color :red))))))))
+
+(defn remove-builders
+  [path]
+  (let [pane (s/select @utils/ui-root [:#builder-pane])]
+    (doseq [[builder-path builder] @builders]
+      (when (.startsWith builder-path path)
+        (swap! builders dissoc builder-path)
+        (.remove pane builder)))))

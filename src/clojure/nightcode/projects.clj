@@ -135,9 +135,8 @@
                                            (filter @tree-projects)
                                            first)
                                        path))
-      (doseq [[editor-path editor] @editors/editors]
-        (when (.startsWith editor-path path)
-          (swap! editors/editors dissoc editor-path)))
+      (when is-project? (builders/remove-builders path))
+      (editors/remove-editors path)
       true)))
 
 (defn update-project-tree
