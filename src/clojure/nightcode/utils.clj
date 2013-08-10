@@ -1,8 +1,8 @@
 (ns nightcode.utils
-  (:require [clojure.java.io :as java.io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as java.io]
             [clojure.xml :as xml]
-            [seesaw.core :as s]
-            [clojure.edn :as edn])
+            [seesaw.core :as s])
   (:import [bsh.util JConsole]
            [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
@@ -93,8 +93,8 @@
 (defn get-version
   []
   (let [project-clj (-> (java.io/resource "project.clj")
-                        (slurp)
-                        (edn/read-string))]
+                        slurp
+                        read-string)]
     (if (= (name (nth project-clj 1)) "nightcode")
       (nth project-clj 2)
       "beta")))
