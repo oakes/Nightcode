@@ -1,7 +1,7 @@
 (defproject {{raw-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9-SNAPSHOT"]
-                 [com.badlogicgames.gdx/gdx-backend-android "0.9.9-SNAPSHOT"]
+                 [com.badlogicgames.gdx/gdx-backend-lwjgl "0.9.9-SNAPSHOT"]
                  [org.mini2Dx/mini2Dx-core "0.8"]
                  [org.mini2Dx/mini2Dx-tiled "0.8"]
                  [org.mini2Dx/mini2Dx-dependency-injection "0.8"]]
