@@ -37,11 +37,13 @@
         thread (atom nil)
         in (utils/get-console-input console)
         out (utils/get-console-output console)
+        build-group (s/border-panel
+                      :center (s/config! console :id :build-console))
         run-action (fn [e]
-                     (toggle-repl-buttons @utils/ui-root false)
+                     (toggle-repl-buttons build-group false)
                      (lein/run-project process thread in out path))
         run-repl-action (fn [e]
-                          (toggle-repl-buttons @utils/ui-root true)
+                          (toggle-repl-buttons build-group true)
                           (lein/run-repl-project process thread in out path)
                           (s/request-focus! (.getView (.getViewport console))))
         eval-repl-action (fn [e]
@@ -50,16 +52,16 @@
                              (.insertCode console (str "(do " code ")")))
                            (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
-                       (toggle-repl-buttons @utils/ui-root false)
+                       (toggle-repl-buttons build-group false)
                        (lein/build-project process thread in out path))
         test-action (fn [e]
-                      (toggle-repl-buttons @utils/ui-root false)
+                      (toggle-repl-buttons build-group false)
                       (lein/test-project process thread in out path))
         clean-action (fn [e]
-                       (toggle-repl-buttons @utils/ui-root false)
+                       (toggle-repl-buttons build-group false)
                        (lein/clean-project process thread in out path))
         stop-action (fn [e]
-                      (toggle-repl-buttons @utils/ui-root false)
+                      (toggle-repl-buttons build-group false)
                       (lein/stop-process process)
                       (lein/stop-thread thread))
         btn-group (utils/wrap-panel
@@ -94,10 +96,8 @@
                             (s/button :id :sdk-button
                                       :text (utils/get-string :android_sdk)
                                       :listen [:action set-android-sdk]
-                                      :focusable? false)])
-        build-group (s/border-panel
-                      :north btn-group
-                      :center (s/config! console :id :build-console))]
+                                      :focusable? false)])]
+    (s/config! build-group :north btn-group)
     (toggle-repl-buttons build-group false)
     (shortcuts/create-mappings build-group
                                {:run-button run-action
