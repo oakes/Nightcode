@@ -1,7 +1,8 @@
 (ns nightcode.utils
   (:require [clojure.java.io :as java.io]
             [clojure.xml :as xml]
-            [seesaw.core :as s])
+            [seesaw.core :as s]
+            [clojure.edn :as edn])
   (:import [bsh.util JConsole]
            [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
@@ -19,7 +20,7 @@
 (defn read-pref
   [k]
   (when-let [string (.get prefs (name k) nil)]
-    (read-string string)))
+    (edn/read-string string)))
 
 ; language
 
@@ -93,7 +94,7 @@
   []
   (let [project-clj (-> (java.io/resource "project.clj")
                         (slurp)
-                        (read-string))]
+                        (edn/read-string))]
     (if (= (name (nth project-clj 1)) "nightcode")
       (nth project-clj 2)
       "beta")))
