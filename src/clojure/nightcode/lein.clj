@@ -90,16 +90,26 @@
       (.join pump-err)
       (.waitFor @process))))
 
+(defonce class-name (str *ns*))
+
 (defn start-slow-process
   [process path cmd]
   (let [project-map (read-project-clj path)
-        java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")]
+        java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
+        jar-file (-> (Class/forName class-name)
+                     .getProtectionDomain
+                     .getCodeSource
+                     .getLocation
+                     .toURI
+                     java.io/file)]
     (start-process process
                    path
                    java-cmd
                    "-cp"
-                   (System/getProperty "java.class.path")
-                   (.getCanonicalName nightcode.lein)
+                   (if (.isDirectory jar-file)
+                     (System/getProperty "java.class.path")
+                     (.getCanonicalPath jar-file))
+                   class-name
                    cmd)))
 
 (defn start-fast-process
