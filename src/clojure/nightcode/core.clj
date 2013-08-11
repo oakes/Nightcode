@@ -114,38 +114,39 @@
   (s/native!)
   (SubstanceLookAndFeel/setSkin (GraphiteSkin.))
   (s/invoke-later
-    ; show the frame
+    ; create and show the frame
     (reset! utils/ui-root
-            (-> (s/frame :title (str (utils/get-string :app_name)
-                                     " "
-                                     (utils/get-version))
-                         :content (get-window-content)
-                         :width 1024
-                         :height 768
-                         :on-close :exit)
-                shortcuts/create-hints
-                (doto (.addWindowListener
-                        (proxy [WindowAdapter] []
-                          (windowActivated [e]
-                            (p/update-project-tree)))))
-                s/show!))
-    ; set custom key events
-    (shortcuts/listen-for-key
-      @utils/ui-root
-      (fn [key-code]
-        (case key-code
-          ; enter
-          10 (p/toggle-project-tree-selection)
-          ; left
-          37 (p/move-tab-selection -1)
-          ; up
-          38 (p/move-project-tree-selection -1)
-          ; right
-          39 (p/move-tab-selection 1)
-          ; down
-          40 (p/move-project-tree-selection 1)
-          ; Q
-          81 (System/exit 0)
-          false)))
+      (doto (s/frame :title (str (utils/get-string :app_name)
+                                 " "
+                                 (utils/get-version))
+                     :content (get-window-content)
+                     :width 1024
+                     :height 768
+                     :on-close :exit)
+        ; create the shortcut hints for the main buttons
+        shortcuts/create-hints
+        ; listen for keys while modifier is down
+        (shortcuts/listen-for-shortcuts
+          (fn [key-code]
+            (case key-code
+              ; enter
+              10 (p/toggle-project-tree-selection)
+              ; left
+              37 (p/move-tab-selection -1)
+              ; up
+              38 (p/move-project-tree-selection -1)
+              ; right
+              39 (p/move-tab-selection 1)
+              ; down
+              40 (p/move-project-tree-selection 1)
+              ; Q
+              81 (System/exit 0)
+              false)))
+        ; update the project tree when window comes into focus
+        (.addWindowListener (proxy [WindowAdapter] []
+                              (windowActivated [e]
+                                (p/update-project-tree))))
+        ; show the frame
+        s/show!))
     ; initialize the project pane
     (p/update-project-tree)))

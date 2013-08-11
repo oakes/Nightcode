@@ -74,7 +74,14 @@
         (.setPositioner positioner)
         (.setVisible false)))))
 
-(defn listen-for-key
+(defn create-hints
+  [target]
+  (doseq [[id mapping] mappings]
+    (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
+      (create-hint btn mapping)))
+  target)
+
+(defn listen-for-shortcuts
   [target func]
   (.addKeyEventDispatcher
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
@@ -90,13 +97,5 @@
         ; provide special actions for certain keys
         (if (and @is-down? (= (.getID e) KeyEvent/KEY_PRESSED))
           (func (.getKeyCode e))
-          false)))))
-
-(defn create-hints
-  [target]
-  ; create hints and initially hide them
-  (doseq [[id mapping] mappings]
-    (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
-      (create-hint btn mapping)))
-  ; return target
+          false))))
   target)
