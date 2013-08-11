@@ -208,7 +208,7 @@
                                     :undo-button undo-file
                                     :redo-button redo-file
                                     :find-field focus-on-find
-                                    :font-enc-button increase-font-size
+                                    :font-inc-button increase-font-size
                                     :font-dec-button decrease-font-size})
         shortcuts/create-hints
         (update-buttons text-area))
