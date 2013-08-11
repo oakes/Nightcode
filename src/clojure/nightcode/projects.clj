@@ -81,10 +81,10 @@
         new-index (cond
                     (< new-index 0) max-index
                     (> new-index max-index) 0
-                    :else new-index)
-        new-path (nth paths new-index)]
-    (binding [editors/*reorder-tabs?* false]
-      (update-project-tree new-path)))
+                    :else new-index)]
+    (when (> (count paths) 0)
+      (binding [editors/*reorder-tabs?* false]
+        (update-project-tree (nth paths new-index)))))
   true)
 
 (defn toggle-project-tree-selection
