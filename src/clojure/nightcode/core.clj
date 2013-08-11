@@ -50,9 +50,10 @@
                                       :listen [:action p/remove-item]
                                       :focusable? false)
                             :fill-h])
-        project-group (s/vertical-panel
-                        :items [btn-group
-                                (s/scrollable project-tree)])]
+        project-pane (s/vertical-panel
+                       :id :project-pane
+                       :items [btn-group
+                               (s/scrollable project-tree)])]
     (doto project-tree
           (.setRootVisible false)
           (.setShowsRootHandles true)
@@ -63,13 +64,13 @@
           (.addTreeSelectionListener
             (reify TreeSelectionListener
               (valueChanged [this e] (p/set-selection e)))))
-    (shortcuts/create-mappings project-group
+    (shortcuts/create-mappings project-pane
                                {:new-project-button create-new-project
                                 :new-file-button p/new-file
                                 :rename-file-button p/rename-file
                                 :import-button p/import-project
                                 :remove-button p/remove-item})
-    project-group))
+    project-pane))
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
@@ -128,5 +129,23 @@
                           (windowActivated [e]
                             (p/update-project-tree)))))
                 s/show!))
+    ; set custom key events
+    (shortcuts/listen-for-key
+      @utils/ui-root
+      (fn [key-code]
+        (case key-code
+          ; enter
+          10 (p/toggle-project-tree-selection)
+          ; left
+          37 (p/move-tab-selection -1)
+          ; up
+          38 (p/move-project-tree-selection -1)
+          ; right
+          39 (p/move-tab-selection 1)
+          ; down
+          40 (p/move-project-tree-selection 1)
+          ; Q
+          81 (System/exit 0)
+          false)))
     ; initialize the project pane
     (p/update-project-tree)))

@@ -106,7 +106,8 @@
                                 :build-button build-action
                                 :test-button test-action
                                 :clean-button clean-action
-                                :stop-button stop-action})
+                                :stop-button stop-action
+                                :sdk-button set-android-sdk})
     (shortcuts/create-hints build-group)
     build-group))
 

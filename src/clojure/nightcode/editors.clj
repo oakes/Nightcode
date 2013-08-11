@@ -17,6 +17,7 @@
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
+(def tabs (atom nil))
 
 (defn get-editor
   [path]
@@ -284,6 +285,19 @@
                path)
              :default-card)
          (s/show-card! editor-pane))
+    ; update tabs
+    (when @tabs (.closeBalloon @tabs))
+    (->> (for [editor-path (reverse (keys @editors))]
+           (let [file-name (.getName (java.io/file editor-path))]
+             (if (= path editor-path)
+               (str "<u>" file-name "</u>")
+               file-name)))
+         (cons "<center>← →</center>")
+         (clojure.string/join "<br/>")
+         (str "<html>")
+         (shortcuts/create-hint editor-pane)
+         (reset! tabs))
+    (when @shortcuts/is-down? (s/show! @tabs))
     ; give the editor focus if it exists
     (when-let [editor (get-editor path)]
       (s/request-focus! editor))))

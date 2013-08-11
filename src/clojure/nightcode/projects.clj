@@ -58,6 +58,30 @@
     (builders/show-builder (get-project-path path)))
   (utils/write-pref :selection @tree-selection))
 
+(defn move-project-tree-selection
+  [diff]
+  (let [project-tree (utils/get-project-tree)
+        new-row (-> project-tree
+                    .getSelectionRows
+                    first
+                    (or 0)
+                    (+ diff))]
+    (when (and (>= new-row 0) (< new-row (.getRowCount project-tree)))
+      (.setSelectionRow project-tree new-row)))
+  true)
+
+(defn move-tab-selection
+  [diff]
+  true)
+
+(defn toggle-project-tree-selection
+  []
+  (let [project-tree (utils/get-project-tree)]
+    (when-let [path (.getSelectionPath project-tree)]
+      (->> (not (.isExpanded project-tree path))
+           (.setExpandedState project-tree path))))
+  true)
+
 ; create and manipulate project tree
 
 (defn get-node

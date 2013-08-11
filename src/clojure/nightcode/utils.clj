@@ -140,27 +140,3 @@
   (-> (get-project-tree)
       .getSelectionPath
       tree-path-to-str))
-
-(defn move-project-tree-selection
-  [diff]
-  (let [project-tree (get-project-tree)
-        new-row (-> project-tree
-                    .getSelectionRows
-                    first
-                    (or 0)
-                    (+ diff))]
-    (when (and (>= new-row 0) (< new-row (.getRowCount project-tree)))
-      (.setSelectionRow project-tree new-row)))
-  true)
-
-(defn toggle-project-tree-selection
-  []
-  (let [project-tree (get-project-tree)]
-    (when-let [path (.getSelectionPath project-tree)]
-      (->> (not (.isExpanded project-tree path))
-           (.setExpandedState project-tree path))))
-  true)
-
-(defn shut-down
-  []
-  (System/exit 0))

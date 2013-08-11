@@ -9,6 +9,7 @@
            [net.java.balloontip.positioners CenteredPositioner]
            [net.java.balloontip.styles ToolTipBalloonStyle]))
 
+(def is-down? (atom false))
 (def ^:const mappings
   {:new-project-button "P"
    :new-file-button "N"
@@ -22,12 +23,13 @@
    :test-button "T"
    :clean-button "L"
    :stop-button "I"
+   :sdk-button "shift A"
    :save-button "S"
    :undo-button "Z"
    :redo-button "Y"
    :repl-console "G"
    :find-field "F"
-   :project-tree "↑ ↓ ↵"
+   :project-pane "↑ ↓ ↵"
    :toggle-logcat-button "S"
    :font-inc-button "EQUALS"
    :font-dec-button "MINUS"})
@@ -62,15 +64,33 @@
       (s/hide! hint))))
 
 (defn create-hint
-  [btn text]
+  [view text]
   (when text
     (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
           positioner (CenteredPositioner. 0)]
       (.enableFixedAttachLocation positioner true)
       (.setAttachLocation positioner 0.5 0.5)
-      (doto (BalloonTip. btn text style false)
+      (doto (BalloonTip. view text style false)
         (.setPositioner positioner)
         (.setVisible false)))))
+
+(defn listen-for-key
+  [target func]
+  (.addKeyEventDispatcher
+    (KeyboardFocusManager/getCurrentKeyboardFocusManager)
+    (proxy [KeyEventDispatcher] []
+      (dispatchKeyEvent [e]
+        (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
+              current-modifier (.getModifiers e)]
+          (reset! is-down? (= (bit-and modifier current-modifier) modifier))
+          ; show or hide the shortcut hints
+          (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
+                    (= (.getKeyCode e) KeyEvent/VK_META))
+            (toggle-hints target @is-down?)))
+        ; provide special actions for certain keys
+        (if (and @is-down? (= (.getID e) KeyEvent/KEY_PRESSED))
+          (func (.getKeyCode e))
+          false)))))
 
 (defn create-hints
   [target]
@@ -78,30 +98,5 @@
   (doseq [[id mapping] mappings]
     (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
       (create-hint btn mapping)))
-  ; set custom key events
-  (.addKeyEventDispatcher
-    (KeyboardFocusManager/getCurrentKeyboardFocusManager)
-    (proxy [KeyEventDispatcher] []
-      (dispatchKeyEvent [e]
-        (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
-              current-modifier (.getModifiers e)
-              is-down? (= (bit-and modifier current-modifier) modifier)]
-          ; show or hide the shortcut hints
-          (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
-                    (= (.getKeyCode e) KeyEvent/VK_META))
-            (toggle-hints target is-down?))
-          ; provide special actions for certain keys
-          (if (and is-down? (= (.getID e) KeyEvent/KEY_PRESSED))
-            (case (.getKeyCode e)
-              ; enter
-              10 (utils/toggle-project-tree-selection)
-              ; up
-              38 (utils/move-project-tree-selection -1)
-              ; down
-              40 (utils/move-project-tree-selection 1)
-              ; Q
-              81 (utils/shut-down)
-              false)
-            false)))))
   ; return target
   target)
