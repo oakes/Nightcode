@@ -18,6 +18,7 @@
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
 (def tabs (atom nil))
+(def ^:dynamic *reorder-tabs?* true)
 
 (defn get-editor
   [path]
@@ -279,9 +280,9 @@
         (.add editor-pane view path)))
     ; display the correct card
     (->> (or (when-let [editor (get @editors path)]
-               ; push to the back of the map
-               (swap! editors dissoc path)
-               (swap! editors assoc path editor)
+               (when *reorder-tabs?*
+                 (swap! editors dissoc path)
+                 (swap! editors assoc path editor))
                path)
              :default-card)
          (s/show-card! editor-pane))

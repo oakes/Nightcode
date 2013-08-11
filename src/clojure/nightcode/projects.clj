@@ -8,6 +8,8 @@
             [seesaw.chooser :as chooser]
             [seesaw.core :as s]))
 
+(declare update-project-tree)
+
 ; keep track of projects, expansions and the selection
 
 (def tree-projects (atom #{}))
@@ -72,6 +74,17 @@
 
 (defn move-tab-selection
   [diff]
+  (let [paths (reverse (keys @editors/editors))
+        index (.indexOf paths (utils/get-selected-path))
+        max-index (- (count paths) 1)
+        new-index (+ index diff)
+        new-index (cond
+                    (< new-index 0) max-index
+                    (> new-index max-index) 0
+                    :else new-index)
+        new-path (nth paths new-index)]
+    (binding [editors/*reorder-tabs?* false]
+      (update-project-tree new-path)))
   true)
 
 (defn toggle-project-tree-selection
