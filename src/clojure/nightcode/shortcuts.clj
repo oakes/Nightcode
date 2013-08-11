@@ -29,7 +29,7 @@
    :find-field "F"
    :project-tree "↑ ↓ ↵"
    :toggle-logcat-button "S"
-   :font-enc-button "EQUALS"
+   :font-inc-button "EQUALS"
    :font-dec-button "MINUS"})
 
 (defn create-mappings

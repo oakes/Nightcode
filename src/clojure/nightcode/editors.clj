@@ -191,7 +191,7 @@
                                         :text (utils/get-string :font_dec)
                                         :focusable? false
                                         :listen [:action decrease-font-size])
-                              (s/button :id :font-enc-button
+                              (s/button :id :font-inc-button
                                         :text (utils/get-string :font_inc)
                                         :focusable? false
                                         :listen [:action increase-font-size])
