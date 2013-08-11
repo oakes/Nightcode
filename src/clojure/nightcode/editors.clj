@@ -144,7 +144,7 @@
                      "json" SyntaxConstants/SYNTAX_STYLE_NONE
                      "md" SyntaxConstants/SYNTAX_STYLE_NONE
                      "txt" SyntaxConstants/SYNTAX_STYLE_NONE})
-(def ^:const paredit-exts #{"clj" "cljs"})
+(def ^:const clojure-exts #{"clj" "cljs"})
 
 (defn get-extension
   [path]
@@ -158,14 +158,22 @@
   (or (get styles (get-extension path))
       SyntaxConstants/SYNTAX_STYLE_NONE))
 
+(defn get-text-area
+  []
+  (proxy [TextEditorPane] []
+    (setMarginLineEnabled [is-enabled?]
+      (proxy-super setMarginLineEnabled is-enabled?))
+    (setMarginLinePosition [size]
+      (proxy-super setMarginLinePosition size))))
+
 (defn create-editor
   [path]
   (when (and (.isFile (java.io/file path))
              (contains? styles (get-extension path)))
-    (let [text-area (if (contains? paredit-exts (get-extension path))
-                      (paredit/paredit-widget (TextEditorPane.))
-                      (TextEditorPane.))
-          text-area-scroll (RTextScrollPane. text-area)
+    (let [is-clojure? (contains? clojure-exts (get-extension path))
+          text-area (if is-clojure?
+                      (paredit/paredit-widget (get-text-area))
+                      (get-text-area))
           btn-group (utils/wrap-panel
                       :items [(s/button :id :save-button
                                         :text (utils/get-string :save)
@@ -192,25 +200,29 @@
                                       :listen [:key-released search])])
           text-group (s/border-panel
                        :north btn-group
-                       :center text-area-scroll)]
-      (shortcuts/create-mappings text-group
-                                 {:save-button save-file
-                                  :undo-button undo-file
-                                  :redo-button redo-file
-                                  :find-field focus-on-find
-                                  :font-enc-button increase-font-size
-                                  :font-dec-button decrease-font-size})
-      (shortcuts/create-hints text-group)
-      (update-buttons text-group text-area)
+                       :center (RTextScrollPane. text-area))]
+      (doto text-group
+        (shortcuts/create-mappings {:save-button save-file
+                                    :undo-button undo-file
+                                    :redo-button redo-file
+                                    :find-field focus-on-find
+                                    :font-enc-button increase-font-size
+                                    :font-dec-button decrease-font-size})
+        shortcuts/create-hints
+        (update-buttons text-area))
       (doto (TextPrompt. (utils/get-string :find)
                          (s/select text-group [:#find-field]))
         (.changeAlpha 0.5))
-      (.load text-area (FileLocation/create path) nil)
-      (.discardAllEdits text-area)
-      (.setAntiAliasingEnabled text-area true)
-      (s/listen text-area
-                :key-released
-                (fn [e] (update-buttons text-group text-area)))
+      (doto text-area
+        (.load (FileLocation/create path) nil)
+        .discardAllEdits
+        (.setAntiAliasingEnabled true)
+        (s/listen :key-released
+                  (fn [e] (update-buttons text-group text-area)))
+        (.setSyntaxEditingStyle (get-syntax-style path))
+        (.setMarginLineEnabled true)
+        (.setMarginLinePosition 80))
+      (when is-clojure? (.setTabSize text-area 2))
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
                               (changedUpdate [this e]
@@ -219,7 +231,6 @@
                                 (update-buttons text-group text-area))
                               (removeUpdate [this e]
                                 (update-buttons text-group text-area))))
-      (.setSyntaxEditingStyle text-area (get-syntax-style path))
       (-> (java.io/resource "dark.xml")
           java.io/input-stream
           Theme/load
