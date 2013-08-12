@@ -95,7 +95,9 @@
                     (= (.getKeyCode e) KeyEvent/VK_META))
             (toggle-hints target @is-down?)))
         ; provide special actions for certain keys
-        (if (and @is-down? (= (.getID e) KeyEvent/KEY_PRESSED))
+        (if (and @is-down?
+                 (not (.isShiftDown e))
+                 (= (.getID e) KeyEvent/KEY_PRESSED))
           (func (.getKeyCode e))
           false))))
   target)
