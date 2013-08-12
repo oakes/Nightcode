@@ -745,7 +745,7 @@ public class JConsole extends JScrollPane
 				}
 			} catch (IOException e) {
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(500);
 				} catch (Exception e2) {}
 			}
 			//text.repaint();
