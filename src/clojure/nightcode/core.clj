@@ -3,6 +3,7 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.lein :as lein]
             [nightcode.projects :as p]
+            [nightcode.ui :as ui]
             [nightcode.utils :as utils])
   (:import [java.awt.event WindowAdapter]
            [javax.swing.event TreeExpansionListener TreeSelectionListener]
@@ -15,8 +16,8 @@
   (when console
     (s/request-focus! (.getView (.getViewport console)))
     (lein/run-repl process
-                   (utils/get-console-input console)
-                   (utils/get-console-output console))))
+                   (ui/get-console-input console)
+                   (ui/get-console-output console))))
 
 (defn get-project-pane
   "Returns the pane with the project tree."
@@ -24,7 +25,7 @@
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)
         create-new-project (fn [e]
-                             (->> (s/select @utils/ui-root [:#repl-console])
+                             (->> (s/select @ui/ui-root [:#repl-console])
                                   (p/new-project process)
                                   (start-repl process)))
         btn-group (s/horizontal-panel
@@ -75,7 +76,7 @@
 (defn get-repl-pane
   "Returns the pane with the REPL."
   [process]
-  (let [console (s/config! (utils/create-console) :id :repl-console)]
+  (let [console (s/config! (ui/create-console) :id :repl-console)]
     (start-repl process console)
     (shortcuts/create-mappings console
                                {:repl-console (fn [e]
@@ -115,7 +116,7 @@
   (SubstanceLookAndFeel/setSkin (GraphiteSkin.))
   (s/invoke-later
     ; create and show the frame
-    (reset! utils/ui-root
+    (reset! ui/ui-root
       (doto (s/frame :title (str (utils/get-string :app_name)
                                  " "
                                  (utils/get-version))

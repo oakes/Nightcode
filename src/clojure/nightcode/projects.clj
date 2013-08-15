@@ -4,6 +4,7 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
+            [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
             [seesaw.core :as s]))
@@ -18,11 +19,11 @@
 
 (defn get-project-path
   ([]
-   (get-project-path (utils/get-selected-path)))
+   (get-project-path (ui/get-selected-path)))
   ([path]
    (when path
      (when-let [file (java.io/file path)]
-       (if (or (utils/is-project-path? (.getCanonicalPath file))
+       (if (or (ui/is-project-path? (.getCanonicalPath file))
                (contains? @tree-projects (.getCanonicalPath file)))
          (.getCanonicalPath file)
          (when-let [parent-file (.getParentFile file)]
@@ -30,7 +31,7 @@
 
 (defn get-project-root-path
   []
-  (-> #(.startsWith (utils/get-selected-path) %)
+  (-> #(.startsWith (ui/get-selected-path) %)
       (filter @tree-projects)
       first))
 
@@ -47,13 +48,13 @@
 (defn set-selection
   [e]
   (when-let [path (-> e .getPath utils/tree-path-to-str)]
-    (s/config! (s/select @utils/ui-root [:#remove-button])
+    (s/config! (s/select @ui/ui-root [:#remove-button])
                :enabled?
                (or (contains? @tree-projects path)
                    (.isFile (java.io/file path))))
-    (s/config! (s/select @utils/ui-root [:#new-file-button])
+    (s/config! (s/select @ui/ui-root [:#new-file-button])
                :visible? (.isDirectory (java.io/file path)))
-    (s/config! (s/select @utils/ui-root [:#rename-file-button])
+    (s/config! (s/select @ui/ui-root [:#rename-file-button])
                :visible? (.isFile (java.io/file path)))
     (reset! tree-selection path)
     (editors/show-editor path)
@@ -62,7 +63,7 @@
 
 (defn move-project-tree-selection
   [diff]
-  (let [project-tree (utils/get-project-tree)
+  (let [project-tree (ui/get-project-tree)
         new-row (-> project-tree
                     .getSelectionRows
                     first
@@ -75,7 +76,7 @@
 (defn move-tab-selection
   [diff]
   (let [paths (reverse (keys @editors/editors))
-        index (.indexOf paths (utils/get-selected-path))
+        index (.indexOf paths (ui/get-selected-path))
         max-index (- (count paths) 1)
         new-index (+ index diff)
         new-index (cond
@@ -89,7 +90,7 @@
 
 (defn toggle-project-tree-selection
   []
-  (let [project-tree (utils/get-project-tree)]
+  (let [project-tree (ui/get-project-tree)]
     (when-let [path (.getSelectionPath project-tree)]
       (->> (not (.isExpanded project-tree path))
            (.setExpandedState project-tree path))))
@@ -102,9 +103,9 @@
   (let [path (.getCanonicalPath file)
         file-name (.getName file)]
     {:html (cond
-             (utils/is-project-path? path) (str "<html><b><font color='gray'>"
-                                                file-name
-                                                "</font></b></html>"))
+             (ui/is-project-path? path) (str "<html><b><font color='gray'>"
+                                             file-name
+                                             "</font></b></html>"))
      :name file-name
      :file file}))
 
@@ -178,9 +179,9 @@
 
 (defn update-project-tree
   ([]
-   (update-project-tree (utils/get-project-tree) nil))
+   (update-project-tree (ui/get-project-tree) nil))
   ([new-selection]
-   (update-project-tree (utils/get-project-tree) new-selection))
+   (update-project-tree (ui/get-project-tree) new-selection))
   ([tree new-selection]
    ; put new data in the tree
    (.setModel tree (create-project-tree))
@@ -208,11 +209,11 @@
      (editors/show-editor nil)
      (builders/show-builder nil)
      (doseq [btn [:#remove-button :#new-file-button :#rename-file-button]]
-       (s/config! (s/select @utils/ui-root [btn]) :enabled? false)))))
+       (s/config! (s/select @ui/ui-root [btn]) :enabled? false)))))
 
 (defn enter-file-path
   [default-file-name]
-  (let [selected-path (utils/get-selected-path)
+  (let [selected-path (ui/get-selected-path)
         project-path (get-project-root-path)
         default-path (str (utils/get-relative-dir project-path selected-path)
                           (or default-file-name
@@ -227,8 +228,8 @@
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog dir)]
       (lein/stop-process process)
-      (lein/new-project (utils/get-console-input console)
-                        (utils/get-console-output console)
+      (lein/new-project (ui/get-console-input console)
+                        (ui/get-console-output console)
                         (.getParent dir)
                         project-type
                         project-name
@@ -258,7 +259,7 @@
     (let [project-path (get-project-root-path)
           new-file (java.io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
-          selected-path (utils/get-selected-path)]
+          selected-path (ui/get-selected-path)]
       (when (not= new-path selected-path)
         (editors/save-file e)
         (.mkdirs (.getParentFile new-file))
@@ -287,5 +288,5 @@
 
 (defn remove-item
   [e]
-  (when (remove-from-project-tree (utils/get-selected-path))
+  (when (remove-from-project-tree (ui/get-selected-path))
     (update-project-tree (get-project-root-path))))

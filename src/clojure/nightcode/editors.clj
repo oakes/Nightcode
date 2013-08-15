@@ -3,6 +3,7 @@
             [flatland.ordered.map :as flatland]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
+            [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [paredit-widget.core :as paredit]
             [seesaw.color :as color]
@@ -29,11 +30,11 @@
 
 (defn get-selected-editor
   []
-  (get-editor (utils/get-selected-path)))
+  (get-editor (ui/get-selected-path)))
 
 (defn get-selected-editor-pane
   []
-  (get @editors (utils/get-selected-path)))
+  (get @editors (ui/get-selected-path)))
 
 (defn is-unsaved?
   [path]
@@ -64,7 +65,7 @@
 (defn save-file
   [e]
   (when-let [editor (get-selected-editor)]
-    (with-open [w (java.io/writer (java.io/file (utils/get-selected-path)))]
+    (with-open [w (java.io/writer (java.io/file (ui/get-selected-path)))]
       (.write editor w))
     (.setDirty editor false)
     (s/request-focus! editor)
@@ -176,7 +177,7 @@
           text-area (if is-clojure?
                       (paredit/paredit-widget (get-text-area))
                       (get-text-area))
-          btn-group (utils/wrap-panel
+          btn-group (ui/wrap-panel
                       :items [(s/button :id :save-button
                                         :text (utils/get-string :save)
                                         :focusable? false
@@ -245,10 +246,10 @@
 (defn create-logcat
   [path]
   (when (= (.getName (java.io/file path)) "*LogCat*")
-    (let [console (utils/create-console)
+    (let [console (ui/create-console)
           process (atom nil)
-          in (utils/get-console-input console)
-          out (utils/get-console-output console)
+          in (ui/get-console-input console)
+          out (ui/get-console-output console)
           toggle-btn (s/button :id :toggle-logcat-button
                                :text (utils/get-string :start))
           btn-group (s/horizontal-panel :items [toggle-btn])
@@ -269,7 +270,7 @@
 
 (defn show-editor
   [path]
-  (let [editor-pane (s/select @utils/ui-root [:#editor-pane])]
+  (let [editor-pane (s/select @ui/ui-root [:#editor-pane])]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
       (when-let [view (or (create-editor path)
@@ -303,7 +304,7 @@
 
 (defn remove-editors
   [path]
-  (let [editor-pane (s/select @utils/ui-root [:#editor-pane])]
+  (let [editor-pane (s/select @ui/ui-root [:#editor-pane])]
     (doseq [[editor-path editor] @editors]
       (when (.startsWith editor-path path)
         (swap! editors dissoc editor-path)

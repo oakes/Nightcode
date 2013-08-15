@@ -2,6 +2,7 @@
   (:require [nightcode.editors :as editors]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
+            [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
             [seesaw.color :as color]
@@ -32,10 +33,10 @@
 
 (defn create-builder
   [path]
-  (let [console (utils/create-console)
+  (let [console (ui/create-console)
         process (atom nil)
-        in (utils/get-console-input console)
-        out (utils/get-console-output console)
+        in (ui/get-console-input console)
+        out (ui/get-console-output console)
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         run-action (fn [e]
@@ -62,7 +63,7 @@
         stop-action (fn [e]
                       (toggle-repl-buttons build-group false)
                       (lein/stop-process process))
-        btn-group (utils/wrap-panel
+        btn-group (ui/wrap-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
                                       :listen [:action run-action]
@@ -111,10 +112,10 @@
 
 (defn show-builder
   [path]
-  (let [pane (s/select @utils/ui-root [:#builder-pane])]
+  (let [pane (s/select @ui/ui-root [:#builder-pane])]
     ; create new builder if necessary
     (when (and path
-               (utils/is-project-path? path)
+               (ui/is-project-path? path)
                (not (contains? @builders path)))
       (when-let [view (create-builder path)]
         (swap! builders assoc path view)
@@ -141,7 +142,7 @@
 
 (defn remove-builders
   [path]
-  (let [pane (s/select @utils/ui-root [:#builder-pane])]
+  (let [pane (s/select @ui/ui-root [:#builder-pane])]
     (doseq [[builder-path builder] @builders]
       (when (.startsWith builder-path path)
         (swap! builders dissoc builder-path)

@@ -1,12 +1,8 @@
 (ns nightcode.utils
   (:require [clojure.edn :as edn]
             [clojure.java.io :as java.io]
-            [clojure.xml :as xml]
-            [seesaw.core :as s])
-  (:import [bsh.util JConsole]
-           [clojure.lang LineNumberingPushbackReader]
-           [com.camick WrapLayout]
-           [java.util Locale]
+            [clojure.xml :as xml])
+  (:import [java.util Locale]
            [java.util.prefs Preferences]))
 
 ; preferences
@@ -99,44 +95,3 @@
     (if (= (name (nth project-clj 1)) "nightcode")
       (nth project-clj 2)
       "beta")))
-
-; ui
-
-(def ui-root (atom nil))
-
-(defn wrap-panel
-  [& {:keys [items hgap vgap]}]
-  (let [hgap (or hgap 0)
-        vgap (or vgap 0)
-        panel (s/abstract-panel (WrapLayout. WrapLayout/LEFT hgap vgap) {})]
-    (doseq [item items]
-      (s/add! panel item))
-    panel))
-
-(defn create-console
-  []
-  (JConsole.))
-
-(defn get-console-input
-  [console]
-  (LineNumberingPushbackReader. (.getIn console)))
-
-(defn get-console-output
-  [console]
-  (.getOut console))
-
-(defn is-project-path?
-  [path]
-  (and path
-       (.isDirectory (java.io/file path))
-       (.exists (java.io/file path "project.clj"))))
-
-(defn get-project-tree
-  []
-  (s/select @ui-root [:#project-tree]))
-
-(defn get-selected-path
-  []
-  (-> (get-project-tree)
-      .getSelectionPath
-      tree-path-to-str))
