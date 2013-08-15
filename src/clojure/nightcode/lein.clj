@@ -93,7 +93,7 @@
 
 (defonce class-name (str *ns*))
 
-(defn start-slow-process
+(defn start-self-process
   [process path & args]
   (let [project-map (read-project-clj path)
         java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
@@ -111,23 +111,6 @@
                      (System/getProperty "java.class.path")
                      (.getCanonicalPath jar-file))
                    args)))
-
-(defn start-fast-process
-  [process path func]
-  (let [project-map (-> (read-project-clj path)
-                        (assoc :eval-in :trampoline))
-        forms leiningen.core.eval/trampoline-forms
-        profiles leiningen.core.eval/trampoline-profiles]
-    (reset! forms [])
-    (reset! profiles [])
-    (func path project-map)
-    (doseq [i (range (count @forms))]
-      (->> (let [form (nth @forms i)
-                 profile (nth @profiles i)
-                 project-map (leiningen.core.project/set-profiles
-                               project-map [profile])]
-             (leiningen.core.eval/shell-command project-map form))
-           (start-process process path)))))
 
 (defn stop-process
   [process]
@@ -193,43 +176,35 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running))
-         (if (is-clojurescript-project? path)
-           (start-slow-process process path class-name "run")
-           (start-fast-process process path run-project-task)))
+         (start-self-process process path class-name "run"))
        (start-thread in out)))
 
 (defn run-repl-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running_with_repl))
-         (start-slow-process process path class-name "repl"))
+         (start-self-process process path class-name "repl"))
        (start-thread in out)))
 
 (defn build-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :building))
-         (if (is-clojurescript-project? path)
-           (start-slow-process process path class-name "build")
-           (start-fast-process process path build-project-task)))
+         (start-self-process process path class-name "build"))
        (start-thread in out)))
 
 (defn test-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :testing))
-         (if (is-clojurescript-project? path)
-           (start-slow-process process path class-name "test")
-           (start-fast-process process path test-project-task)))
+         (start-self-process process path class-name "test"))
        (start-thread in out)))
 
 (defn clean-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :cleaning))
-         (if (is-clojurescript-project? path)
-           (start-slow-process process path class-name "clean")
-           (start-fast-process process path clean-project-task)))
+         (start-self-process process path class-name "clean"))
        (start-thread in out)))
 
 (defn new-project
@@ -246,7 +221,7 @@
 (defn run-repl
   [process in out]
   (stop-process process)
-  (->> (start-slow-process process nil "clojure.main")
+  (->> (start-self-process process nil "clojure.main")
        (start-thread in out)))
 
 (defn run-logcat
