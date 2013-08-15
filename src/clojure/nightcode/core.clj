@@ -11,22 +11,22 @@
   (:gen-class))
 
 (defn start-repl
-  [thread console]
+  [process console]
   (when console
     (s/request-focus! (.getView (.getViewport console)))
-    (lein/run-repl thread
+    (lein/run-repl process
                    (utils/get-console-input console)
                    (utils/get-console-output console))))
 
 (defn get-project-pane
   "Returns the pane with the project tree."
-  [thread]
+  [process]
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)
         create-new-project (fn [e]
                              (->> (s/select @utils/ui-root [:#repl-console])
-                                  (p/new-project thread)
-                                  (start-repl thread)))
+                                  (p/new-project process)
+                                  (start-repl process)))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :new-project-button
                                       :text (utils/get-string :new_project)
@@ -74,12 +74,12 @@
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
-  [thread]
+  [process]
   (let [console (s/config! (utils/create-console) :id :repl-console)]
-    (start-repl thread console)
+    (start-repl process console)
     (shortcuts/create-mappings console
                                {:repl-console (fn [e]
-                                                (start-repl thread console))})
+                                                (start-repl process console))})
     console))
 
 (defn get-editor-pane
@@ -96,10 +96,10 @@
 
 (defn get-window-content []
   "Returns the entire window with all panes."
-  (let [repl-thread (atom nil)]
+  (let [repl-process (atom nil)]
     (s/left-right-split
-      (s/top-bottom-split (get-project-pane repl-thread)
-                          (get-repl-pane repl-thread)
+      (s/top-bottom-split (get-project-pane repl-process)
+                          (get-repl-pane repl-process)
                           :divider-location 0.8
                           :resize-weight 0.5)
       (s/top-bottom-split (get-editor-pane)

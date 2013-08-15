@@ -222,11 +222,11 @@
 ; actions for project tree buttons
 
 (defn new-project
-  [thread console]
+  [process console]
   (when-let [dir (chooser/choose-file :type :save)]
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog dir)]
-      (lein/stop-thread thread)
+      (lein/stop-process process)
       (lein/new-project (utils/get-console-input console)
                         (utils/get-console-output console)
                         (.getParent dir)

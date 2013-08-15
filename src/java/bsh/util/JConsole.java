@@ -547,9 +547,9 @@ public class JConsole extends JScrollPane
 		//text.repaint();
 	}
 
-	public void insertCode(String code) {
-		code = code.replace("\n", " ");
-		acceptLine(code);
+	public void enterLine(String line) {
+		line = line.replace("\n", " ");
+		acceptLine(line);
 		enter();
 	}
 

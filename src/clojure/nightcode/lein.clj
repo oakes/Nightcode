@@ -26,10 +26,11 @@
 
 (defn read-project-clj
   [path]
-  (let [project-clj-path (get-project-clj-path path)]
-    (if-not (.exists (java.io/file project-clj-path))
-      (println (utils/get-string :no_project_clj))
-      (leiningen.core.project/read project-clj-path))))
+  (when path
+    (let [project-clj-path (get-project-clj-path path)]
+      (if-not (.exists (java.io/file project-clj-path))
+        (println (utils/get-string :no_project_clj))
+        (leiningen.core.project/read project-clj-path)))))
 
 (defn add-sdk-path
   [project-map]
@@ -53,24 +54,24 @@
             *err* out
             *in* in
             leiningen.core.main/*exit-process?* false]
+    (flush)
     (func)))
 
 (defn start-thread*
-  [thread in out func]
+  [in out func]
   (->> (fn []
          (try (func)
-           (catch InterruptedException e nil)
-           (catch Exception e (println (.getMessage e))))
+           (catch Exception e (when-let [error (.getMessage e)]
+                                (println error))))
          (println "\n===" (utils/get-string :finished) "==="))
        (redirect-io in out)
        (fn [])
        Thread.
-       (reset! thread)
        .start))
 
 (defmacro start-thread
-  [thread in out & body]
-  `(start-thread* ~thread ~in ~out (fn [] ~@body)))
+  [in out & body]
+  `(start-thread* ~in ~out (fn [] ~@body)))
 
 (defn start-process
   [process path & args]
@@ -93,7 +94,7 @@
 (defonce class-name (str *ns*))
 
 (defn start-slow-process
-  [process path cmd]
+  [process path & args]
   (let [project-map (read-project-clj path)
         java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
         jar-file (-> (Class/forName class-name)
@@ -109,8 +110,7 @@
                    (if (.isDirectory jar-file)
                      (System/getProperty "java.class.path")
                      (.getCanonicalPath jar-file))
-                   class-name
-                   cmd)))
+                   args)))
 
 (defn start-fast-process
   [process path func]
@@ -134,12 +134,6 @@
   (when @process
     (.destroy @process)
     (reset! process nil)))
-
-(defn stop-thread
-  [thread]
-  (when @thread
-    (.interrupt @thread)
-    (reset! thread nil)))
 
 ; check project types
 
@@ -196,52 +190,47 @@
 ; high-level commands
 
 (defn run-project
-  [process thread in out path]
+  [process in out path]
   (stop-process process)
-  (stop-thread thread)
   (->> (do (println (utils/get-string :running))
          (if (is-clojurescript-project? path)
-           (start-slow-process process path "run")
+           (start-slow-process process path class-name "run")
            (start-fast-process process path run-project-task)))
-       (start-thread thread in out)))
+       (start-thread in out)))
 
 (defn run-repl-project
-  [process thread in out path]
+  [process in out path]
   (stop-process process)
-  (stop-thread thread)
   (->> (do (println (utils/get-string :running_with_repl))
-         (start-slow-process process path "repl"))
-       (start-thread thread in out)))
+         (start-slow-process process path class-name "repl"))
+       (start-thread in out)))
 
 (defn build-project
-  [process thread in out path]
+  [process in out path]
   (stop-process process)
-  (stop-thread thread)
   (->> (do (println (utils/get-string :building))
          (if (is-clojurescript-project? path)
-           (start-slow-process process path "build")
+           (start-slow-process process path class-name "build")
            (start-fast-process process path build-project-task)))
-       (start-thread thread in out)))
+       (start-thread in out)))
 
 (defn test-project
-  [process thread in out path]
+  [process in out path]
   (stop-process process)
-  (stop-thread thread)
   (->> (do (println (utils/get-string :testing))
          (if (is-clojurescript-project? path)
-           (start-slow-process process path "test")
+           (start-slow-process process path class-name "test")
            (start-fast-process process path test-project-task)))
-       (start-thread thread in out)))
+       (start-thread in out)))
 
 (defn clean-project
-  [process thread in out path]
+  [process in out path]
   (stop-process process)
-  (stop-thread thread)
   (->> (do (println (utils/get-string :cleaning))
          (if (is-clojurescript-project? path)
-           (start-slow-process process path "clean")
+           (start-slow-process process path class-name "clean")
            (start-fast-process process path clean-project-task)))
-       (start-thread thread in out)))
+       (start-thread in out)))
 
 (defn new-project
   [in out parent-path project-type project-name package-name]
@@ -255,15 +244,14 @@
        (redirect-io in out)))
 
 (defn run-repl
-  [thread in out]
-  (stop-thread thread)
-  (->> (clojure.main/repl :caught (fn [e] (println)))
-       (start-thread thread in out)))
+  [process in out]
+  (stop-process process)
+  (->> (start-slow-process process nil "clojure.main")
+       (start-thread in out)))
 
 (defn run-logcat
-  [process thread in out path]
+  [process in out path]
   (stop-process process)
-  (stop-thread thread)
   (->> (start-process process
                       nil
                       (-> (read-project-clj path)
@@ -274,7 +262,7 @@
                       "logcat"
                       "*:I")
        (binding [leiningen.core.main/*exit-process?* false])
-       (start-thread thread in out)))
+       (start-thread in out)))
 
 ; main function for "slow" processes
 

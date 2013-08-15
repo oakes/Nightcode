@@ -247,7 +247,6 @@
   (when (= (.getName (java.io/file path)) "*LogCat*")
     (let [console (utils/create-console)
           process (atom nil)
-          thread (atom nil)
           in (utils/get-console-input console)
           out (utils/get-console-output console)
           toggle-btn (s/button :id :toggle-logcat-button
@@ -255,11 +254,10 @@
           btn-group (s/horizontal-panel :items [toggle-btn])
           start (fn []
                   (->> (.getParent (java.io/file path))
-                       (lein/run-logcat process thread in out))
+                       (lein/run-logcat process in out))
                   (s/config! toggle-btn :text (utils/get-string :stop)))
           stop (fn []
                  (lein/stop-process process)
-                 (lein/stop-thread thread)
                  (s/config! toggle-btn :text (utils/get-string :start)))
           toggle (fn [e]
                    (if (nil? @process) (start) (stop)))]

@@ -34,36 +34,34 @@
   [path]
   (let [console (utils/create-console)
         process (atom nil)
-        thread (atom nil)
         in (utils/get-console-input console)
         out (utils/get-console-output console)
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         run-action (fn [e]
                      (toggle-repl-buttons build-group false)
-                     (lein/run-project process thread in out path))
+                     (lein/run-project process in out path))
         run-repl-action (fn [e]
                           (toggle-repl-buttons build-group true)
-                          (lein/run-repl-project process thread in out path)
+                          (lein/run-repl-project process in out path)
                           (s/request-focus! (.getView (.getViewport console))))
         eval-repl-action (fn [e]
                            (let [code (or (editors/get-editor-selected-text)
                                           (editors/get-editor-text))]
-                             (.insertCode console (str "(do " code ")")))
+                             (.enterLine console (str "(do " code ")")))
                            (s/request-focus! (.getView (.getViewport console))))
         build-action (fn [e]
                        (toggle-repl-buttons build-group false)
-                       (lein/build-project process thread in out path))
+                       (lein/build-project process in out path))
         test-action (fn [e]
                       (toggle-repl-buttons build-group false)
-                      (lein/test-project process thread in out path))
+                      (lein/test-project process in out path))
         clean-action (fn [e]
                        (toggle-repl-buttons build-group false)
-                       (lein/clean-project process thread in out path))
+                       (lein/clean-project process in out path))
         stop-action (fn [e]
                       (toggle-repl-buttons build-group false)
-                      (lein/stop-process process)
-                      (lein/stop-thread thread))
+                      (lein/stop-process process))
         btn-group (utils/wrap-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
