@@ -54,7 +54,6 @@
             *err* out
             *in* in
             leiningen.core.main/*exit-process?* false]
-    (flush)
     (func)))
 
 (defn start-thread*

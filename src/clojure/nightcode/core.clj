@@ -12,22 +12,20 @@
   (:gen-class))
 
 (defn start-repl
-  [process console]
-  (when console
-    (s/request-focus! (.getView (.getViewport console)))
-    (lein/run-repl process
-                   (ui/get-console-input console)
-                   (ui/get-console-output console))))
+  [console]
+  (s/request-focus! (.getView (.getViewport (:view console))))
+  (lein/run-repl (:process console) (:in console) (:out console)))
 
 (defn get-project-pane
   "Returns the pane with the project tree."
-  [process]
+  [console]
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)
         create-new-project (fn [e]
-                             (->> (s/select @ui/ui-root [:#repl-console])
-                                  (p/new-project process)
-                                  (start-repl process)))
+                             (when (p/new-project (:process console)
+                                                  (:in console)
+                                                  (:out console))
+                               (start-repl console)))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :new-project-button
                                       :text (utils/get-string :new_project)
@@ -75,13 +73,12 @@
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
-  [process]
-  (let [console (s/config! (ui/create-console) :id :repl-console)]
-    (start-repl process console)
-    (shortcuts/create-mappings console
-                               {:repl-console (fn [e]
-                                                (start-repl process console))})
-    console))
+  [console]
+  (let [pane (s/config! (:view console) :id :repl-console)]
+    (start-repl console)
+    (shortcuts/create-mappings pane {:repl-console (fn [e]
+                                                     (start-repl console))})
+    pane))
 
 (defn get-editor-pane
   "Returns the pane with the editors."
@@ -97,10 +94,15 @@
 
 (defn get-window-content []
   "Returns the entire window with all panes."
-  (let [repl-process (atom nil)]
+  (let [process (atom nil)
+        view (ui/create-console)
+        console {:process process
+                 :view view
+                 :in (ui/get-console-input view)
+                 :out (ui/get-console-output view)}]
     (s/left-right-split
-      (s/top-bottom-split (get-project-pane repl-process)
-                          (get-repl-pane repl-process)
+      (s/top-bottom-split (get-project-pane console)
+                          (get-repl-pane console)
                           :divider-location 0.8
                           :resize-weight 0.5)
       (s/top-bottom-split (get-editor-pane)

@@ -223,13 +223,13 @@
 ; actions for project tree buttons
 
 (defn new-project
-  [process console]
+  [process in out]
   (when-let [dir (chooser/choose-file :type :save)]
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog dir)]
       (lein/stop-process process)
-      (lein/new-project (ui/get-console-input console)
-                        (ui/get-console-output console)
+      (lein/new-project in
+                        out
                         (.getParent dir)
                         project-type
                         project-name
@@ -237,7 +237,7 @@
       (when (.exists (java.io/file project-dir))
         (add-to-project-tree project-dir)
         (update-project-tree project-dir))
-      console)))
+      true)))
 
 (defn new-file
   [e]
