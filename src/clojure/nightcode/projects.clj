@@ -241,11 +241,10 @@
 
 (defn new-file
   [e]
-  (let [project-path (get-project-root-path)
-        default-file-name (if (lein/is-java-project? project-path)
+  (let [default-file-name (if (lein/is-java-project? (get-project-path))
                             "Example.java" "example.clj")]
     (when-let [leaf-path (enter-file-path default-file-name)]
-      (let [new-file (java.io/file project-path leaf-path)]
+      (let [new-file (java.io/file (get-project-root-path) leaf-path)]
         (if (.exists new-file)
           (s/alert (utils/get-string :file_exists))
           (do
