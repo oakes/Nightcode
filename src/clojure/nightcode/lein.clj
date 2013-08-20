@@ -92,7 +92,7 @@
 
 (defonce class-name (str *ns*))
 
-(defn start-self-process
+(defn start-process-indirectly
   [process path & args]
   (let [project-map (read-project-clj path)
         java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
@@ -110,6 +110,24 @@
                      (System/getProperty "java.class.path")
                      (.getCanonicalPath jar-file))
                    args)))
+
+(defn start-process-directly
+  [process path func]
+  (let [project-map (-> (read-project-clj path)
+                        (assoc :eval-in :trampoline
+                               :jvm-opts [(str "-agentlib:jdwp="
+                                               "transport=dt_socket,"
+                                               "server=y,"
+                                               "suspend=n,"
+                                               "address=7896")]))
+        forms leiningen.core.eval/trampoline-forms
+        profiles leiningen.core.eval/trampoline-profiles]
+    (reset! forms [])
+    (reset! profiles [])
+    (func path project-map)
+    (doseq [i (range (count @forms))]
+      (->> (leiningen.core.eval/shell-command project-map (nth @forms i))
+           (start-process process path)))))
 
 (defn stop-process
   [process]
@@ -175,35 +193,45 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running))
-         (start-self-process process path class-name "run"))
+         (if (is-java-project? path)
+           (start-process-directly process path run-project-task)
+           (start-process-indirectly process path class-name "run")))
        (start-thread in out)))
 
 (defn run-repl-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running_with_repl))
-         (start-self-process process path class-name "repl"))
+         (if (is-java-project? path)
+           (start-process-directly process path run-repl-project-task)
+           (start-process-indirectly process path class-name "repl")))
        (start-thread in out)))
 
 (defn build-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :building))
-         (start-self-process process path class-name "build"))
+         (if (is-java-project? path)
+           (start-process-directly process path build-project-task)
+           (start-process-indirectly process path class-name "build")))
        (start-thread in out)))
 
 (defn test-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :testing))
-         (start-self-process process path class-name "test"))
+         (if (is-java-project? path)
+           (start-process-directly process path test-project-task)
+           (start-process-indirectly process path class-name "test")))
        (start-thread in out)))
 
 (defn clean-project
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :cleaning))
-         (start-self-process process path class-name "clean"))
+         (if (is-java-project? path)
+           (start-process-directly process path clean-project-task)
+           (start-process-indirectly process path class-name "clean")))
        (start-thread in out)))
 
 (defn new-project
@@ -220,7 +248,7 @@
 (defn run-repl
   [process in out]
   (stop-process process)
-  (->> (start-self-process process nil "clojure.main")
+  (->> (start-process-indirectly process nil "clojure.main")
        (start-thread in out)))
 
 (defn run-logcat
@@ -245,13 +273,12 @@
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
         project-map (-> (read-project-clj path)
-                        add-sdk-path
                         leiningen.core.project/init-project)]
     (case cmd
-      "build" (build-project-task path project-map)
-      "clean" (clean-project-task path project-map)
-      "repl" (run-repl-project-task path project-map)
       "run" (run-project-task path project-map)
+      "repl" (run-repl-project-task path project-map)
+      "build" (build-project-task path project-map)
       "test" (test-project-task path project-map)
+      "clean" (clean-project-task path project-map)
       nil))
   (System/exit 0))
