@@ -113,13 +113,15 @@
 
 (defn start-process-directly
   [process path func]
-  (let [project-map (-> (read-project-clj path)
+  (let [jvm-opts (conj (:jvm-opts (read-project-clj path))
+                       (str "-agentlib:jdwp="
+                            "transport=dt_socket,"
+                            "server=y,"
+                            "suspend=n,"
+                            "address=7896"))
+        project-map (-> (read-project-clj path)
                         (assoc :eval-in :trampoline
-                               :jvm-opts [(str "-agentlib:jdwp="
-                                               "transport=dt_socket,"
-                                               "server=y,"
-                                               "suspend=n,"
-                                               "address=7896")]))
+                               :jvm-opts jvm-opts))
         forms leiningen.core.eval/trampoline-forms
         profiles leiningen.core.eval/trampoline-profiles]
     (reset! forms [])
