@@ -7,6 +7,7 @@
             [leiningen.clean]
             [leiningen.cljsbuild]
             [leiningen.droid]
+            [leiningen.javac]
             [leiningen.new]
             [leiningen.new.templates]
             [leiningen.trampoline]
@@ -161,19 +162,6 @@
     (.destroy @process)
     (reset! process nil)))
 
-(defn hot-swap
-  [path]
-  (when (.endsWith path ".java")
-    (when-let [conn (->> (Bootstrap/virtualMachineManager)
-                         .attachingConnectors
-                         (filter #(= (.name (.transport %)) "dt_socket"))
-                         first)]
-      (let [prm (.defaultArguments conn)]
-        (.setValue (.get prm "port") debug-port)
-        (.setValue (.get prm "hostname") "127.0.0.1")
-        (when-let [vm (try (.attach conn prm) (catch Exception _))]
-          (println vm))))))
-
 ; low-level commands
 
 (defn run-project-task
@@ -206,6 +194,18 @@
 (defn clean-project-task
   [path project-map]
   (leiningen.clean/clean project-map))
+
+(defn hot-swap-project-task
+  [path project-map]
+  (when-let [conn (->> (Bootstrap/virtualMachineManager)
+                       .attachingConnectors
+                       (filter #(= (.name (.transport %)) "dt_socket"))
+                       first)]
+     (let [prm (.defaultArguments conn)]
+       (.setValue (.get prm "port") debug-port)
+       (.setValue (.get prm "hostname") "127.0.0.1")
+       (when-let [vm (try (.attach conn prm) (catch Exception _))]
+         (leiningen.javac/javac project-map)))))
 
 ; high-level commands
 
@@ -284,6 +284,11 @@
                       "logcat"
                       "*:I")
        (binding [leiningen.core.main/*exit-process?* false])
+       (start-thread in out)))
+
+(defn run-hot-swap
+  [in out path]
+  (->> (hot-swap-project-task path (read-project-clj path))
        (start-thread in out)))
 
 ; main function for "slow" processes

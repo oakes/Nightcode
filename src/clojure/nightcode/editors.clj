@@ -69,8 +69,7 @@
       (.write editor w))
     (.setDirty editor false)
     (s/request-focus! editor)
-    (update-buttons (get-selected-editor-pane) editor)
-    (lein/hot-swap (.getFileFullPath editor))))
+    (update-buttons (get-selected-editor-pane) editor)))
 
 (defn undo-file
   [e]

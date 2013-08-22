@@ -10,7 +10,7 @@
 
   <string name="run">Run</string>
   <string name="run_with_repl">Run with REPL</string>
-  <string name="eval_in_repl">Eval in REPL</string>
+  <string name="reload">Reload</string>
   <string name="build">Build</string>
   <string name="test">Test</string>
   <string name="clean">Clean</string>
