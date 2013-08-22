@@ -18,6 +18,8 @@
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
+(def ^:const debug-port "7896")
+
 ; utilities
 
 (defn get-project-clj-path
@@ -113,13 +115,15 @@
 
 (defn start-process-directly
   [process path func]
-  (let [jvm-opts (conj (:jvm-opts (read-project-clj path))
+  (let [project-map-orig (read-project-clj path)
+        jvm-opts (conj (:jvm-opts project-map-orig)
                        (str "-agentlib:jdwp="
                             "transport=dt_socket,"
                             "server=y,"
                             "suspend=n,"
-                            "address=7896"))
-        project-map (-> (read-project-clj path)
+                            "address="
+                            debug-port))
+        project-map (-> project-map-orig
                         (assoc :eval-in :trampoline
                                :jvm-opts jvm-opts))
         forms leiningen.core.eval/trampoline-forms

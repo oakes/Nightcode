@@ -9,6 +9,7 @@
             [seesaw.color :as color]
             [seesaw.core :as s])
   (:import [com.camick TextPrompt]
+           [com.sun.jdi Bootstrap]
            [javax.swing.event DocumentListener]
            [org.fife.ui.rsyntaxtextarea
             FileLocation SyntaxConstants TextEditorPane Theme]
@@ -62,6 +63,19 @@
   (-> (s/select pane [:#redo-button])
       (s/config! :enabled? (.canRedo editor))))
 
+(defn hot-swap
+  [editor]
+  (when (.endsWith (.getFileName editor) ".java")
+    (when-let [conn (->> (Bootstrap/virtualMachineManager)
+                         .attachingConnectors
+                         (filter #(= (.name (.transport %)) "dt_socket"))
+                         first)]
+      (let [prm (.defaultArguments conn)]
+        (.setValue (.get prm "port") lein/debug-port)
+        (.setValue (.get prm "hostname") "127.0.0.1")
+        (when-let [vm (try (.attach conn prm) (catch Exception _))]
+          (println vm))))))
+
 (defn save-file
   [e]
   (when-let [editor (get-selected-editor)]
@@ -69,7 +83,8 @@
       (.write editor w))
     (.setDirty editor false)
     (s/request-focus! editor)
-    (update-buttons (get-selected-editor-pane) editor)))
+    (update-buttons (get-selected-editor-pane) editor)
+    (hot-swap editor)))
 
 (defn undo-file
   [e]
