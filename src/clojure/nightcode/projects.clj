@@ -18,16 +18,14 @@
 (def tree-selection (atom nil))
 
 (defn get-project-path
-  ([]
-   (get-project-path (ui/get-selected-path)))
-  ([path]
-   (when path
-     (when-let [file (java.io/file path)]
-       (if (or (ui/is-project-path? (.getCanonicalPath file))
-               (contains? @tree-projects (.getCanonicalPath file)))
-         (.getCanonicalPath file)
-         (when-let [parent-file (.getParentFile file)]
-           (get-project-path (.getCanonicalPath parent-file))))))))
+  [path]
+  (when path
+    (when-let [file (java.io/file path)]
+      (if (or (utils/is-project-path? (.getCanonicalPath file))
+              (contains? @tree-projects (.getCanonicalPath file)))
+        (.getCanonicalPath file)
+        (when-let [parent-file (.getParentFile file)]
+          (get-project-path (.getCanonicalPath parent-file)))))))
 
 (defn get-project-root-path
   []
@@ -103,9 +101,9 @@
   (let [path (.getCanonicalPath file)
         file-name (.getName file)]
     {:html (cond
-             (ui/is-project-path? path) (str "<html><b><font color='gray'>"
-                                             file-name
-                                             "</font></b></html>"))
+             (utils/is-project-path? path) (str "<html><b><font color='gray'>"
+                                                file-name
+                                                "</font></b></html>"))
      :name file-name
      :file file}))
 
@@ -241,7 +239,9 @@
 
 (defn new-file
   [e]
-  (let [default-file-name (if (lein/is-java-project? (get-project-path))
+  (let [default-file-name (if (-> (ui/get-selected-path)
+                                  get-project-path
+                                  lein/is-java-project?)
                             "Example.java" "example.clj")]
     (when-let [leaf-path (enter-file-path default-file-name)]
       (let [new-file (java.io/file (get-project-root-path) leaf-path)]

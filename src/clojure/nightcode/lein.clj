@@ -15,7 +15,8 @@
             [leiningen.test]
             [leiningen.uberjar]
             [nightcode.utils :as utils])
-  (:import [com.hypirion.io ClosingPipe Pipe])
+  (:import [com.hypirion.io ClosingPipe Pipe]
+           [com.sun.jdi Bootstrap])
   (:gen-class))
 
 (def ^:const debug-port "7896")
@@ -47,6 +48,25 @@
     (binding [leiningen.new.templates/*dir* dir]
       (->> [file-name (render file-name data)]
            (leiningen.new.templates/->files data)))))
+
+; check project types
+
+(defn is-android-project?
+  [path]
+  (.exists (java.io/file path "AndroidManifest.xml")))
+
+(defn is-java-project?
+  [path]
+  (when-let [project-map (read-project-clj path)]
+    (or (:java-only project-map)
+        (= (count (:source-paths project-map)) 0)
+        (clojure.set/subset? (set (:source-paths project-map))
+                             (set (:java-source-paths project-map))))))
+
+(defn is-clojurescript-project?
+  [path]
+  (when-let [project-map (read-project-clj path)]
+    (not (nil? (:cljsbuild project-map)))))
 
 ; start/stop thread/processes
 
@@ -141,24 +161,18 @@
     (.destroy @process)
     (reset! process nil)))
 
-; check project types
-
-(defn is-android-project?
+(defn hot-swap
   [path]
-  (.exists (java.io/file path "AndroidManifest.xml")))
-
-(defn is-java-project?
-  [path]
-  (when-let [project-map (read-project-clj path)]
-    (or (:java-only project-map)
-        (= (count (:source-paths project-map)) 0)
-        (clojure.set/subset? (set (:source-paths project-map))
-                             (set (:java-source-paths project-map))))))
-
-(defn is-clojurescript-project?
-  [path]
-  (when-let [project-map (read-project-clj path)]
-    (not (nil? (:cljsbuild project-map)))))
+  (when (.endsWith path ".java")
+    (when-let [conn (->> (Bootstrap/virtualMachineManager)
+                         .attachingConnectors
+                         (filter #(= (.name (.transport %)) "dt_socket"))
+                         first)]
+      (let [prm (.defaultArguments conn)]
+        (.setValue (.get prm "port") debug-port)
+        (.setValue (.get prm "hostname") "127.0.0.1")
+        (when-let [vm (try (.attach conn prm) (catch Exception _))]
+          (println vm))))))
 
 ; low-level commands
 

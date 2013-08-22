@@ -95,3 +95,9 @@
     (if (= (name (nth project-clj 1)) "nightcode")
       (nth project-clj 2)
       "beta")))
+
+(defn is-project-path?
+  [path]
+  (and path
+       (.isDirectory (java.io/file path))
+       (.exists (java.io/file path "project.clj"))))
