@@ -9,10 +9,17 @@
 (def ui-root (atom nil))
 
 (defn wrap-panel
-  [& {:keys [items hgap vgap]}]
-  (let [hgap (or hgap 0)
+  [& {:keys [items align hgap vgap]}]
+  (let [align (case align
+                :left WrapLayout/LEFT
+                :center WrapLayout/CENTER
+                :right WrapLayout/RIGHT
+                :leading WrapLayout/LEADING
+                :trailing WrapLayout/TRAILING
+                WrapLayout/LEFT)
+        hgap (or hgap 0)
         vgap (or vgap 0)
-        panel (s/abstract-panel (WrapLayout. WrapLayout/LEFT hgap vgap) {})]
+        panel (s/abstract-panel (WrapLayout. align hgap vgap) {})]
     (doseq [item items]
       (s/add! panel item))
     panel))

@@ -144,8 +144,9 @@
               ; down
               40 (p/move-project-tree-selection 1)
               ; Q
-              81 (when (dialogs/show-shut-down-dialog)
-                   (System/exit 0))
+              81 (if (dialogs/show-shut-down-dialog)
+                   (System/exit 0)
+                   true)
               false)))
         ; update the project tree when window comes into focus
         (.addWindowListener (proxy [WindowAdapter] []

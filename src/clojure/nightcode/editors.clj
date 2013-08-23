@@ -102,13 +102,13 @@
 
 (add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))
 
-(defn increase-font-size
-  [_]
-  (swap! font-size inc))
-
 (defn decrease-font-size
   [_]
   (swap! font-size dec))
+
+(defn increase-font-size
+  [_]
+  (swap! font-size inc))
 
 (defn focus-on-find
   [e]
@@ -208,9 +208,9 @@
         (shortcuts/create-mappings {:save-button save-file
                                     :undo-button undo-file
                                     :redo-button redo-file
-                                    :find-field focus-on-find
+                                    :font-dec-button decrease-font-size
                                     :font-inc-button increase-font-size
-                                    :font-dec-button decrease-font-size})
+                                    :find-field focus-on-find})
         shortcuts/create-hints
         (update-buttons text-area))
       (doto (TextPrompt. (utils/get-string :find)

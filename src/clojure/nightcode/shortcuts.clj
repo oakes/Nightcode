@@ -27,12 +27,12 @@
    :save-button "S"
    :undo-button "Z"
    :redo-button "Y"
-   :repl-console "G"
-   :find-field "F"
-   :project-pane "↑ ↓ ↵"
-   :toggle-logcat-button "S"
+   :font-dec-button "MINUS"
    :font-inc-button "EQUALS"
-   :font-dec-button "MINUS"})
+   :find-field "F"
+   :repl-console "G"
+   :project-pane "↑ ↓ ↵"
+   :toggle-logcat-button "S"})
 
 (defn create-mappings
   [panel pairs]
