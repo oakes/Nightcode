@@ -28,11 +28,10 @@
 (defn read-file
   [path]
   (let [length (.length (java.io/file path))]
-    (when (< length 500000)
-      (let [data-barray (byte-array length)]
-        (with-open [bis (java.io/input-stream path)]
-          (.read bis data-barray))
-        data-barray))))
+    (let [data-barray (byte-array length)]
+      (with-open [bis (java.io/input-stream path)]
+        (.read bis data-barray))
+      data-barray)))
 
 (defn get-project-clj-path
   [path]
