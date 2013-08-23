@@ -17,7 +17,8 @@
             [leiningen.uberjar]
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe]
-           [com.sun.jdi Bootstrap])
+           [com.sun.jdi Bootstrap]
+           [org.apache.bcel.classfile ClassParser])
   (:gen-class))
 
 (def ^:const debug-port "7896")
@@ -73,13 +74,13 @@
 (defn create-class-map
   [classes paths]
   (reduce (fn [class-map path]
-            (let [modified-path (clojure.string/replace path #"[/\\]" ".")
-                  class-symbol (-> #(.contains modified-path (.name %))
-                                   (filter classes)
-                                   first)]
-              (if class-symbol
+            (when-let [parsed (try (.parse (ClassParser. path))
+                                (catch Exception _))]
+              (if-let [class-ref (-> #(= (.getClassName parsed) (.name %))
+                                     (filter classes)
+                                     first)]
                 (doto class-map
-                  (.put class-symbol (read-file path)))
+                  (.put class-ref (read-file path)))
                 class-map)))
           (java.util.HashMap.)
           paths))
