@@ -74,14 +74,15 @@
 (defn create-class-map
   [classes paths]
   (reduce (fn [class-map path]
-            (when-let [parsed (try (.parse (ClassParser. path))
-                                (catch Exception _))]
+            (if-let [parsed (try (.parse (ClassParser. path))
+                              (catch Exception _))]
               (if-let [class-ref (-> #(= (.getClassName parsed) (.name %))
                                      (filter classes)
                                      first)]
                 (doto class-map
                   (.put class-ref (read-file path)))
-                class-map)))
+                class-map)
+              class-map))
           (java.util.HashMap.)
           paths))
 
