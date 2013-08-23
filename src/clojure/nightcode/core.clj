@@ -1,8 +1,9 @@
 (ns nightcode.core
   (:require [seesaw.core :as s]
-            [nightcode.shortcuts :as shortcuts]
+            [nightcode.dialogs :as dialogs]
             [nightcode.lein :as lein]
             [nightcode.projects :as p]
+            [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils])
   (:import [java.awt.event WindowAdapter]
@@ -143,7 +144,8 @@
               ; down
               40 (p/move-project-tree-selection 1)
               ; Q
-              81 (System/exit 0)
+              81 (when (dialogs/show-shut-down-dialog)
+                   (System/exit 0))
               false)))
         ; update the project tree when window comes into focus
         (.addWindowListener (proxy [WindowAdapter] []
