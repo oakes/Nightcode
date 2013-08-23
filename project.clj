@@ -5,7 +5,7 @@
                  [com.fifesoft/rsyntaxtextarea "2.0.6"]
                  [leiningen "2.3.1"]
                  [lein-cljsbuild "0.3.2"]
-                 [lein-droid "0.2.0-beta1"]
+                 [lein-droid "0.2.0-beta2"]
                  [org.clojure/clojure "1.5.1"]
                  [org.flatland/ordered "1.5.1"]
                  [org.kovas/paredit-widget "0.1.1-SNAPSHOT"]
