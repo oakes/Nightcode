@@ -21,8 +21,18 @@
   (:gen-class))
 
 (def ^:const debug-port "7896")
+(defonce class-name (str *ns*))
 
 ; utilities
+
+(defn read-file
+  [path]
+  (let [length (.length (java.io/file path))]
+    (when (< length 500000)
+      (let [data-barray (byte-array length)]
+        (with-open [bis (java.io/input-stream path)]
+          (.read bis data-barray))
+        data-barray))))
 
 (defn get-project-clj-path
   [path]
@@ -49,6 +59,31 @@
     (binding [leiningen.new.templates/*dir* dir]
       (->> [file-name (render file-name data)]
            (leiningen.new.templates/->files data)))))
+
+(defn stale-java-classes
+  [dirs compile-path]
+  (for [dir dirs
+        source (filter #(-> % (.getName) (.endsWith ".java"))
+                       (file-seq (java.io/file dir)))
+        :let [rel-source (.substring (.getPath source) (inc (count dir)))
+              rel-compiled (.replaceFirst rel-source "\\.java$" ".class")
+              compiled (java.io/file compile-path rel-compiled)]
+        :when (>= (.lastModified source) (.lastModified compiled))]
+    (.getPath compiled)))
+
+(defn create-class-map
+  [classes paths]
+  (reduce (fn [class-map path]
+            (let [modified-path (clojure.string/replace path #"[/\\]" ".")
+                  class-symbol (-> #(.contains modified-path (.name %))
+                                   (filter classes)
+                                   first)]
+              (if class-symbol
+                (doto class-map
+                  (.put class-symbol (read-file path)))
+                class-map)))
+          (java.util.HashMap.)
+          paths))
 
 ; check project types
 
@@ -112,8 +147,6 @@
       (.join pump-out)
       (.join pump-err)
       (.waitFor @process))))
-
-(defonce class-name (str *ns*))
 
 (defn start-process-indirectly
   [process path & args]
@@ -201,11 +234,18 @@
                        .attachingConnectors
                        (filter #(= (.name (.transport %)) "dt_socket"))
                        first)]
-     (let [prm (.defaultArguments conn)]
+     (let [prm (.defaultArguments conn)
+           stale-classes (-> (:java-source-paths project-map)
+                             (stale-java-classes (:compile-path project-map))
+                             doall)]
        (.setValue (.get prm "port") debug-port)
        (.setValue (.get prm "hostname") "127.0.0.1")
        (when-let [vm (try (.attach conn prm) (catch Exception _))]
-         (leiningen.javac/javac project-map)))))
+         (leiningen.javac/javac project-map)
+         (->> stale-classes
+              (create-class-map (.allClasses vm))
+              (.redefineClasses vm))
+         (.dispose vm)))))
 
 ; high-level commands
 
