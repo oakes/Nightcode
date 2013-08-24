@@ -135,6 +135,8 @@
             is-clojure-project? (not (lein/is-java-project? path))
             is-android-project? (lein/is-android-project? path)
             buttons {:#run-repl-button is-clojure-project?
+                     :#reload-button (or is-clojure-project?
+                                         (not is-android-project?))
                      :#test-button is-clojure-project?
                      :#sdk-button is-android-project?}
             sdk-path (get-in project-map [:android :sdk-path])]
