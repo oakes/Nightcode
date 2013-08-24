@@ -67,15 +67,15 @@
                               (or (>= (.indexOf id "java") 0)
                                   (>= (.indexOf id "android") 0))))
                  (s/text! package-name-text
-                          (utils/format-name (str "com." raw-project-name)
-                                             (s/id-of (s/selection group))))
+                          (-> (str "com." raw-project-name)
+                              utils/format-package-name))
                  (s/pack! (s/to-root e)))
         finish (fn []
                  (let [project-type (s/id-of (s/selection group))
                        project-name (-> raw-project-name
-                                        (utils/format-name nil))
+                                        utils/format-project-name)
                        package-name (-> (s/text package-name-text)
-                                        (utils/format-name project-type))
+                                        utils/format-package-name)
                        project-dir (-> (java.io/file parent-dir project-name)
                                        .getCanonicalPath)]
                    [project-type project-name package-name project-dir]))

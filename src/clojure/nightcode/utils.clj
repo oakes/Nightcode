@@ -75,16 +75,18 @@
            .getCanonicalPath
            (delete-file-recursively project-path)))))
 
-(defn format-name
-  [name-str project-type]
-  (if (and project-type (>= (.indexOf (name project-type) "java") 0))
-    (-> name-str
-        (clojure.string/replace "-" "_")
-        (clojure.string/replace #"[^a-zA-Z0-9_.]" ""))
-    (-> name-str
-        clojure.string/lower-case
-        (clojure.string/replace "_" "-")
-        (clojure.string/replace #"[^a-z0-9-.]" ""))))
+(defn format-project-name
+  [name-str]
+  (-> name-str
+      clojure.string/lower-case
+      (clojure.string/replace "_" "-")
+      (clojure.string/replace #"[^a-z0-9-.]" "")))
+
+(defn format-package-name
+  [name-str]
+  (-> name-str
+      (clojure.string/replace "-" "_")
+      (clojure.string/replace #"[^a-zA-Z0-9_.]" "")))
 
 (defn get-version
   []
