@@ -10,7 +10,7 @@
                   "http://mini2dx.org/nexus/content/repositories/thirdparty"]
                  ["mini2Dx"
                   "http://mini2dx.org/nexus/content/repositories/releases"]]
-  :java-source-paths ["src" "../common" "gen"]
+  :java-source-paths ["src" "../desktop/src-common" "gen"]
   :java-only true
   :profiles {:dev {:android {:aot :all-with-unused}}
              :release {:android

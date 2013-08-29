@@ -5,5 +5,6 @@
                  [com.badlogicgames.gdx/gdx-platform "0.9.9-SNAPSHOT"
                   :classifier "natives-desktop"]]
   :repositories [["sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"]]
-  :java-source-paths ["src" "../common"]
+  :java-source-paths ["src" "src-common"]
+  :aot :all
   :main {{desktop-namespace}})

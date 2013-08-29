@@ -3,7 +3,7 @@
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.github.insubstantial/substance "7.2.1"]
                  [com.fifesoft/rsyntaxtextarea "2.0.7"]
-                 [leiningen "2.3.2"]
+                 [leiningen "2.3.1"]
                  [lein-cljsbuild "0.3.2"]
                  [lein-droid "0.2.0-beta2"]
                  [org.apache.bcel/bcel "5.2"]

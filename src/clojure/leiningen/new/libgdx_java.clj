@@ -37,9 +37,9 @@ Accepts a group id in the project name: `lein new foo.bar/baz`"
              ; main
              ["README.md" (render "README.md" data)]
              [".gitignore" (render "gitignore" data)]
-             ["common/{{nested-dirs}}.java" (render "Core.java" data)]
              ; desktop
              ["desktop/project.clj" (render "desktop-project.clj" data)]
+             ["desktop/src-common/{{nested-dirs}}.java" (render "Core.java" data)]
              ["desktop/src/{{desktop-dirs}}.java"
               (render "DesktopLauncher.java" data)]
              ; android

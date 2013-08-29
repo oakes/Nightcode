@@ -12,5 +12,6 @@
                   "http://mini2dx.org/nexus/content/repositories/thirdparty"]
                  ["mini2Dx"
                   "http://mini2dx.org/nexus/content/repositories/releases"]]
-  :java-source-paths ["src" "../common"]
+  :java-source-paths ["src" "src-common"]
+  :aot :all
   :main {{desktop-namespace}})
