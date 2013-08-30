@@ -31,13 +31,6 @@
     (.enterLine console (str "(do " code ")")))
   (s/request-focus! (.getView (.getViewport console))))
 
-(defn toggle-buttons
-  [target is-running?]
-  (-> (s/select target [:#run-repl-button])
-      (s/config! :enabled? (not is-running?)))
-  (-> (s/select target [:#reload-button])
-      (s/config! :enabled? is-running?)))
-
 (defn create-builder
   [path]
   (let [console (ui/create-console)
@@ -47,11 +40,8 @@
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         run-action (fn [e]
-                     (toggle-buttons build-group (lein/is-java-project? path))
                      (lein/run-project process in out path))
         run-repl-action (fn [e]
-                          (toggle-buttons build-group
-                                          (not (lein/is-java-project? path)))
                           (lein/run-repl-project process in out path)
                           (s/request-focus! (.getView (.getViewport console))))
         reload-action (fn [e]
@@ -59,16 +49,12 @@
                           (lein/run-hot-swap in out path)
                           (eval-in-repl console)))
         build-action (fn [e]
-                       (toggle-buttons build-group false)
                        (lein/build-project process in out path))
         test-action (fn [e]
-                      (toggle-buttons build-group false)
                       (lein/test-project process in out path))
         clean-action (fn [e]
-                       (toggle-buttons build-group false)
                        (lein/clean-project process in out path))
         stop-action (fn [e]
-                      (toggle-buttons build-group false)
                       (lein/stop-process process))
         btn-group (ui/wrap-panel
                     :items [(s/button :id :run-button
@@ -104,7 +90,6 @@
                                       :listen [:action set-android-sdk]
                                       :focusable? false)])]
     (s/config! build-group :north btn-group)
-    (toggle-buttons build-group false)
     (shortcuts/create-mappings build-group
                                {:run-button run-action
                                 :run-repl-button run-repl-action
