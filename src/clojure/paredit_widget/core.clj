@@ -70,6 +70,15 @@
   ["M" "Left"] :paredit-expand-left
    })
 
+(def formatting-keymap
+  {["M" "f"] :fmt-pprint})
+
+(defn exec-pprint [k widget]
+  (let [cmd (formatting-keymap k)]
+    (if cmd
+      (let [fs (with-out-str (clojure.pprint/pprint (read-string (.getSelectedText widget))))]
+        (if *debug* (println "replacement: " fs " at: " (.getSelectionStart widget)))
+        (if fs (.replaceRange widget fs (.getSelectionStart widget) (.getSelectionEnd widget)))))))
 
 (defn exec-paredit [k w]
   (let [cmd (keymap k)]
@@ -112,7 +121,7 @@
     (keyPressed [this e]
       (let [k (convert-key-event e)
             p (exec-paredit k w)]
-        (if p (.consume e))))))
+        (if p (.consume e) (exec-pprint k w))))))
 
 (defn input-method-event-handler [w]
   (reify java.awt.event.InputMethodListener
