@@ -74,9 +74,9 @@
   {["M" "f"] :fmt-pprint})
 
 (defn exec-pprint [k widget]
-  (let [cmd (formatting-keymap k)]
-    (if cmd
-      (let [fs (with-out-str (clojure.pprint/pprint (read-string (.getSelectedText widget))))]
+  (when (formatting-keymap k)
+    (when-let [text (.getSelectedText widget)]
+      (let [fs (with-out-str (clojure.pprint/pprint (read-string text)))]
         (if *debug* (println "replacement: " fs " at: " (.getSelectionStart widget)))
         (if fs (.replaceRange widget fs (.getSelectionStart widget) (.getSelectionEnd widget)))))))
 
