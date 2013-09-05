@@ -91,14 +91,14 @@ public class JConsole extends JScrollPane
 	private Vector<String> history = new Vector<String>();
 	private String startedLine;
 	private int histLine = 0;
-	final int HIST_MAX = 100000;
+	private final int HIST_MAX = 100000;
 
 	private JPopupMenu menu;
 	private JTextPane text;
 	private DefaultStyledDocument doc;
 
 	NameCompletion nameCompletion;
-	final int SHOW_AMBIG_MAX = 10;
+	private final int SHOW_AMBIG_MAX = 10;
 
 	// hack to prevent key repeat for some reason?
 	private boolean gotUp = true;
@@ -548,7 +548,6 @@ public class JConsole extends JScrollPane
 	}
 
 	public void enterLine(String line) {
-		line = line.replace("\n", " ");
 		acceptLine(line);
 		enter();
 	}

@@ -26,10 +26,16 @@
 
 (defn eval-in-repl
   [console]
-  (let [code (or (editors/get-editor-selected-text)
-                 (editors/get-editor-text))]
-    (.enterLine console (str "(do " code ")")))
+  (when-let [code (or (editors/get-editor-selected-text)
+                      (editors/get-editor-text))]
+    (->> (str "(do " (clojure.string/replace code "\n" " ") ")")
+         (.enterLine console)))
   (s/request-focus! (.getView (.getViewport console))))
+
+(defn toggle-reload
+  [target enable?]
+  (-> (s/select target [:#reload-button])
+      (s/config! :enabled? enable?)))
 
 (defn create-builder
   [path]
@@ -40,10 +46,13 @@
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         run-action (fn [e]
-                     (lein/run-project process in out path))
+                     (lein/run-project process in out path)
+                     (toggle-reload build-group (lein/is-java-project? path)))
         run-repl-action (fn [e]
                           (lein/run-repl-project process in out path)
-                          (s/request-focus! (.getView (.getViewport console))))
+                          (s/request-focus! (.getView (.getViewport console)))
+                          (toggle-reload build-group
+                                         (not (lein/is-java-project? path))))
         reload-action (fn [e]
                         (if (lein/is-java-project? path)
                           (lein/run-hot-swap in out path)
@@ -68,7 +77,8 @@
                             (s/button :id :reload-button
                                       :text (utils/get-string :reload)
                                       :listen [:action reload-action]
-                                      :focusable? false)
+                                      :focusable? false
+                                      :enabled? false)
                             (s/button :id :build-button
                                       :text (utils/get-string :build)
                                       :listen [:action build-action]
@@ -89,6 +99,10 @@
                                       :text (utils/get-string :android_sdk)
                                       :listen [:action set-android-sdk]
                                       :focusable? false)])]
+    (add-watch process
+               :console-process
+               (fn [_ _ _ new-state]
+                 (when-not new-state (toggle-reload build-group false))))
     (s/config! build-group :north btn-group)
     (shortcuts/create-mappings build-group
                                {:run-button run-action

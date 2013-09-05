@@ -147,7 +147,8 @@
           pump-in (doto (ClosingPipe. *in* in) .start)]
       (.join pump-out)
       (.join pump-err)
-      (.waitFor @process))))
+      (.waitFor @process)
+      (reset! process nil))))
 
 (defn start-process-indirectly
   [process path & args]
