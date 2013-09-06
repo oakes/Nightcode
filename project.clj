@@ -5,7 +5,7 @@
                  [com.fifesoft/rsyntaxtextarea "2.0.7"]
                  [leiningen "2.3.1"]
                  [lein-cljsbuild "0.3.2"]
-                 [lein-droid "0.2.0-beta2"]
+                 [lein-droid "0.2.0-beta3"]
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/core.incubator "0.1.3"]
