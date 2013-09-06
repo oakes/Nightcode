@@ -62,7 +62,7 @@ import bsh.util.NameCompletion;
  * including Color and Image support, key press bug workaround
  */
 public class JConsole extends JScrollPane
-	implements GUIConsoleInterface, Runnable, KeyListener,
+	implements Runnable, KeyListener,
 	MouseListener, ActionListener, PropertyChangeListener {
 	private final static String CUT = "Cut";
 	private final static String COPY = "Copy";
@@ -818,54 +818,6 @@ public class JConsole extends JScrollPane
 			run.run();
 		}
 	}
-
-	/**
-	 * I don't think this is necessary anymore.
-	 * <p/>
-	 * The overridden read method in this class will not throw "Broken pipe"
-	 * IOExceptions;  It will simply wait for new writers and data.
-	 * This is used by the JConsole internal read thread to allow writers
-	 * in different (and in particular ephemeral) threads to write to the pipe.
-	 * It also checks a little more frequently than the original read().
-	 * Warning: read() will not even error on a read to an explicitly closed
-	 * pipe (override closed to for that).
-	 * <p/>
-	 * public static class BlockingPipedReader extends PipedReader {
-	 * boolean closed;
-	 * public BlockingPipedReader( PipedWriter pout )
-	 * throws IOException
-	 * {
-	 * super(pout);
-	 * }
-	 * // FIXME
-	 * public synchronized int read() throws IOException {
-	 * if ( closed )
-	 * throw new IOException("stream closed");
-	 * <p/>
-	 * while (super.in < 0) {	// While no data
-	 * notifyAll();	// Notify any writers to wake up
-	 * try {
-	 * wait(750);
-	 * } catch ( InterruptedException e ) {
-	 * throw new InterruptedIOException();
-	 * }
-	 * }
-	 * // This is what the superclass does.
-	 * int ret = buffer[super.out++] & 0xFF;
-	 * if (super.out >= buffer.length)
-	 * super.out = 0;
-	 * if (super.in == super.out)
-	 * super.in = -1;  // now empty
-	 * return ret;
-	 * }
-	 * public void close() throws IOException {
-	 * closed = true;
-	 * super.close();
-	 * }
-	 * <p/>
-	 * }
-	 */
-
 
 	public void setNameCompletion(NameCompletion nc) {
 		this.nameCompletion = nc;
