@@ -30,6 +30,7 @@
    :font-dec-button "MINUS"
    :font-inc-button "EQUALS"
    :find-field "F"
+   :replace-field "shift R"
    :repl-console "G"
    :project-pane "↑ ↓ ↵"
    :toggle-logcat-button "S"})

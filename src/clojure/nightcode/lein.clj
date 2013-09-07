@@ -333,7 +333,7 @@
   (->> (hot-swap-project-task path (read-project-clj path))
        (start-thread in out)))
 
-; main function for "slow" processes
+; main function for "indirect" processes
 
 (defn -main
   [cmd & args]

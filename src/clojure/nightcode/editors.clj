@@ -110,29 +110,60 @@
   [_]
   (swap! font-size inc))
 
-(defn focus-on-find
-  [e]
+(defn focus-on-field
+  [id]
   (when-let [pane (get-selected-editor-pane)]
-    (doto (s/select pane [:#find-field])
+    (doto (s/select pane [id])
       s/request-focus!
       .selectAll)))
+
+(defn focus-on-find
+  [e]
+  (focus-on-field :#find-field))
+
+(defn focus-on-replace
+  [e]
+  (focus-on-field :#replace-field))
 
 (defn close-file
   [e])
 
-(defn search
+(defn find-text
   [e]
   (when-let [editor (get-selected-editor)]
     (let [is-enter-key? (= (.getKeyCode e) 10)
-          context (SearchContext. (s/text e))]
-      (when-not is-enter-key?
+          find-text (s/text e)
+          context (SearchContext. find-text)]
+      (.setRegularExpression context true)
+      (when (and (not is-enter-key?) (> (count find-text) 0))
         (.setCaretPosition editor 0))
       (when (and is-enter-key? (.isShiftDown e))
         (.setSearchForward context false))
-      (if (or (SearchEngine/find editor context)
-              (= (count (s/text e)) 0))
-        (s/config! e :background nil)
-        (s/config! e :background (color/color :red))))))
+      (if (and (> (count find-text) 0)
+               (-> (try (SearchEngine/find editor context)
+                     (catch Exception e 0))
+                   (= 0)))
+        (s/config! e :background (color/color :red)
+        (s/config! e :background nil))))))
+
+(defn replace-text
+  [e]
+  (when-let [editor (get-selected-editor)]
+    (let [is-enter-key? (= (.getKeyCode e) 10)
+          pane (get-selected-editor-pane)
+          find-text (s/text (s/select pane [:#find-field]))
+          replace-text (s/text e)
+          context (SearchContext. find-text)]
+      (.setReplaceWith context replace-text)
+      (if (and is-enter-key?
+               (or (= (count find-text) 0)
+                   (-> (try (SearchEngine/replaceAll editor context)
+                         (catch Exception e 0))
+                       (= 0))))
+        (s/config! e :background (color/color :red))
+        (s/config! e :background nil))
+      (when is-enter-key?
+        (update-buttons pane editor)))))
 
 ; create and show editors for each file
 
@@ -199,23 +230,31 @@
                                         :focusable? false
                                         :listen [:action increase-font-size])
                               (s/text :id :find-field
-                                      :columns 10
-                                      :listen [:key-released search])])
+                                      :columns 8
+                                      :listen [:key-released find-text])
+                              (s/text :id :replace-field
+                                      :columns 8
+                                      :listen [:key-released replace-text])])
           text-group (s/border-panel
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
+      ; create shortcuts
       (doto text-group
         (shortcuts/create-mappings {:save-button save-file
                                     :undo-button undo-file
                                     :redo-button redo-file
                                     :font-dec-button decrease-font-size
                                     :font-inc-button increase-font-size
-                                    :find-field focus-on-find})
+                                    :find-field focus-on-find
+                                    :replace-field focus-on-replace})
         shortcuts/create-hints
         (update-buttons text-area))
-      (doto (TextPrompt. (utils/get-string :find)
-                         (s/select text-group [:#find-field]))
-        (.changeAlpha 0.5))
+      ; add prompt text to the fields
+      (doseq [[id text] {:#find-field (utils/get-string :find)
+                         :#replace-field (utils/get-string :replace)}]
+        (doto (TextPrompt. text (s/select text-group [id]))
+          (.changeAlpha 0.5)))
+      ; load file and set properties for the text area
       (doto text-area
         (.load (FileLocation/create path) nil)
         .discardAllEdits
@@ -226,6 +265,7 @@
         (.setMarginLineEnabled true)
         (.setMarginLinePosition 80))
       (when is-clojure? (.setTabSize text-area 2))
+      ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
                               (changedUpdate [this e]
@@ -234,13 +274,16 @@
                                 (update-buttons text-group text-area))
                               (removeUpdate [this e]
                                 (update-buttons text-group text-area))))
+      ; load the dark theme
       (-> (java.io/resource "dark.xml")
           java.io/input-stream
           Theme/load
           (.apply text-area))
+      ; set the font size from preferences
       (if @font-size
         (set-font-size text-area @font-size)
         (reset! font-size (-> text-area .getFont .getSize)))
+      ; return the entire panel
       text-group)))
 
 (defn create-logcat
