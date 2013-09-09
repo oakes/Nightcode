@@ -95,13 +95,9 @@
       (when-let [editor (get-editor path)]
         (set-font-size editor size)))))
 
-(add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))
-
 (defn save-font-size
   [size]
   (utils/write-pref :font-size size))
-
-(add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))
 
 (defn decrease-font-size
   [_]
@@ -355,3 +351,7 @@
         (swap! editors dissoc editor-path)
         (close-fn)
         (.remove editor-pane view)))))
+
+(add-watch ui/tree-selection :show-editor (fn [_ _ _ path] (show-editor path)))
+(add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))
+(add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))

@@ -13,52 +13,22 @@
 
 ; keep track of projects, expansions and the selection
 
-(def tree-projects (atom #{}))
-(def tree-expansions (atom #{}))
-(def tree-selection (atom nil))
-
-(defn get-project-path
-  [path]
-  (when path
-    (when-let [file (java.io/file path)]
-      (if (or (utils/is-project-path? (.getCanonicalPath file))
-              (contains? @tree-projects (.getCanonicalPath file)))
-        (.getCanonicalPath file)
-        (when-let [parent-file (.getParentFile file)]
-          (get-project-path (.getCanonicalPath parent-file)))))))
-
-(defn get-project-root-path
-  []
-  (-> #(.startsWith (ui/get-selected-path) %)
-      (filter @tree-projects)
-      first))
-
 (defn add-expansion
   [e]
-  (swap! tree-expansions conj (-> e .getPath utils/tree-path-to-str))
-  (utils/write-pref :expansion-set @tree-expansions))
+  (swap! ui/tree-expansions conj (-> e .getPath utils/tree-path-to-str))
+  (utils/write-pref :expansion-set @ui/tree-expansions))
 
 (defn remove-expansion
   [e]
-  (swap! tree-expansions disj (-> e .getPath utils/tree-path-to-str))
-  (utils/write-pref :expansion-set @tree-expansions))
+  (swap! ui/tree-expansions disj (-> e .getPath utils/tree-path-to-str))
+  (utils/write-pref :expansion-set @ui/tree-expansions))
 
 (defn set-selection
   [e]
   (when-let [path (-> e .getPath utils/tree-path-to-str)]
-    (when (not= path @tree-selection)
-      (s/config! (s/select @ui/ui-root [:#remove-button])
-                 :enabled?
-                 (or (contains? @tree-projects path)
-                     (.isFile (java.io/file path))))
-      (s/config! (s/select @ui/ui-root [:#new-file-button])
-                 :visible? (.isDirectory (java.io/file path)))
-      (s/config! (s/select @ui/ui-root [:#rename-file-button])
-                 :visible? (.isFile (java.io/file path)))
-      (editors/show-editor path)
-      (builders/show-builder (get-project-path path))
-      (reset! tree-selection path)
-      (utils/write-pref :selection @tree-selection))))
+    (when (not= path @ui/tree-selection)
+      (reset! ui/tree-selection path)
+      (utils/write-pref :selection @ui/tree-selection))))
 
 (defn move-project-tree-selection
   [diff]
@@ -145,11 +115,11 @@
 
 (defn create-project-tree
   []
-  (reset! tree-projects
+  (reset! ui/tree-projects
           (-> #(.getName (java.io/file %))
               (sort-by (utils/read-pref :project-set))
               (set)))
-  (-> @tree-projects
+  (-> @ui/tree-projects
       vec
       root-node
       (javax.swing.tree.DefaultTreeModel. false)))
@@ -161,7 +131,7 @@
 
 (defn remove-from-project-tree
   [path]
-  (let [is-project? (contains? @tree-projects path)]
+  (let [is-project? (contains? @ui/tree-projects path)]
     (when (dialogs/show-remove-dialog is-project?)
       (if is-project?
         (utils/write-pref :project-set
@@ -169,7 +139,7 @@
                                (remove #(= % path))
                                set))
         (utils/delete-file-recursively (-> #(.startsWith path %)
-                                           (filter @tree-projects)
+                                           (filter @ui/tree-projects)
                                            first)
                                        path))
       (when is-project? (builders/remove-builders path))
@@ -185,8 +155,8 @@
    ; put new data in the tree
    (.setModel tree (create-project-tree))
    ; wipe out the in-memory expansion/selection
-   (reset! tree-expansions #{})
-   (reset! tree-selection nil)
+   (reset! ui/tree-expansions #{})
+   (reset! ui/tree-selection nil)
    ; get the expansion/selection and apply them to the tree
    (let [expansion-set (utils/read-pref :expansion-set)
          selection (or new-selection (utils/read-pref :selection))]
@@ -196,23 +166,17 @@
          (when (or (contains? expansion-set str-path)
                    (and new-selection (.startsWith new-selection str-path)))
            (.expandPath tree tree-path)
-           (swap! tree-expansions conj str-path))
+           (swap! ui/tree-expansions conj str-path))
          (when (= selection str-path)
            (.setSelectionPath tree tree-path)))))
    ; select the first project if there is nothing selected
-   (when (nil? @tree-selection)
-     (.setSelectionRow tree 0))
-   ; hide panes and disable buttons if there is still nothing selected
-   (when (nil? @tree-selection)
-     (editors/show-editor nil)
-     (builders/show-builder nil)
-     (doseq [btn [:#remove-button :#new-file-button :#rename-file-button]]
-       (s/config! (s/select @ui/ui-root [btn]) :enabled? false)))))
+   (when (nil? @ui/tree-selection)
+     (.setSelectionRow tree 0))))
 
 (defn enter-file-path
   [default-file-name]
   (let [selected-path (ui/get-selected-path)
-        project-path (get-project-root-path)
+        project-path (ui/get-project-root-path)
         default-path (str (utils/get-relative-dir project-path selected-path)
                           (or default-file-name
                               (.getName (java.io/file selected-path))))]
@@ -240,11 +204,11 @@
 (defn new-file
   [e]
   (let [default-file-name (if (-> (ui/get-selected-path)
-                                  get-project-path
+                                  ui/get-project-path
                                   lein/is-java-project?)
                             "Example.java" "example.clj")]
     (when-let [leaf-path (enter-file-path default-file-name)]
-      (let [new-file (java.io/file (get-project-root-path) leaf-path)]
+      (let [new-file (java.io/file (ui/get-project-root-path) leaf-path)]
         (if (.exists new-file)
           (s/alert (utils/get-string :file_exists))
           (do
@@ -255,7 +219,7 @@
 (defn rename-file
   [e]
   (when-let [leaf-path (enter-file-path nil)]
-    (let [project-path (get-project-root-path)
+    (let [project-path (ui/get-project-root-path)
           new-file (java.io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
           selected-path (ui/get-selected-path)]
@@ -288,4 +252,16 @@
 (defn remove-item
   [e]
   (when (remove-from-project-tree (ui/get-selected-path))
-    (update-project-tree (get-project-root-path))))
+    (update-project-tree (ui/get-project-root-path))))
+
+(add-watch ui/tree-selection
+           :update-project-buttons
+           (fn [_ _ _ path]
+             (s/config! (s/select @ui/ui-root [:#remove-button])
+                        :enabled?
+                        (and path (or (contains? @ui/tree-projects path)
+                                      (.isFile (java.io/file path)))))
+             (s/config! (s/select @ui/ui-root [:#new-file-button])
+                        :visible? (and path (.isDirectory (java.io/file path))))
+             (s/config! (s/select @ui/ui-root [:#rename-file-button])
+                        :visible? (and path (.isFile (java.io/file path))))))

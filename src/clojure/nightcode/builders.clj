@@ -154,3 +154,7 @@
       (when (.startsWith builder-path path)
         (swap! builders dissoc builder-path)
         (.remove pane builder)))))
+
+(add-watch ui/tree-selection
+           :show-builder
+           (fn [_ _ _ path] (show-builder (ui/get-project-path path))))

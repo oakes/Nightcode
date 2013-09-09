@@ -8,6 +8,10 @@
 
 (def ui-root (atom nil))
 
+(def tree-projects (atom #{}))
+(def tree-expansions (atom #{}))
+(def tree-selection (atom nil))
+
 (defn wrap-panel
   [& {:keys [items align hgap vgap]}]
   (let [align (case align
@@ -45,3 +49,19 @@
   (-> (get-project-tree)
       .getSelectionPath
       utils/tree-path-to-str))
+
+(defn get-project-path
+  [path]
+  (when path
+    (when-let [file (java.io/file path)]
+      (if (or (utils/is-project-path? (.getCanonicalPath file))
+              (contains? @tree-projects (.getCanonicalPath file)))
+        (.getCanonicalPath file)
+        (when-let [parent-file (.getParentFile file)]
+          (get-project-path (.getCanonicalPath parent-file)))))))
+
+(defn get-project-root-path
+  []
+  (-> #(.startsWith (get-selected-path) %)
+      (filter @tree-projects)
+      first))
