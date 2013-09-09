@@ -46,18 +46,19 @@
 (defn set-selection
   [e]
   (when-let [path (-> e .getPath utils/tree-path-to-str)]
-    (s/config! (s/select @ui/ui-root [:#remove-button])
-               :enabled?
-               (or (contains? @tree-projects path)
-                   (.isFile (java.io/file path))))
-    (s/config! (s/select @ui/ui-root [:#new-file-button])
-               :visible? (.isDirectory (java.io/file path)))
-    (s/config! (s/select @ui/ui-root [:#rename-file-button])
-               :visible? (.isFile (java.io/file path)))
-    (reset! tree-selection path)
-    (editors/show-editor path)
-    (builders/show-builder (get-project-path path)))
-  (utils/write-pref :selection @tree-selection))
+    (when (not= path @tree-selection)
+      (s/config! (s/select @ui/ui-root [:#remove-button])
+                 :enabled?
+                 (or (contains? @tree-projects path)
+                     (.isFile (java.io/file path))))
+      (s/config! (s/select @ui/ui-root [:#new-file-button])
+                 :visible? (.isDirectory (java.io/file path)))
+      (s/config! (s/select @ui/ui-root [:#rename-file-button])
+                 :visible? (.isFile (java.io/file path)))
+      (editors/show-editor path)
+      (builders/show-builder (get-project-path path))
+      (reset! tree-selection path)
+      (utils/write-pref :selection @tree-selection))))
 
 (defn move-project-tree-selection
   [diff]
@@ -186,7 +187,7 @@
    ; wipe out the in-memory expansion/selection
    (reset! tree-expansions #{})
    (reset! tree-selection nil)
-   ; read the on-disk expansion/selection and apply them to the tree
+   ; get the expansion/selection and apply them to the tree
    (let [expansion-set (utils/read-pref :expansion-set)
          selection (or new-selection (utils/read-pref :selection))]
      (doseq [i (range) :while (< i (.getRowCount tree))]
@@ -197,8 +198,7 @@
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)
-           (.setSelectionPath tree tree-path)
-           (reset! tree-selection str-path)))))
+           (.setSelectionPath tree tree-path)))))
    ; select the first project if there is nothing selected
    (when (nil? @tree-selection)
      (.setSelectionRow tree 0))

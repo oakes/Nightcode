@@ -1,6 +1,8 @@
 (ns nightcode.core
-  (:require [seesaw.core :as s]
+  (:require [clojure.java.io :as java.io]
+            [seesaw.core :as s]
             [nightcode.dialogs :as dialogs]
+            [nightcode.editors :as editors]
             [nightcode.lein :as lein]
             [nightcode.projects :as p]
             [nightcode.shortcuts :as shortcuts]
@@ -93,8 +95,9 @@
   (s/card-panel :id :builder-pane
                 :items [["" :default-card]]))
 
-(defn get-window-content []
+(defn get-window-content
   "Returns the entire window with all panes."
+  []
   (let [process (atom nil)
         view (ui/create-console)
         console {:process process
@@ -111,6 +114,18 @@
                           :divider-location 0.8
                           :resize-weight 0.5)
       :divider-location 0.4)))
+
+(defn close-selected-editor
+  "Closes the currently-selected editor."
+  []
+  (let [path (ui/get-selected-path)
+        file (java.io/file path)]
+    (editors/remove-editors path)
+    (doto @ui/ui-root .invalidate .validate)
+    (p/update-project-tree (if (.isDirectory file)
+                             path
+                             (.getCanonicalPath (.getParentFile file)))))
+  true)
 
 (defn -main
   "Launches the main window."
@@ -147,6 +162,8 @@
               81 (if (dialogs/show-shut-down-dialog)
                    (System/exit 0)
                    true)
+              ; W
+              87 (close-selected-editor)
               false)))
         ; update the project tree when window comes into focus
         (.addWindowListener (proxy [WindowAdapter] []

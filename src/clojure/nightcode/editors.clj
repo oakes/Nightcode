@@ -25,7 +25,7 @@
   [path]
   (when (contains? @editors path)
     (->> [:<org.fife.ui.rsyntaxtextarea.TextEditorPane>]
-         (s/select (get @editors path))
+         (s/select (get-in @editors [path :view]))
          first)))
 
 (defn get-selected-editor
@@ -34,7 +34,7 @@
 
 (defn get-selected-editor-pane
   []
-  (get @editors (ui/get-selected-path)))
+  (get-in @editors [(ui/get-selected-path) :view]))
 
 (defn is-unsaved?
   [path]
@@ -63,22 +63,23 @@
       (s/config! :enabled? (.canRedo editor))))
 
 (defn save-file
-  [e]
+  [_]
   (when-let [editor (get-selected-editor)]
     (with-open [w (java.io/writer (java.io/file (ui/get-selected-path)))]
       (.write editor w))
     (.setDirty editor false)
     (s/request-focus! editor)
-    (update-buttons (get-selected-editor-pane) editor)))
+    (update-buttons (get-selected-editor-pane) editor))
+  true)
 
 (defn undo-file
-  [e]
+  [_]
   (when-let [editor (get-selected-editor)]
     (.undoLastAction editor)
     (update-buttons (get-selected-editor-pane) editor)))
 
 (defn redo-file
-  [e]
+  [_]
   (when-let [editor (get-selected-editor)]
     (.redoLastAction editor)
     (update-buttons (get-selected-editor-pane) editor)))
@@ -90,7 +91,7 @@
 (defn set-font-sizes
   [size]
   (when-let [selected-editor (get-selected-editor)]
-    (doseq [[path editor-pane] @editors]
+    (doseq [[path editor-map] @editors]
       (when-let [editor (get-editor path)]
         (set-font-size editor size)))))
 
@@ -118,15 +119,12 @@
       .selectAll)))
 
 (defn focus-on-find
-  [e]
+  [_]
   (focus-on-field :#find-field))
 
 (defn focus-on-replace
-  [e]
+  [_]
   (focus-on-field :#replace-field))
-
-(defn close-file
-  [e])
 
 (defn find-text
   [e]
@@ -283,8 +281,11 @@
       (if @font-size
         (set-font-size text-area @font-size)
         (reset! font-size (-> text-area .getFont .getSize)))
-      ; return the entire panel
-      text-group)))
+      ; return the object
+      {:view text-group
+       :close-fn (fn []
+                   (when (.isDirty text-area)
+                     (save-file nil)))})))
 
 (defn create-logcat
   [path]
@@ -295,7 +296,7 @@
           out (ui/get-console-output console)
           toggle-btn (s/button :id :toggle-logcat-button
                                :text (utils/get-string :start))
-          btn-group (s/horizontal-panel :items [toggle-btn])
+          btn-group (ui/wrap-panel :items [toggle-btn])
           start (fn []
                   (->> (.getParent (java.io/file path))
                        (lein/run-logcat process in out))
@@ -306,20 +307,21 @@
           toggle (fn [e]
                    (if (nil? @process) (start) (stop)))]
       (s/listen toggle-btn :action toggle)
-      (shortcuts/create-mappings btn-group {:toggle-logcat-button toggle})
-      (shortcuts/create-hints btn-group)
-      (s/border-panel :north btn-group
-                      :center console))))
+      (doto btn-group
+        (shortcuts/create-mappings {:toggle-logcat-button toggle})
+        shortcuts/create-hints)
+      {:view (s/border-panel :north btn-group :center console)
+       :close-fn (fn [] (stop))})))
 
 (defn show-editor
   [path]
   (let [editor-pane (s/select @ui/ui-root [:#editor-pane])]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
-      (when-let [view (or (create-editor path)
-                          (create-logcat path))]
-        (swap! editors assoc path view)
-        (.add editor-pane view path)))
+      (when-let [editor (or (create-editor path)
+                            (create-logcat path))]
+        (swap! editors assoc path editor)
+        (.add editor-pane (:view editor) path)))
     ; display the correct card
     (->> (or (when-let [editor (get @editors path)]
                (when *reorder-tabs?*
@@ -340,7 +342,7 @@
          (str "<html>")
          (shortcuts/create-hint editor-pane)
          (reset! tabs))
-    (when @shortcuts/is-down? (s/show! @tabs))
+    (shortcuts/toggle-hints @ui/ui-root @shortcuts/is-down?)
     ; give the editor focus if it exists
     (when-let [editor (get-editor path)]
       (s/request-focus! editor))))
@@ -348,7 +350,8 @@
 (defn remove-editors
   [path]
   (let [editor-pane (s/select @ui/ui-root [:#editor-pane])]
-    (doseq [[editor-path editor] @editors]
+    (doseq [[editor-path {:keys [view close-fn]}] @editors]
       (when (.startsWith editor-path path)
         (swap! editors dissoc editor-path)
-        (.remove editor-pane editor)))))
+        (close-fn)
+        (.remove editor-pane view)))))
