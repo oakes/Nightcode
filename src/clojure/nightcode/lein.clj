@@ -44,7 +44,8 @@
     (let [project-clj-path (get-project-clj-path path)]
       (if-not (.exists (java.io/file project-clj-path))
         (println (utils/get-string :no_project_clj))
-        (leiningen.core.project/read project-clj-path)))))
+        (try (leiningen.core.project/read project-clj-path)
+          (catch Exception e {}))))))
 
 (defn add-sdk-path
   [project-map]
