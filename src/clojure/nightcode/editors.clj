@@ -14,7 +14,7 @@
             FileLocation SyntaxConstants TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
 
-; dealing with currently-open editors
+; keep track of open editors
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
@@ -157,7 +157,7 @@
       (when is-enter-key?
         (update-buttons pane editor)))))
 
-; create and show editors for each file
+; create and show/hide editors for each file
 
 (def ^:const styles {"clj" SyntaxConstants/SYNTAX_STYLE_CLOJURE
                      "cljs" SyntaxConstants/SYNTAX_STYLE_CLOJURE
@@ -360,6 +360,8 @@
                               path
                               (.getCanonicalPath (.getParentFile file)))))
   true)
+
+; watchers
 
 (add-watch ui/tree-selection :show-editor (fn [_ _ _ path] (show-editor path)))
 (add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))

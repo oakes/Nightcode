@@ -8,6 +8,8 @@
             [seesaw.color :as color]
             [seesaw.core :as s]))
 
+; keep track of open builders
+
 (def builders (atom {}))
 
 (defn get-builder
@@ -16,6 +18,8 @@
     (->> [:#build-console]
          (s/select (get-in @builders [path :view]))
          first)))
+
+; actions for builder buttons
 
 (defn set-android-sdk
   [_]
@@ -36,6 +40,8 @@
   [target enable?]
   (-> (s/select target [:#reload-button])
       (s/config! :enabled? enable?)))
+
+; create and show/hide builders for each project
 
 (defn create-builder
   [path]
@@ -156,6 +162,8 @@
         (swap! builders dissoc builder-path)
         (close-fn)
         (.remove pane view)))))
+
+; watchers
 
 (add-watch ui/tree-selection
            :show-builder

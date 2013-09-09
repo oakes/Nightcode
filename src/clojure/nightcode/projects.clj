@@ -9,7 +9,7 @@
             [seesaw.chooser :as chooser]
             [seesaw.core :as s]))
 
-; keep track of projects, expansions and the selection
+; manipulate expansions and selection
 
 (defn add-expansion
   [e]
@@ -63,7 +63,7 @@
            (.setExpandedState project-tree path))))
   true)
 
-; create and manipulate project tree
+; manipulate project tree
 
 (defn add-to-project-tree
   [path]
@@ -167,6 +167,8 @@
   [e]
   (when (remove-from-project-tree (ui/get-selected-path))
     (ui/update-project-tree (ui/get-project-root-path))))
+
+; watchers
 
 (add-watch ui/tree-selection
            :update-project-buttons

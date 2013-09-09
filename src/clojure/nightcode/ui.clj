@@ -7,11 +7,9 @@
            [bsh.util JConsole]
            [com.camick WrapLayout]))
 
-(def ui-root (atom nil))
+; create and retrieve widgets
 
-(def tree-projects (atom #{}))
-(def tree-expansions (atom #{}))
-(def tree-selection (atom nil))
+(def ui-root (atom nil))
 
 (defn wrap-panel
   [& {:keys [items align hgap vgap]}]
@@ -45,6 +43,12 @@
   []
   (s/select @ui-root [:#project-tree]))
 
+; keep track of the projects/expansions/selection
+
+(def tree-projects (atom #{}))
+(def tree-expansions (atom #{}))
+(def tree-selection (atom nil))
+
 (defn get-selected-path
   []
   (-> (get-project-tree)
@@ -66,6 +70,8 @@
   (-> #(.startsWith (get-selected-path) %)
       (filter @tree-projects)
       first))
+
+; data for the project tree
 
 (defn get-node
   [file]
@@ -112,6 +118,8 @@
   (proxy [javax.swing.tree.DefaultMutableTreeNode] []
     (getChildAt [i] (file-node (get-node (java.io/file (nth project-vec i)))))
     (getChildCount [] (count project-vec))))
+
+; create and update the project tree
 
 (defn create-project-tree
   []
