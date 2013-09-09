@@ -14,11 +14,11 @@
   [path]
   (when (contains? @builders path)
     (->> [:#build-console]
-         (s/select (get @builders path))
+         (s/select (get-in @builders [path :view]))
          first)))
 
 (defn set-android-sdk
-  [e]
+  [_]
   (when-let [dir (chooser/choose-file :dir (utils/read-pref :android-sdk)
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
@@ -45,25 +45,25 @@
         out (ui/get-console-output console)
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
-        run-action (fn [e]
+        run-action (fn [_]
                      (lein/run-project process in out path)
                      (toggle-reload build-group (lein/is-java-project? path)))
-        run-repl-action (fn [e]
+        run-repl-action (fn [_]
                           (lein/run-repl-project process in out path)
                           (s/request-focus! (.getView (.getViewport console)))
                           (toggle-reload build-group
                                          (not (lein/is-java-project? path))))
-        reload-action (fn [e]
+        reload-action (fn [_]
                         (if (lein/is-java-project? path)
                           (lein/run-hot-swap in out path)
                           (eval-in-repl console)))
-        build-action (fn [e]
+        build-action (fn [_]
                        (lein/build-project process in out path))
-        test-action (fn [e]
+        test-action (fn [_]
                       (lein/test-project process in out path))
-        clean-action (fn [e]
+        clean-action (fn [_]
                        (lein/clean-project process in out path))
-        stop-action (fn [e]
+        stop-action (fn [_]
                       (lein/stop-process process))
         btn-group (ui/wrap-panel
                     :items [(s/button :id :run-button
@@ -114,7 +114,8 @@
                                 :stop-button stop-action
                                 :sdk-button set-android-sdk})
     (shortcuts/create-hints build-group)
-    build-group))
+    {:view build-group
+     :close-fn (fn [] (stop-action nil))}))
 
 (defn show-builder
   [path]
@@ -123,9 +124,9 @@
     (when (and path
                (utils/is-project-path? path)
                (not (contains? @builders path)))
-      (when-let [view (create-builder path)]
-        (swap! builders assoc path view)
-        (.add pane view path)))
+      (when-let [builder (create-builder path)]
+        (swap! builders assoc path builder)
+        (.add pane (:view builder) path)))
     ; display the correct card
     (s/show-card! pane (if (contains? @builders path) path :default-card))
     ; modify pane based on the project
@@ -141,19 +142,20 @@
             sdk-path (get-in project-map [:android :sdk-path])]
         ; show/hide buttons
         (doseq [[id should-show?] buttons]
-          (-> (s/select (get @builders path) [id])
+          (-> (s/select (get-in @builders [path :view]) [id])
               (s/config! :visible? should-show?)))
         ; make SDK button red if it isn't set
-        (-> (s/select (get @builders path) [:#sdk-button])
+        (-> (s/select (get-in @builders [path :view]) [:#sdk-button])
             (s/config! :background (when-not sdk-path (color/color :red))))))))
 
 (defn remove-builders
   [path]
   (let [pane (s/select @ui/ui-root [:#builder-pane])]
-    (doseq [[builder-path builder] @builders]
+    (doseq [[builder-path {:keys [view close-fn]}] @builders]
       (when (.startsWith builder-path path)
         (swap! builders dissoc builder-path)
-        (.remove pane builder)))))
+        (close-fn)
+        (.remove pane view)))))
 
 (add-watch ui/tree-selection
            :show-builder
