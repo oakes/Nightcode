@@ -60,7 +60,7 @@
   (let [editor-pane (ui/get-editor-pane)]
     (when @tabs (.closeBalloon @tabs))
     (->> (for [[editor-path {:keys [italicize-fn]}] (reverse @editors)]
-           (let [underline-fn #(and path (.startsWith editor-path path))
+           (let [underline-fn #(utils/is-parent-path? path editor-path)
                  add-italics #(if (italicize-fn) (str "<i>" % "</i>") %)
                  add-underline #(if (underline-fn) (str "<u>" % "</u>") %)]
              (-> editor-path java.io/file .getName add-italics add-underline)))
@@ -392,7 +392,7 @@
   [path]
   (let [editor-pane (ui/get-editor-pane)]
     (doseq [[editor-path {:keys [view close-fn]}] @editors]
-      (when (.startsWith editor-path path)
+      (when (utils/is-parent-path? path editor-path)
         (swap! editors dissoc editor-path)
         (close-fn)
         (.remove editor-pane view)))))

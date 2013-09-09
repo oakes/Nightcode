@@ -158,7 +158,7 @@
   [path]
   (let [pane (s/select @ui/ui-root [:#builder-pane])]
     (doseq [[builder-path {:keys [view close-fn]}] @builders]
-      (when (.startsWith builder-path path)
+      (when (utils/is-parent-path? path builder-path)
         (swap! builders dissoc builder-path)
         (close-fn)
         (.remove pane view)))))

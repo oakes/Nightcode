@@ -103,3 +103,11 @@
   (and path
        (.isDirectory (java.io/file path))
        (.exists (java.io/file path "project.clj"))))
+
+(defn is-parent-path?
+  [parent-path child-path]
+  (or (= parent-path child-path)
+      (and parent-path
+           child-path
+           (.isDirectory (java.io/file parent-path))
+           (.startsWith child-path parent-path))))
