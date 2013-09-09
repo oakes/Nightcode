@@ -53,14 +53,37 @@
 
 ; actions for editor buttons
 
+(defn update-tabs
+  [path]
+  (doto @ui/ui-root .invalidate .validate)
+  (let [editor-pane (ui/get-editor-pane)]
+    (when @tabs (.closeBalloon @tabs))
+    (->> (for [[editor-path {:keys [italicize-fn]}] (reverse @editors)]
+           (let [underline-fn #(= path editor-path)
+                 add-italics #(if (italicize-fn) (str "<i>" % "</i>") %)
+                 add-underline #(if (underline-fn) (str "<u>" % "</u>") %)]
+             (-> editor-path java.io/file .getName add-italics add-underline)))
+         (cons "<center>← →</center>")
+         (clojure.string/join "<br/>")
+         (str "<html>")
+         (shortcuts/create-hint editor-pane)
+         (reset! tabs))
+    (shortcuts/toggle-hints @ui/ui-root @shortcuts/is-down?)))
+
+(defn toggle-button
+  [pane id should-enable?]
+  (let [button (s/select pane [id])
+        is-enabled? (s/config button :enabled?)]
+    (when (not= should-enable? is-enabled?)
+      (s/config! button :enabled? should-enable?)
+      true)))
+
 (defn update-buttons
   [pane editor]
-  (-> (s/select pane [:#save-button])
-      (s/config! :enabled? (.isDirty editor)))
-  (-> (s/select pane [:#undo-button])
-      (s/config! :enabled? (.canUndo editor)))
-  (-> (s/select pane [:#redo-button])
-      (s/config! :enabled? (.canRedo editor))))
+  (when (toggle-button pane :#save-button (.isDirty editor))
+    (update-tabs (ui/get-selected-path)))
+  (toggle-button pane :#undo-button (.canUndo editor))
+  (toggle-button pane :#redo-button (.canRedo editor)))
 
 (defn save-file
   [_]
@@ -277,15 +300,16 @@
         (reset! font-size (-> text-area .getFont .getSize)))
       ; return the object
       {:view text-group
-       :close-fn (fn []
-                   (when (.isDirty text-area)
-                     (save-file nil)))})))
+       :close-fn #(when (.isDirty text-area)
+                    (save-file nil))
+       :italicize-fn #(.isDirty text-area)})))
 
 (defn create-logcat
   [path]
-  (when (= (.getName (java.io/file path)) "*LogCat*")
+  (when (= (.getName (java.io/file path)) ui/logcat-name)
     (let [console (ui/create-console)
           process (atom nil)
+          is-running? (atom false)
           in (ui/get-console-input console)
           out (ui/get-console-output console)
           toggle-btn (s/button :id :toggle-logcat-button
@@ -294,22 +318,26 @@
           start (fn []
                   (->> (.getParent (java.io/file path))
                        (lein/run-logcat process in out))
-                  (s/config! toggle-btn :text (utils/get-string :stop)))
+                  (s/config! toggle-btn :text (utils/get-string :stop))
+                  true)
           stop (fn []
                  (lein/stop-process process)
-                 (s/config! toggle-btn :text (utils/get-string :start)))
-          toggle (fn [e]
-                   (if (nil? @process) (start) (stop)))]
+                 (s/config! toggle-btn :text (utils/get-string :start))
+                 false)
+          toggle (fn [_]
+                   (reset! is-running? (if @is-running? (stop) (start)))
+                   (update-tabs path))]
       (s/listen toggle-btn :action toggle)
       (doto btn-group
         (shortcuts/create-mappings {:toggle-logcat-button toggle})
         shortcuts/create-hints)
       {:view (s/border-panel :north btn-group :center console)
-       :close-fn (fn [] (stop))})))
+       :close-fn #(stop)
+       :italicize-fn (fn [] @is-running?)})))
 
 (defn show-editor
   [path]
-  (let [editor-pane (s/select @ui/ui-root [:#editor-pane])]
+  (let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
       (when-let [editor (or (create-editor path)
@@ -325,25 +353,14 @@
              :default-card)
          (s/show-card! editor-pane))
     ; update tabs
-    (when @tabs (.closeBalloon @tabs))
-    (->> (for [editor-path (reverse (keys @editors))]
-           (let [file-name (.getName (java.io/file editor-path))]
-             (if (= path editor-path)
-               (str "<u>" file-name "</u>")
-               file-name)))
-         (cons "<center>← →</center>")
-         (clojure.string/join "<br/>")
-         (str "<html>")
-         (shortcuts/create-hint editor-pane)
-         (reset! tabs))
-    (shortcuts/toggle-hints @ui/ui-root @shortcuts/is-down?)
+    (update-tabs path)
     ; give the editor focus if it exists
     (when-let [editor (get-editor path)]
       (s/request-focus! editor))))
 
 (defn remove-editors
   [path]
-  (let [editor-pane (s/select @ui/ui-root [:#editor-pane])]
+  (let [editor-pane (ui/get-editor-pane)]
     (doseq [[editor-path {:keys [view close-fn]}] @editors]
       (when (.startsWith editor-path path)
         (swap! editors dissoc editor-path)
@@ -355,7 +372,6 @@
   (let [path (ui/get-selected-path)
         file (java.io/file path)]
     (remove-editors path)
-    (doto @ui/ui-root .invalidate .validate)
     (ui/update-project-tree (if (.isDirectory file)
                               path
                               (.getCanonicalPath (.getParentFile file)))))

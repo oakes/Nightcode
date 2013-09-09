@@ -43,6 +43,10 @@
   []
   (s/select @ui-root [:#project-tree]))
 
+(defn get-editor-pane
+  []
+  (s/select @ui-root [:#editor-pane]))
+
 ; keep track of the projects/expansions/selection
 
 (def tree-projects (atom #{}))
@@ -73,6 +77,8 @@
 
 ; data for the project tree
 
+(def ^:const logcat-name "*LogCat*")
+
 (defn get-node
   [file]
   (let [path (.getCanonicalPath file)
@@ -94,7 +100,7 @@
                             lein/is-android-project?))
                {:html "<html><b><font color='green'>LogCat</font></b></html>"
                 :name "LogCat"
-                :file (java.io/file (:file node) "*LogCat*")}))
+                :file (java.io/file (:file node) logcat-name)}))
        (remove nil?)
        vec))
 
