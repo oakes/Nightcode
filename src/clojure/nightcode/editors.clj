@@ -18,6 +18,7 @@
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
+(def paredit-enabled? (atom (utils/read-pref :enable-paredit)))
 (def tabs (atom nil))
 (def ^:dynamic *reorder-tabs?* true)
 
@@ -113,10 +114,9 @@
 
 (defn set-font-sizes
   [size]
-  (when-let [selected-editor (get-selected-editor)]
-    (doseq [[path editor-map] @editors]
-      (when-let [editor (get-editor path)]
-        (set-font-size editor size)))))
+  (doseq [[path editor-map] @editors]
+    (when-let [editor (get-editor path)]
+      (set-font-size editor size))))
 
 (defn save-font-size
   [size]
@@ -129,6 +129,26 @@
 (defn increase-font-size
   [_]
   (swap! font-size inc))
+
+(def ^:dynamic *allow-toggle-paredit?* true)
+
+(defn set-paredit
+  [enable?]
+  (doseq [[path editor-map] @editors]
+    (when-let [toggle-paredit-fn (:toggle-paredit-fn editor-map)]
+      (toggle-paredit-fn enable?))
+    (binding [*allow-toggle-paredit?* false]
+      (-> (s/select (:view editor-map) [:#paredit-button])
+          (s/config! :selected? enable?)))))
+
+(defn save-paredit
+  [enable?]
+  (utils/write-pref :enable-paredit enable?))
+
+(defn toggle-paredit
+  [_]
+  (when *allow-toggle-paredit?*
+    (reset! paredit-enabled? (not @paredit-enabled?))))
 
 (defn focus-on-field
   [id]
@@ -220,9 +240,8 @@
   (when (and (.isFile (java.io/file path))
              (contains? styles (get-extension path)))
     (let [is-clojure? (contains? clojure-exts (get-extension path))
-          text-area (if is-clojure?
-                      (paredit/paredit-widget (get-text-area))
-                      (get-text-area))
+          text-area (get-text-area)
+          toggle-paredit-fn (when is-clojure? (paredit/get-toggle-fn text-area))
           btn-group (ui/wrap-panel
                       :items [(s/button :id :save-button
                                         :text (utils/get-string :save)
@@ -244,6 +263,12 @@
                                         :text (utils/get-string :font_inc)
                                         :focusable? false
                                         :listen [:action increase-font-size])
+                              (s/toggle :id :paredit-button
+                                        :text (utils/get-string :paredit)
+                                        :focusable? false
+                                        :visible? is-clojure?
+                                        :selected? @paredit-enabled?
+                                        :listen [:action toggle-paredit])
                               (s/text :id :find-field
                                       :columns 8
                                       :listen [:key-released find-text])
@@ -253,6 +278,9 @@
           text-group (s/border-panel
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
+      ; enable paredit if necessary
+      (when toggle-paredit-fn
+        (toggle-paredit-fn @paredit-enabled?))
       ; create shortcuts
       (doto text-group
         (shortcuts/create-mappings {:save-button save-file
@@ -260,6 +288,7 @@
                                     :redo-button redo-file
                                     :font-dec-button decrease-font-size
                                     :font-inc-button increase-font-size
+                                    :paredit-button toggle-paredit
                                     :find-field focus-on-find
                                     :replace-field focus-on-replace})
         shortcuts/create-hints
@@ -302,7 +331,8 @@
       {:view text-group
        :close-fn #(when (.isDirty text-area)
                     (save-file nil))
-       :italicize-fn #(.isDirty text-area)})))
+       :italicize-fn #(.isDirty text-area)
+       :toggle-paredit-fn toggle-paredit-fn})))
 
 (defn create-logcat
   [path]
@@ -382,3 +412,9 @@
 (add-watch ui/tree-selection :show-editor (fn [_ _ _ path] (show-editor path)))
 (add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))
 (add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))
+(add-watch paredit-enabled?
+           :set-paredit
+           (fn [_ _ _ enable?] (set-paredit enable?)))
+(add-watch paredit-enabled?
+           :save-paredit
+           (fn [_ _ _ enable?] (save-paredit enable?)))

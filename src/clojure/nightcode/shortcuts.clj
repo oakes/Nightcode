@@ -29,6 +29,7 @@
    :redo-button "Y"
    :font-dec-button "MINUS"
    :font-inc-button "EQUALS"
+   :paredit-button "shift P"
    :find-field "F"
    :replace-field "shift R"
    :repl-console "G"

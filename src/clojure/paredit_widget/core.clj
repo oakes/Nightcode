@@ -14,8 +14,11 @@
         parse-tree (paredit.parser/buffer-parse-tree buffer :for-test)]
     (paredit cmd
              {:parse-tree parse-tree :buffer buffer}
-             {:text t, :offset (min (.getSelectionStart widget) (.getCaretPosition widget)), :length (- (.getSelectionEnd widget) (.getSelectionStart widget) )})))
-
+             {:text t
+              :offset (min (.getSelectionStart widget)
+                           (.getCaretPosition widget))
+              :length (- (.getSelectionEnd widget)
+                         (.getSelectionStart widget) )})))
 
 (defn insert-result [w pe]
   (dorun (map #(if (= 0 (:length %))
@@ -28,7 +31,6 @@
       (.setSelectionStart w (:offset pe))
       (.setSelectionEnd w (+ (:offset pe) (:length pe))))))
 
-
 (def os-x-charmap
   {"‚" ")" ;;close and round newline
   "Æ" "\"" ;; meta double quote
@@ -40,7 +42,6 @@
   "Í" "S" ;; split
   "Ô" "J" ;;join
   })
-
 
 (def keymap
   {
@@ -89,7 +90,6 @@
         (insert-result w result)))
     cmd))
 
-
 (defn convert-input-method-event [event]
   ["M" (os-x-charmap (str (.first (.getText event))))])
 
@@ -110,7 +110,6 @@
          keyText
          (str keyChar)))]))
 
-
 (defn key-event-handler [w]
   (reify java.awt.event.KeyListener
     (keyReleased [this e] nil)
@@ -130,6 +129,17 @@
             p (exec-paredit k w)]
         (if p (.consume e))))))
 
+(defn get-toggle-fn [w]
+  (let [key-listener (key-event-handler w)
+        input-listener (input-method-event-handler w)]
+    (fn [enable?]
+      (if enable?
+        (doto w
+          (.addKeyListener key-listener)
+          (.addInputMethodListener input-listener))
+        (doto w
+          (.removeKeyListener key-listener)
+          (.removeInputMethodListener input-listener))))))
 
 (defn paredit-widget [x]
   (let [w (if (string? x)
@@ -139,10 +149,11 @@
     (.addInputMethodListener w (input-method-event-handler w))
     w))
 
-
 (defn test-paredit-widget []
   (native!)
   (->
-   (frame :title "Paredit Test" :content (config! (paredit-widget "(foo (bar 1))") :size [300 :by 300]))
+   (frame :title "Paredit Test"
+          :content (config! (paredit-widget "(foo (bar 1))")
+                            :size [300 :by 300]))
    pack!
    show!))
