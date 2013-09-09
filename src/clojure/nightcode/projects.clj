@@ -9,8 +9,6 @@
             [seesaw.chooser :as chooser]
             [seesaw.core :as s]))
 
-(declare update-project-tree)
-
 ; keep track of projects, expansions and the selection
 
 (defn add-expansion
@@ -54,7 +52,7 @@
                     :else new-index)]
     (when (> (count paths) 0)
       (binding [editors/*reorder-tabs?* false]
-        (update-project-tree (nth paths new-index)))))
+        (ui/update-project-tree (nth paths new-index)))))
   true)
 
 (defn toggle-project-tree-selection
@@ -66,63 +64,6 @@
   true)
 
 ; create and manipulate project tree
-
-(defn get-node
-  [file]
-  (let [path (.getCanonicalPath file)
-        file-name (.getName file)]
-    {:html (cond
-             (utils/is-project-path? path) (str "<html><b><font color='gray'>"
-                                                file-name
-                                                "</font></b></html>"))
-     :name file-name
-     :file file}))
-
-(defn get-nodes
-  [node children]
-  (->> (for [child children]
-         (get-node child))
-       (sort-by #(:name %))
-       (cons (when (and (:file node)
-                        (-> (.getCanonicalPath (:file node))
-                            lein/is-android-project?))
-               {:html "<html><b><font color='green'>LogCat</font></b></html>"
-                :name "LogCat"
-                :file (java.io/file (:file node) "*LogCat*")}))
-       (remove nil?)
-       vec))
-
-(defn file-node
-  [node]
-  (let [children (->> (reify java.io.FilenameFilter
-                        (accept [this dir filename]
-                          (not (.startsWith filename "."))))
-                      (.listFiles (:file node))
-                      (get-nodes node)
-                      delay)]
-    (proxy [javax.swing.tree.DefaultMutableTreeNode] [node]
-      (getChildAt [i] (file-node (get @children i)))
-      (getChildCount [] (count @children))
-      (isLeaf [] (or (nil? (:file node))
-                     (not (.isDirectory (:file node)))))
-      (toString [] (or (:html node) (:name node))))))
-
-(defn root-node
-  [project-vec]
-  (proxy [javax.swing.tree.DefaultMutableTreeNode] []
-    (getChildAt [i] (file-node (get-node (java.io/file (nth project-vec i)))))
-    (getChildCount [] (count project-vec))))
-
-(defn create-project-tree
-  []
-  (reset! ui/tree-projects
-          (-> #(.getName (java.io/file %))
-              (sort-by (utils/read-pref :project-set))
-              (set)))
-  (-> @ui/tree-projects
-      vec
-      root-node
-      (javax.swing.tree.DefaultTreeModel. false)))
 
 (defn add-to-project-tree
   [path]
@@ -145,33 +86,6 @@
       (when is-project? (builders/remove-builders path))
       (editors/remove-editors path)
       true)))
-
-(defn update-project-tree
-  ([]
-   (update-project-tree (ui/get-project-tree) nil))
-  ([new-selection]
-   (update-project-tree (ui/get-project-tree) new-selection))
-  ([tree new-selection]
-   ; put new data in the tree
-   (.setModel tree (create-project-tree))
-   ; wipe out the in-memory expansion/selection
-   (reset! ui/tree-expansions #{})
-   (reset! ui/tree-selection nil)
-   ; get the expansion/selection and apply them to the tree
-   (let [expansion-set (utils/read-pref :expansion-set)
-         selection (or new-selection (utils/read-pref :selection))]
-     (doseq [i (range) :while (< i (.getRowCount tree))]
-       (let [tree-path (.getPathForRow tree i)
-             str-path (utils/tree-path-to-str tree-path)]
-         (when (or (contains? expansion-set str-path)
-                   (and new-selection (.startsWith new-selection str-path)))
-           (.expandPath tree tree-path)
-           (swap! ui/tree-expansions conj str-path))
-         (when (= selection str-path)
-           (.setSelectionPath tree tree-path)))))
-   ; select the first project if there is nothing selected
-   (when (nil? @ui/tree-selection)
-     (.setSelectionRow tree 0))))
 
 (defn enter-file-path
   [default-file-name]
@@ -198,7 +112,7 @@
                         package-name)
       (when (.exists (java.io/file project-dir))
         (add-to-project-tree project-dir)
-        (update-project-tree project-dir))
+        (ui/update-project-tree project-dir))
       true)))
 
 (defn new-file
@@ -214,7 +128,7 @@
           (do
             (.mkdirs (.getParentFile new-file))
             (.createNewFile new-file)
-            (update-project-tree (.getCanonicalPath new-file))))))))
+            (ui/update-project-tree (.getCanonicalPath new-file))))))))
 
 (defn rename-file
   [e]
@@ -228,7 +142,7 @@
         (.mkdirs (.getParentFile new-file))
         (.renameTo (java.io/file selected-path) new-file)
         (utils/delete-file-recursively project-path selected-path)
-        (update-project-tree new-path)))))
+        (ui/update-project-tree new-path)))))
 
 (defn import-project
   [e]
@@ -247,12 +161,12 @@
     ; show project root in the tree
     (let [dir-path (.getCanonicalPath dir)]
       (add-to-project-tree dir-path)
-      (update-project-tree dir-path))))
+      (ui/update-project-tree dir-path))))
 
 (defn remove-item
   [e]
   (when (remove-from-project-tree (ui/get-selected-path))
-    (update-project-tree (ui/get-project-root-path))))
+    (ui/update-project-tree (ui/get-project-root-path))))
 
 (add-watch ui/tree-selection
            :update-project-buttons

@@ -134,11 +134,10 @@
       (when (and is-enter-key? (.isShiftDown e))
         (.setSearchForward context false))
       (if (and (> (count find-text) 0)
-               (-> (try (SearchEngine/find editor context)
-                     (catch Exception e 0))
-                   (= 0)))
-        (s/config! e :background (color/color :red)
-        (s/config! e :background nil))))))
+               (not (try (SearchEngine/find editor context)
+                      (catch Exception e false))))
+        (s/config! e :background (color/color :red))
+        (s/config! e :background nil)))))
 
 (defn replace-text
   [e]
@@ -151,9 +150,8 @@
       (.setReplaceWith context replace-text)
       (if (and is-enter-key?
                (or (= (count find-text) 0)
-                   (-> (try (SearchEngine/replaceAll editor context)
-                         (catch Exception e 0))
-                       (= 0))))
+                   (not (try (SearchEngine/replaceAll editor context)
+                          (catch Exception e false)))))
         (s/config! e :background (color/color :red))
         (s/config! e :background nil))
       (when is-enter-key?
@@ -351,6 +349,17 @@
         (swap! editors dissoc editor-path)
         (close-fn)
         (.remove editor-pane view)))))
+
+(defn close-selected-editor
+  []
+  (let [path (ui/get-selected-path)
+        file (java.io/file path)]
+    (remove-editors path)
+    (doto @ui/ui-root .invalidate .validate)
+    (ui/update-project-tree (if (.isDirectory file)
+                              path
+                              (.getCanonicalPath (.getParentFile file)))))
+  true)
 
 (add-watch ui/tree-selection :show-editor (fn [_ _ _ path] (show-editor path)))
 (add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))

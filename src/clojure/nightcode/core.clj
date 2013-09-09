@@ -1,6 +1,5 @@
 (ns nightcode.core
-  (:require [clojure.java.io :as java.io]
-            [seesaw.core :as s]
+  (:require [seesaw.core :as s]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
@@ -115,18 +114,6 @@
                           :resize-weight 0.5)
       :divider-location 0.4)))
 
-(defn close-selected-editor
-  "Closes the currently-selected editor."
-  []
-  (let [path (ui/get-selected-path)
-        file (java.io/file path)]
-    (editors/remove-editors path)
-    (doto @ui/ui-root .invalidate .validate)
-    (p/update-project-tree (if (.isDirectory file)
-                             path
-                             (.getCanonicalPath (.getParentFile file)))))
-  true)
-
 (defn -main
   "Launches the main window."
   [& args]
@@ -163,13 +150,13 @@
                    (System/exit 0)
                    true)
               ; W
-              87 (close-selected-editor)
+              87 (editors/close-selected-editor)
               false)))
         ; update the project tree when window comes into focus
         (.addWindowListener (proxy [WindowAdapter] []
                               (windowActivated [e]
-                                (p/update-project-tree))))
+                                (ui/update-project-tree))))
         ; show the frame
         s/show!))
     ; initialize the project pane
-    (p/update-project-tree)))
+    (ui/update-project-tree)))
