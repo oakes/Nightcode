@@ -13,21 +13,14 @@
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
 
-(defn start-repl
-  [console]
-  (s/request-focus! (.getView (.getViewport (:view console))))
-  (lein/run-repl (:process console) (:in console) (:out console)))
-
 (defn get-project-pane
   "Returns the pane with the project tree."
   [console]
   (let [project-tree (s/tree :id :project-tree
                              :focusable? true)
         create-new-project (fn [e]
-                             (when (p/new-project (:process console)
-                                                  (:in console)
-                                                  (:out console))
-                               (start-repl console)))
+                             (when (p/new-project (:in console) (:out console))
+                               (.enterLine (:view console) "")))
         btn-group (s/horizontal-panel
                     :items [(s/button :id :new-project-button
                                       :text (utils/get-string :new_project)
@@ -76,23 +69,22 @@
 (defn get-repl-pane
   "Returns the pane with the REPL."
   [console]
-  (let [pane (s/config! (:view console) :id :repl-console)]
-    (start-repl console)
-    (shortcuts/create-mappings pane {:repl-console (fn [e]
-                                                     (start-repl console))})
-    pane))
+  (let [run (fn []
+              (s/request-focus! (-> console :view .getViewport .getView))
+              (lein/run-repl (:process console) (:in console) (:out console)))]
+    (run)
+    (doto (s/config! (:view console) :id :repl-console)
+      (shortcuts/create-mappings {:repl-console (fn [_] (run))}))))
 
 (defn get-editor-pane
   "Returns the pane with the editors."
   []
-  (s/card-panel :id :editor-pane
-                :items [["" :default-card]]))
+  (s/card-panel :id :editor-pane :items [["" :default-card]]))
 
 (defn get-builder-pane
   "Returns the pane with the builders."
   []
-  (s/card-panel :id :builder-pane
-                :items [["" :default-card]]))
+  (s/card-panel :id :builder-pane :items [["" :default-card]]))
 
 (defn get-window-content
   "Returns the entire window with all panes."
