@@ -127,7 +127,8 @@
                                 :test-button test-action
                                 :clean-button clean-action
                                 :stop-button stop-action
-                                :sdk-button set-android-sdk})
+                                :sdk-button set-android-sdk
+                                :auto-button auto-action})
     (shortcuts/create-hints build-group)
     {:view build-group
      :close-fn (fn [] (stop-action nil))}))
