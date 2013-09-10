@@ -16,6 +16,7 @@
   <string name="clean">Clean</string>
   <string name="stop">Stop</string>
   <string name="start">Start</string>
+  <string name="auto">Auto</string>
 
   <string name="android_sdk">Android SDK</string>
   <string name="android_devices">Android Devices</string>

@@ -47,15 +47,13 @@
   [path]
   (let [console (ui/create-console)
         process (atom nil)
-        cljs-process (atom nil)
+        auto-process (atom nil)
         in (ui/get-console-input console)
         out (ui/get-console-output console)
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         run-action (fn [_]
                      (lein/run-project process in out path)
-                     (when (lein/is-clojurescript-project? path)
-                       (lein/cljsbuild-project cljs-process in out path))
                      (toggle-reload build-group (lein/is-java-project? path)))
         run-repl-action (fn [_]
                           (lein/run-repl-project process in out path)
@@ -73,8 +71,11 @@
         clean-action (fn [_]
                        (lein/clean-project process in out path))
         stop-action (fn [_]
-                      (lein/stop-process process)
-                      (lein/stop-process cljs-process))
+                      (lein/stop-process process))
+        auto-action (fn [_]
+                      (if (nil? @auto-process)
+                        (lein/cljsbuild-project auto-process in out path)
+                        (lein/stop-process auto-process)))
         btn-group (ui/wrap-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
@@ -108,6 +109,10 @@
                             (s/button :id :sdk-button
                                       :text (utils/get-string :android_sdk)
                                       :listen [:action set-android-sdk]
+                                      :focusable? false)
+                            (s/toggle :id :auto-button
+                                      :text (utils/get-string :auto)
+                                      :listen [:action auto-action]
                                       :focusable? false)])]
     (add-watch process
                :toggle-reload
@@ -142,13 +147,15 @@
     ; modify pane based on the project
     (when (contains? @builders path)
       (let [project-map (lein/add-sdk-path (lein/read-project-clj path))
-            is-clojure-project? (not (lein/is-java-project? path))
             is-android-project? (lein/is-android-project? path)
+            is-clojure-project? (not (lein/is-java-project? path))
+            is-clojurescript-project? (lein/is-clojurescript-project? path)
             buttons {:#run-repl-button is-clojure-project?
                      :#reload-button (or is-clojure-project?
                                          (not is-android-project?))
                      :#test-button is-clojure-project?
-                     :#sdk-button is-android-project?}
+                     :#sdk-button is-android-project?
+                     :#auto-button is-clojurescript-project?}
             sdk-path (get-in project-map [:android :sdk-path])]
         ; show/hide buttons
         (doseq [[id should-show?] buttons]
