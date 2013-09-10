@@ -1,6 +1,5 @@
 (ns nightcode.core
   (:require [seesaw.core :as s]
-            [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
