@@ -1,5 +1,6 @@
 (ns nightcode.core
   (:require [seesaw.core :as s]
+            [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
@@ -16,8 +17,7 @@
 (defn get-project-pane
   "Returns the pane with the project tree."
   [console]
-  (let [project-tree (s/tree :id :project-tree
-                             :focusable? true)
+  (let [project-tree (s/tree :id :project-tree :focusable? true)
         create-new-project (fn [e]
                              (when (p/new-project (:in console) (:out console))
                                (.enterLine (:view console) "")))
@@ -91,10 +91,9 @@
   []
   (let [process (atom nil)
         view (ui/create-console)
-        console {:process process
-                 :view view
-                 :in (ui/get-console-input view)
-                 :out (ui/get-console-output view)}]
+        in (ui/get-console-input view)
+        out (ui/get-console-output view)
+        console {:process process :view view :in in :out out}]
     (s/left-right-split
       (s/top-bottom-split (get-project-pane console)
                           (get-repl-pane console)

@@ -231,6 +231,10 @@
   [path project-map]
   (leiningen.clean/clean project-map))
 
+(defn cljsbuild-project-task
+  [path project-map]
+  (leiningen.cljsbuild/cljsbuild project-map "auto"))
+
 (defn hot-swap-project-task
   [path project-map]
   (when-let [conn (->> (Bootstrap/virtualMachineManager)
@@ -297,6 +301,11 @@
            (start-process-indirectly process path class-name "clean")))
        (start-thread in out)))
 
+(defn cljsbuild-project
+  [process in out path]
+  (->> (start-process-indirectly process path class-name "cljsbuild")
+       (start-thread in out)))
+
 (defn new-project
   [in out parent-path project-type project-name package-name]
   (->> (try
@@ -348,5 +357,6 @@
       "build" (build-project-task path project-map)
       "test" (test-project-task path project-map)
       "clean" (clean-project-task path project-map)
+      "cljsbuild" (cljsbuild-project-task path project-map)
       nil))
   (System/exit 0))

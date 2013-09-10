@@ -47,12 +47,15 @@
   [path]
   (let [console (ui/create-console)
         process (atom nil)
+        cljs-process (atom nil)
         in (ui/get-console-input console)
         out (ui/get-console-output console)
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         run-action (fn [_]
                      (lein/run-project process in out path)
+                     (when (lein/is-clojurescript-project? path)
+                       (lein/cljsbuild-project cljs-process in out path))
                      (toggle-reload build-group (lein/is-java-project? path)))
         run-repl-action (fn [_]
                           (lein/run-repl-project process in out path)
@@ -70,7 +73,8 @@
         clean-action (fn [_]
                        (lein/clean-project process in out path))
         stop-action (fn [_]
-                      (lein/stop-process process))
+                      (lein/stop-process process)
+                      (lein/stop-process cljs-process))
         btn-group (ui/wrap-panel
                     :items [(s/button :id :run-button
                                       :text (utils/get-string :run)
@@ -106,7 +110,7 @@
                                       :listen [:action set-android-sdk]
                                       :focusable? false)])]
     (add-watch process
-               :console-process
+               :toggle-reload
                (fn [_ _ _ new-state]
                  (when-not new-state (toggle-reload build-group false))))
     (s/config! build-group :north btn-group)
