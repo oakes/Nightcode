@@ -32,7 +32,7 @@
    :paredit-button "shift P"
    :find-field "F"
    :replace-field "shift R"
-   :repl-console "G"
+   :repl-console "shift E"
    :project-pane "↑ ↓ ↵"
    :toggle-logcat-button "S"})
 
