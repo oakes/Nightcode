@@ -277,37 +277,37 @@
                              (s/request-focus! text-area)
                              (when completer (.doCompletion completer)))
           btn-group (ui/wrap-panel
-                      :items [(s/button :id :save-button
-                                        :text (utils/get-string :save)
-                                        :focusable? false
-                                        :listen [:action save-file])
-                              (s/button :id :undo-button
-                                        :text (utils/get-string :undo)
-                                        :focusable? false
-                                        :listen [:action undo-file])
-                              (s/button :id :redo-button
-                                        :text (utils/get-string :redo)
-                                        :focusable? false
-                                        :listen [:action redo-file])
-                              (s/button :id :font-dec-button
-                                        :text (utils/get-string :font_dec)
-                                        :focusable? false
-                                        :listen [:action decrease-font-size])
-                              (s/button :id :font-inc-button
-                                        :text (utils/get-string :font_inc)
-                                        :focusable? false
-                                        :listen [:action increase-font-size])
-                              (s/button :id :doc-button
-                                        :text (utils/get-string :doc)
-                                        :focusable? false
-                                        :visible? (not (nil? completer))
-                                        :listen [:action do-completion-fn])
-                              (s/toggle :id :paredit-button
-                                        :text (utils/get-string :paredit)
-                                        :focusable? false
-                                        :visible? is-clojure?
-                                        :selected? @paredit-enabled?
-                                        :listen [:action toggle-paredit])
+                      :items [(ui/button :id :save-button
+                                         :text (utils/get-string :save)
+                                         :focusable? false
+                                         :listen [:action save-file])
+                              (ui/button :id :undo-button
+                                         :text (utils/get-string :undo)
+                                         :focusable? false
+                                         :listen [:action undo-file])
+                              (ui/button :id :redo-button
+                                         :text (utils/get-string :redo)
+                                         :focusable? false
+                                         :listen [:action redo-file])
+                              (ui/button :id :font-dec-button
+                                         :text (utils/get-string :font_dec)
+                                         :focusable? false
+                                         :listen [:action decrease-font-size])
+                              (ui/button :id :font-inc-button
+                                         :text (utils/get-string :font_inc)
+                                         :focusable? false
+                                         :listen [:action increase-font-size])
+                              (ui/button :id :doc-button
+                                         :text (utils/get-string :doc)
+                                         :focusable? false
+                                         :visible? (not (nil? completer))
+                                         :listen [:action do-completion-fn])
+                              (ui/toggle :id :paredit-button
+                                         :text (utils/get-string :paredit)
+                                         :focusable? false
+                                         :visible? is-clojure?
+                                         :selected? @paredit-enabled?
+                                         :listen [:action toggle-paredit])
                               (s/text :id :find-field
                                       :columns 8
                                       :listen [:key-released find-text])

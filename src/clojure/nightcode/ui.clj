@@ -3,9 +3,10 @@
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
-  (:import [clojure.lang LineNumberingPushbackReader]
-           [bsh.util JConsole]
-           [com.camick WrapLayout]))
+  (:import [bsh.util JConsole]
+           [clojure.lang LineNumberingPushbackReader]
+           [com.camick WrapLayout]
+           [java.awt Dimension FontMetrics]))
 
 ; create and retrieve widgets
 
@@ -26,6 +27,24 @@
     (doseq [item items]
       (s/add! panel item))
     panel))
+
+(defn adjust-button
+  [btn]
+  (let [width (-> (.getFontMetrics btn (.getFont btn))
+                  (.getStringBounds (.getText btn) (.getGraphics btn))
+                  .getWidth
+                  (+ 30))
+        height (-> btn .getPreferredSize .getHeight)]
+    (doto btn
+      (.setPreferredSize (Dimension. width height)))))
+
+(defmacro button
+  [& body]
+  `(adjust-button (s/button ~@body)))
+
+(defmacro toggle
+  [& body]
+  `(adjust-button (s/toggle ~@body)))
 
 (defn create-console
   []

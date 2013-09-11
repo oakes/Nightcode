@@ -21,27 +21,27 @@
                              (when (p/new-project (:in console) (:out console))
                                (.enterLine (:view console) "")))
         btn-group (s/horizontal-panel
-                    :items [(s/button :id :new-project-button
-                                      :text (utils/get-string :new_project)
-                                      :listen [:action create-new-project]
-                                      :focusable? false)
-                            (s/button :id :new-file-button
-                                      :text (utils/get-string :new_file)
-                                      :listen [:action p/new-file]
-                                      :focusable? false)
-                            (s/button :id :rename-file-button
-                                      :text (utils/get-string :rename_file)
-                                      :listen [:action p/rename-file]
-                                      :focusable? false
-                                      :visible? false)
-                            (s/button :id :import-button
-                                      :text (utils/get-string :import)
-                                      :listen [:action p/import-project]
-                                      :focusable? false)
-                            (s/button :id :remove-button
-                                      :text (utils/get-string :remove)
-                                      :listen [:action p/remove-item]
-                                      :focusable? false)
+                    :items [(ui/button :id :new-project-button
+                                       :text (utils/get-string :new_project)
+                                       :listen [:action create-new-project]
+                                       :focusable? false)
+                            (ui/button :id :new-file-button
+                                       :text (utils/get-string :new_file)
+                                       :listen [:action p/new-file]
+                                       :focusable? false)
+                            (ui/button :id :rename-file-button
+                                       :text (utils/get-string :rename_file)
+                                       :listen [:action p/rename-file]
+                                       :focusable? false
+                                       :visible? false)
+                            (ui/button :id :import-button
+                                       :text (utils/get-string :import)
+                                       :listen [:action p/import-project]
+                                       :focusable? false)
+                            (ui/button :id :remove-button
+                                       :text (utils/get-string :remove)
+                                       :listen [:action p/remove-item]
+                                       :focusable? false)
                             :fill-h])
         project-pane (s/vertical-panel
                        :id :project-pane

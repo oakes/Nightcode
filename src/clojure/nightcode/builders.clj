@@ -77,43 +77,43 @@
                         (lein/cljsbuild-project auto-process in out path)
                         (lein/stop-process auto-process)))
         btn-group (ui/wrap-panel
-                    :items [(s/button :id :run-button
-                                      :text (utils/get-string :run)
-                                      :listen [:action run-action]
-                                      :focusable? false)
-                            (s/button :id :run-repl-button
-                                      :text (utils/get-string :run_with_repl)
-                                      :listen [:action run-repl-action]
-                                      :focusable? false)
-                            (s/button :id :reload-button
-                                      :text (utils/get-string :reload)
-                                      :listen [:action reload-action]
-                                      :focusable? false
-                                      :enabled? false)
-                            (s/button :id :build-button
-                                      :text (utils/get-string :build)
-                                      :listen [:action build-action]
-                                      :focusable? false)
-                            (s/button :id :test-button
-                                      :text (utils/get-string :test)
-                                      :listen [:action test-action]
-                                      :focusable? false)
-                            (s/button :id :clean-button
-                                      :text (utils/get-string :clean)
-                                      :listen [:action clean-action]
-                                      :focusable? false)
-                            (s/button :id :stop-button
-                                      :text (utils/get-string :stop)
-                                      :listen [:action stop-action]
-                                      :focusable? false)
-                            (s/button :id :sdk-button
-                                      :text (utils/get-string :android_sdk)
-                                      :listen [:action set-android-sdk]
-                                      :focusable? false)
-                            (s/toggle :id :auto-button
-                                      :text (utils/get-string :auto)
-                                      :listen [:action auto-action]
-                                      :focusable? false)])]
+                    :items [(ui/button :id :run-button
+                                       :text (utils/get-string :run)
+                                       :listen [:action run-action]
+                                       :focusable? false)
+                            (ui/button :id :run-repl-button
+                                       :text (utils/get-string :run_with_repl)
+                                       :listen [:action run-repl-action]
+                                       :focusable? false)
+                            (ui/button :id :reload-button
+                                       :text (utils/get-string :reload)
+                                       :listen [:action reload-action]
+                                       :focusable? false
+                                       :enabled? false)
+                            (ui/button :id :build-button
+                                       :text (utils/get-string :build)
+                                       :listen [:action build-action]
+                                       :focusable? false)
+                            (ui/button :id :test-button
+                                       :text (utils/get-string :test)
+                                       :listen [:action test-action]
+                                       :focusable? false)
+                            (ui/button :id :clean-button
+                                       :text (utils/get-string :clean)
+                                       :listen [:action clean-action]
+                                       :focusable? false)
+                            (ui/button :id :stop-button
+                                       :text (utils/get-string :stop)
+                                       :listen [:action stop-action]
+                                       :focusable? false)
+                            (ui/button :id :sdk-button
+                                       :text (utils/get-string :android_sdk)
+                                       :listen [:action set-android-sdk]
+                                       :focusable? false)
+                            (ui/toggle :id :auto-button
+                                       :text (utils/get-string :auto)
+                                       :listen [:action auto-action]
+                                       :focusable? false)])]
     (add-watch process
                :toggle-reload
                (fn [_ _ _ new-state]
