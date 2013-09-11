@@ -256,14 +256,15 @@
     ; anything else
     :else nil))
 
-(defn install-completion
-  [text-area provider]
-  (doto (AutoCompletion. provider)
-    (.setShowDescWindow true)
-    (.setAutoCompleteSingleChoices false)
-    (.setChoicesWindowSize 150 300)
-    (.setDescriptionWindowSize 300 300)
-    (.install text-area)))
+(defn get-completer
+  [text-area extension]
+  (when-let [provider (get-completion-provider extension)]
+    (doto (AutoCompletion. provider)
+      (.setShowDescWindow true)
+      (.setAutoCompleteSingleChoices false)
+      (.setChoicesWindowSize 150 300)
+      (.setDescriptionWindowSize 300 300)
+      (.install text-area))))
 
 (defn create-editor
   [path extension]
@@ -271,11 +272,10 @@
     (let [is-clojure? (contains? clojure-exts extension)
           text-area (get-text-area)
           toggle-paredit-fn (when is-clojure? (paredit/get-toggle-fn text-area))
-          completion (when-let [provider (get-completion-provider extension)]
-                       (install-completion text-area provider))
-          run-completion (fn [_]
-                           (s/request-focus! text-area)
-                           (.doCompletion completion))
+          completer (get-completer text-area extension)
+          do-completion-fn (fn [_]
+                             (s/request-focus! text-area)
+                             (when completer (.doCompletion completer)))
           btn-group (ui/wrap-panel
                       :items [(s/button :id :save-button
                                         :text (utils/get-string :save)
@@ -300,8 +300,8 @@
                               (s/button :id :doc-button
                                         :text (utils/get-string :doc)
                                         :focusable? false
-                                        :visible? (not (nil? completion))
-                                        :listen [:action run-completion])
+                                        :visible? (not (nil? completer))
+                                        :listen [:action do-completion-fn])
                               (s/toggle :id :paredit-button
                                         :text (utils/get-string :paredit)
                                         :focusable? false
@@ -327,7 +327,7 @@
                                     :redo-button redo-file
                                     :font-dec-button decrease-font-size
                                     :font-inc-button increase-font-size
-                                    :doc-button run-completion
+                                    :doc-button do-completion-fn
                                     :paredit-button toggle-paredit
                                     :find-field focus-on-find
                                     :replace-field focus-on-replace})
