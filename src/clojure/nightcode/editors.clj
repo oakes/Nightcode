@@ -72,7 +72,7 @@
          (str "<html>")
          (shortcuts/create-hint editor-pane)
          (reset! tabs))
-    (shortcuts/toggle-hints @ui/ui-root @shortcuts/is-down?)))
+    (shortcuts/toggle-hint @tabs @shortcuts/is-down?)))
 
 (defn toggle-button
   [pane id should-enable?]

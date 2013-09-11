@@ -60,12 +60,16 @@
          (is-visible? (.getParent widget)))
     true))
 
+(defn toggle-hint
+  [hint show?]
+  (if (and show? (is-visible? (.getAttachedComponent hint)))
+    (s/show! hint)
+    (s/hide! hint)))
+
 (defn toggle-hints
   [target show?]
   (doseq [hint (s/select target [:BalloonTip])]
-    (if (and show? (is-visible? (.getAttachedComponent hint)))
-      (s/show! hint)
-      (s/hide! hint))))
+    (toggle-hint hint show?)))
 
 (defn create-hint
   [view text]
