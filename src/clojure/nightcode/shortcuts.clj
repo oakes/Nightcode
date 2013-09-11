@@ -30,6 +30,7 @@
    :redo-button "Y"
    :font-dec-button "MINUS"
    :font-inc-button "EQUALS"
+   :doc-button "SPACE"
    :paredit-button "shift P"
    :find-field "F"
    :replace-field "shift R"

@@ -1,5 +1,6 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as java.io]
+            [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
@@ -10,6 +11,8 @@
             [seesaw.core :as s])
   (:import [com.camick TextPrompt]
            [javax.swing.event DocumentListener]
+           [org.fife.ui.autocomplete
+            AutoCompletion BasicCompletion DefaultCompletionProvider]
            [org.fife.ui.rsyntaxtextarea
             FileLocation SyntaxConstants TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
@@ -235,13 +238,44 @@
     (setMarginLinePosition [size]
       (proxy-super setMarginLinePosition size))))
 
+(defn get-completion-provider
+  [extension]
+  (cond
+    ; clojure
+    (contains? clojure-exts extension)
+    (proxy [DefaultCompletionProvider] []
+      (getCompletions [comp]
+        (if-let [prefix (.getAlreadyEnteredText this comp)]
+          (for [symbol-str (compliment/completions prefix nil)]
+            (->> (compliment/documentation symbol-str)
+                 (BasicCompletion. this symbol-str nil)))
+          '()))
+      (isValidChar [ch]
+        (or (Character/isLetterOrDigit ch)
+            (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch))))
+    ; anything else
+    :else nil))
+
+(defn install-completion
+  [text-area provider]
+  (doto (AutoCompletion. provider)
+    (.setShowDescWindow true)
+    (.setAutoCompleteSingleChoices false)
+    (.setChoicesWindowSize 150 300)
+    (.setDescriptionWindowSize 300 300)
+    (.install text-area)))
+
 (defn create-editor
-  [path]
-  (when (and (.isFile (java.io/file path))
-             (contains? styles (get-extension path)))
-    (let [is-clojure? (contains? clojure-exts (get-extension path))
+  [path extension]
+  (when (and (.isFile (java.io/file path)) (contains? styles extension))
+    (let [is-clojure? (contains? clojure-exts extension)
           text-area (get-text-area)
           toggle-paredit-fn (when is-clojure? (paredit/get-toggle-fn text-area))
+          completion (when-let [provider (get-completion-provider extension)]
+                       (install-completion text-area provider))
+          run-completion (fn [_]
+                           (s/request-focus! text-area)
+                           (.doCompletion completion))
           btn-group (ui/wrap-panel
                       :items [(s/button :id :save-button
                                         :text (utils/get-string :save)
@@ -263,6 +297,11 @@
                                         :text (utils/get-string :font_inc)
                                         :focusable? false
                                         :listen [:action increase-font-size])
+                              (s/button :id :doc-button
+                                        :text (utils/get-string :doc)
+                                        :focusable? false
+                                        :visible? (not (nil? completion))
+                                        :listen [:action run-completion])
                               (s/toggle :id :paredit-button
                                         :text (utils/get-string :paredit)
                                         :focusable? false
@@ -288,6 +327,7 @@
                                     :redo-button redo-file
                                     :font-dec-button decrease-font-size
                                     :font-inc-button increase-font-size
+                                    :doc-button run-completion
                                     :paredit-button toggle-paredit
                                     :find-field focus-on-find
                                     :replace-field focus-on-replace})
@@ -370,7 +410,7 @@
   (let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
-      (when-let [editor (or (create-editor path)
+      (when-let [editor (or (create-editor path (get-extension path))
                             (create-logcat path))]
         (swap! editors assoc path editor)
         (.add editor-pane (:view editor) path)))

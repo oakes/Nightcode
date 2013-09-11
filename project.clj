@@ -2,7 +2,9 @@
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.github.insubstantial/substance "7.2.1"]
+                 [com.fifesoft/autocomplete "2.0.7"]
                  [com.fifesoft/rsyntaxtextarea "2.0.7"]
+                 [compliment "0.0.1"]
                  [leiningen "2.3.1"]
                  [lein-cljsbuild "0.3.2"]
                  [lein-droid "0.2.0-SNAPSHOT"]
