@@ -133,16 +133,13 @@
   [_]
   (swap! font-size inc))
 
-(def ^:dynamic *allow-toggle-paredit?* true)
-
 (defn set-paredit
   [enable?]
   (doseq [[path editor-map] @editors]
     (when-let [toggle-paredit-fn (:toggle-paredit-fn editor-map)]
       (toggle-paredit-fn enable?))
-    (binding [*allow-toggle-paredit?* false]
-      (-> (s/select (:view editor-map) [:#paredit-button])
-          (s/config! :selected? enable?)))))
+    (-> (s/select (:view editor-map) [:#paredit-button])
+        (s/config! :selected? enable?))))
 
 (defn save-paredit
   [enable?]
@@ -150,8 +147,7 @@
 
 (defn toggle-paredit
   [_]
-  (when *allow-toggle-paredit?*
-    (reset! paredit-enabled? (not @paredit-enabled?))))
+  (reset! paredit-enabled? (not @paredit-enabled?)))
 
 (defn focus-on-field
   [id]

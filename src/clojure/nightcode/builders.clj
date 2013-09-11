@@ -73,6 +73,8 @@
         stop-action (fn [_]
                       (lein/stop-process process))
         auto-action (fn [_]
+                      (-> (s/select build-group [:#auto-button])
+                          (s/config! :selected? (nil? @auto-process)))
                       (if (nil? @auto-process)
                         (lein/cljsbuild-project auto-process in out path)
                         (lein/stop-process auto-process)))
