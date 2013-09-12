@@ -1,6 +1,6 @@
 (ns nightcode.utils
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as java.io]
+            [clojure.java.io :as io]
             [clojure.xml :as xml])
   (:import [java.util Locale]
            [java.util.prefs Preferences]))
@@ -23,7 +23,7 @@
 (def lang-files {"en" "values/strings.xml"})
 (def lang-strings (-> (get lang-files (.getLanguage (Locale/getDefault)))
                       (or (get lang-files "en"))
-                      java.io/resource
+                      io/resource
                       .toString
                       xml/parse
                       :content))
@@ -53,20 +53,20 @@
       .getCanonicalPath))
 
 (defn get-relative-path [project-path selected-path]
-  (-> (.toURI (java.io/file project-path))
-      (.relativize (.toURI (java.io/file selected-path)))
+  (-> (.toURI (io/file project-path))
+      (.relativize (.toURI (io/file selected-path)))
       (.getPath)))
 
 (defn get-relative-dir [project-path selected-path]
-  (let [selected-dir (if (.isDirectory (java.io/file selected-path))
+  (let [selected-dir (if (.isDirectory (io/file selected-path))
                        selected-path
-                       (-> (java.io/file selected-path)
+                       (-> (io/file selected-path)
                            .getParentFile
                            .getCanonicalPath))]
     (get-relative-path project-path selected-dir)))
 
 (defn delete-file-recursively [project-path path]
-  (let [file (java.io/file path)]
+  (let [file (io/file path)]
     (when (and (= 0 (count (.listFiles file)))
                (not= project-path path))
       (.delete file)
@@ -90,7 +90,7 @@
 
 (defn get-version
   []
-  (let [project-clj (->> (java.io/resource "project.clj")
+  (let [project-clj (->> (io/resource "project.clj")
                          slurp
                          read-string
                          (binding [*read-eval* false]))]
@@ -101,13 +101,13 @@
 (defn is-project-path?
   [path]
   (and path
-       (.isDirectory (java.io/file path))
-       (.exists (java.io/file path "project.clj"))))
+       (.isDirectory (io/file path))
+       (.exists (io/file path "project.clj"))))
 
 (defn is-parent-path?
   [parent-path child-path]
   (or (= parent-path child-path)
       (and parent-path
            child-path
-           (.isDirectory (java.io/file parent-path))
+           (.isDirectory (io/file parent-path))
            (.startsWith child-path parent-path))))

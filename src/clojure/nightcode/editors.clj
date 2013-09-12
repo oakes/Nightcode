@@ -1,5 +1,5 @@
 (ns nightcode.editors
-  (:require [clojure.java.io :as java.io]
+  (:require [clojure.java.io :as io]
             [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
             [nightcode.lein :as lein]
@@ -66,7 +66,7 @@
            (let [underline-fn #(utils/is-parent-path? path editor-path)
                  add-italics #(if (italicize-fn) (str "<i>" % "</i>") %)
                  add-underline #(if (underline-fn) (str "<u>" % "</u>") %)]
-             (-> editor-path java.io/file .getName add-italics add-underline)))
+             (-> editor-path io/file .getName add-italics add-underline)))
          (cons "<center>← →</center>")
          (clojure.string/join "<br/>")
          (str "<html>")
@@ -92,7 +92,7 @@
 (defn save-file
   [_]
   (when-let [editor (get-selected-editor)]
-    (with-open [w (java.io/writer (java.io/file (ui/get-selected-path)))]
+    (with-open [w (io/writer (io/file (ui/get-selected-path)))]
       (.write editor w))
     (.setDirty editor false)
     (s/request-focus! editor)
@@ -264,7 +264,7 @@
 
 (defn create-editor
   [path extension]
-  (when (and (.isFile (java.io/file path)) (contains? styles extension))
+  (when (and (.isFile (io/file path)) (contains? styles extension))
     (let [is-clojure? (contains? clojure-exts extension)
           text-area (get-text-area)
           toggle-paredit-fn (when is-clojure? (paredit/get-toggle-fn text-area))
@@ -355,8 +355,8 @@
                               (removeUpdate [this e]
                                 (update-buttons text-group text-area))))
       ; load the dark theme
-      (-> (java.io/resource "dark.xml")
-          java.io/input-stream
+      (-> (io/resource "dark.xml")
+          io/input-stream
           Theme/load
           (.apply text-area))
       ; set the font size from preferences
@@ -372,7 +372,7 @@
 
 (defn create-logcat
   [path]
-  (when (= (.getName (java.io/file path)) ui/logcat-name)
+  (when (= (.getName (io/file path)) ui/logcat-name)
     (let [console (ui/create-console)
           process (atom nil)
           is-running? (atom false)
@@ -382,7 +382,7 @@
                                :text (utils/get-string :start))
           btn-group (ui/wrap-panel :items [toggle-btn])
           start (fn []
-                  (->> (.getParent (java.io/file path))
+                  (->> (.getParent (io/file path))
                        (lein/run-logcat process in out))
                   (s/config! toggle-btn :text (utils/get-string :stop))
                   true)
@@ -436,7 +436,7 @@
 (defn close-selected-editor
   []
   (let [path (ui/get-selected-path)
-        file (java.io/file path)]
+        file (io/file path)]
     (remove-editors path)
     (ui/update-project-tree (if (.isDirectory file)
                               path

@@ -3,7 +3,8 @@
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9-SNAPSHOT"
                   :use-resources true]
                  [com.badlogicgames.gdx/gdx-backend-android "0.9.9-SNAPSHOT"]]
-  :repositories [["sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"]]
+  :repositories [["sonatype"
+                  "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :java-source-paths ["src" "../desktop/src-common" "gen"]
   :java-only true
   :profiles {:dev {:android {:aot :all-with-unused}}

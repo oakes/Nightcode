@@ -1,5 +1,6 @@
 (ns nightcode.lein
-  (:require [clojure.java.io :as java.io]
+  (:require [bultitude.core :as b]
+            [clojure.java.io :as io]
             [clojure.main]
             [leiningen.core.eval]
             [leiningen.core.main]
@@ -29,21 +30,21 @@
 
 (defn read-file
   [path]
-  (let [length (.length (java.io/file path))]
+  (let [length (.length (io/file path))]
     (let [data-barray (byte-array length)]
-      (with-open [bis (java.io/input-stream path)]
+      (with-open [bis (io/input-stream path)]
         (.read bis data-barray))
       data-barray)))
 
 (defn get-project-clj-path
   [path]
-  (.getCanonicalPath (java.io/file path "project.clj")))
+  (.getCanonicalPath (io/file path "project.clj")))
 
 (defn read-project-clj
   [path]
   (when path
     (let [project-clj-path (get-project-clj-path path)]
-      (if-not (.exists (java.io/file project-clj-path))
+      (if-not (.exists (io/file project-clj-path))
         (println (utils/get-string :no_project_clj))
         (try (leiningen.core.project/read project-clj-path)
           (catch Exception e {}))))))
@@ -66,10 +67,10 @@
   [project]
   (for [dir (:java-source-paths project)
         source (filter #(-> % (.getName) (.endsWith ".java"))
-                       (file-seq (java.io/file dir)))
+                       (file-seq (io/file dir)))
         :let [rel-source (.substring (.getPath source) (inc (count dir)))
               rel-compiled (.replaceFirst rel-source "\\.java$" ".class")
-              compiled (java.io/file (:compile-path project) rel-compiled)]
+              compiled (io/file (:compile-path project) rel-compiled)]
         :when (>= (.lastModified source) (.lastModified compiled))]
     (.getPath compiled)))
 
@@ -92,7 +93,7 @@
 
 (defn is-android-project?
   [path]
-  (.exists (java.io/file path "AndroidManifest.xml")))
+  (.exists (io/file path "AndroidManifest.xml")))
 
 (defn is-java-project?
   [path]
@@ -138,12 +139,12 @@
   (reset! process (.exec (Runtime/getRuntime)
                          (into-array (flatten args))
                          nil
-                         (java.io/file path)))
+                         (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
                     (Thread. #(when @process (.destroy @process))))
-  (with-open [out (java.io/reader (.getInputStream @process))
-              err (java.io/reader (.getErrorStream @process))
-              in (java.io/writer (.getOutputStream @process))]
+  (with-open [out (io/reader (.getInputStream @process))
+              err (io/reader (.getErrorStream @process))
+              in (io/writer (.getOutputStream @process))]
     (let [pump-out (doto (Pipe. out *out*) .start)
           pump-err (doto (Pipe. err *err*) .start)
           pump-in (doto (ClosingPipe. *in* in) .start)]
@@ -161,7 +162,7 @@
                      .getCodeSource
                      .getLocation
                      .toURI
-                     java.io/file)]
+                     io/file)]
     (start-process process
                    path
                    java-cmd

@@ -1,5 +1,5 @@
 (ns nightcode.projects
-  (:require [clojure.java.io :as java.io]
+  (:require [clojure.java.io :as io]
             [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
@@ -93,7 +93,7 @@
         project-path (ui/get-project-root-path)
         default-path (str (utils/get-relative-dir project-path selected-path)
                           (or default-file-name
-                              (.getName (java.io/file selected-path))))]
+                              (.getName (io/file selected-path))))]
     (dialogs/show-file-path-dialog default-path)))
 
 ; actions for project tree buttons
@@ -109,7 +109,7 @@
                         project-type
                         project-name
                         package-name)
-      (when (.exists (java.io/file project-dir))
+      (when (.exists (io/file project-dir))
         (add-to-project-tree project-dir)
         (ui/update-project-tree project-dir))
       true)))
@@ -121,7 +121,7 @@
                                   lein/is-java-project?)
                             "Example.java" "example.clj")]
     (when-let [leaf-path (enter-file-path default-file-name)]
-      (let [new-file (java.io/file (ui/get-project-root-path) leaf-path)]
+      (let [new-file (io/file (ui/get-project-root-path) leaf-path)]
         (if (.exists new-file)
           (s/alert (utils/get-string :file_exists))
           (do
@@ -133,13 +133,13 @@
   [e]
   (when-let [leaf-path (enter-file-path nil)]
     (let [project-path (ui/get-project-root-path)
-          new-file (java.io/file project-path leaf-path)
+          new-file (io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
           selected-path (ui/get-selected-path)]
       (when (not= new-path selected-path)
         (editors/save-file e)
         (.mkdirs (.getParentFile new-file))
-        (.renameTo (java.io/file selected-path) new-file)
+        (.renameTo (io/file selected-path) new-file)
         (utils/delete-file-recursively project-path selected-path)
         (ui/update-project-tree new-path)))))
 
@@ -147,8 +147,8 @@
   [e]
   (when-let [dir (chooser/choose-file :type :open :selection-mode :dirs-only)]
     ; offer to create project.clj if necessary
-    (when (and (.exists (java.io/file dir "src"))
-               (not (.exists (java.io/file dir "project.clj")))
+    (when (and (.exists (io/file dir "src"))
+               (not (.exists (io/file dir "project.clj")))
                (dialogs/show-project-clj-dialog))
       (->> {:raw-name (.getName dir)
             :namespace "put.your.main.namespace.here"}
@@ -175,8 +175,8 @@
              (s/config! (s/select @ui/ui-root [:#remove-button])
                         :enabled?
                         (and path (or (contains? @ui/tree-projects path)
-                                      (.isFile (java.io/file path)))))
+                                      (.isFile (io/file path)))))
              (s/config! (s/select @ui/ui-root [:#new-file-button])
-                        :visible? (and path (.isDirectory (java.io/file path))))
+                        :visible? (and path (.isDirectory (io/file path))))
              (s/config! (s/select @ui/ui-root [:#rename-file-button])
-                        :visible? (and path (.isFile (java.io/file path))))))
+                        :visible? (and path (.isFile (io/file path))))))

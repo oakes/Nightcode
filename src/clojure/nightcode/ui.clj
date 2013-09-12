@@ -1,12 +1,13 @@
 (ns nightcode.ui
-  (:require [clojure.java.io :as java.io]
+  (:require [clojure.java.io :as io]
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
   (:import [bsh.util JConsole]
            [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
-           [java.awt Dimension FontMetrics]))
+           [java.awt Dimension FontMetrics]
+           [java.io FilenameFilter]))
 
 ; create and retrieve widgets
 
@@ -81,7 +82,7 @@
 (defn get-project-path
   [path]
   (when path
-    (when-let [file (java.io/file path)]
+    (when-let [file (io/file path)]
       (if (or (utils/is-project-path? (.getCanonicalPath file))
               (contains? @tree-projects (.getCanonicalPath file)))
         (.getCanonicalPath file)
@@ -119,13 +120,13 @@
                             lein/is-android-project?))
                {:html "<html><b><font color='green'>LogCat</font></b></html>"
                 :name "LogCat"
-                :file (java.io/file (:file node) logcat-name)}))
+                :file (io/file (:file node) logcat-name)}))
        (remove nil?)
        vec))
 
 (defn file-node
   [node]
-  (let [children (->> (reify java.io.FilenameFilter
+  (let [children (->> (reify FilenameFilter
                         (accept [this dir filename]
                           (not (.startsWith filename "."))))
                       (.listFiles (:file node))
@@ -141,7 +142,7 @@
 (defn root-node
   [project-vec]
   (proxy [javax.swing.tree.DefaultMutableTreeNode] []
-    (getChildAt [i] (file-node (get-node (java.io/file (nth project-vec i)))))
+    (getChildAt [i] (file-node (get-node (io/file (nth project-vec i)))))
     (getChildCount [] (count project-vec))))
 
 ; create and update the project tree
@@ -149,7 +150,7 @@
 (defn create-project-tree
   []
   (reset! tree-projects
-          (-> #(.getName (java.io/file %))
+          (-> #(.getName (io/file %))
               (sort-by (utils/read-pref :project-set))
               (set)))
   (-> @tree-projects

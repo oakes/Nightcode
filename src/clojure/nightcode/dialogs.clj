@@ -1,5 +1,5 @@
 (ns nightcode.dialogs
-  (:require [clojure.java.io :as java.io]
+  (:require [clojure.java.io :as io]
             [nightcode.utils :as utils]
             [seesaw.core :as s]
             [seesaw.icon :as icon])
@@ -76,7 +76,7 @@
                                         utils/format-project-name)
                        package-name (-> (s/text package-name-text)
                                         utils/format-package-name)
-                       project-dir (-> (java.io/file parent-dir project-name)
+                       project-dir (-> (io/file parent-dir project-name)
                                        .getCanonicalPath)]
                    [project-type project-name package-name project-dir]))
         buttons (for [[id name-key lang-str] types]
