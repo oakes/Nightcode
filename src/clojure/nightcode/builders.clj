@@ -48,14 +48,18 @@
 
 (defn create-builder
   [path]
-  (let [console (ui/create-console)
+  (let [; create new console object with a reader/writer
+        console (ui/create-console)
+        in (ui/get-console-input console)
+        out (ui/get-console-output console)
+        ; keep track of the processes and the last reload timestamp
         process (atom nil)
         auto-process (atom nil)
         last-reload (atom 0)
-        in (ui/get-console-input console)
-        out (ui/get-console-output console)
+        ; create the main panel that will hold the console and buttons
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
+        ; create the actions for each button
         run-action (fn [_]
                      (lein/run-project process in out path)
                      (toggle-reload build-group (lein/is-java-project? path)))
@@ -84,6 +88,7 @@
                       (if (nil? @auto-process)
                         (lein/cljsbuild-project auto-process in out path)
                         (lein/stop-process auto-process)))
+        ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
                     :items [(ui/button :id :run-button
                                        :text (utils/get-string :run)
@@ -122,22 +127,25 @@
                                        :text (utils/get-string :auto)
                                        :listen [:action auto-action]
                                        :focusable? false)])]
+    ; disable the reload button when the process ends
     (add-watch process
                :toggle-reload
                (fn [_ _ _ new-state]
                  (when-not new-state (toggle-reload build-group false))))
-    (s/config! build-group :north btn-group)
-    (shortcuts/create-mappings build-group
-                               {:run-button run-action
-                                :run-repl-button run-repl-action
-                                :reload-button reload-action
-                                :build-button build-action
-                                :test-button test-action
-                                :clean-button clean-action
-                                :stop-button stop-action
-                                :sdk-button set-android-sdk
-                                :auto-button auto-action})
-    (shortcuts/create-hints build-group)
+    ; add the buttons to the main panel and create shortcuts
+    (doto build-group
+      (s/config! :north btn-group)
+      (shortcuts/create-mappings {:run-button run-action
+                                  :run-repl-button run-repl-action
+                                  :reload-button reload-action
+                                  :build-button build-action
+                                  :test-button test-action
+                                  :clean-button clean-action
+                                  :stop-button stop-action
+                                  :sdk-button set-android-sdk
+                                  :auto-button auto-action})
+      shortcuts/create-hints)
+    ; return a map describing the builder
     {:view build-group
      :close-fn (fn [] (stop-action nil))}))
 

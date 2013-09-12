@@ -272,13 +272,17 @@
 (defn create-editor
   [path extension]
   (when (and (.isFile (io/file path)) (contains? styles extension))
-    (let [is-clojure? (contains? clojure-exts extension)
+    (let [; create the text editor object
           text-area (get-text-area)
-          toggle-paredit-fn (when is-clojure? (paredit/get-toggle-fn text-area))
+          ; get the functions for toggling paredit and performing completion
+          is-clojure? (contains? clojure-exts extension)
+          toggle-paredit-fn (when is-clojure?
+                              (paredit/get-toggle-fn text-area))
           completer (get-completer text-area extension)
           do-completion-fn (fn [_]
                              (s/request-focus! text-area)
                              (when completer (.doCompletion completer)))
+          ; create the buttons with their actions attached
           btn-group (ui/wrap-panel
                       :items [(ui/button :id :save-button
                                          :text (utils/get-string :save)
@@ -317,6 +321,7 @@
                               (s/text :id :replace-field
                                       :columns 8
                                       :listen [:key-released replace-text])])
+          ; create the main panel
           text-group (s/border-panel
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
@@ -370,7 +375,7 @@
       (if @font-size
         (set-font-size text-area @font-size)
         (reset! font-size (-> text-area .getFont .getSize)))
-      ; return the object
+      ; return map describing the editor
       {:view text-group
        :close-fn #(when (.isDirty text-area)
                     (save-file nil))
@@ -380,14 +385,19 @@
 (defn create-logcat
   [path]
   (when (= (.getName (io/file path)) ui/logcat-name)
-    (let [console (ui/create-console)
-          process (atom nil)
-          is-running? (atom false)
+    (let [; create new console object with a reader/writer
+          console (ui/create-console)
           in (ui/get-console-input console)
           out (ui/get-console-output console)
+          ; keep track of the process and whether it's running
+          process (atom nil)
+          is-running? (atom false)
+          ; create the start/stop button
           toggle-btn (s/button :id :toggle-logcat-button
                                :text (utils/get-string :start))
+          ; create the main panel
           btn-group (ui/wrap-panel :items [toggle-btn])
+          ; create the toggle action
           start (fn []
                   (->> (.getParent (io/file path))
                        (lein/run-logcat process in out))
@@ -400,10 +410,13 @@
           toggle (fn [_]
                    (reset! is-running? (if @is-running? (stop) (start)))
                    (update-tabs path))]
+      ; add the toggle action to the button
       (s/listen toggle-btn :action toggle)
+      ; create shortcuts
       (doto btn-group
         (shortcuts/create-mappings {:toggle-logcat-button toggle})
         shortcuts/create-hints)
+      ; return map describing the logcat view
       {:view (s/border-panel :north btn-group :center console)
        :close-fn #(stop)
        :italicize-fn (fn [] @is-running?)})))
