@@ -6,6 +6,7 @@
             [leiningen.core.project]
             [leiningen.clean]
             [leiningen.cljsbuild]
+            [leiningen.compile]
             [leiningen.droid]
             [leiningen.javac]
             [leiningen.new]
@@ -48,10 +49,10 @@
           (catch Exception e {}))))))
 
 (defn add-sdk-path
-  [project-map]
-  (assoc-in project-map
+  [project]
+  (assoc-in project
             [:android :sdk-path]
-            (or (get-in project-map [:android :sdk-path])
+            (or (get-in project [:android :sdk-path])
                 (utils/read-pref :android-sdk))))
 
 (defn create-file-from-template
@@ -62,13 +63,13 @@
            (leiningen.new.templates/->files data)))))
 
 (defn stale-java-classes
-  [dirs compile-path]
-  (for [dir dirs
+  [project]
+  (for [dir (:java-source-paths project)
         source (filter #(-> % (.getName) (.endsWith ".java"))
                        (file-seq (java.io/file dir)))
         :let [rel-source (.substring (.getPath source) (inc (count dir)))
               rel-compiled (.replaceFirst rel-source "\\.java$" ".class")
-              compiled (java.io/file compile-path rel-compiled)]
+              compiled (java.io/file (:compile-path project) rel-compiled)]
         :when (>= (.lastModified source) (.lastModified compiled))]
     (.getPath compiled)))
 
@@ -95,16 +96,16 @@
 
 (defn is-java-project?
   [path]
-  (when-let [project-map (read-project-clj path)]
-    (or (:java-only project-map)
-        (= (count (:source-paths project-map)) 0)
-        (clojure.set/subset? (set (:source-paths project-map))
-                             (set (:java-source-paths project-map))))))
+  (when-let [project (read-project-clj path)]
+    (or (:java-only project)
+        (= (count (:source-paths project)) 0)
+        (clojure.set/subset? (set (:source-paths project))
+                             (set (:java-source-paths project))))))
 
 (defn is-clojurescript-project?
   [path]
-  (when-let [project-map (read-project-clj path)]
-    (not (nil? (:cljsbuild project-map)))))
+  (when-let [project (read-project-clj path)]
+    (not (nil? (:cljsbuild project)))))
 
 ; start/stop thread/processes
 
@@ -153,8 +154,8 @@
 
 (defn start-process-indirectly
   [process path & args]
-  (let [project-map (read-project-clj path)
-        java-cmd (or (:java-cmd project-map) (System/getenv "JAVA_CMD") "java")
+  (let [project (read-project-clj path)
+        java-cmd (or (:java-cmd project) (System/getenv "JAVA_CMD") "java")
         jar-file (-> (Class/forName class-name)
                      .getProtectionDomain
                      .getCodeSource
@@ -172,24 +173,24 @@
 
 (defn start-process-directly
   [process path func]
-  (let [project-map-orig (read-project-clj path)
-        jvm-opts (conj (:jvm-opts project-map-orig)
+  (let [project-orig (read-project-clj path)
+        jvm-opts (conj (:jvm-opts project-orig)
                        (str "-agentlib:jdwp="
                             "transport=dt_socket,"
                             "server=y,"
                             "suspend=n,"
                             "address="
                             debug-port))
-        project-map (-> project-map-orig
-                        (assoc :eval-in :trampoline
-                               :jvm-opts jvm-opts))
+        project (-> project-orig
+                    (assoc :eval-in :trampoline
+                           :jvm-opts jvm-opts))
         forms leiningen.core.eval/trampoline-forms
         profiles leiningen.core.eval/trampoline-profiles]
     (reset! forms [])
     (reset! profiles [])
-    (func path project-map)
+    (func path project)
     (doseq [i (range (count @forms))]
-      (->> (leiningen.core.eval/shell-command project-map (nth @forms i))
+      (->> (leiningen.core.eval/shell-command project (nth @forms i))
            (start-process process path)))))
 
 (defn stop-process
@@ -201,54 +202,52 @@
 ; low-level commands
 
 (defn run-project-task
-  [path project-map]
+  [path project]
   (if (is-android-project? path)
     (doseq [sub-cmd ["build" "apk" "install" "run"]]
-      (leiningen.droid/droid (add-sdk-path project-map) sub-cmd))
-    (leiningen.run/run project-map)))
+      (leiningen.droid/droid (add-sdk-path project) sub-cmd))
+    (leiningen.run/run project)))
 
 (defn run-repl-project-task
-  [path project-map]
+  [path project]
   (if (is-android-project? path)
     (doseq [sub-cmd ["doall" "repl"]]
-      (leiningen.droid/droid (add-sdk-path project-map) sub-cmd)
+      (leiningen.droid/droid (add-sdk-path project) sub-cmd)
       (Thread/sleep 10000))
-    (leiningen.repl/repl project-map)))
+    (leiningen.repl/repl project)))
 
 (defn build-project-task
-  [path project-map]
+  [path project]
   (if (is-android-project? path)
-    (-> (leiningen.droid/transform-into-release project-map)
+    (-> (leiningen.droid/transform-into-release project)
         add-sdk-path
         leiningen.droid/execute-release-routine)
-    (leiningen.uberjar/uberjar project-map)))
+    (leiningen.uberjar/uberjar project)))
 
 (defn test-project-task
-  [path project-map]
-  (leiningen.test/test project-map))
+  [path project]
+  (leiningen.test/test project))
 
 (defn clean-project-task
-  [path project-map]
-  (leiningen.clean/clean project-map))
+  [path project]
+  (leiningen.clean/clean project))
 
 (defn cljsbuild-project-task
-  [path project-map]
-  (leiningen.cljsbuild/cljsbuild project-map "auto"))
+  [path project]
+  (leiningen.cljsbuild/cljsbuild project "auto"))
 
 (defn hot-swap-project-task
-  [path project-map]
+  [path project]
   (when-let [conn (->> (Bootstrap/virtualMachineManager)
                        .attachingConnectors
                        (filter #(= (.name (.transport %)) "dt_socket"))
                        first)]
      (let [prm (.defaultArguments conn)
-           stale-classes (-> (:java-source-paths project-map)
-                             (stale-java-classes (:compile-path project-map))
-                             doall)]
+           stale-classes (doall (stale-java-classes project))]
        (.setValue (.get prm "port") debug-port)
        (.setValue (.get prm "hostname") "127.0.0.1")
        (when-let [vm (try (.attach conn prm) (catch Exception _))]
-         (leiningen.javac/javac project-map)
+         (leiningen.javac/javac project)
          (->> stale-classes
               (create-class-map (.allClasses vm))
               (.redefineClasses vm))
@@ -349,14 +348,14 @@
   [cmd & args]
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
-        project-map (-> (read-project-clj path)
-                        leiningen.core.project/init-project)]
+        project (-> (read-project-clj path)
+                    leiningen.core.project/init-project)]
     (case cmd
-      "run" (run-project-task path project-map)
-      "repl" (run-repl-project-task path project-map)
-      "build" (build-project-task path project-map)
-      "test" (test-project-task path project-map)
-      "clean" (clean-project-task path project-map)
-      "cljsbuild" (cljsbuild-project-task path project-map)
+      "run" (run-project-task path project)
+      "repl" (run-repl-project-task path project)
+      "build" (build-project-task path project)
+      "test" (test-project-task path project)
+      "clean" (clean-project-task path project)
+      "cljsbuild" (cljsbuild-project-task path project)
       nil))
   (System/exit 0))
