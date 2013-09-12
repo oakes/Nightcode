@@ -1,7 +1,8 @@
 (defproject nightcode "0.0.10"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
-  :dependencies [[com.github.insubstantial/substance "7.2.1"]
+  :dependencies [[bultitude "0.2.2"]
+                 [com.github.insubstantial/substance "7.2.1"]
                  [com.fifesoft/autocomplete "2.0.7"]
                  [com.fifesoft/rsyntaxtextarea "2.0.7"]
                  [compliment "0.0.1"]

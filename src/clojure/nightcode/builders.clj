@@ -28,13 +28,19 @@
                                       :remember-directory? false)]
     (utils/write-pref :android-sdk (.getCanonicalPath dir))))
 
+(defn get-stale-sources
+  [project]
+  (for [source (lein/stale-clojure-sources project)]
+    (slurp source)))
+
 (defn eval-in-repl
-  [console]
-  (when-let [code (or (editors/get-editor-selected-text)
-                      (editors/get-editor-text))]
+  [console path]
+  (doseq [code (if-let [selected (editors/get-editor-selected-text)]
+                 [selected]
+                 (get-stale-sources (lein/read-project-clj path)))]
     (->> (str "(do " (clojure.string/replace code "\n" " ") ")")
          (.enterLine console)))
-  (s/request-focus! (.getView (.getViewport console))))
+  (s/request-focus! (-> console .getViewport .getView)))
 
 (defn toggle-reload
   [target enable?]
@@ -57,13 +63,13 @@
                      (toggle-reload build-group (lein/is-java-project? path)))
         run-repl-action (fn [_]
                           (lein/run-repl-project process in out path)
-                          (s/request-focus! (.getView (.getViewport console)))
+                          (s/request-focus! (-> console .getViewport .getView))
                           (toggle-reload build-group
                                          (not (lein/is-java-project? path))))
         reload-action (fn [_]
                         (if (lein/is-java-project? path)
                           (lein/run-hot-swap in out path)
-                          (eval-in-repl console)))
+                          (eval-in-repl console path)))
         build-action (fn [_]
                        (lein/build-project process in out path))
         test-action (fn [_]

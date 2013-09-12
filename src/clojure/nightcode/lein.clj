@@ -72,7 +72,20 @@
               rel-compiled (.replaceFirst rel-source "\\.java$" ".class")
               compiled (io/file (:compile-path project) rel-compiled)]
         :when (>= (.lastModified source) (.lastModified compiled))]
-    (.getPath compiled)))
+    (.getCanonicalPath compiled)))
+
+(defn stale-clojure-sources
+  [project]
+  (for [namespace (leiningen.compile/compilable-namespaces project)
+        :let [rel-source (b/path-for namespace)
+              source (first (for [source-path (:source-paths project)
+                                  :let [file (io/file source-path rel-source)]]
+                              file))]
+        :when source
+        :let [rel-compiled (.replaceFirst rel-source "\\.clj$" "__init.class")
+              compiled (io/file (:compile-path project) rel-compiled)]
+        :when (>= (.lastModified source) (.lastModified compiled))]
+    (.getCanonicalPath source)))
 
 (defn create-class-map
   [classes paths]
