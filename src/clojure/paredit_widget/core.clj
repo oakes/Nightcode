@@ -82,32 +82,35 @@
                     (let [len (v/length p)]
                       (vector (- offs len) len (with-out-str (clojure.pprint/pprint (read-string (v/text p)))))))
                   (filter (fn [me] (= :list (v/tag (val me)))) (v/offsets (sexp-dup s))))
-          rvec-first (nth rvec 0)
-          rlist (first (partition 2 1 rvec))
+          ;_ (println "rvec: " rvec)
+          first-offset (first (first rvec))
+          first-len (second (first rvec))
+          first-s (last (first rvec))
+          ;_ (println "partitioned: " (partition 2 1 rvec))
+          rlist (partition 2 1 rvec)
           ;_ (println "rlist: " rlist)
           sb (StringBuffer. s)
         ]
           ; replace first form
-          #_(println "first offset: " (first rvec-first))
-          (.replace sb (first rvec-first) (+ (first rvec-first) (second rvec-first)) (last rvec-first))
+          (.replace sb first-offset (+ first-offset first-len) first-s)
 
           ; replace from 2nd to last form
           (loop [offsum 0
                  rl rlist]
-            (if (or (empty? rl) (not (second rl)))
+            (if (empty? rl)
               (.toString sb)
-              (let [ra (first rl)
-                    rb (second rl)
+              (let [ra (first (first rl))
+                    rb (second (first rl))
                     ;_ (println "ra: " ra)
                     ;_ (println "rb: " rb)
                     diff-a (- (.length (last ra)) (second ra))
                     offset-b (first rb)
                     len-b (second rb)
-                    off-next (+ diff-a offset-b offsum)]
+                    off-next (+ diff-a offsum offset-b)]
 
                       ; replace next form
-                      (.replace sb off-next (+ off-next len-b) (last rb))
-                      (recur off-next (rest rl)))))))
+                      (.replace sb offset-b (+ off-next len-b) (last rb))
+                      (recur (+ diff-a offsum) (rest rl)))))))
 
 (def formatting-keymap
   {["M" "f"] :fmt-pprint})
