@@ -80,7 +80,7 @@
 (defn reformat-all-forms [s] 
   (let [rvec (map (fn [[offs p]]
                     (let [len (v/length p)]
-                      (vector (- offs len) len (with-out-str (clojure.pprint/pprint (read-string (v/text p)))))))
+                      (vector (- offs len) len (.trim (with-out-str (clojure.pprint/pprint (read-string (v/text p))))))))
                   (filter (fn [me] (= :list (v/tag (val me)))) (v/offsets (sexp-dup s))))
           ;_ (println "rvec: " rvec)
           first-offset (first (first rvec))
@@ -90,12 +90,13 @@
           rlist (partition 2 1 rvec)
           ;_ (println "rlist: " rlist)
           sb (StringBuffer. s)
+          first-diff (- (.length first-s) first-len)
         ]
           ; replace first form
-          (.replace sb first-offset (+ first-offset first-len) first-s)
+          (.replace sb (+ first-offset first-diff) (+ first-offset first-len) first-s)
 
           ; replace from 2nd to last form
-          (loop [offsum 0
+          (loop [diff-offset (- (.length first-s) first-len)
                  rl rlist]
             (if (empty? rl)
               (.toString sb)
@@ -103,14 +104,14 @@
                     rb (second (first rl))
                     ;_ (println "ra: " ra)
                     ;_ (println "rb: " rb)
-                    diff-a (- (.length (last ra)) (second ra))
-                    offset-b (first rb)
-                    len-b (second rb)
-                    off-next (+ diff-a offsum offset-b)]
+                    diff-offset-next (- (.length (last ra)) (second ra))
+                    diff-sum (+ diff-offset diff-offset-next)
+                    offset-b (+ (first rb) diff-sum)
+                    len-b (second rb)]
 
                       ; replace next form
-                      (.replace sb offset-b (+ off-next len-b) (last rb))
-                      (recur (+ diff-a offsum) (rest rl)))))))
+                      (.replace sb offset-b (+ offset-b len-b) (last rb))
+                      (recur diff-sum (rest rl)))))))
 
 (def formatting-keymap
   {["M" "f"] :fmt-pprint})
