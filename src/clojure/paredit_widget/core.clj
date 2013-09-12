@@ -2,6 +2,10 @@
   (:use [seesaw.core]
         [paredit.core]
         [paredit.parser])
+  (:require
+        [net.cgrand.parsley :as p]
+        [net.cgrand.parsley.functional-trees :as f]
+        [net.cgrand.parsley.views :as v])
   (:import java.awt.event.KeyListener
            java.awt.event.InputMethodListener))
 
@@ -71,15 +75,55 @@
   ["M" "Left"] :paredit-expand-left
    })
 
+(declare sexp-dup)
+
+(defn reformat-all-forms [s] 
+  (let [rvec (map (fn [[offs p]]
+                    (let [len (v/length p)]
+                      (vector (- offs len) len (with-out-str (clojure.pprint/pprint (read-string (v/text p)))))))
+                  (filter (fn [me] (= :list (v/tag (val me)))) (v/offsets (sexp-dup s))))
+          rvec-first (nth rvec 0)
+          rlist (first (partition 2 1 rvec))
+          ;_ (println "rlist: " rlist)
+          sb (StringBuffer. s)
+        ]
+          ; replace first form
+          #_(println "first offset: " (first rvec-first))
+          (.replace sb (first rvec-first) (+ (first rvec-first) (second rvec-first)) (last rvec-first))
+
+          ; replace from 2nd to last form
+          (loop [offsum 0
+                 rl rlist]
+            (if (or (empty? rl) (not (second rl)))
+              (.toString sb)
+              (let [ra (first rl)
+                    rb (second rl)
+                    ;_ (println "ra: " ra)
+                    ;_ (println "rb: " rb)
+                    diff-a (- (.length (last ra)) (second ra))
+                    offset-b (first rb)
+                    len-b (second rb)
+                    off-next (+ diff-a offset-b offsum)]
+
+                      ; replace next form
+                      (.replace sb off-next (+ off-next len-b) (last rb))
+                      (recur off-next (rest rl)))))))
+
 (def formatting-keymap
   {["M" "f"] :fmt-pprint})
 
-(defn exec-pprint [k widget]
-  (when (formatting-keymap k)
-    (when-let [text (.getSelectedText widget)]
-      (let [fs (with-out-str (clojure.pprint/pprint (read-string text)))]
+(defn exec-pprint-old [k widget]
+  (let [cmd (formatting-keymap k)]
+    (if cmd
+      (let [fs (with-out-str (clojure.pprint/pprint (read-string (.getSelectedText widget))))]
         (if *debug* (println "replacement: " fs " at: " (.getSelectionStart widget)))
         (if fs (.replaceRange widget fs (.getSelectionStart widget) (.getSelectionEnd widget)))))))
+
+(defn exec-pprint [k widget]
+  (let [cmd (formatting-keymap k)]
+    (if cmd
+      (let [sel (.getSelectedText widget)]
+        (if sel (.replaceRange widget (reformat-all-forms sel) (.getSelectionStart widget) (.getSelectionEnd widget)))))))
 
 (defn exec-paredit [k w]
   (let [cmd (keymap k)]
@@ -157,3 +201,89 @@
                             :size [300 :by 300]))
    pack!
    show!))
+
+(def sexp-dup
+  (p/parser {:root-tag :root
+           :main :expr*
+           :space (p/unspaced gspaces :*)
+           :make-node f/fnode
+           :make-leaf f/fleaf
+           }
+    :expr- #{
+             :list
+             :vector
+             :map
+             :set
+             :quote
+             :meta
+             :deprecated-meta
+             :deref
+             :syntax-quote
+             :var
+             :fn
+             :unquote-splicing
+             :unquote
+             :string
+             :regex
+             :symbol 
+             :reader-literal
+             :keyword 
+             :int 
+             :float 
+             :ratio 
+             :anon-arg
+             :char
+             :chimera
+             }
+    :list [open-list :expr* ")"]
+    :chimera 
+             #{ 
+               [open-list :expr* eof] 
+               [open-vector :expr* eof]
+               [open-map :expr* eof]
+               [open-fn :expr* eof]
+               [open-set :expr* eof]
+               ;(p/unspaced open-string #"(?:\\.|[^\\\"])++(?!\")" :? eof)
+               ;(p/unspaced open-regex #"(?:\\.|[^\\\"])++(?!\")" :? eof)
+               [open-quote eof]
+               [open-deref eof]
+               [open-syntax-quote eof]
+               [open-var eof]
+               [open-discard eof]
+               [open-unquote-splicing eof]
+               [open-unquote eof]
+               (p/unspaced open-char eof)
+               }
+    :vector [open-vector :expr* "]"]
+    :map [open-map :expr* "}"]
+    :set [open-set :expr* "}"]
+    :quote [open-quote :expr]
+    :open-meta "^"             :open-deprecated-meta "#^"
+    :meta-prefix [:open-meta 
+                  :expr]       :deprecated-meta-prefix [:open-deprecated-meta 
+                                                        :expr]
+    :meta [:meta-prefix :expr] :deprecated-meta [:deprecated-meta-prefix 
+                                                 :expr]
+    :deref [open-deref :expr]
+    :syntax-quote [open-syntax-quote :expr]
+    :var [open-var :expr]
+    :fn [open-fn :expr* ")"]
+    :unquote-splicing [open-unquote-splicing :expr]
+    :unquote [open-unquote :expr]
+    :string-body #"(?:\\.|[^\\\"])++(?=\")"
+    :string (p/unspaced open-string :string-body :? \")
+    :regex-body #"(?:\\.|[^\\\"])++(?=\")"
+    :regex (p/unspaced open-regex :regex-body :? \")
+    :reader-literal-prefix (p/unspaced open-reader-literal :symbol)
+    :reader-literal [:reader-literal-prefix :expr]
+    :symbol #"(?:(?:[\-\+](?![0-9])[^\^\(^\[^\#^\{^\\^\"^\~^\%^\:^\,^\s^\;^\@^\`^\)^\]^\}]*)|(?:[^\^\(\[^\#\{\\\"\~\%\:\,\s\;\'\@\`\)\]\}\-\+;0-9][^\^\(\[\#\{\\\"\~\%\:\,\s\;\@\`\)\]\}]*))#?"
+    :keyword (p/unspaced open-keyword #"[^\(\[\{\'\^\@\`\~\"\\\,\s\;\)\]\}]*"); factorize with symbol
+    :int #"(?:[-+]?(?:0(?!\.)|[1-9][0-9]*+(?!\.)|0[xX][0-9A-Fa-f]+(?!\.)|0[0-7]+(?!\.)|[1-9][0-9]?[rR][0-9A-Za-z]+(?!\.)|0[0-9]+(?!\.))(?!/))"
+    :ratio #"[-+]?[0-9]+/[0-9]*"
+    :float #"[-+]?[0-9]+\.[0-9]*+(?:[eE][-+]?+[0-9]+)?+M?"
+    :anon-arg (p/unspaced open-anon-arg #"(?:[0-9|\&])?+")
+    :char (p/unspaced open-char #"(?:newline|space|tab|backspace|formfeed|return|u[0-9|a-f|A-F]{4}|o[0-3]?+[0-7]{1,2}|.)")
+    :whitespace whitespace
+    :comment #{(p/unspaced open-comment #"[^\n]*\n?")} 
+    :discard [open-discard :expr]
+    ))
