@@ -80,7 +80,7 @@
 (defn reformat-all-forms [s] 
   (let [rvec (map (fn [[offs p]]
                     (let [len (v/length p)]
-                      (vector (- offs len) len (.trim (with-out-str (clojure.pprint/pprint (read-string (v/text p))))))))
+                      (vector (- offs len) len (.trim (with-out-str (clojure.pprint/with-pprint-dispatch clojure.pprint/code-dispatch (clojure.pprint/pprint (read-string (v/text p)))))))))
                   (filter (fn [me] (= :list (v/tag (val me)))) (v/offsets (sexp-dup s))))
           ;_ (println "rvec: " rvec)
           first-offset (first (first rvec))
