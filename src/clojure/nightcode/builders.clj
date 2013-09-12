@@ -34,7 +34,7 @@
                  [selected]
                  (for [source (-> (lein/read-project-clj path)
                                   (lein/stale-clojure-sources timestamp))]
-                   (slurp source)))]
+                   (str (slurp source) " nil")))]
     (->> (str "(do " (clojure.string/replace code "\n" " ") ")")
          (.enterLine console)))
   (s/request-focus! (-> console .getViewport .getView)))
