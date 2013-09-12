@@ -167,15 +167,21 @@
 (defn find-text
   [e]
   (when-let [editor (get-selected-editor)]
-    (let [is-enter-key? (= (.getKeyCode e) 10)
+    (let [key-code (.getKeyCode e)
+          is-enter-key? (= key-code 10)
           find-text (s/text e)
+          is-printable-char? (-> editor .getFont (.canDisplay key-code))
+          is-valid-search? (and (> (count find-text) 0)
+                                is-printable-char?
+                                (not @shortcuts/is-down?))
           context (SearchContext. find-text)]
-      (.setRegularExpression context true)
-      (when (and (not is-enter-key?) (> (count find-text) 0))
-        (.setCaretPosition editor 0))
-      (when (and is-enter-key? (.isShiftDown e))
-        (.setSearchForward context false))
-      (if (and (> (count find-text) 0)
+      (when is-valid-search?
+        (.setRegularExpression context true)
+        (when-not is-enter-key?
+          (.setCaretPosition editor 0))
+        (when (.isShiftDown e)
+          (.setSearchForward context false)))
+      (if (and is-valid-search?
                (not (try (SearchEngine/find editor context)
                       (catch Exception e false))))
         (s/config! e :background (color/color :red))
@@ -184,7 +190,8 @@
 (defn replace-text
   [e]
   (when-let [editor (get-selected-editor)]
-    (let [is-enter-key? (= (.getKeyCode e) 10)
+    (let [key-code (.getKeyCode e)
+          is-enter-key? (= key-code 10)
           pane (get-selected-editor-pane)
           find-text (s/text (s/select pane [:#find-field]))
           replace-text (s/text e)
