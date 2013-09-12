@@ -29,12 +29,15 @@
     (utils/write-pref :android-sdk (.getCanonicalPath dir))))
 
 (defn eval-in-repl
-  [console]
-  (when-let [code (or (editors/get-editor-selected-text)
-                      (editors/get-editor-text))]
+  [console path timestamp]
+  (doseq [code (if-let [selected (editors/get-editor-selected-text)]
+                 [selected]
+                 (for [source (-> (lein/read-project-clj path)
+                                  (lein/stale-clojure-sources timestamp))]
+                   (slurp source)))]
     (->> (str "(do " (clojure.string/replace code "\n" " ") ")")
          (.enterLine console)))
-  (s/request-focus! (.getView (.getViewport console))))
+  (s/request-focus! (-> console .getViewport .getView)))
 
 (defn toggle-reload
   [target enable?]
@@ -48,6 +51,7 @@
   (let [console (ui/create-console)
         process (atom nil)
         auto-process (atom nil)
+        last-reload (atom 0)
         in (ui/get-console-input console)
         out (ui/get-console-output console)
         build-group (s/border-panel
@@ -57,13 +61,15 @@
                      (toggle-reload build-group (lein/is-java-project? path)))
         run-repl-action (fn [_]
                           (lein/run-repl-project process in out path)
-                          (s/request-focus! (.getView (.getViewport console)))
+                          (s/request-focus! (-> console .getViewport .getView))
                           (toggle-reload build-group
-                                         (not (lein/is-java-project? path))))
+                                         (not (lein/is-java-project? path)))
+                          (reset! last-reload (System/currentTimeMillis)))
         reload-action (fn [_]
                         (if (lein/is-java-project? path)
                           (lein/run-hot-swap in out path)
-                          (eval-in-repl console)))
+                          (eval-in-repl console path @last-reload))
+                        (reset! last-reload (System/currentTimeMillis)))
         build-action (fn [_]
                        (lein/build-project process in out path))
         test-action (fn [_]

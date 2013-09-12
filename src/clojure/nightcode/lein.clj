@@ -1,13 +1,11 @@
 (ns nightcode.lein
-  (:require [bultitude.core :as b]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [clojure.main]
             [leiningen.core.eval]
             [leiningen.core.main]
             [leiningen.core.project]
             [leiningen.clean]
             [leiningen.cljsbuild]
-            [leiningen.compile]
             [leiningen.droid]
             [leiningen.javac]
             [leiningen.new]
@@ -73,6 +71,14 @@
               compiled (io/file (:compile-path project) rel-compiled)]
         :when (>= (.lastModified source) (.lastModified compiled))]
     (.getCanonicalPath compiled)))
+
+(defn stale-clojure-sources
+  [project timestamp]
+  (for [dir (:source-paths project)
+        source (filter #(-> % (.getName) (.endsWith ".clj"))
+                       (file-seq (io/file dir)))
+        :when (>= (.lastModified source) timestamp)]
+    (.getCanonicalPath source)))
 
 (defn create-class-map
   [classes paths]
