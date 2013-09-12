@@ -375,7 +375,7 @@
       (if @font-size
         (set-font-size text-area @font-size)
         (reset! font-size (-> text-area .getFont .getSize)))
-      ; return map describing the editor
+      ; return a map describing the editor
       {:view text-group
        :close-fn #(when (.isDirty text-area)
                     (save-file nil))
@@ -416,7 +416,7 @@
       (doto btn-group
         (shortcuts/create-mappings {:toggle-logcat-button toggle})
         shortcuts/create-hints)
-      ; return map describing the logcat view
+      ; return a map describing the logcat view
       {:view (s/border-panel :north btn-group :center console)
        :close-fn #(stop)
        :italicize-fn (fn [] @is-running?)})))

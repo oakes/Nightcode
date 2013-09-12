@@ -14,6 +14,7 @@
 (def ui-root (atom nil))
 
 (defn wrap-panel
+  "Returns a panel based on FlowLayout that allows its contents to wrap."
   [& {:keys [items align hgap vgap]}]
   (let [align (case align
                 :left WrapLayout/LEFT
@@ -30,6 +31,7 @@
     panel))
 
 (defn adjust-button
+  "Adjusts the given button to fit its contents."
   [btn]
   (let [width (-> (.getFontMetrics btn (.getFont btn))
                   (.getStringBounds (.getText btn) (.getGraphics btn))
@@ -40,30 +42,37 @@
       (.setPreferredSize (Dimension. width height)))))
 
 (defmacro button
+  "Creates an adjusted button."
   [& body]
   `(adjust-button (s/button ~@body)))
 
 (defmacro toggle
+  "Creates an adjusted toggle."
   [& body]
   `(adjust-button (s/toggle ~@body)))
 
 (defn create-console
+  "Creates a new console object."
   []
   (JConsole.))
 
 (defn get-console-input
+  "Returns the Reader for the given console object."
   [console]
   (LineNumberingPushbackReader. (.getIn console)))
 
 (defn get-console-output
+  "Returns the Writer for the given console object."
   [console]
   (.getOut console))
 
 (defn get-project-tree
+  "Returns the project tree."
   []
   (s/select @ui-root [:#project-tree]))
 
 (defn get-editor-pane
+  "Returns the editor pane."
   []
   (s/select @ui-root [:#editor-pane]))
 
@@ -74,12 +83,14 @@
 (def tree-selection (atom nil))
 
 (defn get-selected-path
+  "Returns the path selected in the project tree."
   []
   (-> (get-project-tree)
       .getSelectionPath
       utils/tree-path-to-str))
 
 (defn get-project-path
+  "Returns the project path that the given path is contained within."
   [path]
   (when path
     (when-let [file (io/file path)]
@@ -90,6 +101,7 @@
           (get-project-path (.getCanonicalPath parent-file)))))))
 
 (defn get-project-root-path
+  "Returns the root path that the selected path is contained within."
   []
   (-> #(.startsWith (get-selected-path) %)
       (filter @tree-projects)
@@ -100,6 +112,7 @@
 (def ^:const logcat-name "*LogCat*")
 
 (defn get-node
+  "Returns a map describing an item with the given file object."
   [file]
   (let [path (.getCanonicalPath file)
         file-name (.getName file)]
@@ -111,6 +124,7 @@
      :file file}))
 
 (defn get-nodes
+  "Returns a vector of maps describing sibling items in the project tree."
   [node children]
   (->> (for [child children]
          (get-node child))
@@ -125,6 +139,7 @@
        vec))
 
 (defn file-node
+  "Creates a DefaultMutableTreeNode object for the given map."
   [node]
   (let [children (->> (reify FilenameFilter
                         (accept [this dir filename]
@@ -140,6 +155,7 @@
       (toString [] (or (:html node) (:name node))))))
 
 (defn root-node
+  "Creates a DefaultMutableTreeNode object for the given list of project paths."
   [project-vec]
   (proxy [javax.swing.tree.DefaultMutableTreeNode] []
     (getChildAt [i] (file-node (get-node (io/file (nth project-vec i)))))
@@ -148,17 +164,19 @@
 ; create and update the project tree
 
 (defn create-project-tree
+  "Creates a new project tree."
   []
   (reset! tree-projects
           (-> #(.getName (io/file %))
               (sort-by (utils/read-pref :project-set))
-              (set)))
+              set))
   (-> @tree-projects
       vec
       root-node
       (javax.swing.tree.DefaultTreeModel. false)))
 
 (defn update-project-tree
+  "Updates the project tree, optionally with a new selection."
   ([]
    (update-project-tree (get-project-tree) nil))
   ([new-selection]

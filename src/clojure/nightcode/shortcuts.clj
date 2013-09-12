@@ -39,6 +39,7 @@
    :toggle-logcat-button "S"})
 
 (defn create-mappings
+  "Maps the given pair of widget IDs and functions together."
   [panel pairs]
   (doseq [[id func] pairs]
     (when-let [mapping (get mappings id)]
@@ -54,6 +55,7 @@
                       :scope :global))))
 
 (defn is-visible?
+  "Determines whether the given widget is visible."
   [widget]
   (if widget
     (and (.isVisible widget)
@@ -61,17 +63,20 @@
     true))
 
 (defn toggle-hint
+  "Shows or hides the given hint."
   [hint show?]
   (if (and show? (is-visible? (.getAttachedComponent hint)))
     (s/show! hint)
     (s/hide! hint)))
 
 (defn toggle-hints
+  "Shows or hides all hints in the given target."
   [target show?]
   (doseq [hint (s/select target [:BalloonTip])]
     (toggle-hint hint show?)))
 
 (defn create-hint
+  "Creates a new hint on the given view with the given text."
   [view text]
   (when text
     (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
@@ -83,6 +88,7 @@
         (.setVisible false)))))
 
 (defn create-hints
+  "Creates hints for all widgets within given target with IDs in `mappings`."
   [target]
   (doseq [[id mapping] mappings]
     (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
@@ -90,6 +96,7 @@
   target)
 
 (defn listen-for-shortcuts
+  "Creates a global listener for shortcuts."
   [target func]
   (.addKeyEventDispatcher
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
