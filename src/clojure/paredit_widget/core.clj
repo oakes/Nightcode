@@ -93,10 +93,10 @@
           first-diff (- (.length first-s) first-len)
         ]
           ; replace first form
-          (.replace sb (+ first-offset first-diff) (+ first-offset first-len) first-s)
+          (.replace sb first-offset (+ first-offset first-len) first-s)
 
           ; replace from 2nd to last form
-          (loop [diff-offset (- (.length first-s) first-len)
+          (loop [diff-offset first-diff
                  rl rlist]
             (if (empty? rl)
               (.toString sb)
