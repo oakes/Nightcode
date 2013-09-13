@@ -77,6 +77,106 @@
 
 (declare sexp-dup)
 
+(defn format-code [string]
+  (loop [s string col 0 dstack [] out [] space nil incl false
+         insl false incm false lwcr false sups true cmindent nil]
+    (if-let [c (first s)]
+      (let [r (rest s)
+            begins "([{"
+            ends ")]}"
+            delim-indents (zipmap begins [1 0 0])
+            delim-ends (zipmap ends begins)
+            sups-char? #{\' \` \~ \@ \#}
+            indent (fn []
+                     (if (or (empty? r) (empty? dstack))
+                       [\newline]
+                       (into [\newline]
+                         (repeat
+                           (let [[delim pos] (peek dstack)]
+                             (+ pos (delim-indents delim)))
+                           \space))))
+            conc (fn [c]
+                   (if sups [c] (conj space c)))
+            pop-d (fn [stack c]
+                    (if (empty? stack)
+                      []
+                      (let [ps (pop stack)]
+                        (if (empty? ps)
+                          []
+                          (if (= (first (peek stack)) (delim-ends c))
+                            ps
+                            (recur ps c))))))]
+        (cond
+          incm (let [nl (or (= c \newline) (= c \return))
+                     spc (Character/isWhitespace c)
+                     cc (if nl
+                          (indent)
+                          (if spc
+                            (if-not sups [c])
+                            [c]))]
+                 (recur
+                   r (if nl (dec (count cc)) (+ col (count cc)))
+                   dstack (into out cc) nil false false
+                   (if-not nl incm) (= c \return) nl cmindent))
+          (= c \") (let [cc (if (or incl insl) [c] [\space c])]
+                     (recur
+                       r (+ col (count cc)) dstack (into out cc)
+                       (if (and insl (not incl)) [\space]) false
+                       (if incl insl (not insl)) false false false
+                       cmindent))
+          (or incl insl) (recur
+                           r (if (or (= c \newline) (= c \return))
+                               0
+                               (inc col))
+                           dstack (conj out c) nil
+                           (and insl (not incl) (= c \\)) insl false
+                           false false cmindent)
+          (= c \;) (let [padding (if sups 0 1)
+                         padding (if cmindent
+                                   (max padding (- cmindent col))
+                                   padding)
+                         padding (repeat padding \space)
+                         padding (concat padding [\; \space])]
+                     (recur
+                       r (+ col (count padding)) dstack
+                       (into out padding) nil false false true false
+                       true (+ col (count padding) -2)))
+          (= c \\) (let [cc (if sups [c] [\space c])]
+                     (recur
+                       r (+ col (count cc)) dstack (into out cc) nil
+                       true false false false false cmindent))
+          (or
+            (and (= c \newline) (not lwcr))
+            (= c \return)) (let [i (indent)]
+                             (recur
+                               r (dec (count i)) dstack (into out i)
+                               nil false false false (= c \return)
+                               true nil))
+          (= c \newline) (recur
+                           r col dstack out nil false false false
+                           false true cmindent)
+          (Character/isWhitespace c) (recur
+                                       r col dstack out [\space]
+                                       false false false false sups
+                                       cmindent)
+          (delim-indents c) (let [cc (if sups [c] [\space c])
+                                  cn (count cc)]
+                              (recur
+                                r (+ col cn)
+                                (conj dstack [c (+ col cn)])
+                                (into out cc) nil false false false
+                                false true cmindent))
+          (delim-ends c) (recur
+                           r (inc col) (pop-d dstack c) (conj out c)
+                           [\space] false false false false false
+                           cmindent)
+          :else (let [cc (conc c)]
+                  (recur
+                    r (+ col (count cc)) dstack (into out cc) nil
+                    false false false false (sups-char? c)
+                    cmindent))))
+      (apply str out))))
+
 (defn reformat-all-forms [s] 
   (let [rvec (map (fn [[offs p]]
                     (let [len (v/length p)]
@@ -114,20 +214,18 @@
                       (recur diff-sum (rest rl)))))))
 
 (def formatting-keymap
-  {["M" "f"] :fmt-pprint})
+  {["M" "p"] :fmt-pprint ["M" "f"] :fmt-plain})
 
-(defn exec-pprint-old [k widget]
-  (let [cmd (formatting-keymap k)]
-    (if cmd
-      (let [fs (with-out-str (clojure.pprint/pprint (read-string (.getSelectedText widget))))]
-        (if *debug* (println "replacement: " fs " at: " (.getSelectionStart widget)))
-        (if fs (.replaceRange widget fs (.getSelectionStart widget) (.getSelectionEnd widget)))))))
-
-(defn exec-pprint [k widget]
+(defn exec-format [k widget]
   (let [cmd (formatting-keymap k)]
     (if cmd
       (let [sel (.getSelectedText widget)]
-        (if sel (.replaceRange widget (reformat-all-forms sel) (.getSelectionStart widget) (.getSelectionEnd widget)))))))
+        (when sel
+        (cond
+          (= cmd :fmt-pprint) 
+            (.replaceRange widget (reformat-all-forms sel) (.getSelectionStart widget) (.getSelectionEnd widget))
+          (= cmd :fmt-plain)
+            (.replaceRange widget (format-code sel) (.getSelectionStart widget) (.getSelectionEnd widget))))))))
 
 (defn exec-paredit [k w]
   (let [cmd (keymap k)]
@@ -168,7 +266,7 @@
     (keyPressed [this e]
       (let [k (convert-key-event e)
             p (exec-paredit k w)]
-        (if p (.consume e) (exec-pprint k w))))))
+        (if p (.consume e) (exec-format k w))))))
 
 (defn input-method-event-handler [w]
   (reify java.awt.event.InputMethodListener
