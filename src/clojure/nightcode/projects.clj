@@ -4,6 +4,7 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
+            [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
@@ -26,7 +27,9 @@
   (when-let [path (-> e .getPath utils/tree-path-to-str)]
     (when (not= path @ui/tree-selection)
       (reset! ui/tree-selection path)
-      (utils/write-pref :selection @ui/tree-selection))))
+      (utils/write-pref :selection @ui/tree-selection)
+      (when @shortcuts/is-down?
+        (shortcuts/toggle-hints @ui/ui-root true)))))
 
 (defn move-project-tree-selection
   [diff]

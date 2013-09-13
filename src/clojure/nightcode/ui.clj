@@ -7,7 +7,8 @@
            [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
            [java.awt Dimension FontMetrics]
-           [java.io FilenameFilter]))
+           [java.io FilenameFilter]
+           [javax.swing.tree DefaultTreeModel]))
 
 ; create and retrieve widgets
 
@@ -173,7 +174,7 @@
   (-> @tree-projects
       vec
       root-node
-      (javax.swing.tree.DefaultTreeModel. false)))
+      (DefaultTreeModel. false)))
 
 (defn update-project-tree
   "Updates the project tree, optionally with a new selection."

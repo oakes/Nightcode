@@ -9,6 +9,7 @@
             [nightcode.utils :as utils])
   (:import [java.awt.event WindowAdapter]
            [javax.swing.event TreeExpansionListener TreeSelectionListener]
+           [javax.swing.tree TreeSelectionModel]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
@@ -56,7 +57,9 @@
               (treeExpanded [this e] (p/add-expansion e))))
           (.addTreeSelectionListener
             (reify TreeSelectionListener
-              (valueChanged [this e] (p/set-selection e)))))
+              (valueChanged [this e] (p/set-selection e))))
+          (-> .getSelectionModel
+              (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION)))
     (shortcuts/create-mappings project-pane
                                {:new-project-button create-new-project
                                 :new-file-button p/new-file
