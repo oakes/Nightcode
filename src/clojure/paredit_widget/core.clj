@@ -80,14 +80,14 @@
 (defn format-code [string]
   (loop [s string col 0 dstack [] out [] space nil incl false
          insl false incm false lwcr false sups true cmindent nil]
-    (if-let [c (first s)] ; test comment 1 { ; )
-      (let [r (rest s)    ; test comment 2 ( [
+    (if-let [c (first s)]
+      (let [r (rest s)
             begins "([{"
-            ends ")]}" ; test comment 3 " ;
-            delim-indents (zipmap begins [1 0 0]) ; test comment 4
+            ends ")]}"
+            delim-indents (zipmap begins [1 0 0])
             delim-ends (zipmap ends begins)
-            sups-char? #{\' \` \~ \@ \#} ; characters to suppress
-            indent (fn []                ; spaces after
+            sups-char? #{\' \` \~ \@ \#}
+            indent (fn []
                      (if (or (empty? r) (empty? dstack))
                        [\newline]
                        (into [\newline]
