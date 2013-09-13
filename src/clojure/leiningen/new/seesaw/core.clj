@@ -1,5 +1,6 @@
 (ns {{namespace}}
-  (:require [seesaw.core :as s]))
+  (:require [seesaw.core :as s])
+  (:gen-class))
 
 (defn- center! [frame]
   (.setLocationRelativeTo frame nil)
