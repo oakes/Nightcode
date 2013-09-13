@@ -137,7 +137,7 @@
           new-path (.getCanonicalPath new-file)
           selected-path (ui/get-selected-path)]
       (when (not= new-path selected-path)
-        (editors/save-file e)
+        (editors/remove-editors selected-path)
         (.mkdirs (.getParentFile new-file))
         (.renameTo (io/file selected-path) new-file)
         (utils/delete-file-recursively project-path selected-path)
