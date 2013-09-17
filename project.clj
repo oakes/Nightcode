@@ -18,5 +18,5 @@
   :resource-paths ["resources" "tools"]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
-  :aot [nightcode.core nightcode.lein]
+  :aot [clojure.main nightcode.core nightcode.lein]
   :main nightcode.core)
