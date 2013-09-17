@@ -1,12 +1,15 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as io]
+            [clojure.zip :as zip]
             [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
-            [paredit-widget.core :as paredit]
+            [paredit.loc-utils :as loc-utils]
+            [paredit.parser :as parser]
+            [paredit-widget.core :as pw]
             [seesaw.color :as color]
             [seesaw.core :as s])
   (:import [com.camick TextPrompt]
@@ -241,6 +244,22 @@
     (setMarginLinePosition [size]
       (proxy-super setMarginLinePosition size))))
 
+(defn get-context
+  [prefix]
+  (when-let [editor (get-selected-editor)]
+    (let [caretpos (.getCaretPosition editor)
+          all-text (.getText editor)
+          first-str (subs all-text 0 (- caretpos (count prefix)))
+          second-str (subs all-text caretpos)]
+      (-> (str first-str "__prefix__" second-str)
+          parser/parse
+          loc-utils/parsed-root-loc
+          (loc-utils/loc-for-offset caretpos)
+          zip/up
+          first
+          loc-utils/node-text
+          read-string))))
+
 (defn get-completion-provider
   [extension]
   (cond
@@ -249,7 +268,7 @@
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
         (if-let [prefix (.getAlreadyEnteredText this comp)]
-          (for [symbol-str (compliment/completions prefix nil)]
+          (for [symbol-str (compliment/completions prefix (get-context prefix))]
             (->> (compliment/documentation symbol-str)
                  (BasicCompletion. this symbol-str nil)))
           '()))
@@ -277,7 +296,7 @@
           ; get the functions for toggling paredit and performing completion
           is-clojure? (contains? clojure-exts extension)
           toggle-paredit-fn (when is-clojure?
-                              (paredit/get-toggle-fn text-area))
+                              (pw/get-toggle-fn text-area))
           completer (get-completer text-area extension)
           do-completion-fn (fn [_]
                              (s/request-focus! text-area)
