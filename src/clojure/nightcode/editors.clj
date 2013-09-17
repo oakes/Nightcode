@@ -237,12 +237,18 @@
       SyntaxConstants/SYNTAX_STYLE_NONE))
 
 (defn get-text-area
-  []
-  (proxy [TextEditorPane] []
-    (setMarginLineEnabled [is-enabled?]
-      (proxy-super setMarginLineEnabled is-enabled?))
-    (setMarginLinePosition [size]
-      (proxy-super setMarginLinePosition size))))
+  [path]
+  (doto (proxy [TextEditorPane] []
+          (setMarginLineEnabled [is-enabled?]
+            (proxy-super setMarginLineEnabled is-enabled?))
+          (setMarginLinePosition [size]
+            (proxy-super setMarginLinePosition size)))
+    (.load (FileLocation/create path) nil)
+    .discardAllEdits
+    (.setAntiAliasingEnabled true)
+    (.setSyntaxEditingStyle (get-syntax-style path))
+    (.setMarginLineEnabled true)
+    (.setMarginLinePosition 80)))
 
 (defn get-context
   [prefix]
@@ -292,7 +298,7 @@
   [path extension]
   (when (and (.isFile (io/file path)) (contains? styles extension))
     (let [; create the text editor object
-          text-area (get-text-area)
+          text-area (get-text-area path)
           ; get the functions for toggling paredit and performing completion
           is-clojure? (contains? clojure-exts extension)
           toggle-paredit-fn (when is-clojure?
@@ -365,17 +371,11 @@
                          :#replace-field (utils/get-string :replace)}]
         (doto (TextPrompt. text (s/select text-group [id]))
           (.changeAlpha 0.5)))
-      ; load file and set properties for the text area
-      (doto text-area
-        (.load (FileLocation/create path) nil)
-        .discardAllEdits
-        (.setAntiAliasingEnabled true)
-        (s/listen :key-released
-                  (fn [e] (update-buttons text-group text-area)))
-        (.setSyntaxEditingStyle (get-syntax-style path))
-        (.setMarginLineEnabled true)
-        (.setMarginLinePosition 80))
+      ; set more properties of the text area
       (when is-clojure? (.setTabSize text-area 2))
+      (s/listen text-area
+                :key-released
+                (fn [e] (update-buttons text-group text-area)))
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
