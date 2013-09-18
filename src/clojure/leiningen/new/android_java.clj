@@ -11,10 +11,10 @@
         data {:app-name name
               :name (t/project-name name)
               :package (t/sanitize package-name)
+              :path (t/name-to-path package-name)
               :android-class-name class-name
               :activity class-name
               :namespace main-ns
-              :nested-dirs (t/name-to-path main-ns)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -22,8 +22,10 @@
                ["res/layout/main.xml" (render "main.xml" data)]
                ["README.md" (render "README.md" data)]
                [".gitignore" (render "gitignore" data)]
-               ["src/{{nested-dirs}}.java" (render "MainActivity.java" data)]
-               ["AndroidManifest.xml" (render "AndroidManifest.xml" data)]
+               ["src/{{path}}/MainActivity.java"
+                (render "MainActivity.java" data)]
+               ["AndroidManifest.xml"
+                (render "AndroidManifest.xml" data)]
                ["res/drawable-hdpi/ic_launcher.png"
                 (lein-droid-render "ic_launcher_hdpi.png")]
                ["res/drawable-mdpi/ic_launcher.png"

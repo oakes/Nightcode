@@ -18,15 +18,13 @@
               :name (t/project-name name)
               :package package-name
               :package-sanitized package-name
+              :path (t/name-to-path package-name)
               :class-name class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
               :namespace main-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
-              :nested-dirs (t/name-to-path main-ns)
-              :desktop-dirs (t/name-to-path desktop-ns)
-              :android-dirs (t/name-to-path android-ns)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -35,12 +33,12 @@
                [".gitignore" (render "gitignore" data)]
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
-               ["desktop/src-common/{{nested-dirs}}.java"
+               ["desktop/src-common/{{path}}/Core.java"
                 (render "Core.java" data)]
-               ["desktop/src/{{desktop-dirs}}.java"
+               ["desktop/src/{{path}}/DesktopLauncher.java"
                 (render "DesktopLauncher.java" data)]
                ; android
-               ["android/src/{{android-dirs}}.java"
+               ["android/src/{{path}}/AndroidLauncher.java"
                 (render "AndroidLauncher.java" data)]
                ["android/project.clj"
                 (render "android-project.clj" data)]
