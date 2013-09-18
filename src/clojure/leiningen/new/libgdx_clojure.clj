@@ -24,10 +24,11 @@
               :class-name class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
-              :activity "MainActivity"
+              :activity "AndroidLauncher"
               :namespace main-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
+              :dirs (t/name-to-path package-name)
               :nested-dirs (t/name-to-path main-ns)
               :desktop-dirs (t/name-to-path desktop-ns)
               :android-dirs (t/name-to-path android-ns)
@@ -72,7 +73,7 @@
                 (lein-droid-render "splash_rotation.xml")]
                ["android/res/layout/splashscreen.xml"
                 (lein-droid-render "splashscreen.xml")]
-               ["android/src/java/{{path}}/SplashActivity.java"
+               ["android/src/java/{{dirs}}/SplashActivity.java"
                 (lein-droid-render "SplashActivity.java" data)]
                ["android/libs/armeabi/libgdx.so"
                 (-> (io/resource "armeabi-libgdx.so") io/input-stream)]
