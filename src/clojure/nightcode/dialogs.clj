@@ -53,13 +53,13 @@
         group (s/button-group)
         package-name-text (s/text :visible? false :columns 20)
         types [[:console :console "Clojure"]
-               [:seesaw :desktop "Clojure"]
-               [:cljs-kickoff :web "ClojureScript"]
-               [:android :android "Clojure"]
-               [:console-java :console "Java"]
                [:libgdx-clojure :game "Clojure"]
+               [:android :android "Clojure"]
+               [:seesaw :desktop "Clojure"]
+               [:console-java :console "Java"]
                [:libgdx-java :game "Java"]
-               [:android-java :android "Java"]]
+               [:android-java :android "Java"]
+               [:cljs-kickoff :web "ClojureScript"]]
         toggle (fn [e]
                  (s/config! package-name-text
                             :visible?
