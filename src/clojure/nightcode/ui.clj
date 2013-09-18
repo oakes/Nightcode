@@ -195,7 +195,7 @@
        (let [tree-path (.getPathForRow tree i)
              str-path (utils/tree-path-to-str tree-path)]
          (when (or (contains? expansion-set str-path)
-                   (and new-selection (.startsWith new-selection str-path)))
+                   (utils/is-parent-path? str-path new-selection))
            (.expandPath tree tree-path)
            (swap! tree-expansions conj str-path))
          (when (= selection str-path)

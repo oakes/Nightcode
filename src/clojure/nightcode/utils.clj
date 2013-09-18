@@ -121,4 +121,8 @@
       (and parent-path
            child-path
            (.isDirectory (io/file parent-path))
-           (.startsWith child-path parent-path))))
+           (.startsWith child-path parent-path)
+           (->> (file-seq (io/file parent-path))
+                (filter #(= (.getCanonicalPath %) child-path))
+                count
+                (= 1)))))
