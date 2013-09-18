@@ -12,7 +12,7 @@
         lein-droid-render (droid-new/renderer "templates")
         class-name "core"
         desktop-class-name "desktop-launcher"
-        android-class-name "android-launcher"
+        android-class-name "AndroidLauncher"
         ns-prefix (utils/format-project-name package-name)
         main-ns (str ns-prefix "." class-name)
         desktop-ns (str ns-prefix "." desktop-class-name)
@@ -24,7 +24,7 @@
               :class-name class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
-              :activity "AndroidLauncher"
+              :activity android-class-name
               :namespace main-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
@@ -47,8 +47,9 @@
                "desktop/src-common/java"
                "desktop/src/java"
                ; android
-               ["android/src/clojure/{{android-dirs}}.clj"
-                (render "android-launcher.clj" data)]
+               ["android/src/java/{{android-dirs}}.java"
+                (render "AndroidLauncher.java" data)]
+               "android/src/clojure"
                ["android/project.clj"
                 (render "android-project.clj" data)]
                ["android/AndroidManifest.xml"
