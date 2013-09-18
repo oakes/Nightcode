@@ -6,9 +6,9 @@
   (let [render (t/renderer "console-java")
         class-name "Core"
         main-ns (str package-name "." class-name)
-        data {:raw-name name
+        data {:app-name name
               :name (t/project-name name)
-              :package-name package-name
+              :package package-name
               :class-name class-name
               :namespace main-ns
               :nested-dirs (t/name-to-path main-ns)

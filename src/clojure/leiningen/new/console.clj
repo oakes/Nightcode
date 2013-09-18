@@ -5,7 +5,7 @@
   [name package-name]
   (let [render (t/renderer "console")
         main-ns (t/multi-segment (t/sanitize-ns name))
-        data {:raw-name name
+        data {:app-name name
               :name (t/project-name name)
               :namespace main-ns
               :nested-dirs (t/name-to-path main-ns)

@@ -1,4 +1,4 @@
-(defproject {{raw-name}} "0.1.0-SNAPSHOT"
+(defproject {{app-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
 
   :java-source-paths ["src" "gen"]
@@ -29,4 +29,4 @@
             ;; :force-dex-optimize true
 
             ;; Target version affects api used for compilation.
-            :target-version "15"})
+            :target-version "{{target-sdk}}"})

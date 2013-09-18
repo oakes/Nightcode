@@ -1,4 +1,4 @@
-package {{package-name}};
+package {{package}};
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 

@@ -1,20 +1,16 @@
-(defproject {{raw-name}} "0.1.0-SNAPSHOT"
+(defproject {{app-name}} "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
+  
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9-SNAPSHOT"
                   :use-resources true]
                  [com.badlogicgames.gdx/gdx-backend-android "0.9.9-SNAPSHOT"]
-                 [org.mini2Dx/mini2Dx-core "0.8"]
-                 [org.mini2Dx/mini2Dx-tiled "0.8"]
-                 [org.mini2Dx/mini2Dx-dependency-injection "0.8"]]
+                 [neko/neko "3.0.0-beta6"]
+                 [org.clojure-android/clojure "1.5.1-jb" :use-resources true]]
   :repositories [["sonatype"
-                  "https://oss.sonatype.org/content/repositories/snapshots/"]
-                 ["mini2Dx-thirdparty"
-                  "http://mini2dx.org/nexus/content/repositories/thirdparty"]
-                 ["mini2Dx"
-                  "http://mini2dx.org/nexus/content/repositories/releases"]]
-  :java-source-paths ["src" "../desktop/src-common" "gen"]
-  :java-only true
-  :profiles {:dev {:android {:aot :all-with-unused}}
+                  "https://oss.sonatype.org/content/repositories/snapshots/"]]
+  :profiles {:dev {:dependencies [[android/tools.nrepl "0.2.0-bigstack"]
+                                  [compliment "0.0.2"]]
+                   :android {:aot :all-with-unused}}
              :release {:android
                        {;; Specify the path to your private
                         ;; keystore and the the alias of the
@@ -22,7 +18,7 @@
                         ;; :keystore-path "/home/user/.android/private.keystore"
                         ;; :key-alias "mykeyalias"
                         :aot :all}}}
-
+  
   :android {;; Specify the path to the Android SDK directory either
             ;; here or in your ~/.lein/profiles.clj file.
             ;; :sdk-path "/home/user/path/to/android-sdk/"
@@ -31,4 +27,8 @@
             ;; :force-dex-optimize true
 
             :native-libraries-paths ["libs"]
-            :target-version "15"})
+            :target-version "{{target-sdk}}"
+            :aot-exclude-ns ["clojure.parallel" "clojure.core.reducers"]}
+  
+  :source-paths ["src/clojure" "../desktop/src-common/clojure" "src"]
+  :java-source-paths ["src/java" "gen"])

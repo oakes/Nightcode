@@ -1,4 +1,4 @@
-package {{package-name}};
+package {{package}};
 
 public class {{class-name}} {
 	public static void main(String [] args) {

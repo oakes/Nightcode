@@ -153,7 +153,7 @@
     (when (and (.exists (io/file dir "src"))
                (not (.exists (io/file dir "project.clj")))
                (dialogs/show-project-clj-dialog))
-      (->> {:raw-name (.getName dir)
+      (->> {:app-name (.getName dir)
             :namespace "put.your.main.namespace.here"}
            (lein/create-file-from-template dir
                                            "project.clj"

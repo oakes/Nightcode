@@ -57,15 +57,16 @@
                [:cljs-kickoff :web "ClojureScript"]
                [:android :android "Clojure"]
                [:console-java :console "Java"]
-               [:mini2dx-java :simple_game "Java"]
-               [:libgdx-java :advanced_game "Java"]
+               [:libgdx-clojure :game "Clojure"]
+               [:libgdx-java :game "Java"]
                [:android-java :android "Java"]]
         toggle (fn [e]
                  (s/config! package-name-text
                             :visible?
                             (let [id (name (s/id-of e))]
                               (or (>= (.indexOf id "java") 0)
-                                  (>= (.indexOf id "android") 0))))
+                                  (>= (.indexOf id "android") 0)
+                                  (>= (.indexOf id "libgdx") 0))))
                  (s/text! package-name-text
                           (-> (str "com." raw-project-name)
                               utils/format-package-name))
