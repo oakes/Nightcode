@@ -106,16 +106,16 @@
   (when-let [dir (chooser/choose-file :type :save)]
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog dir)]
-      (lein/new-project in
-                        out
-                        (.getParent dir)
-                        project-type
-                        project-name
-                        package-name)
-      (when (.exists (io/file project-dir))
+      (when (and (lein/new-project in
+                                   out
+                                   (.getParent dir)
+                                   project-type
+                                   project-name
+                                   package-name)
+                 (.exists (io/file project-dir)))
         (add-to-project-tree project-dir)
-        (ui/update-project-tree project-dir))
-      true)))
+        (ui/update-project-tree project-dir)
+        true))))
 
 (defn new-file
   [e]

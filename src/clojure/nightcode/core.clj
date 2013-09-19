@@ -18,8 +18,9 @@
   "Returns the pane with the project tree."
   [console]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
-        create-new-project (fn [e]
-                             (when (p/new-project (:in console) (:out console))
+        create-new-project (fn [_]
+                             (when-not (p/new-project (:in console)
+                                                      (:out console))
                                (.enterLine (:view console) "")))
         btn-group (s/horizontal-panel
                     :items [(ui/button :id :new-project-button
