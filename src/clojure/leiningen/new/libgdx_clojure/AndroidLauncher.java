@@ -8,7 +8,7 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		try {
 			Game game = (Game) Class.forName("{{namespace}}.Game").newInstance();
-			initialize(game, false);
+			initialize(game, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
