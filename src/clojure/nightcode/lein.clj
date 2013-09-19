@@ -314,12 +314,9 @@
 
 (defn new-project
   [in out parent-path project-type project-name package-name]
-  (->> (try
-         (if (= project-type :android)
-           (leiningen.droid.new/new project-name package-name)
-           (leiningen.new/new {} (name project-type) project-name package-name))
-         true
-         (catch Exception e false))
+  (->> (if (= project-type :android)
+         (leiningen.droid.new/new project-name package-name)
+         (leiningen.new/new {} (name project-type) project-name package-name))
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
        (redirect-io in out)))

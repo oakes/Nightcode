@@ -19,9 +19,9 @@
   [console]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
         create-new-project (fn [_]
-                             (when-not (p/new-project (:in console)
-                                                      (:out console))
-                               (.enterLine (:view console) "")))
+                             (try (p/new-project (:in console) (:out console))
+                               (catch Exception e
+                                 (.enterLine (:view console) ""))))
         btn-group (s/horizontal-panel
                     :items [(ui/button :id :new-project-button
                                        :text (utils/get-string :new_project)
