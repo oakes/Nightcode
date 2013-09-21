@@ -399,6 +399,7 @@
        :close-fn #(when (.isDirty text-area)
                     (save-file nil))
        :italicize-fn #(.isDirty text-area)
+       :should-remove-fn #(not (.exists (io/file path)))
        :toggle-paredit-fn toggle-paredit-fn})))
 
 (defn create-logcat
@@ -417,9 +418,9 @@
           ; create the main panel
           btn-group (ui/wrap-panel :items [toggle-btn])
           ; create the toggle action
+          parent-path (-> path io/file .getParentFile .getCanonicalPath)
           start (fn []
-                  (->> (.getParent (io/file path))
-                       (lein/run-logcat process in out))
+                  (lein/run-logcat process in out parent-path)
                   (s/config! toggle-btn :text (utils/get-string :stop))
                   true)
           stop (fn []
@@ -438,6 +439,7 @@
       ; return a map describing the logcat view
       {:view (s/border-panel :north btn-group :center console)
        :close-fn #(stop)
+       :should-remove-fn #(not (lein/is-android-project? parent-path))
        :italicize-fn (fn [] @is-running?)})))
 
 (defn show-editor
@@ -466,8 +468,9 @@
 (defn remove-editors
   [path]
   (let [editor-pane (ui/get-editor-pane)]
-    (doseq [[editor-path {:keys [view close-fn]}] @editors]
-      (when (utils/is-parent-path? path editor-path)
+    (doseq [[editor-path {:keys [view close-fn should-remove-fn]}] @editors]
+      (when (or (utils/is-parent-path? path editor-path)
+                (should-remove-fn))
         (swap! editors dissoc editor-path)
         (close-fn)
         (.remove editor-pane view)))))
@@ -484,7 +487,13 @@
 
 ; watchers
 
-(add-watch ui/tree-selection :show-editor (fn [_ _ _ path] (show-editor path)))
+(add-watch ui/tree-selection
+           :show-editor
+           (fn [_ _ _ path]
+             ; remove any editors that aren't valid anymore
+             (remove-editors nil)
+             ; show the selected editor
+             (show-editor path)))
 (add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))
 (add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))
 (add-watch paredit-enabled?

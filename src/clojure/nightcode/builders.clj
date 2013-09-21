@@ -147,7 +147,8 @@
       shortcuts/create-hints)
     ; return a map describing the builder
     {:view build-group
-     :close-fn (fn [] (stop-action nil))}))
+     :close-fn #(stop-action nil)
+     :should-remove-fn #(not (utils/is-project-path? path))}))
 
 (defn show-builder
   [path]
@@ -185,8 +186,9 @@
 (defn remove-builders
   [path]
   (let [pane (s/select @ui/ui-root [:#builder-pane])]
-    (doseq [[builder-path {:keys [view close-fn]}] @builders]
-      (when (utils/is-parent-path? path builder-path)
+    (doseq [[builder-path {:keys [view close-fn should-remove-fn]}] @builders]
+      (when (or (utils/is-parent-path? path builder-path)
+                (should-remove-fn))
         (swap! builders dissoc builder-path)
         (close-fn)
         (.remove pane view)))))
@@ -195,4 +197,8 @@
 
 (add-watch ui/tree-selection
            :show-builder
-           (fn [_ _ _ path] (show-builder (ui/get-project-path path))))
+           (fn [_ _ _ path]
+             ; remove any builders that aren't valid anymore
+             (remove-builders nil)
+             ; show the selected builder
+             (show-builder (ui/get-project-path path))))
