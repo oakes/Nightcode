@@ -65,6 +65,7 @@
 (defn toggle-hint
   "Shows or hides the given hint."
   [hint show?]
+  (.refreshLocation hint)
   (if (and show? (is-visible? (.getAttachedComponent hint)))
     (s/show! hint)
     (s/hide! hint)))
