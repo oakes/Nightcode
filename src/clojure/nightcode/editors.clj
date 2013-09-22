@@ -8,6 +8,7 @@
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [paredit.loc-utils :as loc-utils]
+            [paredit.static-analysis :as static-analysis]
             [paredit.parser :as parser]
             [paredit-widget.core :as pw]
             [seesaw.color :as color]
@@ -260,8 +261,7 @@
       (-> (str first-str "__prefix__" second-str)
           parser/parse
           loc-utils/parsed-root-loc
-          (loc-utils/loc-for-offset caretpos)
-          zip/up
+          (static-analysis/top-level-code-form caretpos)
           first
           loc-utils/node-text
           read-string))))
