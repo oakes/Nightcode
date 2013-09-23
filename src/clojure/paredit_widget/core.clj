@@ -128,7 +128,7 @@
 
 (defn get-toggle-fn [w]
   (let [buffer (atom (paredit.parser/edit-buffer nil 0 -1 (s/value w)))
-        enable? (atom false)]
+        enable? (atom true)]
     (doto w
       (.addKeyListener (key-event-handler w buffer enable?))
       (.addInputMethodListener (input-method-event-handler w buffer enable?)))
