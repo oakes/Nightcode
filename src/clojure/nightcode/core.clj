@@ -105,7 +105,8 @@
       (s/top-bottom-split (get-editor-pane)
                           (get-builder-pane)
                           :divider-location 0.8
-                          :resize-weight 0.5))))
+                          :resize-weight 0.5)
+      :enabled? false)))
 
 (defn -main
   "Launches the main window."

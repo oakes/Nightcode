@@ -28,8 +28,7 @@
     (when (not= path @ui/tree-selection)
       (reset! ui/tree-selection path)
       (utils/write-pref :selection @ui/tree-selection)
-      (when @shortcuts/is-down?
-        (shortcuts/toggle-hints @ui/ui-root true)))))
+      (-> @ui/ui-root .getContentPane .resetToPreferredSizes))))
 
 (defn move-project-tree-selection
   [diff]

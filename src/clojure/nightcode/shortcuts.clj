@@ -93,8 +93,7 @@
   [target]
   (doseq [[id mapping] mappings]
     (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
-      (create-hint btn mapping)))
-  target)
+      (create-hint btn mapping))))
 
 (defn listen-for-shortcuts
   "Creates a global listener for shortcuts."
@@ -108,12 +107,12 @@
           (reset! is-down? (= (bit-and modifier current-modifier) modifier))
           ; show or hide the shortcut hints
           (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
-                    (= (.getKeyCode e) KeyEvent/VK_META))
+                    (= (.getKeyCode e) KeyEvent/VK_META)
+                    @is-down?)
             (toggle-hints target @is-down?)))
         ; provide special actions for certain keys
         (if (and @is-down?
                  (not (.isShiftDown e))
                  (= (.getID e) KeyEvent/KEY_PRESSED))
           (func (.getKeyCode e))
-          false))))
-  target)
+          false)))))
