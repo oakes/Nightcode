@@ -105,8 +105,7 @@
       (s/top-bottom-split (get-editor-pane)
                           (get-builder-pane)
                           :divider-location 0.8
-                          :resize-weight 0.5)
-      :divider-location 0.4)))
+                          :resize-weight 0.5))))
 
 (defn -main
   "Launches the main window."
@@ -120,7 +119,7 @@
                                  " "
                                  (utils/get-version))
                      :content (get-window-content)
-                     :width 1024
+                     :width 1152
                      :height 768
                      :on-close :exit)
         ; create the shortcut hints for the main buttons
