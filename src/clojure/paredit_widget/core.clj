@@ -91,16 +91,16 @@
   (let [key-code (.getKeyCode event)
         key-char (.getKeyChar event)
         key-text (java.awt.event.KeyEvent/getKeyText key-code)]
-    (when *debug* (println  [event key-code key-char key-text]))
+    (when *debug* (println [event key-code key-char key-text]))
     [(cond
       (.isAltDown event) "M"
       (.isControlDown event) "C"
-      :else nil)
-     (cond
-       (or (.isControlDown event)
-           (get #{"Left" "Right"} key-text))
+      true nil)
+     (if (.isControlDown event)
        key-text
-       :else (str key-char))]))
+       (if (#{"Left" "Right"} key-text)
+         key-text
+         (str key-char)))]))
 
 (defn key-event-handler [w buffer]
   (reify java.awt.event.KeyListener
@@ -110,9 +110,10 @@
                  (str (.getKeyChar e)))
         (.consume e)))
     (keyPressed [this e]
-      (let [k (convert-key-event e)
-            p (exec-paredit k w buffer)]
-        (if p (.consume e) (format/exec-format k w))))))
+      (when-not (.isConsumed e)
+        (let [k (convert-key-event e)
+              p (exec-paredit k w buffer)]
+          (if p (.consume e) (format/exec-format k w)))))))
 
 (defn input-method-event-handler [w buffer]
   (reify java.awt.event.InputMethodListener

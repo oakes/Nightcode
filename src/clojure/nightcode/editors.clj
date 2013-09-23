@@ -14,6 +14,8 @@
             [seesaw.color :as color]
             [seesaw.core :as s])
   (:import [com.camick TextPrompt]
+           [java.awt.event KeyEvent KeyListener]
+           [javax.swing JComponent KeyStroke]
            [javax.swing.event DocumentListener]
            [org.fife.ui.autocomplete
             AutoCompletion BasicCompletion DefaultCompletionProvider]
@@ -243,7 +245,9 @@
           (setMarginLineEnabled [is-enabled?]
             (proxy-super setMarginLineEnabled is-enabled?))
           (setMarginLinePosition [size]
-            (proxy-super setMarginLinePosition size)))
+            (proxy-super setMarginLinePosition size))
+          (processKeyBinding [ks e condition pressed]
+            (proxy-super processKeyBinding ks e condition pressed)))
     (.load (FileLocation/create path) nil)
     .discardAllEdits
     (.setAntiAliasingEnabled true)
@@ -251,7 +255,7 @@
     (.setMarginLineEnabled true)
     (.setMarginLinePosition 80)))
 
-(defn get-context
+(defn get-completion-context
   [prefix]
   (when-let [editor (get-selected-editor)]
     (let [caretpos (.getCaretPosition editor)
@@ -273,16 +277,33 @@
     (contains? clojure-exts extension)
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
-        (if-let [prefix (.getAlreadyEnteredText this comp)]
-          (for [symbol-str (compliment/completions prefix (get-context prefix))]
+        (let [prefix (.getAlreadyEnteredText this comp)
+              context (get-completion-context prefix)]
+          (for [symbol-str (compliment/completions prefix context)]
             (->> (compliment/documentation symbol-str)
-                 (BasicCompletion. this symbol-str nil)))
-          '()))
+                 (BasicCompletion. this symbol-str nil)))))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
             (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch))))
     ; anything else
     :else nil))
+
+(defn set-completion-listener
+  [completer text-area]
+  ; this is an ugly way of making sure paredit-widget doesn't
+  ; receive the KeyEvent if the AutoComplete window is visible
+  (.addKeyListener text-area
+    (reify KeyListener
+      (keyReleased [this e] nil)
+      (keyTyped [this e] nil)
+      (keyPressed [this e]
+        (when (and (= (.getKeyCode e) 10)
+                   (-> @ui/ui-root .getOwnedWindows alength (> 0))
+                   (-> @ui/ui-root .getOwnedWindows (aget 0) .isVisible))
+          (let [ks (KeyStroke/getKeyStroke KeyEvent/VK_ENTER 0)
+                condition JComponent/WHEN_FOCUSED]
+            (.processKeyBinding text-area ks e condition true))
+          (.consume e))))))
 
 (defn get-completer
   [text-area extension]
@@ -292,7 +313,8 @@
       (.setAutoCompleteSingleChoices false)
       (.setChoicesWindowSize 150 300)
       (.setDescriptionWindowSize 300 300)
-      (.install text-area))))
+      (.install text-area)
+      (set-completion-listener text-area))))
 
 (defn create-editor
   [path extension]
@@ -301,8 +323,7 @@
           text-area (get-text-area path)
           ; get the functions for toggling paredit and performing completion
           is-clojure? (contains? clojure-exts extension)
-          toggle-paredit-fn (when is-clojure?
-                              (pw/get-toggle-fn text-area))
+          toggle-paredit-fn (when is-clojure? (pw/get-toggle-fn text-area))
           completer (get-completer text-area extension)
           do-completion-fn (fn [_]
                              (s/request-focus! text-area)
