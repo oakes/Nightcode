@@ -321,13 +321,13 @@
   (when (and (.isFile (io/file path)) (contains? styles extension))
     (let [; create the text editor object
           text-area (get-text-area path)
-          ; get the functions for toggling paredit and performing completion
-          is-clojure? (contains? clojure-exts extension)
-          toggle-paredit-fn (when is-clojure? (pw/get-toggle-fn text-area))
+          ; get the functions for performing completion and toggling paredit
           completer (get-completer text-area extension)
           do-completion-fn (fn [_]
                              (s/request-focus! text-area)
                              (when completer (.doCompletion completer)))
+          is-clojure? (contains? clojure-exts extension)
+          toggle-paredit-fn (when is-clojure? (pw/get-toggle-fn text-area))
           ; create the buttons with their actions attached
           btn-group (ui/wrap-panel
                       :items [(ui/button :id :save-button
@@ -372,8 +372,7 @@
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
       ; enable paredit if necessary
-      (when toggle-paredit-fn
-        (toggle-paredit-fn @paredit-enabled?))
+      (toggle-paredit-fn @paredit-enabled?)
       ; create shortcuts
       (doto text-group
         (shortcuts/create-mappings {:save-button save-file
