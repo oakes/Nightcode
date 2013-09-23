@@ -35,7 +35,7 @@
    :find-field "F"
    :replace-field "shift R"
    :repl-console "shift E"
-   :project-pane "↑ ↓ ↵"
+   :project-pane "↑ ↓ ↩"
    :toggle-logcat-button "S"})
 
 (defn create-mappings

@@ -372,7 +372,7 @@
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
       ; enable paredit if necessary
-      (toggle-paredit-fn @paredit-enabled?)
+      (when toggle-paredit-fn (toggle-paredit-fn @paredit-enabled?))
       ; create shortcuts
       (doto text-group
         (shortcuts/create-mappings {:save-button save-file
