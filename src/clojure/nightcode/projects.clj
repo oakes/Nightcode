@@ -150,7 +150,7 @@
                (not (.exists (io/file dir "project.clj")))
                (dialogs/show-project-clj-dialog))
       (->> {:app-name (.getName dir)
-            :namespace "put.your.main.namespace.here"}
+            :namespace "put.your.main.class.here"}
            (lein/create-file-from-template dir
                                            "project.clj"
                                            (if (lein/is-android-project? dir)
