@@ -71,16 +71,16 @@
                            .getCanonicalPath))]
     (get-relative-path project-path selected-dir)))
 
-(defn delete-file-recursively [project-path path]
-  "Deletes the given path and all parents if they are empty."
+(defn delete-file-recursively [project-set path]
+  "Deletes the given path and all empty parents unless they are in project-set."
   (let [file (io/file path)]
     (when (and (= 0 (count (.listFiles file)))
-               (not= project-path path))
+               (not (contains? project-set path)))
       (.delete file)
       (->> file
            .getParentFile
            .getCanonicalPath
-           (delete-file-recursively project-path)))))
+           (delete-file-recursively project-set)))))
 
 (defn format-project-name
   "Formats the given string as a valid project name."

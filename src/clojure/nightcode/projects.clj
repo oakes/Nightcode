@@ -77,15 +77,13 @@
   (let [is-project? (contains? @ui/tree-projects path)]
     (when (dialogs/show-remove-dialog is-project?)
       (if is-project?
-        (utils/write-pref :project-set
-                          (->> (utils/read-pref :project-set)
-                               (remove #(= % path))
-                               set))
-        (utils/delete-file-recursively (-> #(.startsWith path %)
-                                           (filter @ui/tree-projects)
-                                           first)
-                                       path))
-      (when is-project? (builders/remove-builders path))
+        (do
+          (utils/write-pref :project-set
+                            (->> (utils/read-pref :project-set)
+                                 (remove #(= % path))
+                                 set))
+          (builders/remove-builders path))
+        (utils/delete-file-recursively @ui/tree-projects path))
       (editors/remove-editors path)
       true)))
 
