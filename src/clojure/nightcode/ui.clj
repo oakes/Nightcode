@@ -7,7 +7,8 @@
            [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
            [java.awt Dimension FontMetrics]
-           [java.io FilenameFilter]
+           [java.io File FilenameFilter]
+           [javax.swing JComponent JTree]
            [javax.swing.tree DefaultTreeModel]))
 
 ; create and retrieve widgets
@@ -33,7 +34,7 @@
 
 (defn adjust-button
   "Adjusts the given button to fit its contents."
-  [btn]
+  [^JComponent btn]
   (let [width (-> (.getFontMetrics btn (.getFont btn))
                   (.getStringBounds (.getText btn) (.getGraphics btn))
                   .getWidth
@@ -86,13 +87,12 @@
 (defn get-selected-path
   "Returns the path selected in the project tree."
   []
-  (-> (get-project-tree)
-      .getSelectionPath
-      utils/tree-path-to-str))
+  (when-let [^JTree tree (get-project-tree)]
+    (-> tree .getSelectionPath utils/tree-path-to-str)))
 
 (defn get-project-path
   "Returns the project path that the given path is contained within."
-  [path]
+  [^String path]
   (when path
     (when-let [file (io/file path)]
       (if (or (utils/is-project-path? (.getCanonicalPath file))
@@ -104,9 +104,8 @@
 (defn get-project-root-path
   "Returns the root path that the selected path is contained within."
   []
-  (-> #(.startsWith (get-selected-path) %)
-      (filter @tree-projects)
-      first))
+  (when-let [^String path (get-selected-path)]
+    (-> #(.startsWith path %) (filter @tree-projects) first)))
 
 ; data for the project tree
 
@@ -114,7 +113,7 @@
 
 (defn get-node
   "Returns a map describing an item with the given file object."
-  [file]
+  [^File file]
   (let [path (.getCanonicalPath file)
         file-name (.getName file)]
     {:html (cond
@@ -180,9 +179,9 @@
   "Updates the project tree, optionally with a new selection."
   ([]
    (update-project-tree (get-project-tree) nil))
-  ([new-selection]
+  ([^String new-selection]
    (update-project-tree (get-project-tree) new-selection))
-  ([tree new-selection]
+  ([^JTree tree ^String new-selection]
    ; put new data in the tree
    (.setModel tree (create-project-tree))
    ; wipe out the in-memory expansion/selection

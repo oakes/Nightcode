@@ -89,7 +89,7 @@
       true)))
 
 (defn update-buttons
-  [pane editor]
+  [pane ^TextEditorPane editor]
   (when (toggle-button pane :#save-button (.isDirty editor))
     (update-tabs (ui/get-selected-path)))
   (toggle-button pane :#undo-button (.canUndo editor))
@@ -320,7 +320,7 @@
   [path extension]
   (when (and (.isFile (io/file path)) (contains? styles extension))
     (let [; create the text editor object
-          text-area (get-text-area path)
+          ^TextEditorPane text-area (get-text-area path)
           ; get the functions for performing completion and toggling paredit
           completer (get-completer text-area extension)
           do-completion-fn (fn [_]

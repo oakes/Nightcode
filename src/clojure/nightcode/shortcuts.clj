@@ -3,8 +3,9 @@
             [seesaw.core :as s]
             [seesaw.keymap :as keymap])
   (:import [java.awt Toolkit]
-           [java.awt Color KeyboardFocusManager KeyEventDispatcher]
+           [java.awt Color Component KeyboardFocusManager KeyEventDispatcher]
            [java.awt.event ActionEvent KeyEvent]
+           [javax.swing JComponent]
            [net.java.balloontip BalloonTip]
            [net.java.balloontip.positioners CenteredPositioner]
            [net.java.balloontip.styles ToolTipBalloonStyle]))
@@ -56,7 +57,7 @@
 
 (defn is-visible?
   "Determines whether the given widget is visible."
-  [widget]
+  [^Component widget]
   (if widget
     (and (.isVisible widget)
          (is-visible? (.getParent widget)))
@@ -64,7 +65,7 @@
 
 (defn toggle-hint
   "Shows or hides the given hint."
-  [hint show?]
+  [^BalloonTip hint show?]
   (.refreshLocation hint)
   (if (and show? (is-visible? (.getAttachedComponent hint)))
     (s/show! hint)
@@ -78,10 +79,10 @@
 
 (defn create-hint
   "Creates a new hint on the given view with the given text."
-  [view text]
+  [^JComponent view ^String text]
   (when text
     (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
-          positioner (CenteredPositioner. 0)]
+          ^CenteredPositioner positioner (CenteredPositioner. 0)]
       (.enableFixedAttachLocation positioner true)
       (.setAttachLocation positioner 0.5 0.5)
       (doto (BalloonTip. view text style false)
@@ -101,7 +102,7 @@
   (.addKeyEventDispatcher
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
     (proxy [KeyEventDispatcher] []
-      (dispatchKeyEvent [e]
+      (dispatchKeyEvent [^KeyEvent e]
         (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
               current-modifier (.getModifiers e)]
           (reset! is-down? (= (bit-and modifier current-modifier) modifier))

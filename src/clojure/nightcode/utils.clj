@@ -3,11 +3,12 @@
             [clojure.java.io :as io]
             [clojure.xml :as xml])
   (:import [java.util Locale]
-           [java.util.prefs Preferences]))
+           [java.util.prefs Preferences]
+           [javax.swing.tree TreePath]))
 
 ; preferences
 
-(def prefs (.node (Preferences/userRoot) "nightcode"))
+(def ^Preferences prefs (.node (Preferences/userRoot) "nightcode"))
 
 (defn write-pref
   "Writes a key-value pair to the preference file."
@@ -47,7 +48,7 @@
 
 (defn tree-path-to-str
   "Gets the string path for the given JTree path object."
-  [tree-path]
+  [^TreePath tree-path]
   (-> tree-path
       .getPath
       last
@@ -109,14 +110,14 @@
 
 (defn is-project-path?
   "Determines if the given path contains a project.clj file."
-  [path]
+  [^String path]
   (and path
        (.isDirectory (io/file path))
        (.exists (io/file path "project.clj"))))
 
 (defn is-parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
-  [parent-path child-path]
+  [^String parent-path ^String child-path]
   (or (= parent-path child-path)
       (and parent-path
            child-path
