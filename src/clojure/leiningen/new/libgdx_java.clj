@@ -39,6 +39,7 @@
                 (render "Core.java" data)]
                ["desktop/src/{{desktop-dirs}}.java"
                 (render "DesktopLauncher.java" data)]
+               "desktop/resources"
                ; android
                ["android/src/{{android-dirs}}.java"
                 (render "AndroidLauncher.java" data)]

@@ -46,6 +46,7 @@
                 (render "desktop-launcher.clj" data)]
                "desktop/src-common/java"
                "desktop/src/java"
+               "desktop/resources"
                ; android
                ["android/src/java/{{android-dirs}}.java"
                 (render "AndroidLauncher.java" data)]
