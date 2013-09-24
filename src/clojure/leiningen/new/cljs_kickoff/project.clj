@@ -2,7 +2,7 @@
   :description "FIXME: write this!"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [ring "1.1.8"]]
-  :plugins [[lein-cljsbuild "0.3.2"]
+  :plugins [[lein-cljsbuild "0.3.3"]
             [lein-ring "0.8.5"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
