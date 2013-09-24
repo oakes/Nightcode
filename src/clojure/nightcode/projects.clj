@@ -76,6 +76,7 @@
   [path]
   (let [is-project? (contains? @ui/tree-projects path)]
     (when (dialogs/show-remove-dialog is-project?)
+      (editors/remove-editors path)
       (if is-project?
         (do
           (utils/write-pref :project-set
@@ -84,7 +85,6 @@
                                  set))
           (builders/remove-builders path))
         (utils/delete-file-recursively @ui/tree-projects path))
-      (editors/remove-editors path)
       true)))
 
 (defn enter-file-path
