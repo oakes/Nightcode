@@ -280,7 +280,7 @@
         (let [prefix (.getAlreadyEnteredText this comp)
               context (get-completion-context prefix)]
           (for [symbol-str (compliment/completions prefix context)]
-            (->> (compliment/documentation symbol-str)
+            (->> (str "<html><body><pre>" (compliment/documentation symbol-str) "</pre></body></html>")
                  (BasicCompletion. this symbol-str nil)))))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
