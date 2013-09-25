@@ -9,9 +9,11 @@
         android-render (t/renderer "android-java")
         lein-droid-render (droid-new/renderer "templates")
         class-name "Core"
+        screen-class-name "MainScreen"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
         main-ns (str package-name "." class-name)
+        screen-ns (str package-name "." screen-class-name)
         desktop-ns (str package-name "." desktop-class-name)
         android-ns (str package-name "." android-class-name)
         data {:app-name name
@@ -19,12 +21,15 @@
               :package package-name
               :package-sanitized package-name
               :class-name class-name
+              :screen-class-name screen-class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
               :namespace main-ns
+              :screen-namespace screen-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
               :nested-dirs (t/name-to-path main-ns)
+              :screen-dirs (t/name-to-path screen-ns)
               :desktop-dirs (t/name-to-path desktop-ns)
               :android-dirs (t/name-to-path android-ns)
               :year (t/year)
@@ -37,6 +42,8 @@
                ["desktop/project.clj" (render "desktop-project.clj" data)]
                ["desktop/src-common/{{nested-dirs}}.java"
                 (render "Core.java" data)]
+               ["desktop/src-common/{{screen-dirs}}.java"
+                (render "MainScreen.java" data)]
                ["desktop/src/{{desktop-dirs}}.java"
                 (render "DesktopLauncher.java" data)]
                "desktop/resources"
