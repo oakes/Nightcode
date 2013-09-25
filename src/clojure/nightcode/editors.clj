@@ -280,7 +280,9 @@
         (let [prefix (.getAlreadyEnteredText this comp)
               context (get-completion-context prefix)]
           (for [symbol-str (compliment/completions prefix context)]
-            (->> (str "<html><body><pre>" (compliment/documentation symbol-str) "</pre></body></html>")
+            (->> (str "<html><body><pre><span style='font-size: 11px;'>"
+                      (compliment/documentation symbol-str)
+                      "</span></pre></body></html>")
                  (BasicCompletion. this symbol-str nil)))))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
@@ -312,7 +314,7 @@
       (.setShowDescWindow true)
       (.setAutoCompleteSingleChoices false)
       (.setChoicesWindowSize 150 300)
-      (.setDescriptionWindowSize 300 300)
+      (.setDescriptionWindowSize 600 300)
       (.install text-area)
       (set-completion-listener text-area))))
 
