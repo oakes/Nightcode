@@ -3,7 +3,7 @@
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
-  (:import [bsh.util JConsole]
+  (:import [nightcode.ui JConsole]
            [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
            [java.awt Dimension FontMetrics]
