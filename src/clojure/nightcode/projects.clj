@@ -139,7 +139,7 @@
         (editors/remove-editors selected-path)
         (.mkdirs (.getParentFile new-file))
         (.renameTo (io/file selected-path) new-file)
-        (utils/delete-file-recursively project-path selected-path)
+        (utils/delete-file-recursively @ui/tree-projects selected-path)
         (ui/update-project-tree new-path)))))
 
 (defn import-project
