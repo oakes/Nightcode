@@ -226,9 +226,10 @@
 (defn build-project-task
   [path project]
   (if (is-android-project? path)
-    (-> (leiningen.droid/transform-into-release project)
-        add-sdk-path
-        leiningen.droid/execute-release-routine)
+    (do (leiningen.droid.classpath/init-hooks)
+      (-> (leiningen.droid/transform-into-release project)
+          add-sdk-path
+          leiningen.droid/execute-release-routine))
     (leiningen.uberjar/uberjar project)))
 
 (defn test-project-task
@@ -266,7 +267,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running))
-         (if (is-java-project? path)
+         (if (and (is-java-project? path) (not (is-android-project? path)))
            (start-process-directly process path run-project-task)
            (start-process-indirectly process path class-name "run")))
        (start-thread in out)))
@@ -275,7 +276,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running_with_repl))
-         (if (is-java-project? path)
+         (if (and (is-java-project? path) (not (is-android-project? path)))
            (start-process-directly process path run-repl-project-task)
            (start-process-indirectly process path class-name "repl")))
        (start-thread in out)))
@@ -284,7 +285,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :building))
-         (if (is-java-project? path)
+         (if (and (is-java-project? path) (not (is-android-project? path)))
            (start-process-directly process path build-project-task)
            (start-process-indirectly process path class-name "build")))
        (start-thread in out)))
@@ -293,7 +294,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :testing))
-         (if (is-java-project? path)
+         (if (and (is-java-project? path) (not (is-android-project? path)))
            (start-process-directly process path test-project-task)
            (start-process-indirectly process path class-name "test")))
        (start-thread in out)))
@@ -302,7 +303,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :cleaning))
-         (if (is-java-project? path)
+         (if (and (is-java-project? path) (not (is-android-project? path)))
            (start-process-directly process path clean-project-task)
            (start-process-indirectly process path class-name "clean")))
        (start-thread in out)))
