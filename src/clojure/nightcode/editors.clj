@@ -248,7 +248,7 @@
             (proxy-super setMarginLinePosition size))
           (processKeyBinding [ks e condition pressed]
             (proxy-super processKeyBinding ks e condition pressed)))
-    (.load (FileLocation/create path) "UTF-8")
+    (.load (FileLocation/create path) nil)
     .discardAllEdits
     (.setAntiAliasingEnabled true)
     (.setSyntaxEditingStyle (get-syntax-style path))
