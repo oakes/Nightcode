@@ -268,7 +268,8 @@
           (static-analysis/top-level-code-form caretpos)
           first
           loc-utils/node-text
-          read-string))))
+          read-string
+          (try (catch Exception _))))))
 
 (defn get-completion-provider
   [extension]
