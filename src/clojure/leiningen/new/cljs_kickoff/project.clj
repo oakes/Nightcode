@@ -6,6 +6,7 @@
             [lein-ring "0.8.5"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
+  :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :cljsbuild { 
     :builds {
       :main {

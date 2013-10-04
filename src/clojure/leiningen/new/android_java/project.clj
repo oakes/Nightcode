@@ -23,4 +23,5 @@
             :target-version "{{target-sdk}}"}
   
   :java-source-paths ["src" "gen"]
+  :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :java-only true)

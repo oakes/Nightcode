@@ -9,5 +9,6 @@
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]
   
   :java-source-paths ["src" "src-common"]
+  :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :aot :all
   :main {{desktop-namespace}})

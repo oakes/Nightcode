@@ -15,5 +15,6 @@
   
   :source-paths ["src/clojure" "src-common/clojure"]
   :java-source-paths ["src/java" "src-common/java"]
+  :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :aot [{{desktop-namespace}}]
   :main {{desktop-namespace}})
