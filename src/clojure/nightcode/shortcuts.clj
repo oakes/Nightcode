@@ -2,8 +2,8 @@
   (:require [nightcode.utils :as utils]
             [seesaw.core :as s]
             [seesaw.keymap :as keymap])
-  (:import [java.awt Toolkit]
-           [java.awt Color Component KeyboardFocusManager KeyEventDispatcher]
+  (:import [java.awt Color Component KeyboardFocusManager KeyEventDispatcher
+            Toolkit]
            [java.awt.event ActionEvent KeyEvent]
            [javax.swing JComponent]
            [net.java.balloontip BalloonTip]
@@ -36,7 +36,8 @@
    :find-field "F"
    :replace-field "shift R"
    :repl-console "shift E"
-   :project-pane "↑ ↓"
+   :project-pane
+   "<html><font face='Lucida Sans'>&uarr; &darr; &crarr;</font></html>"
    :toggle-logcat-button "S"})
 
 (defn create-mappings

@@ -73,7 +73,7 @@
                  add-italics #(if (italicize-fn) (str "<i>" % "</i>") %)
                  add-underline #(if (underline-fn) (str "<u>" % "</u>") %)]
              (-> editor-path io/file .getName add-italics add-underline)))
-         (cons "<center>← →</center>")
+         (cons "<center><font face='Lucida Sans'>&larr; &rarr;</font></center>")
          (clojure.string/join "<br/>")
          (str "<html>")
          (shortcuts/create-hint editor-pane)
