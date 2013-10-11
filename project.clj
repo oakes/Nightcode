@@ -14,7 +14,7 @@
                  [org.flatland/ordered "1.5.1"]
                  [org.lpetit/paredit.clj "0.19.3"]
                  [net.java.balloontip/balloontip "1.2.1"]
-                 [seesaw "1.4.3"]]
+                 [seesaw "1.4.4"]]
   :resource-paths ["resources" "tools"]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
