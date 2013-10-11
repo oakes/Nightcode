@@ -7,6 +7,7 @@
                   :classifier "natives-desktop"]]
   :repositories [["sonatype"
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.5.1"]]}}
   
   :java-source-paths ["src" "src-common"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
