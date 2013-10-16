@@ -315,7 +315,7 @@
 
 (defn new-project
   [in out parent-path project-type project-name package-name]
-  (->> (if (= project-type :android)
+  (->> (if (= project-type :android-clojure)
          (leiningen.droid.new/new project-name package-name)
          (leiningen.new/new {} (name project-type) project-name package-name))
        (fn []

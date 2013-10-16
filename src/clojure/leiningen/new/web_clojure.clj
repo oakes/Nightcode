@@ -1,9 +1,9 @@
-(ns leiningen.new.cljs-kickoff
+(ns leiningen.new.web-clojure
   (:require [leiningen.new.templates :as t]))
 
-(defn cljs-kickoff
+(defn web-clojure
   [name package-name]
-  (let [render (t/renderer "cljs-kickoff")
+  (let [render (t/renderer "web-clojure")
         main-ns (t/multi-segment (t/sanitize-ns name))
         data {:name name
               :sanitized (t/name-to-path name)}]

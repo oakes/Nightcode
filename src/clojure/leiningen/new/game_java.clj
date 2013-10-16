@@ -1,11 +1,11 @@
-(ns leiningen.new.libgdx-java
+(ns leiningen.new.game-java
   (:require [clojure.java.io :as io]
             [leiningen.droid.new :as droid-new]
             [leiningen.new.templates :as t]))
 
-(defn libgdx-java
+(defn game-java
   [name package-name]
-  (let [render (t/renderer "libgdx-java")
+  (let [render (t/renderer "game-java")
         android-render (t/renderer "android-java")
         lein-droid-render (droid-new/renderer "templates")
         class-name "Core"

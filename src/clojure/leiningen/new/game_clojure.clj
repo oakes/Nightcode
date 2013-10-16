@@ -1,14 +1,14 @@
-(ns leiningen.new.libgdx-clojure
+(ns leiningen.new.game-clojure
   (:require [clojure.java.io :as io]
             [leiningen.droid.new :as droid-new]
             [leiningen.new.templates :as t]
             [nightcode.utils :as utils]))
 
-(defn libgdx-clojure
+(defn game-clojure
   [name package-name]
-  (let [render (t/renderer "libgdx-clojure")
+  (let [render (t/renderer "game-clojure")
         android-render (t/renderer "android-java")
-        java-render (t/renderer "libgdx-java")
+        java-render (t/renderer "game-java")
         lein-droid-render (droid-new/renderer "templates")
         class-name "core"
         desktop-class-name "desktop-launcher"

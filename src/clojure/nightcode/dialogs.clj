@@ -52,21 +52,21 @@
         parent-dir (.getParent dir)
         group (s/button-group)
         package-name-text (s/text :visible? false :columns 20)
-        types [[:console :console "Clojure"]
-               [:libgdx-clojure :game "Clojure"]
-               [:android :android "Clojure"]
-               [:seesaw :desktop "Clojure"]
+        types [[:console-clojure :console "Clojure"]
+               [:game-clojure :game "Clojure"]
+               [:android-clojure :android "Clojure"]
+               [:desktop-clojure :desktop "Clojure"]
                [:console-java :console "Java"]
-               [:libgdx-java :game "Java"]
+               [:game-java :game "Java"]
                [:android-java :android "Java"]
-               [:cljs-kickoff :web "ClojureScript"]]
+               [:web-clojure :web "ClojureScript"]]
         toggle (fn [e]
                  (s/config! package-name-text
                             :visible?
                             (let [id (name (s/id-of e))]
                               (or (>= (.indexOf id "java") 0)
                                   (>= (.indexOf id "android") 0)
-                                  (>= (.indexOf id "libgdx") 0))))
+                                  (>= (.indexOf id "game") 0))))
                  (s/text! package-name-text
                           (-> (str "com." raw-project-name)
                               utils/format-package-name))
@@ -88,7 +88,7 @@
                                             "<i>" lang-str "</i>"
                                             "</center>")
                                  :group group
-                                 :selected? (= id :console)
+                                 :selected? (= id :console-clojure)
                                  :valign :center
                                  :halign :center
                                  :listen [:action toggle])
