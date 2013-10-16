@@ -15,6 +15,7 @@
         android-class-name "AndroidLauncher"
         ns-prefix (utils/format-project-name package-name)
         main-ns (str ns-prefix "." class-name)
+        java-ns (str package-name "." class-name)
         desktop-ns (str ns-prefix "." desktop-class-name)
         android-ns (str ns-prefix "." android-class-name)
         data {:app-name name
@@ -26,12 +27,13 @@
               :android-class-name android-class-name
               :activity android-class-name
               :namespace main-ns
+              :java-namespace java-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
               :path (t/name-to-path main-ns)
+              :java-path (t/name-to-path package-name)
               :desktop-path (t/name-to-path desktop-ns)
               :android-path (t/name-to-path android-ns)
-              :java-path (t/name-to-path package-name)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
