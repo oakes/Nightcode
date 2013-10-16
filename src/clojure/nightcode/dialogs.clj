@@ -51,7 +51,7 @@
   (let [raw-project-name (.getName dir)
         parent-dir (.getParent dir)
         group (s/button-group)
-        package-name-text (s/text :visible? false :columns 20)
+        package-name-text (s/text :columns 20)
         types [[:console-clojure :console "Clojure"]
                [:game-clojure :game "Clojure"]
                [:android-clojure :android "Clojure"]
@@ -60,17 +60,11 @@
                [:game-java :game "Java"]
                [:android-java :android "Java"]
                [:web-clojure :web "ClojureScript"]]
-        toggle (fn [e]
-                 (s/config! package-name-text
-                            :visible?
-                            (let [id (name (s/id-of e))]
-                              (or (>= (.indexOf id "java") 0)
-                                  (>= (.indexOf id "android") 0)
-                                  (>= (.indexOf id "game") 0))))
+        toggle (fn [_]
                  (s/text! package-name-text
-                          (-> (str "com." raw-project-name)
-                              utils/format-package-name))
-                 (s/pack! (s/to-root e)))
+                          (-> (str raw-project-name ".core")
+                              utils/format-project-name)))
+        _ (toggle nil) ; initialize the package name text
         finish (fn []
                  (let [project-type (s/id-of (s/selection group))
                        project-name (-> raw-project-name

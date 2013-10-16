@@ -16,6 +16,6 @@
                    :optimizations :simple
                    :pretty-print true}
         :jar true}}}
-  :aot [{{name}}.server]
-  :main {{name}}.server
-  :ring {:handler {{name}}.server/app})
+  :aot [{{namespace}}]
+  :main {{namespace}}
+  :ring {:handler {{namespace}}/app})

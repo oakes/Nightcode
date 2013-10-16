@@ -4,7 +4,7 @@
 (defn console-java
   [name package-name]
   (let [render (t/renderer "console-java")
-        class-name "Core"
+        class-name "Main"
         main-ns (str package-name "." class-name)
         data {:app-name name
               :name (t/project-name name)
@@ -17,5 +17,5 @@
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
                [".gitignore" (render "gitignore" data)]
-               ["src/{{path}}.java" (render "Core.java" data)]
+               ["src/{{path}}.java" (render "Main.java" data)]
                "resources")))

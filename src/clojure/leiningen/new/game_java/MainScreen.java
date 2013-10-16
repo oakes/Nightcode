@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
-public class MainScreen implements Screen {
+public class {{screen-class-name}} implements Screen {
 	private Stage stage;
 	
 	public void show() {

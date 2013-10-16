@@ -1,4 +1,4 @@
-(ns hello-clojurescript)
+(ns {{namespace}})
 
 (defn handle-click []
   (js/alert "Hello!"))

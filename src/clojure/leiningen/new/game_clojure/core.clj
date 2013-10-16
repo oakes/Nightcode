@@ -26,7 +26,7 @@
       (resume []))))
 
 (gen-class
-  :name {{java-namespace}}.Game
+  :name {{package}}.Game
   :extends com.badlogic.gdx.Game)
 (defn -create [^Game this]
   (.setScreen this main-screen))

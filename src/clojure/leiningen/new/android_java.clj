@@ -6,7 +6,7 @@
   [name package-name]
   (let [render (t/renderer "android-java")
         class-name "MainActivity"
-        main-ns (str (t/sanitize package-name) "." class-name)
+        main-ns (str package-name "." class-name)
         lein-droid-render (droid-new/renderer "templates")
         data {:app-name name
               :name (t/project-name name)

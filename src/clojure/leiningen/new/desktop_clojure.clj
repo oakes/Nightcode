@@ -5,7 +5,7 @@
   "Creates a new Seesaw app"
   [name package-name]
   (let [render (t/renderer "desktop-clojure")
-        main-ns (t/multi-segment (t/sanitize-ns name))
+        main-ns (t/multi-segment (t/sanitize-ns package-name))
         data {:name name
               :namespace main-ns
               :path (t/name-to-path main-ns)

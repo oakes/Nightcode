@@ -8,7 +8,7 @@
   (let [render (t/renderer "game-java")
         android-render (t/renderer "android-java")
         lein-droid-render (droid-new/renderer "templates")
-        class-name "Core"
+        class-name "Main"
         screen-class-name "MainScreen"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
@@ -41,7 +41,7 @@
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
                ["desktop/src-common/{{path}}.java"
-                (render "Core.java" data)]
+                (render "Main.java" data)]
                ["desktop/src-common/{{screen-path}}.java"
                 (render "MainScreen.java" data)]
                ["desktop/src/{{desktop-path}}.java"
