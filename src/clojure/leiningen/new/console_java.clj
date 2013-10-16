@@ -11,11 +11,11 @@
               :package package-name
               :class-name class-name
               :namespace main-ns
-              :nested-dirs (t/name-to-path main-ns)
+              :path (t/name-to-path main-ns)
               :year (t/year)}]
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
                [".gitignore" (render "gitignore" data)]
-               ["src/{{nested-dirs}}.java" (render "Core.java" data)]
+               ["src/{{path}}.java" (render "Core.java" data)]
                "resources")))

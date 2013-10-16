@@ -94,8 +94,9 @@
   "Formats the given string as a valid package name."
   [name-str]
   (-> name-str
+      clojure.string/lower-case
       (clojure.string/replace "-" "_")
-      (clojure.string/replace #"[^a-zA-Z0-9_.]" "")))
+      (clojure.string/replace #"[^a-z0-9_.]" "")))
 
 (defn get-version
   "Gets the version number from the project.clj if possible."

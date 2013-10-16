@@ -28,10 +28,10 @@
               :namespace main-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
-              :dirs (t/name-to-path package-name)
-              :nested-dirs (t/name-to-path main-ns)
-              :desktop-dirs (t/name-to-path desktop-ns)
-              :android-dirs (t/name-to-path android-ns)
+              :path (t/name-to-path main-ns)
+              :desktop-path (t/name-to-path desktop-ns)
+              :android-path (t/name-to-path android-ns)
+              :java-path (t/name-to-path package-name)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -40,15 +40,15 @@
                [".gitignore" (java-render "gitignore" data)]
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
-               ["desktop/src-common/clojure/{{nested-dirs}}.clj"
+               ["desktop/src-common/clojure/{{path}}.clj"
                 (render "core.clj" data)]
-               ["desktop/src/clojure/{{desktop-dirs}}.clj"
+               ["desktop/src/clojure/{{desktop-path}}.clj"
                 (render "desktop-launcher.clj" data)]
                "desktop/src-common/java"
                "desktop/src/java"
                "desktop/resources"
                ; android
-               ["android/src/java/{{android-dirs}}.java"
+               ["android/src/java/{{android-path}}.java"
                 (render "AndroidLauncher.java" data)]
                "android/src/clojure"
                ["android/project.clj"
@@ -75,7 +75,7 @@
                 (lein-droid-render "splash_rotation.xml")]
                ["android/res/layout/splashscreen.xml"
                 (lein-droid-render "splashscreen.xml")]
-               ["android/src/java/{{dirs}}/SplashActivity.java"
+               ["android/src/java/{{java-path}}/SplashActivity.java"
                 (lein-droid-render "SplashActivity.java" data)]
                ["android/libs/armeabi/libgdx.so"
                 (-> (io/resource "armeabi-libgdx.so") io/input-stream)]

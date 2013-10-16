@@ -14,7 +14,7 @@
               :android-class-name class-name
               :activity class-name
               :namespace main-ns
-              :nested-dirs (t/name-to-path main-ns)
+              :path (t/name-to-path main-ns)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -22,7 +22,7 @@
                ["res/layout/main.xml" (render "main.xml" data)]
                ["README.md" (render "README.md" data)]
                [".gitignore" (render "gitignore" data)]
-               ["src/{{nested-dirs}}.java" (render "MainActivity.java" data)]
+               ["src/{{path}}.java" (render "MainActivity.java" data)]
                ["AndroidManifest.xml" (render "AndroidManifest.xml" data)]
                ["res/drawable-hdpi/ic_launcher.png"
                 (lein-droid-render "ic_launcher_hdpi.png")]
