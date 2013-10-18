@@ -13,6 +13,7 @@
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
         ios-class-name "IOSLauncher"
+        package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
         screen-ns (str package-name "." screen-class-name)
         desktop-ns (str package-name "." desktop-class-name)

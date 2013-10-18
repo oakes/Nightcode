@@ -12,11 +12,11 @@
         desktop-class-name "desktop-launcher"
         android-class-name "AndroidLauncher"
         ios-class-name "IOSLauncher"
-        main-ns (t/multi-segment (t/sanitize-ns package-name))
-        desktop-ns (str main-ns "." desktop-class-name)
-        package-name (t/sanitize main-ns)
+        package-name (t/sanitize (t/multi-segment (or package-name name)))
         package-prefix (->> (.lastIndexOf package-name ".")
                             (subs package-name 0))
+        main-ns (t/sanitize-ns package-name)
+        desktop-ns (str main-ns "." desktop-class-name)
         android-ns (str package-name "." android-class-name)
         ios-ns (str package-name "." ios-class-name)
         data {:app-name name
