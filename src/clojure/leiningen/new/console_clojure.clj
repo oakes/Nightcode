@@ -4,7 +4,8 @@
 (defn console-clojure
   [name package-name]
   (let [render (t/renderer "console-clojure")
-        main-ns (t/multi-segment (t/sanitize-ns package-name))
+        package-name (t/sanitize (t/multi-segment (or package-name name)))
+        main-ns (t/sanitize-ns package-name)
         data {:app-name name
               :name (t/project-name name)
               :namespace main-ns

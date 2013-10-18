@@ -5,6 +5,7 @@
   [name package-name]
   (let [render (t/renderer "console-java")
         class-name "Main"
+        package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
         data {:app-name name
               :name (t/project-name name)
