@@ -12,7 +12,6 @@
                       "-libs" "libs/libObjectAL.a:libs/libgdx.a"
                       "-frameworks" "UIKit:OpenGLES:QuartzCore:CoreGraphics:OpenAL:AudioToolbox:AVFoundation"
                       "-resources" "../desktop/resources/**"
-                      "-plist" "Info.plist.xml"
 
                       ; these properties will be inserted into Info.plist.xml
                       "-Papp.build=1"
