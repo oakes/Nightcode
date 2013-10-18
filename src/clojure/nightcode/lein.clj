@@ -255,6 +255,7 @@
     (is-android-project? path)
     (do (leiningen.droid.classpath/init-hooks)
       (-> (leiningen.droid/transform-into-release project)
+          add-sdk-path
           leiningen.droid/execute-release-routine))
     (is-ios-project? path)
     (leiningen.fruit/fruit project "release")
