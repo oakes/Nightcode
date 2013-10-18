@@ -9,12 +9,6 @@
   :java-only true
   :ios {:robovm-opts ["-libs" "libs/libObjectAL.a:libs/libgdx.a"
                       "-frameworks" "UIKit:OpenGLES:QuartzCore:CoreGraphics:OpenAL:AudioToolbox:AVFoundation"
-                      "-resources" "../desktop/resources/**"
-
-                      ; these properties will be inserted into Info.plist.xml
-                      "-Papp.build=1"
-                      "-Papp.id={{package}}"
-                      "-Papp.executable={{app-name}}"
-                      "-Papp.name={{app-name}}"]}
+                      "-resources" "../desktop/resources/**"]}
   :aot :all
   :main {{ios-namespace}})
