@@ -6,6 +6,7 @@
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :java-source-paths ["src" "../desktop/src-common"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
+  :java-only true
   :ios {:robovm-opts ["-libs" "libs/libObjectAL.a:libs/libgdx.a"
                       "-frameworks" "UIKit:OpenGLES:QuartzCore:CoreGraphics:OpenAL:AudioToolbox:AVFoundation"
                       "-resources" "../desktop/resources/**"]}
