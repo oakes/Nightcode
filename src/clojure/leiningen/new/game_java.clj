@@ -71,7 +71,9 @@
                 (-> "armeabi-libgdx.so" io/resource io/input-stream)]
                ["android/libs/armeabi-v7a/libgdx.so"
                 (-> "armeabi-v7a-libgdx.so" io/resource io/input-stream)]
+               ; ios
                ["ios/project.clj" (render "ios-project.clj" data)]
+               ["ios/Info.plist.xml" (render "Info.plist.xml" data)]
                ["ios/src/{{ios-path}}.java" (render "IOSLauncher.java" data)]
                ["ios/libs/libObjectAL.a"
                 (-> (io/resource "libObjectAL.a") io/input-stream)]
