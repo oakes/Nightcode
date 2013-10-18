@@ -7,6 +7,7 @@
             [leiningen.clean]
             [leiningen.cljsbuild]
             [leiningen.droid]
+            [leiningen.fruit]
             [leiningen.javac]
             [leiningen.new]
             [leiningen.new.templates]
@@ -38,21 +39,30 @@
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
 
-(defn read-project-clj
-  [path]
-  (when path
-    (let [project-clj-path (get-project-clj-path path)]
-      (if-not (.exists (io/file project-clj-path))
-        (println (utils/get-string :no_project_clj))
-        (try (leiningen.core.project/read project-clj-path)
-          (catch Exception e {}))))))
-
 (defn add-sdk-path
   [project]
   (assoc-in project
             [:android :sdk-path]
             (or (get-in project [:android :sdk-path])
                 (utils/read-pref :android-sdk))))
+
+(defn add-robovm-path
+  [project]
+  (assoc-in project
+            [:ios :robovm-path]
+            (or (get-in project [:ios :robovm-path])
+                (utils/read-pref :robovm))))
+
+(defn read-project-clj
+  [path]
+  (when path
+    (let [project-clj-path (get-project-clj-path path)]
+      (if-not (.exists (io/file project-clj-path))
+        (println (utils/get-string :no_project_clj))
+        (-> (leiningen.core.project/read project-clj-path)
+            add-sdk-path
+            add-robovm-path
+            (try (catch Exception e {})))))))
 
 (defn create-file-from-template
   [dir file-name template-namespace data]
@@ -101,6 +111,10 @@
   [path]
   (.exists (io/file path "AndroidManifest.xml")))
 
+(defn is-ios-project?
+  [path]
+  (.exists (io/file path "Info.plist.xml")))
+
 (defn is-java-project?
   [path]
   (when-let [project (read-project-clj path)]
@@ -113,6 +127,12 @@
   [path]
   (when-let [project (read-project-clj path)]
     (not (nil? (:cljsbuild project)))))
+
+(defn should-run-directly?
+  [path]
+  (and (is-java-project? path)
+       (not (is-android-project? path))
+       (not (is-ios-project? path))))
 
 ; start/stop thread/processes
 
@@ -210,26 +230,35 @@
 
 (defn run-project-task
   [path project]
-  (if (is-android-project? path)
+  (cond
+    (is-android-project? path)
     (doseq [sub-cmd ["build" "apk" "install" "run"]]
-      (leiningen.droid/droid (add-sdk-path project) sub-cmd))
+      (leiningen.droid/droid project sub-cmd))
+    (is-ios-project? path)
+    (leiningen.fruit/fruit project "doall")
+    :else
     (leiningen.run/run project)))
 
 (defn run-repl-project-task
   [path project]
-  (if (is-android-project? path)
+  (cond
+    (is-android-project? path)
     (doseq [sub-cmd ["doall" "repl"]]
-      (leiningen.droid/droid (add-sdk-path project) sub-cmd)
+      (leiningen.droid/droid project sub-cmd)
       (Thread/sleep 10000))
+    :else
     (leiningen.repl/repl project)))
 
 (defn build-project-task
   [path project]
-  (if (is-android-project? path)
+  (cond
+    (is-android-project? path)
     (do (leiningen.droid.classpath/init-hooks)
       (-> (leiningen.droid/transform-into-release project)
-          add-sdk-path
           leiningen.droid/execute-release-routine))
+    (is-ios-project? path)
+    (leiningen.fruit/fruit project "release")
+    :else
     (leiningen.uberjar/uberjar project)))
 
 (defn test-project-task
@@ -267,7 +296,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running))
-         (if (and (is-java-project? path) (not (is-android-project? path)))
+         (if (should-run-directly? path)
            (start-process-directly process path run-project-task)
            (start-process-indirectly process path class-name "run")))
        (start-thread in out)))
@@ -276,7 +305,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :running_with_repl))
-         (if (and (is-java-project? path) (not (is-android-project? path)))
+         (if (should-run-directly? path)
            (start-process-directly process path run-repl-project-task)
            (start-process-indirectly process path class-name "repl")))
        (start-thread in out)))
@@ -285,7 +314,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :building))
-         (if (and (is-java-project? path) (not (is-android-project? path)))
+         (if (should-run-directly? path)
            (start-process-directly process path build-project-task)
            (start-process-indirectly process path class-name "build")))
        (start-thread in out)))
@@ -294,7 +323,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :testing))
-         (if (and (is-java-project? path) (not (is-android-project? path)))
+         (if (should-run-directly? path)
            (start-process-directly process path test-project-task)
            (start-process-indirectly process path class-name "test")))
        (start-thread in out)))
@@ -303,7 +332,7 @@
   [process in out path]
   (stop-process process)
   (->> (do (println (utils/get-string :cleaning))
-         (if (and (is-java-project? path) (not (is-android-project? path)))
+         (if (should-run-directly? path)
            (start-process-directly process path clean-project-task)
            (start-process-indirectly process path class-name "clean")))
        (start-thread in out)))
@@ -334,7 +363,6 @@
   (->> (start-process process
                       nil
                       (-> (read-project-clj path)
-                          add-sdk-path
                           :android
                           :sdk-path
                           (leiningen.droid.utils/sdk-binary :adb))

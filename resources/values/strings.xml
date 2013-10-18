@@ -19,6 +19,7 @@
   <string name="auto">Auto</string>
 
   <string name="android_sdk">Android SDK</string>
+  <string name="robovm">RoboVM</string>
   <string name="android_devices">Android Devices</string>
 
   <string name="ok">OK</string>

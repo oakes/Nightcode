@@ -1,5 +1,6 @@
 (ns nightcode.builders
-  (:require [nightcode.editors :as editors]
+  (:require [clojure.java.io :as io]
+            [nightcode.editors :as editors]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
@@ -27,6 +28,13 @@
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
     (utils/write-pref :android-sdk (.getCanonicalPath dir))))
+
+(defn set-robovm
+  [_]
+  (when-let [dir (chooser/choose-file :dir (utils/read-pref :robovm)
+                                      :selection-mode :dirs-only
+                                      :remember-directory? false)]
+    (utils/write-pref :robovm (.getCanonicalPath dir))))
 
 (defn eval-in-repl
   [console path timestamp]
@@ -123,6 +131,10 @@
                                        :text (utils/get-string :android_sdk)
                                        :listen [:action set-android-sdk]
                                        :focusable? false)
+                            (ui/button :id :robovm-button
+                                       :text (utils/get-string :robovm)
+                                       :listen [:action set-robovm]
+                                       :focusable? false)
                             (ui/toggle :id :auto-button
                                        :text (utils/get-string :auto)
                                        :listen [:action auto-action]
@@ -143,6 +155,7 @@
                                   :clean-button clean-action
                                   :stop-button stop-action
                                   :sdk-button set-android-sdk
+                                  :robovm-button set-robovm
                                   :auto-button auto-action})
       shortcuts/create-hints)
     ; return a map describing the builder
@@ -164,24 +177,32 @@
     (s/show-card! pane (if (contains? @builders path) path :default-card))
     ; modify pane based on the project
     (when (contains? @builders path)
-      (let [project-map (lein/add-sdk-path (lein/read-project-clj path))
+      (let [project-map (lein/read-project-clj path)
             is-android-project? (lein/is-android-project? path)
-            is-clojure-project? (not (lein/is-java-project? path))
+            is-ios-project? (lein/is-ios-project? path)
+            is-java-project? (lein/is-java-project? path)
             is-clojurescript-project? (lein/is-clojurescript-project? path)
-            buttons {:#run-repl-button is-clojure-project?
-                     :#reload-button (or is-clojure-project?
-                                         (not is-android-project?))
-                     :#test-button is-clojure-project?
+            buttons {:#run-repl-button (and (not is-ios-project?)
+                                            (not is-java-project?))
+                     :#reload-button (and (not is-ios-project?)
+                                          (not (and is-java-project?
+                                                    is-android-project?)))
+                     :#test-button (not is-java-project?)
                      :#sdk-button is-android-project?
+                     :#robovm-button is-ios-project?
                      :#auto-button is-clojurescript-project?}
-            sdk-path (get-in project-map [:android :sdk-path])]
+            sdk (get-in project-map [:android :sdk-path])
+            robovm (get-in project-map [:ios :robovm-path])]
         ; show/hide buttons
         (doseq [[id should-show?] buttons]
           (-> (s/select (get-in @builders [path :view]) [id])
               (s/config! :visible? should-show?)))
-        ; make SDK button red if it isn't set
-        (-> (s/select (get-in @builders [path :view]) [:#sdk-button])
-            (s/config! :background (when-not sdk-path (color/color :red))))))))
+        ; make buttons red if they aren't set
+        (doseq [[button set?]
+                {:#sdk-button (and sdk (.exists (io/file sdk)))
+                 :#robovm-button (and robovm (.exists (io/file robovm)))}]
+          (-> (s/select (get-in @builders [path :view]) [button])
+              (s/config! :background (when-not set? (color/color :red)))))))))
 
 (defn remove-builders
   [path]
