@@ -2,7 +2,8 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.xml :as xml])
-  (:import [java.util Locale]
+  (:import [java.io File]
+           [java.util Locale]
            [java.util.prefs Preferences]
            [javax.swing.tree TreePath]))
 
@@ -126,4 +127,4 @@
       (and parent-path
            child-path
            (.isDirectory (io/file parent-path))
-           (.startsWith child-path parent-path))))
+           (.startsWith child-path (str parent-path File/separator)))))
