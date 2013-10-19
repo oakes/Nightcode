@@ -56,14 +56,16 @@
       :file
       .getCanonicalPath))
 
-(defn get-relative-path [project-path selected-path]
+(defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
+  [project-path selected-path]
   (-> (.toURI (io/file project-path))
       (.relativize (.toURI (io/file selected-path)))
       (.getPath)))
 
-(defn get-relative-dir [project-path selected-path]
+(defn get-relative-dir
   "Returns the selected directory as a relative URI to the project path."
+  [project-path selected-path]
   (let [selected-dir (if (.isDirectory (io/file selected-path))
                        selected-path
                        (-> (io/file selected-path)
@@ -71,8 +73,9 @@
                            .getCanonicalPath))]
     (get-relative-path project-path selected-dir)))
 
-(defn delete-file-recursively [project-set path]
+(defn delete-file-recursively
   "Deletes the given path and all empty parents unless they are in project-set."
+  [project-set path]
   (let [file (io/file path)]
     (when (and (= 0 (count (.listFiles file)))
                (not (contains? project-set path)))
@@ -123,8 +126,4 @@
       (and parent-path
            child-path
            (.isDirectory (io/file parent-path))
-           (.startsWith child-path parent-path)
-           (->> (file-seq (io/file parent-path))
-                (filter #(= (.getCanonicalPath %) child-path))
-                count
-                (= 1)))))
+           (.startsWith child-path parent-path))))
