@@ -38,12 +38,17 @@
 
 (defn eval-in-repl
   [console path timestamp]
-  (doseq [code (if-let [selected (editors/get-editor-selected-text)]
-                 [selected]
-                 (for [source (-> (lein/read-project-clj path)
-                                  (lein/stale-clojure-sources timestamp))]
-                   (str (slurp source) " nil")))]
-    (->> (str "(do " (clojure.string/replace code "\n" " ") ")")
+  (let [source-paths (-> (lein/read-project-clj path)
+                         (lein/stale-clojure-sources timestamp))
+        contents (for [source-path source-paths]
+                   (slurp source-path))
+        names (for [source-path source-paths]
+                (.getName (io/file source-path)))]
+    (->> (format "(do %s\n\"%s\")"
+                 (clojure.string/join "\n" contents)
+                 (clojure.string/join ", " names))
+         read-string
+         pr-str
          (.enterLine console)))
   (s/request-focus! (-> console .getViewport .getView)))
 
