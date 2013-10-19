@@ -345,8 +345,14 @@
 
 (defn new-project
   [in out parent-path project-type project-name package-name]
-  (->> (if (= project-type :android-clojure)
+  (->> (cond
+         (= project-type :android-clojure)
          (leiningen.droid.new/new project-name package-name)
+         (= project-type :ios-clojure)
+         (leiningen.fruit/fruit {} "new" project-name package-name)
+         (= project-type :ios-java)
+         (leiningen.fruit/fruit {} "new-java" project-name package-name)
+         :else
          (leiningen.new/new {} (name project-type) project-name package-name))
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
