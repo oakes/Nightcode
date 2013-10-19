@@ -49,7 +49,8 @@
                  (clojure.string/join ", " names))
          read-string
          pr-str
-         (.enterLine console)))
+         (.enterLine console)
+         (binding [*read-eval* false])))
   (s/request-focus! (-> console .getViewport .getView)))
 
 (defn toggle-reload
