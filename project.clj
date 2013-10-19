@@ -1,4 +1,4 @@
-(defproject nightcode "0.1.2"
+(defproject nightcode "0.1.3"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.github.insubstantial/substance "7.2.1"]
@@ -8,7 +8,7 @@
                  [leiningen "2.3.3"]
                  [lein-cljsbuild "0.3.3"]
                  [lein-droid "0.2.0-preview1"]
-                 [lein-fruit "0.1.0-preview1"]
+                 [lein-fruit "0.1.0"]
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/core.incubator "0.1.3"]
