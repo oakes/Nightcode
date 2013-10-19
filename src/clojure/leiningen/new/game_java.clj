@@ -12,10 +12,13 @@
         screen-class-name "MainScreen"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
+        ios-class-name "IOSLauncher"
+        package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
         screen-ns (str package-name "." screen-class-name)
         desktop-ns (str package-name "." desktop-class-name)
         android-ns (str package-name "." android-class-name)
+        ios-ns (str package-name "." ios-class-name)
         data {:app-name name
               :name (t/project-name name)
               :package package-name
@@ -24,14 +27,17 @@
               :screen-class-name screen-class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
+              :ios-class-name ios-class-name
               :namespace main-ns
               :screen-namespace screen-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
+              :ios-namespace ios-ns
               :path (t/name-to-path main-ns)
               :screen-path (t/name-to-path screen-ns)
               :desktop-path (t/name-to-path desktop-ns)
               :android-path (t/name-to-path android-ns)
+              :ios-path (t/name-to-path ios-ns)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -48,10 +54,10 @@
                 (render "DesktopLauncher.java" data)]
                "desktop/resources"
                ; android
-               ["android/src/{{android-path}}.java"
-                (render "AndroidLauncher.java" data)]
                ["android/project.clj"
                 (render "android-project.clj" data)]
+               ["android/src/{{android-path}}.java"
+                (render "AndroidLauncher.java" data)]
                ["android/AndroidManifest.xml"
                 (render "AndroidManifest.xml" data)]
                ["android/res/drawable-hdpi/ic_launcher.png"
@@ -65,4 +71,12 @@
                ["android/libs/armeabi/libgdx.so"
                 (-> "armeabi-libgdx.so" io/resource io/input-stream)]
                ["android/libs/armeabi-v7a/libgdx.so"
-                (-> "armeabi-v7a-libgdx.so" io/resource io/input-stream)])))
+                (-> "armeabi-v7a-libgdx.so" io/resource io/input-stream)]
+               ; ios
+               ["ios/project.clj" (render "ios-project.clj" data)]
+               ["ios/Info.plist.xml" (render "Info.plist.xml" data)]
+               ["ios/src/{{ios-path}}.java" (render "IOSLauncher.java" data)]
+               ["ios/libs/libObjectAL.a"
+                (-> (io/resource "libObjectAL.a") io/input-stream)]
+               ["ios/libs/libgdx.a"
+                (-> (io/resource "libgdx.a") io/input-stream)])))

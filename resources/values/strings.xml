@@ -19,6 +19,7 @@
   <string name="auto">Auto</string>
 
   <string name="android_sdk">Android SDK</string>
+  <string name="robovm">RoboVM</string>
   <string name="android_devices">Android Devices</string>
 
   <string name="ok">OK</string>
@@ -42,6 +43,7 @@
   <string name="desktop">Desktop</string>
   <string name="web">Web</string>
   <string name="android">Android</string>
+  <string name="ios">iOS</string>
   <string name="game">Game</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>

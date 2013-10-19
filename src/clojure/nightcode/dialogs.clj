@@ -57,10 +57,12 @@
         types [[:console-clojure :console "Clojure"]
                [:game-clojure :game "Clojure"]
                [:android-clojure :android "Clojure"]
+               [:ios-clojure :ios "Clojure"]
                [:desktop-clojure :desktop "Clojure"]
                [:console-java :console "Java"]
                [:game-java :game "Java"]
                [:android-java :android "Java"]
+               [:ios-java :ios "Java"]
                [:web-clojure :web "ClojureScript"]]
         finish (fn []
                  (let [project-type (s/id-of (s/selection group))

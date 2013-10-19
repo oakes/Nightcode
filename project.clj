@@ -8,6 +8,7 @@
                  [leiningen "2.3.3"]
                  [lein-cljsbuild "0.3.3"]
                  [lein-droid "0.2.0-preview1"]
+                 [lein-fruit "0.1.0-preview1"]
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/core.incubator "0.1.3"]

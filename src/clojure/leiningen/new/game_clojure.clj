@@ -11,23 +11,31 @@
         lein-droid-render (droid-new/renderer "templates")
         desktop-class-name "desktop-launcher"
         android-class-name "AndroidLauncher"
-        main-ns (t/multi-segment (t/sanitize-ns package-name))
-        package-name (t/sanitize main-ns)
+        ios-class-name "IOSLauncher"
+        package-name (t/sanitize (t/multi-segment (or package-name name)))
+        package-prefix (->> (.lastIndexOf package-name ".")
+                            (subs package-name 0))
+        main-ns (t/sanitize-ns package-name)
         desktop-ns (str main-ns "." desktop-class-name)
-        android-ns (str main-ns "." android-class-name)
+        android-ns (str package-name "." android-class-name)
+        ios-ns (str package-name "." ios-class-name)
         data {:app-name name
               :name (t/project-name name)
               :package package-name
               :package-sanitized package-name
+              :package-prefix package-prefix
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
+              :ios-class-name ios-class-name
               :activity android-class-name
               :namespace main-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
+              :ios-namespace ios-ns
               :path (t/name-to-path main-ns)
               :desktop-path (t/name-to-path desktop-ns)
               :android-path (t/name-to-path android-ns)
+              :ios-path (t/name-to-path ios-ns)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -44,11 +52,11 @@
                "desktop/src/java"
                "desktop/resources"
                ; android
+               ["android/project.clj"
+                (render "android-project.clj" data)]
                ["android/src/java/{{android-path}}.java"
                 (render "AndroidLauncher.java" data)]
                "android/src/clojure"
-               ["android/project.clj"
-                (render "android-project.clj" data)]
                ["android/AndroidManifest.xml"
                 (lein-droid-render "AndroidManifest.xml" data)]
                ["android/res/drawable-hdpi/ic_launcher.png"
@@ -76,4 +84,14 @@
                ["android/libs/armeabi/libgdx.so"
                 (-> (io/resource "armeabi-libgdx.so") io/input-stream)]
                ["android/libs/armeabi-v7a/libgdx.so"
-                (-> (io/resource "armeabi-v7a-libgdx.so") io/input-stream)])))
+                (-> (io/resource "armeabi-v7a-libgdx.so") io/input-stream)]
+               ; ios
+               ["ios/project.clj" (render "ios-project.clj" data)]
+               ["ios/Info.plist.xml" (java-render "Info.plist.xml" data)]
+               "ios/src/clojure"
+               ["ios/src/java/{{ios-path}}.java"
+                (render "IOSLauncher.java" data)]
+               ["ios/libs/libObjectAL.a"
+                (-> (io/resource "libObjectAL.a") io/input-stream)]
+               ["ios/libs/libgdx.a"
+                (-> (io/resource "libgdx.a") io/input-stream)])))
