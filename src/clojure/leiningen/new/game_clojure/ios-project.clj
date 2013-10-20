@@ -1,4 +1,4 @@
-(defproject {{app-name}} "0.1.0-SNAPSHOT"
+(defproject {{app-name}} "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9-SNAPSHOT"]
                  [com.badlogicgames.gdx/gdx-backend-robovm "0.9.9-SNAPSHOT"]
