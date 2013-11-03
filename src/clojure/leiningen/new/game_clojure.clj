@@ -85,6 +85,8 @@
                 (-> (io/resource "armeabi-libgdx.so") io/input-stream)]
                ["android/libs/armeabi-v7a/libgdx.so"
                 (-> (io/resource "armeabi-v7a-libgdx.so") io/input-stream)]
+               ["android/libs/x86/libgdx.so"
+                (-> (io/resource "x86-libgdx.so") io/input-stream)]
                ; ios
                ["ios/project.clj" (render "ios-project.clj" data)]
                ["ios/Info.plist.xml" (java-render "Info.plist.xml" data)]
