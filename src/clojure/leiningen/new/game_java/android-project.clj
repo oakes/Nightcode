@@ -1,9 +1,8 @@
 (defproject {{app-name}} "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
   
-  :dependencies [[com.badlogicgames.gdx/gdx "0.9.9-SNAPSHOT"
-                  :use-resources true]
-                 [com.badlogicgames.gdx/gdx-backend-android "0.9.9-SNAPSHOT"]]
+  :dependencies [[com.badlogicgames.gdx/gdx "0.9.9" :use-resources true]
+                 [com.badlogicgames.gdx/gdx-backend-android "0.9.9"]]
   :repositories [["sonatype"
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :profiles {:dev {:android {:aot :all-with-unused}}
