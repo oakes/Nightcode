@@ -87,7 +87,7 @@ public class JConsole extends JScrollPane
 	private Vector<String> history = new Vector<String>();
 	private String startedLine;
 	private int histLine = 0;
-	private final int HIST_MAX = 100000;
+	private final int HIST_MAX = 1000000;
 
 	private JPopupMenu menu;
 	private JTextPane text;
