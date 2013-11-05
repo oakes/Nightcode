@@ -184,9 +184,8 @@
   ([^JTree tree ^String new-selection]
    ; put new data in the tree
    (.setModel tree (create-project-tree))
-   ; wipe out the in-memory expansion/selection
+   ; wipe out the in-memory expansions
    (reset! tree-expansions #{})
-   (reset! tree-selection nil)
    ; get the expansion/selection and apply them to the tree
    (let [expansion-set (utils/read-pref :expansion-set)
          selection (or new-selection (utils/read-pref :selection))]
@@ -200,5 +199,5 @@
          (when (= selection str-path)
            (.setSelectionPath tree tree-path)))))
    ; select the first project if there is nothing selected
-   (when (nil? @tree-selection)
+   (when (nil? (.getSelectionPath tree))
      (.setSelectionRow tree 0))))
