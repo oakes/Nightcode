@@ -226,7 +226,7 @@
                      "md" SyntaxConstants/SYNTAX_STYLE_NONE
                      "txt" SyntaxConstants/SYNTAX_STYLE_NONE})
 (def ^:const clojure-exts #{"clj" "cljs"})
-(def ^:const wrap-exts #{"md", "txt"})
+(def ^:const wrap-exts #{"md" "txt"})
 
 (defn get-extension
   [path]
