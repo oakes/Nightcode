@@ -226,6 +226,7 @@
                      "md" SyntaxConstants/SYNTAX_STYLE_NONE
                      "txt" SyntaxConstants/SYNTAX_STYLE_NONE})
 (def ^:const clojure-exts #{"clj" "cljs"})
+(def ^:const wrap-exts #{"md", "txt"})
 
 (defn get-extension
   [path]
@@ -252,6 +253,7 @@
     .discardAllEdits
     (.setAntiAliasingEnabled true)
     (.setSyntaxEditingStyle (get-syntax-style path))
+    (.setLineWrap (contains? wrap-exts (get-extension path)))
     (.setMarginLineEnabled true)
     (.setMarginLinePosition 80)))
 
