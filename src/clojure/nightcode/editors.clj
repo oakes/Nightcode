@@ -503,11 +503,13 @@
 (defn close-selected-editor
   []
   (let [path (ui/get-selected-path)
-        file (io/file path)]
+        file (io/file path)
+        new-path (if (.isDirectory file)
+                   path
+                   (.getCanonicalPath (.getParentFile file)))]
     (remove-editors path)
-    (ui/update-project-tree (if (.isDirectory file)
-                              path
-                              (.getCanonicalPath (.getParentFile file)))))
+    (update-tabs new-path)
+    (ui/update-project-tree new-path))
   true)
 
 ; watchers
