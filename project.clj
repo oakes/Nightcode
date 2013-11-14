@@ -4,7 +4,7 @@
   :dependencies [[com.github.insubstantial/substance "7.2.1"]
                  [com.fifesoft/autocomplete "2.5.0"]
                  [com.fifesoft/rsyntaxtextarea "2.5.0"]
-                 [compliment "0.0.2"]
+                 [compliment "0.0.3"]
                  [leiningen "2.3.3"]
                  [lein-cljsbuild "0.3.3"]
                  [lein-droid "0.2.0"]
