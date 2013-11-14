@@ -9,6 +9,8 @@
             [seesaw.color :as color]
             [seesaw.core :as s]))
 
+(declare show-builder)
+
 ; keep track of open builders
 
 (def builders (atom {}))
@@ -27,14 +29,16 @@
   (when-let [dir (chooser/choose-file :dir (utils/read-pref :android-sdk)
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
-    (utils/write-pref :android-sdk (.getCanonicalPath dir))))
+    (utils/write-pref :android-sdk (.getCanonicalPath dir))
+    (show-builder (ui/get-selected-path))))
 
 (defn set-robovm
   [_]
   (when-let [dir (chooser/choose-file :dir (utils/read-pref :robovm)
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
-    (utils/write-pref :robovm (.getCanonicalPath dir))))
+    (utils/write-pref :robovm (.getCanonicalPath dir))
+    (show-builder (ui/get-selected-path))))
 
 (defn eval-in-repl
   [console path timestamp]
