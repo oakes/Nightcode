@@ -33,4 +33,4 @@
   
   :source-paths ["src/clojure" "../desktop/src-common/clojure" "src"]
   :java-source-paths ["src/java" "gen"]
-  :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"])
+  :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"])
