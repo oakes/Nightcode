@@ -6,7 +6,7 @@
                  [com.fifesoft/rsyntaxtextarea "2.5.0"]
                  [compliment "0.0.3"]
                  [leiningen "2.3.3"]
-                 [lein-cljsbuild "0.3.3"]
+                 [lein-cljsbuild "1.0.0-alpha2"]
                  [lein-droid "0.2.0"]
                  [lein-fruit "0.1.1"]
                  [org.apache.bcel/bcel "5.2"]
