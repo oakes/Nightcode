@@ -8,7 +8,7 @@
   :repositories [["sonatype"
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :profiles {:dev {:dependencies [[android/tools.nrepl "0.2.0-bigstack"]
-                                  [compliment "0.0.2"]]
+                                  [compliment "0.0.3"]]
                    :android {:aot :all-with-unused}}
              :release {:android
                        {;; Specify the path to your private
