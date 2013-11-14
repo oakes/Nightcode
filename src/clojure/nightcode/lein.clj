@@ -64,6 +64,14 @@
             add-robovm-path
             (try (catch Exception e {})))))))
 
+(defn read-android-project
+  [project]
+  (leiningen.droid.classpath/init-hooks)
+  (some-> project
+          (leiningen.core.project/unmerge-profiles [:base])
+          leiningen.droid.utils/android-parameters
+          add-sdk-path))
+
 (defn create-file-from-template
   [dir file-name template-namespace data]
   (let [render (leiningen.new.templates/renderer template-namespace)]
@@ -232,8 +240,9 @@
   [path project]
   (cond
     (is-android-project? path)
-    (doseq [sub-cmd ["build" "apk" "install" "run"]]
-      (leiningen.droid/droid project sub-cmd))
+    (when-let [project (read-android-project project)]
+      (doseq [cmd ["build" "apk" "install" "run"]]
+        (leiningen.droid/execute-subtask project cmd [])))
     (is-ios-project? path)
     (leiningen.fruit/fruit project "doall")
     :else
@@ -243,9 +252,10 @@
   [path project]
   (cond
     (is-android-project? path)
-    (doseq [sub-cmd ["doall" "repl"]]
-      (leiningen.droid/droid project sub-cmd)
-      (Thread/sleep 10000))
+    (when-let [project (read-android-project project)]
+      (doseq [cmd ["doall" "repl"]]
+        (leiningen.droid/execute-subtask project cmd [])
+        (Thread/sleep 10000)))
     :else
     (leiningen.repl/repl project)))
 
@@ -253,10 +263,10 @@
   [path project]
   (cond
     (is-android-project? path)
-    (do (leiningen.droid.classpath/init-hooks)
-      (-> (leiningen.droid/transform-into-release project)
-          add-sdk-path
-          leiningen.droid/execute-release-routine))
+    (some-> project
+            leiningen.droid/transform-into-release
+            read-android-project
+            leiningen.droid/execute-release-routine)
     (is-ios-project? path)
     (leiningen.fruit/fruit project "release")
     :else
