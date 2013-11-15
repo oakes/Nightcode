@@ -255,7 +255,7 @@
     (when-let [project (read-android-project project)]
       (doseq [cmd ["doall" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
-        (Thread/sleep 15000)))
+        (Thread/sleep 10000)))
     :else
     (leiningen.repl/repl project)))
 
