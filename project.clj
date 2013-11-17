@@ -12,6 +12,7 @@
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/core.incubator "0.1.3"]
+                 [org.clojure/tools.cli "0.2.4"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"]
                  [net.java.balloontip/balloontip "1.2.4"]
