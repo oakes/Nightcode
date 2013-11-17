@@ -236,12 +236,23 @@
 
 ; low-level commands
 
+(defn doall-project-task
+  [path project]
+  (cond
+    (is-android-project? path)
+    (when-let [project (read-android-project project)]
+      (doseq [cmd ["doall" "repl"]]
+        (leiningen.droid/execute-subtask project cmd [])
+        (Thread/sleep 20000)))
+    :else
+    (leiningen.repl/repl project)))
+
 (defn run-project-task
   [path project]
   (cond
     (is-android-project? path)
     (when-let [project (read-android-project project)]
-      (doseq [cmd ["build" "apk" "install" "run"]]
+      (doseq [cmd ["run"]]
         (leiningen.droid/execute-subtask project cmd [])))
     (is-ios-project? path)
     (leiningen.fruit/fruit project "doall")
@@ -253,13 +264,29 @@
   (cond
     (is-android-project? path)
     (when-let [project (read-android-project project)]
-      (doseq [cmd ["doall" "repl"]]
+      (doseq [cmd ["run" "forward-port" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
         (Thread/sleep 10000)))
     :else
     (leiningen.repl/repl project)))
 
 (defn build-project-task
+  [path project]
+  (cond
+    (is-android-project? path)
+    (when-let [project (read-android-project project)]
+      (doseq [cmd ["build" "apk" "install"]]
+        (leiningen.droid/execute-subtask project cmd [])))
+    ;(some-> project
+    ;        leiningen.droid/transform-into-release
+    ;        read-android-project
+    ;        leiningen.droid/execute-release-routine)
+    ;(is-ios-project? path)
+    ;(leiningen.fruit/fruit project "release")
+    :else
+    (leiningen.uberjar/uberjar project)))
+
+(defn release-project-task
   [path project]
   (cond
     (is-android-project? path)
@@ -303,6 +330,15 @@
 
 ; high-level commands
 
+(defn doall-project
+  [process in out path]
+  (stop-process process)
+  (->> (do (println (utils/get-string :doalling))
+         (if (should-run-directly? path)
+           (start-process-directly process path doall-project-task)
+           (start-process-indirectly process path class-name "doall")))
+       (start-thread in out)))
+
 (defn run-project
   [process in out path]
   (stop-process process)
@@ -328,6 +364,15 @@
          (if (should-run-directly? path)
            (start-process-directly process path build-project-task)
            (start-process-indirectly process path class-name "build")))
+       (start-thread in out)))
+
+(defn release-project
+  [process in out path]
+  (stop-process process)
+  (->> (do (println (utils/get-string :releasing))
+         (if (should-run-directly? path)
+           (start-process-directly process path release-project-task)
+           (start-process-indirectly process path class-name "release")))
        (start-thread in out)))
 
 (defn test-project
@@ -402,9 +447,11 @@
         project (-> (read-project-clj path)
                     leiningen.core.project/init-project)]
     (case cmd
+      "doall" (doall-project-task path project)
       "run" (run-project-task path project)
       "repl" (run-repl-project-task path project)
       "build" (build-project-task path project)
+      "release" (release-project-task path project)
       "test" (test-project-task path project)
       "clean" (clean-project-task path project)
       "cljsbuild" (cljsbuild-project-task path project)

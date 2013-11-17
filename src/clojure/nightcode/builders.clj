@@ -78,6 +78,12 @@
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         ; create the actions for each button
+        doall-action (fn [_]
+                          (lein/doall-project process in out path)
+                          (s/request-focus! (-> console .getViewport .getView))
+                          (toggle-reload build-group
+                                         (not (lein/is-java-project? path)))
+                          (reset! last-reload (System/currentTimeMillis)))
         run-action (fn [_]
                      (lein/run-project process in out path)
                      (toggle-reload build-group (lein/is-java-project? path)))
@@ -108,7 +114,12 @@
                         (lein/stop-process auto-process)))
         ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
-                    :items [(ui/button :id :run-button
+                    :items [(ui/button :id :doall-button
+                                       :text (utils/get-string :doall)
+                                       :listen [:action doall-action]
+                                       :focusable? false)
+
+                            (ui/button :id :run-button
                                        :text (utils/get-string :run)
                                        :listen [:action run-action]
                                        :focusable? false)
@@ -157,7 +168,8 @@
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
-      (shortcuts/create-mappings {:run-button run-action
+      (shortcuts/create-mappings {:doall-button doall-action
+                                  :run-button run-action
                                   :run-repl-button run-repl-action
                                   :reload-button reload-action
                                   :build-button build-action
