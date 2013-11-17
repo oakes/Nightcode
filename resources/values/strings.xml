@@ -8,6 +8,7 @@
   <string name="import">Import</string>
   <string name="remove">Remove</string>
 
+  <string name="doall">Do all</string>
   <string name="run">Run</string>
   <string name="run_with_repl">Run with REPL</string>
   <string name="reload">Reload</string>
@@ -50,6 +51,7 @@
 
   <string name="no_project_clj">Can\'t find project.clj</string>
   <string name="finished">Finished</string>
+  <string name="doalling">Do all-ing...</string>
   <string name="running">Running...</string>
   <string name="running_with_repl">Running with REPL...</string>
   <string name="building">Building...</string>

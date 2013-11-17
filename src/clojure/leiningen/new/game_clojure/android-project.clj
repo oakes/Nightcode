@@ -3,7 +3,7 @@
   
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9" :use-resources true]
                  [com.badlogicgames.gdx/gdx-backend-android "0.9.9"]
-                 [neko/neko "3.0.0"]
+                 [neko/neko "3.0.0-preview4"]
                  [org.clojure-android/clojure "1.5.1-jb" :use-resources true]]
   :repositories [["sonatype"
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]

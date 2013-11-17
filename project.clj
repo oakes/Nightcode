@@ -7,7 +7,7 @@
                  [compliment "0.0.3"]
                  [leiningen "2.3.3"]
                  [lein-cljsbuild "1.0.0-alpha2"]
-                 [lein-droid "0.2.0"]
+                 [lein-droid "0.2.0-preview4"]
                  [lein-fruit "0.1.1"]
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojure/clojure "1.5.1"]
