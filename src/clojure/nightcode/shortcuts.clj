@@ -36,8 +36,7 @@
    :find-field "F"
    :replace-field "shift R"
    :repl-console "shift E"
-   :project-pane
-   "<html><font face='Lucida Sans'>&uarr; &darr; &crarr;</font></html>"
+   :project-pane "&uarr; &darr; &crarr;"
    :toggle-logcat-button "S"})
 
 (defn create-mappings
@@ -82,7 +81,10 @@
   "Creates a new hint on the given view with the given text."
   [^JComponent view ^String text]
   (when text
-    (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
+    (let [text (str "<html><font face='Lucida Sans' color='#d3d3d3'>"
+                    text
+                    "</font></html>")
+          style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
           ^CenteredPositioner positioner (CenteredPositioner. 0)]
       (.enableFixedAttachLocation positioner true)
       (.setAttachLocation positioner 0.5 0.5)
