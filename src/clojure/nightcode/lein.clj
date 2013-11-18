@@ -253,7 +253,7 @@
   (cond
     (is-android-project? path)
     (when-let [project (read-android-project project)]
-      (doseq [cmd ["doall" "repl"]]
+      (doseq [cmd ["deploy" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
         (Thread/sleep 10000)))
     :else
