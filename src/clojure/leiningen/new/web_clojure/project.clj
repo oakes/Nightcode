@@ -2,9 +2,9 @@
   :description "FIXME: write this!"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-2080"]
-                 [ring "1.1.8"]]
+                 [ring "1.2.1"]]
   :plugins [[lein-cljsbuild "1.0.0"]
-            [lein-ring "0.8.5"]]
+            [lein-ring "0.8.8"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
