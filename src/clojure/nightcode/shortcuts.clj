@@ -23,6 +23,7 @@
    :build-button "B"
    :test-button "T"
    :clean-button "L"
+   :check-versions-button "shift V"
    :stop-button "I"
    :sdk-button "shift K"
    :auto-button "shift A"

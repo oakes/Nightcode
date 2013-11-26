@@ -98,6 +98,8 @@
                       (lein/test-project process in out path))
         clean-action (fn [_]
                        (lein/clean-project process in out path))
+        versions-action (fn [_]
+                          (lein/check-versions-in-project process in out path))
         stop-action (fn [_]
                       (lein/stop-process process))
         auto-action (fn [_]
@@ -133,6 +135,10 @@
                                        :text (utils/get-string :clean)
                                        :listen [:action clean-action]
                                        :focusable? false)
+                            (ui/button :id :check-versions-button
+                                       :text (utils/get-string :check_versions)
+                                       :listen [:action versions-action]
+                                       :focusable? false)
                             (ui/button :id :stop-button
                                        :text (utils/get-string :stop)
                                        :listen [:action stop-action]
@@ -146,7 +152,7 @@
                                        :listen [:action set-robovm]
                                        :focusable? false)
                             (ui/toggle :id :auto-button
-                                       :text (utils/get-string :auto)
+                                       :text (utils/get-string :auto_build)
                                        :listen [:action auto-action]
                                        :focusable? false)])]
     ; disable the reload button when the process ends
@@ -163,6 +169,7 @@
                                   :build-button build-action
                                   :test-button test-action
                                   :clean-button clean-action
+                                  :check-versions-button versions-action
                                   :stop-button stop-action
                                   :sdk-button set-android-sdk
                                   :robovm-button set-robovm
@@ -192,6 +199,10 @@
             is-ios-project? (lein/is-ios-project? path)
             is-java-project? (lein/is-java-project? path)
             is-clojurescript-project? (lein/is-clojurescript-project? path)
+            is-project-clj? (-> (ui/get-selected-path)
+                                io/file
+                                .getName
+                                (= "project.clj"))
             buttons {:#run-repl-button (and (not is-ios-project?)
                                             (not is-java-project?))
                      :#reload-button (and (not is-ios-project?)
@@ -200,7 +211,8 @@
                      :#test-button (not is-java-project?)
                      :#sdk-button is-android-project?
                      :#robovm-button is-ios-project?
-                     :#auto-button is-clojurescript-project?}
+                     :#auto-button is-clojurescript-project?
+                     :#check-versions-button is-project-clj?}
             sdk (get-in project-map [:android :sdk-path])
             robovm (get-in project-map [:ios :robovm-path])]
         ; show/hide buttons

@@ -16,7 +16,8 @@
   <string name="clean">Clean</string>
   <string name="stop">Stop</string>
   <string name="start">Start</string>
-  <string name="auto">Auto</string>
+  <string name="auto_build">Auto Build</string>
+  <string name="check_versions">Check Versions</string>
 
   <string name="android_sdk">Android SDK</string>
   <string name="robovm">RoboVM</string>
@@ -55,6 +56,7 @@
   <string name="building">Building...</string>
   <string name="testing">Testing...</string>
   <string name="cleaning">Cleaning...</string>
+  <string name="checking_versions">Checking Versions...</string>
 
   <string name="save">Save</string>
   <string name="undo">Undo</string>

@@ -1,6 +1,7 @@
 (ns nightcode.lein
   (:require [clojure.java.io :as io]
             [clojure.main]
+            [leiningen.ancient]
             [leiningen.core.eval]
             [leiningen.core.main]
             [leiningen.core.project]
@@ -284,6 +285,10 @@
   [path project]
   (leiningen.cljsbuild/cljsbuild project "auto"))
 
+(defn check-versions-in-project-task
+  [path project]
+  (leiningen.ancient/ancient project ":no-colors"))
+
 (defn hot-swap-project-task
   [path project]
   (when-let [conn (->> (Bootstrap/virtualMachineManager)
@@ -351,6 +356,12 @@
 (defn cljsbuild-project
   [process in out path]
   (->> (start-process-indirectly process path class-name "cljsbuild")
+       (start-thread in out)))
+
+(defn check-versions-in-project
+  [process in out path]
+  (->> (do (println (utils/get-string :checking_versions))
+         (start-process-directly process path check-versions-in-project-task))
        (start-thread in out)))
 
 (defn new-project
