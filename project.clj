@@ -18,6 +18,7 @@
                  [org.lpetit/paredit.clj "0.19.3"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [seesaw "1.4.4"]]
+  :uberjar-exclusions [#"com/amazonaws/*" #"aws/sdk/*"]
   :resource-paths ["resources" "tools"]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
