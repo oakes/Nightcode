@@ -287,7 +287,7 @@
 
 (defn check-versions-in-project-task
   [path project]
-  (leiningen.ancient/ancient project ":all" ":no-profiles" ":no-colors"))
+  (leiningen.ancient/ancient project ":all" ":no-colors"))
 
 (defn hot-swap-project-task
   [path project]
