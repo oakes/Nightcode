@@ -287,7 +287,7 @@
 
 (defn check-versions-in-project-task
   [path project]
-  (leiningen.ancient/ancient project ":no-colors"))
+  (leiningen.ancient/ancient project ":all" ":no-profiles" ":no-colors"))
 
 (defn hot-swap-project-task
   [path project]
@@ -360,6 +360,7 @@
 
 (defn check-versions-in-project
   [process in out path]
+  (stop-process process)
   (->> (do (println (utils/get-string :checking_versions))
          (start-process-directly process path check-versions-in-project-task))
        (start-thread in out)))
