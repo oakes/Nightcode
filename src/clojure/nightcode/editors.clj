@@ -1,5 +1,6 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as io]
+            [clojure.pprint :as pp]
             [clojure.zip :as zip]
             [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
@@ -156,6 +157,10 @@
 (defn toggle-paredit
   [_]
   (reset! paredit-enabled? (not @paredit-enabled?)))
+
+(defn paredit-help
+  [_]
+  (s/alert (with-out-str (pp/pprint pw/advanced-keymap))))
 
 (defn focus-on-field
   [id]
@@ -368,6 +373,11 @@
                                          :visible? is-clojure?
                                          :selected? @paredit-enabled?
                                          :listen [:action toggle-paredit])
+                              (ui/button :id :paredit-help-button
+                                         :text (utils/get-string :paredit_help)
+                                         :focusable? false
+                                         :visible? is-clojure?
+                                         :listen [:action paredit-help])
                               (s/text :id :find-field
                                       :columns 8
                                       :listen [:key-released find-text])
