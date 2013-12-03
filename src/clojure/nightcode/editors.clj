@@ -160,7 +160,13 @@
 
 (defn paredit-help
   [_]
-  (s/alert (with-out-str (pp/pprint pw/advanced-keymap))))
+  (->> pw/advanced-keymap
+       (apply concat)
+       (cons #(compare %1 %2))
+       (apply sorted-map-by)
+       pp/pprint
+       with-out-str
+       s/alert))
 
 (defn focus-on-field
   [id]
