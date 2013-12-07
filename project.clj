@@ -23,4 +23,5 @@
   :java-source-paths ["src/java"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :aot [clojure.main nightcode.core nightcode.lein]
-  :main nightcode.core)
+  :main nightcode.Main
+  :manifest {"SplashScreen-Image" "loading.gif"})
