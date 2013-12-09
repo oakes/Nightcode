@@ -229,6 +229,8 @@
 
 (def ^:const styles {"clj" SyntaxConstants/SYNTAX_STYLE_CLOJURE
                      "cljs" SyntaxConstants/SYNTAX_STYLE_CLOJURE
+                     "cljx" SyntaxConstants/SYNTAX_STYLE_CLOJURE
+                     "edn" SyntaxConstants/SYNTAX_STYLE_CLOJURE
                      "js" SyntaxConstants/SYNTAX_STYLE_JAVASCRIPT
                      "java" SyntaxConstants/SYNTAX_STYLE_JAVA
                      "xml" SyntaxConstants/SYNTAX_STYLE_XML
@@ -238,7 +240,7 @@
                      "json" SyntaxConstants/SYNTAX_STYLE_NONE
                      "md" SyntaxConstants/SYNTAX_STYLE_NONE
                      "txt" SyntaxConstants/SYNTAX_STYLE_NONE})
-(def ^:const clojure-exts #{"clj" "cljs"})
+(def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})
 (def ^:const wrap-exts #{"md" "txt"})
 
 (defn get-extension
@@ -336,7 +338,9 @@
 
 (defn create-editor
   [path extension]
-  (when (and (.isFile (io/file path)) (contains? styles extension))
+  (when (let [pathfile (io/file path)]
+          (and (.isFile pathfile) (or (contains? styles extension)
+                                      (utils/is-text-file? pathfile))))
     (let [; create the text editor object
           ^TextEditorPane text-area (get-text-area path)
           ; get the functions for performing completion and toggling paredit

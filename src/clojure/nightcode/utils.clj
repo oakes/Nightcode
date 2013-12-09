@@ -5,7 +5,8 @@
   (:import [java.io File]
            [java.util Locale]
            [java.util.prefs Preferences]
-           [javax.swing.tree TreePath]))
+           [javax.swing.tree TreePath]
+           [net.sf.jmimemagic Magic MagicMatchNotFoundException]))
 
 ; preferences
 
@@ -128,3 +129,13 @@
            child-path
            (.isDirectory (io/file parent-path))
            (.startsWith child-path (str parent-path File/separator)))))
+
+(defn is-text-file?
+  "Returns true if the file is of type text, false otherwise."
+  [^File file]
+  (try
+    (-> (Magic/getMagicMatch file false)
+        .getMimeType
+        (.startsWith "text"))
+    (catch MagicMatchNotFoundException e
+      nil)))
