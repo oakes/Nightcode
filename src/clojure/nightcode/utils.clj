@@ -136,15 +136,14 @@
                           (into-array Class param-classes))
       (.invoke nil (into-array Object args))))
 
-(def ^:const max-length (* 1024 1024 10))
-
 (defn is-text-file?
   "Returns true if the file is of type text, false otherwise."
   [^File file]
-  (if-let [files-klass (Class/forName "java.nio.file.Files")]
-    (let [path-klass (Class/forName "java.nio.file.Path")]
-      (-> files-klass
-          (call-static-method "probeContentType" [path-klass] (.toPath file))
-          (or "")
-          (.startsWith "text")))
-    (< (.length file) max-length)))
+  (try (let [files-klass (Class/forName "java.nio.file.Files")
+             path-klass (Class/forName "java.nio.file.Path")]
+         (-> files-klass
+             (call-static-method "probeContentType" [path-klass] (.toPath file))
+             (or "")
+             (.startsWith "text")))
+       (catch ClassNotFoundException _
+         false)))
