@@ -5,8 +5,7 @@
   (:import [java.io File]
            [java.util Locale]
            [java.util.prefs Preferences]
-           [javax.swing.tree TreePath]
-           [net.sf.jmimemagic Magic MagicMatchNotFoundException]))
+           [javax.swing.tree TreePath]))
 
 ; preferences
 
@@ -130,12 +129,22 @@
            (.isDirectory (io/file parent-path))
            (.startsWith child-path (str parent-path File/separator)))))
 
+(defn call-static-method
+  [^Class klass ^String method-name param-classes & args]
+  (-> klass
+      (.getDeclaredMethod method-name
+                          (into-array Class param-classes))
+      (.invoke nil (into-array Object args))))
+
+(def ^:const max-length (* 1024 1024 10))
+
 (defn is-text-file?
   "Returns true if the file is of type text, false otherwise."
   [^File file]
-  (try
-    (-> (Magic/getMagicMatch file false)
-        .getMimeType
-        (.startsWith "text"))
-    (catch MagicMatchNotFoundException e
-      nil)))
+  (if-let [files-klass (Class/forName "java.nio.file.Files")]
+    (let [path-klass (Class/forName "java.nio.file.Path")]
+      (-> files-klass
+          (call-static-method "probeContentType" [path-klass] (.toPath file))
+          (or "")
+          (.startsWith "text")))
+    (< (.length file) max-length)))
