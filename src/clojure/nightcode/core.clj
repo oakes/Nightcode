@@ -108,6 +108,12 @@
                           :divider-location 0.8
                           :resize-weight 0.5))))
 
+(defn confirm-exit-app
+  []
+  (if (dialogs/show-shut-down-dialog)
+    (System/exit 0)
+    true))
+
 (defn -main
   "Launches the main window."
   [& args]
@@ -124,7 +130,7 @@
                      :content (get-window-content)
                      :width 1152
                      :height 768
-                     :on-close :exit)
+                     :on-close :nothing)
         ; create the shortcut hints for the main buttons
         shortcuts/create-hints
         ; listen for keys while modifier is down
@@ -142,16 +148,16 @@
               ; down
               40 (p/move-project-tree-selection 1)
               ; Q
-              81 (if (dialogs/show-shut-down-dialog)
-                   (System/exit 0)
-                   true)
+              81 (confirm-exit-app)
               ; W
               87 (editors/close-selected-editor)
               false)))
         ; update the project tree when window comes into focus
         (.addWindowListener (proxy [WindowAdapter] []
                               (windowActivated [e]
-                                (ui/update-project-tree))))
+                                (ui/update-project-tree))
+                              (windowClosing [e]
+                                (confirm-exit-app))))
         ; show the frame
         s/show!))
     ; initialize the project pane
