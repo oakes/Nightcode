@@ -110,9 +110,12 @@
 
 (defn confirm-exit-app
   []
-  (if (dialogs/show-shut-down-dialog)
-    (System/exit 0)
-    true))
+  (let [unsaved-paths (->> (keys @editors/editors)
+                           (filter editors/is-unsaved?)
+                           doall)]
+    (if (dialogs/show-shut-down-dialog unsaved-paths)
+      (System/exit 0)
+      true)))
 
 (defn -main
   "Launches the main window."

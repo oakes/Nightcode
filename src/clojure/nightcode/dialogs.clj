@@ -1,5 +1,6 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [nightcode.utils :as utils]
             [seesaw.core :as s]
             [seesaw.icon :as icon])
@@ -102,8 +103,13 @@
         s/show!)))
 
 (defn show-shut-down-dialog
-  []
-  (-> (s/dialog :content (utils/get-string :quit_confirm)
+  [unsaved-paths]
+  (-> (s/dialog :content (str (when (seq unsaved-paths)
+                                (str (utils/get-string :unsaved_confirm)
+                                     \newline \newline
+                                     (str/join \newline unsaved-paths)
+                                     \newline \newline))
+                              (utils/get-string :quit_confirm))
                 :options [(s/button :text (utils/get-string :quit)
                                     :listen [:action
                                              #(s/return-from-dialog % true)])
