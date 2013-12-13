@@ -355,7 +355,9 @@
 
 (defn cljsbuild-project
   [process in out path]
-  (->> (start-process-indirectly process path class-name "cljsbuild")
+  (->> (if (should-run-directly? path)
+         (start-process-directly process path cljsbuild-project-task)
+         (start-process-indirectly process path class-name "cljsbuild"))
        (start-thread in out)))
 
 (defn check-versions-in-project
