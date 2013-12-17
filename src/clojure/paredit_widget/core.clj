@@ -62,11 +62,11 @@
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
    [nil "\b"] :paredit-backward-delete
-   ["M" ")"] :paredit-close-round-and-newline
    [nil "\""] :paredit-doublequote
    [nil "DEL"] :paredit-forward-delete
-   ; ["C" "K"] :paredit-kill not implemented in paredit.clj
+   ; ["C" "K"] :paredit-kill
    ["M" "("] :paredit-wrap-round
+   ; ["M" ")"] :paredit-close-round-and-newline
    ["M" "s"] :paredit-splice-sexp
    ["M" "r"] :paredit-raise-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
