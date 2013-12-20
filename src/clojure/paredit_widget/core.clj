@@ -96,12 +96,13 @@
         key-text (java.awt.event.KeyEvent/getKeyText key-code)]
     (when *debug* (println [event key-code key-char key-text]))
     [(cond
-      (.isAltDown event) "M"
-      (.isControlDown event) "C"
-      true nil)
+       (.isAltGraphDown event) nil
+       (.isAltDown event) "M"
+       (.isControlDown event) "C"
+       :else nil)
      (if (.isControlDown event)
        key-text
-       (if (#{"Left" "Right"} key-text)
+       (if (get #{"Left" "Right"} key-text)
          key-text
          (str key-char)))]))
 

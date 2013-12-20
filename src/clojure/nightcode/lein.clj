@@ -217,9 +217,9 @@
                             "suspend=n,"
                             "address="
                             debug-port))
-        project (-> project-orig
-                    (assoc :eval-in :trampoline
-                           :jvm-opts jvm-opts))
+        project (assoc project-orig
+                       :eval-in :trampoline
+                       :jvm-opts jvm-opts)
         forms leiningen.core.eval/trampoline-forms
         profiles leiningen.core.eval/trampoline-profiles]
     (reset! forms [])
