@@ -7,8 +7,6 @@
             [seesaw.core :as s])
   (:import [java.awt.event InputMethodListener KeyEvent KeyListener]))
 
-(def ^:dynamic *debug* false)
-
 (defn exec-command [cmd widget buffer]
   (let [old-parse-tree (paredit.parser/buffer-parse-tree @buffer nil)
         old-text (paredit.loc-utils/node-text old-parse-tree)
@@ -80,9 +78,7 @@
 (defn exec-paredit [k w buffer enable?]
   (when-let [cmd (or (default-keymap k)
                      (and @enable? (advanced-keymap k)))]
-    (when *debug* (println [cmd k]))
     (let [result (exec-command cmd w buffer)]
-      (when *debug* (println [cmd result]))
       (insert-result w result))
     cmd))
 
@@ -136,11 +132,3 @@
           (javax.swing.JTextArea. x)
           x)
     get-toggle-fn))
-
-(defn test-paredit-widget []
-  (s/native!)
-  (-> (s/frame :title "Paredit Test"
-               :content (s/config! (paredit-widget "(foo (bar 1))")
-                                   :size [300 :by 300]))
-      s/pack!
-      s/show!))
