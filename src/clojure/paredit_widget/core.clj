@@ -37,7 +37,7 @@
     (.setSelectionStart w (:offset pe))
     (.setSelectionEnd w (+ (:offset pe) (:length pe)))))
 
-(def os-x-charmap
+(def ^:const os-x-charmap
   {"‚" ")" ;;close and round newline
    "Æ" "\"" ;; meta double quote
    "…" ";"  ;; paredit-commit-dwim
@@ -91,18 +91,15 @@
 
 (defn convert-key-event [event]
   (let [key-code (.getKeyCode event)
-        key-char (.getKeyChar event)
-        key-text (KeyEvent/getKeyText key-code)]
-    (when *debug* (println [event key-code key-char key-text]))
+        key-char (.getKeyChar event)]
     [(cond
+       (and (.isAltDown event) (.isControlDown event)) nil
        (.isAltDown event) "M"
        (.isControlDown event) "C"
        :else nil)
-     (if (.isControlDown event)
-       key-text
-       (if (get #{"Left" "Right"} key-text)
-         key-text
-         (str key-char)))]))
+     (if (= KeyEvent/CHAR_UNDEFINED key-char)
+       (KeyEvent/getKeyText key-code)
+       (str key-char))]))
 
 (defn key-event-handler [w buffer enable?]
   (reify KeyListener
