@@ -5,8 +5,7 @@
             [paredit.text-utils]
             [paredit-widget.format :as format]
             [seesaw.core :as s])
-  (:import java.awt.event.KeyListener
-           java.awt.event.InputMethodListener))
+  (:import [java.awt.event InputMethodListener KeyEvent KeyListener]))
 
 (def ^:dynamic *debug* false)
 
@@ -93,7 +92,7 @@
 (defn convert-key-event [event]
   (let [key-code (.getKeyCode event)
         key-char (.getKeyChar event)
-        key-text (java.awt.event.KeyEvent/getKeyText key-code)]
+        key-text (KeyEvent/getKeyText key-code)]
     (when *debug* (println [event key-code key-char key-text]))
     [(cond
        (.isAltDown event) "M"
@@ -106,7 +105,7 @@
          (str key-char)))]))
 
 (defn key-event-handler [w buffer enable?]
-  (reify java.awt.event.KeyListener
+  (reify KeyListener
     (keyReleased [this e] nil)
     (keyTyped [this e]
       (when (and @enable?
@@ -120,7 +119,7 @@
           (if p (.consume e) (format/exec-format k w)))))))
 
 (defn input-method-event-handler [w buffer enable?]
-  (reify java.awt.event.InputMethodListener
+  (reify InputMethodListener
     (inputMethodTextChanged [this e]
       (let [k (convert-input-method-event e)
             p (exec-paredit k w buffer enable?)]

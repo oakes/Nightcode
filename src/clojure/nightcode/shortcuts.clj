@@ -107,15 +107,15 @@
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
     (proxy [KeyEventDispatcher] []
       (dispatchKeyEvent [^KeyEvent e]
+        ; show or hide the shortcut hints
         (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
               current-modifier (.getModifiers e)]
           (reset! is-down? (= (bit-and modifier current-modifier) modifier))
-          ; show or hide the shortcut hints
           (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
                     (= (.getKeyCode e) KeyEvent/VK_META)
                     @is-down?)
             (toggle-hints target @is-down?)))
-        ; provide special actions for certain keys
+        ; run the supplied function if Ctrl is pressed
         (if (and @is-down?
                  (not (.isShiftDown e))
                  (= (.getID e) KeyEvent/KEY_PRESSED))
