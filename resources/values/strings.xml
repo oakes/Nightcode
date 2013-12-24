@@ -69,4 +69,7 @@
   <string name="doc">Doc</string>
   <string name="find">Find</string>
   <string name="replace">Replace</string>
+
+  <string name="ctrl">Ctrl</string>
+  <string name="alt">Alt</string>
 </resources>

@@ -160,13 +160,17 @@
 
 (defn paredit-help
   [_]
-  (->> pw/advanced-keymap
-       (apply concat)
-       (cons #(compare %1 %2))
-       (apply sorted-map-by)
-       pp/pprint
-       with-out-str
-       s/alert))
+  (let [commands (->> pw/advanced-keymap
+                      (apply concat)
+                      (cons #(compare %1 %2))
+                      (apply sorted-map-by))
+        modifiers {"M" (utils/get-string :alt)
+                   "C" (utils/get-string :ctrl)}]
+    (->> (doseq [[k v] commands]
+           (when-let [modifier (get modifiers (first k))]
+             (println modifier "+" (second k) " " (name v))))
+         with-out-str
+         s/alert)))
 
 (defn focus-on-field
   [id]
