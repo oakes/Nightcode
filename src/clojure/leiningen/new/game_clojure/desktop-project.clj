@@ -7,11 +7,7 @@
                  [com.badlogicgames.gdx/gdx-platform "0.9.9"
                   :classifier "natives-desktop"]]
   :repositories [["sonatype"
-                  "https://oss.sonatype.org/content/repositories/snapshots/"]
-                 ["mini2Dx-thirdparty"
-                  "http://mini2dx.org/nexus/content/repositories/thirdparty"]
-                 ["mini2Dx"
-                  "http://mini2dx.org/nexus/content/repositories/releases"]]
+                  "https://oss.sonatype.org/content/repositories/snapshots/"]]
   
   :source-paths ["src/clojure" "src-common/clojure"]
   :java-source-paths ["src/java" "src-common/java"]
