@@ -142,12 +142,12 @@
             (case key-code
               ; enter
               10 (p/toggle-project-tree-selection)
-              ; left
-              37 (p/move-tab-selection -1)
+              ; page up
+              33 (p/move-tab-selection -1)
+              ; page down
+              34 (p/move-tab-selection 1)
               ; up
               38 (p/move-project-tree-selection -1)
-              ; right
-              39 (p/move-tab-selection 1)
               ; down
               40 (p/move-project-tree-selection 1)
               ; Q
