@@ -1,7 +1,7 @@
 (defproject {{name}} "0.0.1-SNAPSHOT"
   :description "FIXME: write this!"
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-2127"]
+                 [org.clojure/clojurescript "0.0-2138"]
                  [ring "1.2.1"]]
   :plugins [[lein-cljsbuild "1.0.1"]
             [lein-ring "0.8.8"]]
