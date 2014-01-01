@@ -44,12 +44,11 @@
                [".gitignore" (java-render "gitignore" data)]
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
-               ["desktop/src-common/clojure/{{path}}.clj"
-                (render "core.clj" data)]
-               ["desktop/src/clojure/{{desktop-path}}.clj"
+               ["desktop/src-common/{{path}}.clj" (render "core.clj" data)]
+               ["desktop/src/{{desktop-path}}.clj"
                 (render "desktop-launcher.clj" data)]
-               "desktop/src-common/java"
-               "desktop/src/java"
+               "desktop/src-common"
+               "desktop/src"
                "desktop/resources"
                ; android
                ["android/project.clj"

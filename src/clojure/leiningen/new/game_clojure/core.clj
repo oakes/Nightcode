@@ -1,37 +1,25 @@
 (ns {{namespace}}
-  (:import [com.badlogic.gdx Game Gdx Graphics Screen]
-           [com.badlogic.gdx.graphics Color GL20]
+  (:require [play-clj.core :refer :all])
+  (:import [com.badlogic.gdx.graphics Color]
            [com.badlogic.gdx.graphics.g2d BitmapFont]
-           [com.badlogic.gdx.scenes.scene2d Stage]
            [com.badlogic.gdx.scenes.scene2d.ui Label Label$LabelStyle]))
 
-(defn show
-  [stage]
+(defn on-show
+  [screen]
+  (create-renderer! screen :type :stage)
   (let [style (Label$LabelStyle. (BitmapFont.) (Color. 1 1 1 1))
         label (Label. "Hello world!" style)]
-    (.addActor stage label)))
+    (set-entities! screen [label])))
 
-(defn render
-  [stage delta]
-  (.glClearColor (Gdx/gl) 0 0 0 0)
-  (.glClear (Gdx/gl) GL20/GL_COLOR_BUFFER_BIT)
-  (doto stage
-    (.act delta)
-    (.draw)))
+(defn on-render
+  [screen]
+  (clear!)
+  (draw! screen (get-entities screen)))
 
-(def main-screen
-  (let [stage (atom nil)]
-    (proxy [Screen] []
-      (show [] (show (reset! stage (Stage.))))
-      (render [delta] (render @stage delta))
-      (dispose [])
-      (hide [])
-      (pause [])
-      (resize [w h])
-      (resume []))))
+(defscreen main-screen
+  :on-show on-show
+  :on-render on-render)
 
-(gen-class
-  :name {{package}}.Game
-  :extends com.badlogic.gdx.Game)
-(defn -create [^Game this]
-  (.setScreen this main-screen))
+(defgame {{app-name}}
+  :on-create (fn [this]
+               (set-screen! this main-screen)))

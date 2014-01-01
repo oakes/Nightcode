@@ -4,7 +4,8 @@
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9" :use-resources true]
                  [com.badlogicgames.gdx/gdx-backend-android "0.9.9"]
                  [neko/neko "3.0.0"]
-                 [org.clojure-android/clojure "1.5.1-jb" :use-resources true]]
+                 [org.clojure-android/clojure "1.5.1-jb" :use-resources true]
+                 [play-clj "0.1.0-SNAPSHOT"]]
   :repositories [["sonatype"
                   "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :profiles {:dev {:dependencies [[android/tools.nrepl "0.2.0-bigstack"]
@@ -31,6 +32,6 @@
             :aot-exclude-ns ["clojure.parallel" "clojure.core.reducers"]
             :dex-opts ["-JXmx2048M"]}
   
-  :source-paths ["src/clojure" "../desktop/src-common/clojure" "src"]
+  :source-paths ["src/clojure" "../desktop/src-common"]
   :java-source-paths ["src/java" "gen"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"])
