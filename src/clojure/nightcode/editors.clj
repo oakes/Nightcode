@@ -79,7 +79,7 @@
          (cons "<center>PgUp PgDn</center>")
          (clojure.string/join "<br/>")
          (str "<html>")
-         (shortcuts/create-hint editor-pane)
+         (shortcuts/create-hint true editor-pane)
          (reset! tabs))
     (shortcuts/toggle-hint @tabs @shortcuts/is-down?)))
 

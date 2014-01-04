@@ -80,18 +80,27 @@
 
 (defn create-hint
   "Creates a new hint on the given view with the given text."
-  [^JComponent view ^String text]
-  (when text
-    (let [text (str "<html><font face='Lucida Sans' color='#d3d3d3'>"
-                    text
-                    "</font></html>")
-          style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
-          ^CenteredPositioner positioner (CenteredPositioner. 0)]
-      (.enableFixedAttachLocation positioner true)
-      (.setAttachLocation positioner 0.5 0.5)
-      (doto (BalloonTip. view text style false)
-        (.setPositioner positioner)
-        (.setVisible false)))))
+  ([view text]
+    (create-hint false view text))
+  ([is-vertically-centered? ^JComponent view ^String text]
+    (when text
+      (let [text (str "<html><font face='Lucida Sans' color='#d3d3d3'>"
+                      text
+                      "</font></html>")
+            style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
+            ^CenteredPositioner positioner (CenteredPositioner. 0)
+            ^BalloonTip tip (BalloonTip. view text style false)
+            y (if is-vertically-centered?
+                (-> (/ (.getHeight view) 2)
+                    (+ (/ (.getHeight tip) 2))
+                    (/ (.getHeight view)))
+                0.5)]
+        (doto positioner
+          (.enableFixedAttachLocation true)
+          (.setAttachLocation 0.5 y))
+        (doto tip
+          (.setPositioner positioner)
+          (.setVisible false))))))
 
 (defn create-hints
   "Creates hints for all widgets within given target with IDs in `mappings`."
