@@ -479,14 +479,14 @@
                   (lein/stop-process! process)
                   (s/config! toggle-btn :text (utils/get-string :start))
                   false)
-          toggle (fn [_]
-                   (reset! is-running? (if @is-running? (stop!) (start!)))
-                   (update-tabs! path))]
+          toggle! (fn [_]
+                    (reset! is-running? (if @is-running? (stop!) (start!)))
+                    (update-tabs! path))]
       ; add the toggle action to the button
-      (s/listen toggle-btn :action toggle)
+      (s/listen toggle-btn :action toggle!)
       ; create shortcuts
       (doto btn-group
-        (shortcuts/create-mappings! {:toggle-logcat-button toggle})
+        (shortcuts/create-mappings! {:toggle-logcat-button toggle!})
         shortcuts/create-hints!)
       ; return a map describing the logcat view
       {:view (s/border-panel :north btn-group :center console)
