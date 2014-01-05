@@ -19,31 +19,31 @@
   "Returns the pane with the project tree."
   [console]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
-        create-new-project (fn [_]
-                             (try (p/new-project (:in console) (:out console))
-                               (catch Exception e
-                                 (.enterLine (:view console) ""))))
+        create-new-project! (fn [_]
+                              (try (p/new-project! (:in console) (:out console))
+                                (catch Exception e
+                                  (.enterLine (:view console) ""))))
         btn-group (s/horizontal-panel
                     :items [(ui/button :id :new-project-button
                                        :text (utils/get-string :new_project)
-                                       :listen [:action create-new-project]
+                                       :listen [:action create-new-project!]
                                        :focusable? false)
                             (ui/button :id :new-file-button
                                        :text (utils/get-string :new_file)
-                                       :listen [:action p/new-file]
+                                       :listen [:action p/new-file!]
                                        :focusable? false)
                             (ui/button :id :rename-file-button
                                        :text (utils/get-string :rename_file)
-                                       :listen [:action p/rename-file]
+                                       :listen [:action p/rename-file!]
                                        :focusable? false
                                        :visible? false)
                             (ui/button :id :import-button
                                        :text (utils/get-string :import)
-                                       :listen [:action p/import-project]
+                                       :listen [:action p/import-project!]
                                        :focusable? false)
                             (ui/button :id :remove-button
                                        :text (utils/get-string :remove)
-                                       :listen [:action p/remove-item]
+                                       :listen [:action p/remove-item!]
                                        :focusable? false)
                             :fill-h])
         project-pane (s/vertical-panel
@@ -51,23 +51,23 @@
                        :items [btn-group
                                (s/scrollable project-tree)])]
     (doto project-tree
-          (.setRootVisible false)
-          (.setShowsRootHandles true)
-          (.addTreeExpansionListener
-            (reify TreeExpansionListener
-              (treeCollapsed [this e] (p/remove-expansion e))
-              (treeExpanded [this e] (p/add-expansion e))))
-          (.addTreeSelectionListener
-            (reify TreeSelectionListener
-              (valueChanged [this e] (p/set-selection e))))
-          (-> .getSelectionModel
-              (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION)))
-    (shortcuts/create-mappings project-pane
-                               {:new-project-button create-new-project
-                                :new-file-button p/new-file
-                                :rename-file-button p/rename-file
-                                :import-button p/import-project
-                                :remove-button p/remove-item})
+      (.setRootVisible false)
+      (.setShowsRootHandles true)
+      (.addTreeExpansionListener
+        (reify TreeExpansionListener
+          (treeCollapsed [this e] (p/remove-expansion! e))
+          (treeExpanded [this e] (p/add-expansion! e))))
+      (.addTreeSelectionListener
+        (reify TreeSelectionListener
+          (valueChanged [this e] (p/set-selection! e))))
+      (-> .getSelectionModel
+          (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION)))
+    (shortcuts/create-mappings! project-pane
+                                {:new-project-button create-new-project!
+                                 :new-file-button p/new-file!
+                                 :rename-file-button p/rename-file!
+                                 :import-button p/import-project!
+                                 :remove-button p/remove-item!})
     project-pane))
 
 (defn get-repl-pane
@@ -75,10 +75,10 @@
   [console]
   (let [run (fn []
               (s/request-focus! (-> console :view .getViewport .getView))
-              (lein/run-repl (:process console) (:in console) (:out console)))]
+              (lein/run-repl! (:process console) (:in console) (:out console)))]
     (run)
     (doto (s/config! (:view console) :id :repl-console)
-      (shortcuts/create-mappings {:repl-console (fn [_] (run))}))))
+      (shortcuts/create-mappings! {:repl-console (fn [_] (run))}))))
 
 (defn get-editor-pane
   "Returns the pane with the editors."
@@ -108,12 +108,12 @@
                           :divider-location 0.8
                           :resize-weight 0.5))))
 
-(defn confirm-exit-app
+(defn confirm-exit-app!
   []
   (let [unsaved-paths (->> (keys @editors/editors)
                            (filter editors/is-unsaved?)
                            doall)]
-    (if (dialogs/show-shut-down-dialog unsaved-paths)
+    (if (dialogs/show-shut-down-dialog! unsaved-paths)
       (System/exit 0)
       true)))
 
@@ -135,33 +135,34 @@
                      :height 768
                      :on-close :nothing)
         ; create the shortcut hints for the main buttons
-        shortcuts/create-hints
+        shortcuts/create-hints!
         ; listen for keys while modifier is down
-        (shortcuts/listen-for-shortcuts
+        (shortcuts/listen-for-shortcuts!
           (fn [key-code]
             (case key-code
               ; enter
-              10 (p/toggle-project-tree-selection)
+              10 (p/toggle-project-tree-selection!)
               ; page up
-              33 (p/move-tab-selection -1)
+              33 (p/move-tab-selection! -1)
               ; page down
-              34 (p/move-tab-selection 1)
+              34 (p/move-tab-selection! 1)
               ; up
-              38 (p/move-project-tree-selection -1)
+              38 (p/move-project-tree-selection! -1)
               ; down
-              40 (p/move-project-tree-selection 1)
+              40 (p/move-project-tree-selection! 1)
               ; Q
-              81 (confirm-exit-app)
+              81 (confirm-exit-app!)
               ; W
-              87 (editors/close-selected-editor)
+              87 (editors/close-selected-editor!)
+              ; else
               false)))
         ; update the project tree when window comes into focus
         (.addWindowListener (proxy [WindowAdapter] []
                               (windowActivated [e]
-                                (ui/update-project-tree))
+                                (ui/update-project-tree!))
                               (windowClosing [e]
-                                (confirm-exit-app))))
+                                (confirm-exit-app!))))
         ; show the frame
         s/show!))
     ; initialize the project pane
-    (ui/update-project-tree)))
+    (ui/update-project-tree!)))

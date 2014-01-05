@@ -73,12 +73,13 @@
           leiningen.droid.utils/android-parameters
           add-sdk-path))
 
-(defn create-file-from-template
+(defn create-file-from-template!
   [dir file-name template-namespace data]
   (let [render (leiningen.new.templates/renderer template-namespace)]
     (binding [leiningen.new.templates/*dir* dir]
       (->> [file-name (render file-name data)]
-           (leiningen.new.templates/->files data)))))
+           (leiningen.new.templates/->files data)
+           io!))))
 
 (defn stale-java-classes
   [project]
@@ -169,7 +170,7 @@
   [in out & body]
   `(start-thread* ~in ~out (fn [] ~@body)))
 
-(defn start-process
+(defn start-process!
   [process path & args]
   (reset! process (.exec (Runtime/getRuntime)
                          (into-array (flatten args))
@@ -188,7 +189,7 @@
       (.waitFor @process)
       (reset! process nil))))
 
-(defn start-process-indirectly
+(defn start-process-indirectly!
   [process path & args]
   (let [project (read-project-clj path)
         java-cmd (or (:java-cmd project) (System/getenv "JAVA_CMD") "java")
@@ -198,16 +199,16 @@
                      .getLocation
                      .toURI
                      io/file)]
-    (start-process process
-                   path
-                   java-cmd
-                   "-cp"
-                   (if (.isDirectory jar-file)
-                     (System/getProperty "java.class.path")
-                     (.getCanonicalPath jar-file))
-                   args)))
+    (start-process! process
+                    path
+                    java-cmd
+                    "-cp"
+                    (if (.isDirectory jar-file)
+                      (System/getProperty "java.class.path")
+                      (.getCanonicalPath jar-file))
+                    args)))
 
-(defn start-process-directly
+(defn start-process-directly!
   [process path func]
   (let [project-orig (read-project-clj path)
         jvm-opts (conj (:jvm-opts project-orig)
@@ -227,9 +228,9 @@
     (func path project)
     (doseq [i (range (count @forms))]
       (->> (leiningen.core.eval/shell-command project (nth @forms i))
-           (start-process process path)))))
+           (start-process! process path)))))
 
-(defn stop-process
+(defn stop-process!
   [process]
   (when @process
     (.destroy @process)
@@ -308,63 +309,63 @@
 
 ; high-level commands
 
-(defn run-project
+(defn run-project!
   [process in out path]
-  (stop-process process)
+  (stop-process! process)
   (->> (do (println (utils/get-string :running))
          (if (should-run-directly? path)
-           (start-process-directly process path run-project-task)
-           (start-process-indirectly process path class-name "run")))
+           (start-process-directly! process path run-project-task)
+           (start-process-indirectly! process path class-name "run")))
        (start-thread in out)))
 
-(defn run-repl-project
+(defn run-repl-project!
   [process in out path]
-  (stop-process process)
+  (stop-process! process)
   (->> (do (println (utils/get-string :running_with_repl))
          (if (should-run-directly? path)
-           (start-process-directly process path run-repl-project-task)
-           (start-process-indirectly process path class-name "repl")))
+           (start-process-directly! process path run-repl-project-task)
+           (start-process-indirectly! process path class-name "repl")))
        (start-thread in out)))
 
-(defn build-project
+(defn build-project!
   [process in out path]
-  (stop-process process)
+  (stop-process! process)
   (->> (do (println (utils/get-string :building))
          (if (should-run-directly? path)
-           (start-process-directly process path build-project-task)
-           (start-process-indirectly process path class-name "build")))
+           (start-process-directly! process path build-project-task)
+           (start-process-indirectly! process path class-name "build")))
        (start-thread in out)))
 
-(defn test-project
+(defn test-project!
   [process in out path]
-  (stop-process process)
+  (stop-process! process)
   (->> (do (println (utils/get-string :testing))
          (if (should-run-directly? path)
-           (start-process-directly process path test-project-task)
-           (start-process-indirectly process path class-name "test")))
+           (start-process-directly! process path test-project-task)
+           (start-process-indirectly! process path class-name "test")))
        (start-thread in out)))
 
-(defn clean-project
+(defn clean-project!
   [process in out path]
-  (stop-process process)
+  (stop-process! process)
   (->> (do (println (utils/get-string :cleaning))
          (if (should-run-directly? path)
-           (start-process-directly process path clean-project-task)
-           (start-process-indirectly process path class-name "clean")))
+           (start-process-directly! process path clean-project-task)
+           (start-process-indirectly! process path class-name "clean")))
        (start-thread in out)))
 
-(defn cljsbuild-project
+(defn cljsbuild-project!
   [process in out path]
   (->> (if (should-run-directly? path)
-         (start-process-directly process path cljsbuild-project-task)
-         (start-process-indirectly process path class-name "cljsbuild"))
+         (start-process-directly! process path cljsbuild-project-task)
+         (start-process-indirectly! process path class-name "cljsbuild"))
        (start-thread in out)))
 
-(defn check-versions-in-project
+(defn check-versions-in-project!
   [process in out path]
-  (stop-process process)
+  (stop-process! process)
   (->> (do (println (utils/get-string :checking_versions))
-         (start-process-directly process path check-versions-in-project-task))
+         (start-process-directly! process path check-versions-in-project-task))
        (start-thread in out)))
 
 (defn new-project
@@ -382,23 +383,23 @@
          (System/setProperty "leiningen.original.pwd" parent-path))
        (redirect-io in out)))
 
-(defn run-repl
+(defn run-repl!
   [process in out]
-  (stop-process process)
-  (->> (start-process-indirectly process nil "clojure.main")
+  (stop-process! process)
+  (->> (start-process-indirectly! process nil "clojure.main")
        (start-thread in out)))
 
-(defn run-logcat
+(defn run-logcat!
   [process in out path]
-  (stop-process process)
-  (->> (start-process process
-                      nil
-                      (-> (read-project-clj path)
-                          :android
-                          :sdk-path
-                          (leiningen.droid.utils/sdk-binary :adb))
-                      "logcat"
-                      "*:I")
+  (stop-process! process)
+  (->> (start-process! process
+                       nil
+                       (-> (read-project-clj path)
+                           :android
+                           :sdk-path
+                           (leiningen.droid.utils/sdk-binary :adb))
+                       "logcat"
+                       "*:I")
        (binding [leiningen.core.main/*exit-process?* false])
        (start-thread in out)))
 

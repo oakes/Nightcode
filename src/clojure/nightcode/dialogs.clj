@@ -6,7 +6,7 @@
             [seesaw.icon :as icon])
   (:import [javax.swing JRadioButton]))
 
-(defn show-remove-dialog
+(defn show-remove-dialog!
   [is-project?]
   (-> (s/dialog :content (utils/get-string (if is-project?
                                              :remove_project_warning
@@ -21,7 +21,7 @@
       s/pack!
       s/show!))
 
-(defn show-file-path-dialog
+(defn show-file-path-dialog!
   [default-path]
   (let [text-field (s/text :id :new-file-path :text default-path)]
     (-> (s/dialog :content (s/vertical-panel
@@ -35,7 +35,7 @@
         s/pack!
         s/show!)))
 
-(defn show-project-clj-dialog
+(defn show-project-clj-dialog!
   []
   (-> (s/dialog :content (utils/get-string :project_clj_required)
                 :options [(s/button :text (utils/get-string :create_project_clj)
@@ -47,7 +47,7 @@
       s/pack!
       s/show!))
 
-(defn show-project-type-dialog
+(defn show-project-type-dialog!
   [dir]
   (let [raw-project-name (.getName dir)
         parent-dir (.getParent dir)
@@ -102,7 +102,7 @@
         s/pack!
         s/show!)))
 
-(defn show-shut-down-dialog
+(defn show-shut-down-dialog!
   [unsaved-paths]
   (-> (s/dialog :content (str (when (seq unsaved-paths)
                                 (str (utils/get-string :unsaved_confirm)

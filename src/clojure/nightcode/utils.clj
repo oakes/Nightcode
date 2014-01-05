@@ -11,10 +11,10 @@
 
 (def ^Preferences prefs (.node (Preferences/userRoot) "nightcode"))
 
-(defn write-pref
+(defn write-pref!
   "Writes a key-value pair to the preference file."
   [k v]
-  (.put prefs (name k) (pr-str v)))
+  (io! (.put prefs (name k) (pr-str v))))
 
 (defn read-pref
   "Reads value from the given key in the preference file."
@@ -74,17 +74,17 @@
                            .getCanonicalPath))]
     (get-relative-path project-path selected-dir)))
 
-(defn delete-file-recursively
+(defn delete-file-recursively!
   "Deletes the given path and all empty parents unless they are in project-set."
   [project-set path]
   (let [file (io/file path)]
     (when (and (= 0 (count (.listFiles file)))
                (not (contains? project-set path)))
-      (.delete file)
+      (io! (.delete file))
       (->> file
            .getParentFile
            .getCanonicalPath
-           (delete-file-recursively project-set)))))
+           (delete-file-recursively! project-set)))))
 
 (defn format-project-name
   "Formats the given string as a valid project name."

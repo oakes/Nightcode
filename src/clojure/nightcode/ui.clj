@@ -32,7 +32,7 @@
       (s/add! panel item))
     panel))
 
-(defn adjust-button
+(defn adjust-button!
   "Adjusts the given button to fit its contents."
   [^JComponent btn]
   (let [width (-> (.getFontMetrics btn (.getFont btn))
@@ -46,12 +46,12 @@
 (defmacro button
   "Creates an adjusted button."
   [& body]
-  `(adjust-button (s/button ~@body)))
+  `(adjust-button! (s/button ~@body)))
 
 (defmacro toggle
   "Creates an adjusted toggle."
   [& body]
-  `(adjust-button (s/toggle ~@body)))
+  `(adjust-button! (s/toggle ~@body)))
 
 (defn create-console
   "Creates a new console object."
@@ -175,29 +175,29 @@
       root-node
       (DefaultTreeModel. false)))
 
-(defn update-project-tree
+(defn update-project-tree!
   "Updates the project tree, optionally with a new selection."
   ([]
-   (update-project-tree (get-project-tree) nil))
+    (update-project-tree! (get-project-tree) nil))
   ([^String new-selection]
-   (update-project-tree (get-project-tree) new-selection))
+    (update-project-tree! (get-project-tree) new-selection))
   ([^JTree tree ^String new-selection]
-   ; put new data in the tree
-   (.setModel tree (create-project-tree))
-   ; wipe out the in-memory expansions
-   (reset! tree-expansions #{})
-   ; get the expansion/selection and apply them to the tree
-   (let [expansion-set (utils/read-pref :expansion-set)
-         selection (or new-selection (utils/read-pref :selection))]
-     (doseq [i (range) :while (< i (.getRowCount tree))]
-       (let [tree-path (.getPathForRow tree i)
-             str-path (utils/tree-path-to-str tree-path)]
-         (when (or (contains? expansion-set str-path)
-                   (utils/is-parent-path? str-path new-selection))
-           (.expandPath tree tree-path)
-           (swap! tree-expansions conj str-path))
-         (when (= selection str-path)
-           (.setSelectionPath tree tree-path)))))
-   ; select the first project if there is nothing selected
-   (when (nil? (.getSelectionPath tree))
-     (.setSelectionRow tree 0))))
+    ; put new data in the tree
+    (.setModel tree (create-project-tree))
+    ; wipe out the in-memory expansions
+    (reset! tree-expansions #{})
+    ; get the expansion/selection and apply them to the tree
+    (let [expansion-set (utils/read-pref :expansion-set)
+          selection (or new-selection (utils/read-pref :selection))]
+      (doseq [i (range) :while (< i (.getRowCount tree))]
+        (let [tree-path (.getPathForRow tree i)
+              str-path (utils/tree-path-to-str tree-path)]
+          (when (or (contains? expansion-set str-path)
+                    (utils/is-parent-path? str-path new-selection))
+            (.expandPath tree tree-path)
+            (swap! tree-expansions conj str-path))
+          (when (= selection str-path)
+            (.setSelectionPath tree tree-path)))))
+    ; select the first project if there is nothing selected
+    (when (nil? (.getSelectionPath tree))
+      (.setSelectionRow tree 0))))

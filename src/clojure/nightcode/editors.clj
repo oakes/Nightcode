@@ -66,7 +66,7 @@
 
 ; actions for editor buttons
 
-(defn update-tabs
+(defn update-tabs!
   [path]
   (doto @ui/ui-root .invalidate .validate)
   (let [editor-pane (ui/get-editor-pane)]
@@ -79,11 +79,11 @@
          (cons "<center>PgUp PgDn</center>")
          (clojure.string/join "<br/>")
          (str "<html>")
-         (shortcuts/create-hint true editor-pane)
+         (shortcuts/create-hint! true editor-pane)
          (reset! tabs))
-    (shortcuts/toggle-hint @tabs @shortcuts/is-down?)))
+    (shortcuts/toggle-hint! @tabs @shortcuts/is-down?)))
 
-(defn toggle-button
+(defn toggle-button!
   [pane id should-enable?]
   (let [button (s/select pane [id])
         is-enabled? (s/config button :enabled?)]
@@ -91,74 +91,75 @@
       (s/config! button :enabled? should-enable?)
       true)))
 
-(defn update-buttons
+(defn update-buttons!
   [pane ^TextEditorPane editor]
-  (when (toggle-button pane :#save-button (.isDirty editor))
-    (update-tabs (ui/get-selected-path)))
-  (toggle-button pane :#undo-button (.canUndo editor))
-  (toggle-button pane :#redo-button (.canRedo editor)))
+  (when (toggle-button! pane :#save-button (.isDirty editor))
+    (update-tabs! (ui/get-selected-path)))
+  (toggle-button! pane :#undo-button (.canUndo editor))
+  (toggle-button! pane :#redo-button (.canRedo editor)))
 
-(defn save-file
+(defn save-file!
   [_]
   (when-let [editor (get-selected-editor)]
-    (with-open [w (io/writer (io/file (ui/get-selected-path)))]
-      (.write editor w))
+    (io!
+      (with-open [w (io/writer (io/file (ui/get-selected-path)))]
+        (.write editor w)))
     (.setDirty editor false)
     (s/request-focus! editor)
-    (update-buttons (get-selected-editor-pane) editor))
+    (update-buttons! (get-selected-editor-pane) editor))
   true)
 
-(defn undo-file
+(defn undo-file!
   [_]
   (when-let [editor (get-selected-editor)]
     (.undoLastAction editor)
-    (update-buttons (get-selected-editor-pane) editor)))
+    (update-buttons! (get-selected-editor-pane) editor)))
 
-(defn redo-file
+(defn redo-file!
   [_]
   (when-let [editor (get-selected-editor)]
     (.redoLastAction editor)
-    (update-buttons (get-selected-editor-pane) editor)))
+    (update-buttons! (get-selected-editor-pane) editor)))
 
-(defn set-font-size
+(defn set-font-size!
   [editor size]
   (.setFont editor (-> editor .getFont (.deriveFont (float size)))))
 
-(defn set-font-sizes
+(defn set-font-sizes!
   [size]
   (doseq [[path editor-map] @editors]
     (when-let [editor (get-editor path)]
-      (set-font-size editor size))))
+      (set-font-size! editor size))))
 
-(defn save-font-size
+(defn save-font-size!
   [size]
-  (utils/write-pref :font-size size))
+  (utils/write-pref! :font-size size))
 
-(defn decrease-font-size
+(defn decrease-font-size!
   [_]
   (swap! font-size dec))
 
-(defn increase-font-size
+(defn increase-font-size!
   [_]
   (swap! font-size inc))
 
-(defn set-paredit
+(defn set-paredit!
   [enable?]
   (doseq [[path editor-map] @editors]
-    (when-let [toggle-paredit-fn (:toggle-paredit-fn editor-map)]
-      (toggle-paredit-fn enable?))
+    (when-let [toggle-paredit-fn! (:toggle-paredit-fn! editor-map)]
+      (toggle-paredit-fn! enable?))
     (-> (s/select (:view editor-map) [:#paredit-button])
         (s/config! :selected? enable?))))
 
-(defn save-paredit
+(defn save-paredit!
   [enable?]
-  (utils/write-pref :enable-paredit enable?))
+  (utils/write-pref! :enable-paredit enable?))
 
-(defn toggle-paredit
+(defn toggle-paredit!
   [_]
   (reset! paredit-enabled? (not @paredit-enabled?)))
 
-(defn paredit-help
+(defn show-paredit-help!
   [_]
   (let [commands (->> pw/advanced-keymap
                       (apply concat)
@@ -172,22 +173,22 @@
          with-out-str
          s/alert)))
 
-(defn focus-on-field
+(defn focus-on-field!
   [id]
   (when-let [pane (get-selected-editor-pane)]
     (doto (s/select pane [id])
       s/request-focus!
       .selectAll)))
 
-(defn focus-on-find
+(defn focus-on-find!
   [_]
-  (focus-on-field :#find-field))
+  (focus-on-field! :#find-field))
 
-(defn focus-on-replace
+(defn focus-on-replace!
   [_]
-  (focus-on-field :#replace-field))
+  (focus-on-field! :#replace-field))
 
-(defn find-text
+(defn find-text!
   [e]
   (when-let [editor (get-selected-editor)]
     (let [key-code (.getKeyCode e)
@@ -210,7 +211,7 @@
         (s/config! e :background (color/color :red))
         (s/config! e :background nil)))))
 
-(defn replace-text
+(defn replace-text!
   [e]
   (when-let [editor (get-selected-editor)]
     (let [key-code (.getKeyCode e)
@@ -227,7 +228,7 @@
         (s/config! e :background (color/color :red))
         (s/config! e :background nil))
       (when is-enter-key?
-        (update-buttons pane editor)))))
+        (update-buttons! pane editor)))))
 
 ; create and show/hide editors for each file
 
@@ -312,7 +313,7 @@
     ; anything else
     :else nil))
 
-(defn set-completion-listener
+(defn set-completion-listener!
   [completer text-area]
   ; this is an ugly way of making sure paredit-widget doesn't
   ; receive the KeyEvent if the AutoComplete window is visible
@@ -338,7 +339,7 @@
       (.setChoicesWindowSize 150 300)
       (.setDescriptionWindowSize 600 300)
       (.install text-area)
-      (set-completion-listener text-area))))
+      (set-completion-listener! text-area))))
 
 (defn create-editor
   [path extension]
@@ -349,74 +350,74 @@
           ^TextEditorPane text-area (get-text-area path)
           ; get the functions for performing completion and toggling paredit
           completer (get-completer text-area extension)
-          do-completion-fn (fn [_]
-                             (s/request-focus! text-area)
-                             (when completer (.doCompletion completer)))
+          do-completion-fn! (fn [_]
+                              (s/request-focus! text-area)
+                              (when completer (.doCompletion completer)))
           is-clojure? (contains? clojure-exts extension)
-          toggle-paredit-fn (when is-clojure? (pw/get-toggle-fn text-area))
+          toggle-paredit-fn! (when is-clojure? (pw/get-toggle-fn text-area))
           ; create the buttons with their actions attached
           btn-group (ui/wrap-panel
                       :items [(ui/button :id :save-button
                                          :text (utils/get-string :save)
                                          :focusable? false
-                                         :listen [:action save-file])
+                                         :listen [:action save-file!])
                               (ui/button :id :undo-button
                                          :text (utils/get-string :undo)
                                          :focusable? false
-                                         :listen [:action undo-file])
+                                         :listen [:action undo-file!])
                               (ui/button :id :redo-button
                                          :text (utils/get-string :redo)
                                          :focusable? false
-                                         :listen [:action redo-file])
+                                         :listen [:action redo-file!])
                               (ui/button :id :font-dec-button
                                          :text (utils/get-string :font_dec)
                                          :focusable? false
-                                         :listen [:action decrease-font-size])
+                                         :listen [:action decrease-font-size!])
                               (ui/button :id :font-inc-button
                                          :text (utils/get-string :font_inc)
                                          :focusable? false
-                                         :listen [:action increase-font-size])
+                                         :listen [:action increase-font-size!])
                               (ui/button :id :doc-button
                                          :text (utils/get-string :doc)
                                          :focusable? false
                                          :visible? (not (nil? completer))
-                                         :listen [:action do-completion-fn])
+                                         :listen [:action do-completion-fn!])
                               (ui/toggle :id :paredit-button
                                          :text (utils/get-string :paredit)
                                          :focusable? false
                                          :visible? is-clojure?
                                          :selected? @paredit-enabled?
-                                         :listen [:action toggle-paredit])
+                                         :listen [:action toggle-paredit!])
                               (ui/button :id :paredit-help-button
                                          :text (utils/get-string :paredit_help)
                                          :focusable? false
                                          :visible? is-clojure?
-                                         :listen [:action paredit-help])
+                                         :listen [:action show-paredit-help!])
                               (s/text :id :find-field
                                       :columns 8
-                                      :listen [:key-released find-text])
+                                      :listen [:key-released find-text!])
                               (s/text :id :replace-field
                                       :columns 8
-                                      :listen [:key-released replace-text])])
+                                      :listen [:key-released replace-text!])])
           ; create the main panel
           text-group (s/border-panel
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
       ; enable paredit if necessary
-      (when toggle-paredit-fn (toggle-paredit-fn @paredit-enabled?))
+      (when toggle-paredit-fn! (toggle-paredit-fn! @paredit-enabled?))
       ; create shortcuts
       (doto text-group
-        (shortcuts/create-mappings {:save-button save-file
-                                    :undo-button undo-file
-                                    :redo-button redo-file
-                                    :font-dec-button decrease-font-size
-                                    :font-inc-button increase-font-size
-                                    :doc-button do-completion-fn
-                                    :paredit-button toggle-paredit
-                                    :find-field focus-on-find
-                                    :replace-field focus-on-replace})
-        shortcuts/create-hints
-        (update-buttons text-area))
+        (shortcuts/create-mappings! {:save-button save-file!
+                                     :undo-button undo-file!
+                                     :redo-button redo-file!
+                                     :font-dec-button decrease-font-size!
+                                     :font-inc-button increase-font-size!
+                                     :doc-button do-completion-fn!
+                                     :paredit-button toggle-paredit!
+                                     :find-field focus-on-find!
+                                     :replace-field focus-on-replace!})
+        shortcuts/create-hints!
+        (update-buttons! text-area))
       ; add prompt text to the fields
       (doseq [[id text] {:#find-field (utils/get-string :find)
                          :#replace-field (utils/get-string :replace)}]
@@ -426,16 +427,16 @@
       (when is-clojure? (.setTabSize text-area 2))
       (s/listen text-area
                 :key-released
-                (fn [e] (update-buttons text-group text-area)))
+                (fn [e] (update-buttons! text-group text-area)))
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
                               (changedUpdate [this e]
-                                (update-buttons text-group text-area))
+                                (update-buttons! text-group text-area))
                               (insertUpdate [this e]
-                                (update-buttons text-group text-area))
+                                (update-buttons! text-group text-area))
                               (removeUpdate [this e]
-                                (update-buttons text-group text-area))))
+                                (update-buttons! text-group text-area))))
       ; load the appropriate (default: dark) theme
       (-> (io/resource @theme-resource)
           io/input-stream
@@ -443,15 +444,15 @@
           (.apply text-area))
       ; set the font size from preferences
       (if @font-size
-        (set-font-size text-area @font-size)
+        (set-font-size! text-area @font-size)
         (reset! font-size (-> text-area .getFont .getSize)))
       ; return a map describing the editor
       {:view text-group
-       :close-fn #(when (.isDirty text-area)
-                    (save-file nil))
+       :close-fn! #(when (.isDirty text-area)
+                     (save-file! nil))
        :italicize-fn #(.isDirty text-area)
        :should-remove-fn #(not (.exists (io/file path)))
-       :toggle-paredit-fn toggle-paredit-fn})))
+       :toggle-paredit-fn! toggle-paredit-fn!})))
 
 (defn create-logcat
   [path]
@@ -470,30 +471,30 @@
           btn-group (ui/wrap-panel :items [toggle-btn])
           ; create the toggle action
           parent-path (-> path io/file .getParentFile .getCanonicalPath)
-          start (fn []
-                  (lein/run-logcat process in out parent-path)
-                  (s/config! toggle-btn :text (utils/get-string :stop))
-                  true)
-          stop (fn []
-                 (lein/stop-process process)
-                 (s/config! toggle-btn :text (utils/get-string :start))
-                 false)
+          start! (fn []
+                   (lein/run-logcat! process in out parent-path)
+                   (s/config! toggle-btn :text (utils/get-string :stop))
+                   true)
+          stop! (fn []
+                  (lein/stop-process! process)
+                  (s/config! toggle-btn :text (utils/get-string :start))
+                  false)
           toggle (fn [_]
-                   (reset! is-running? (if @is-running? (stop) (start)))
-                   (update-tabs path))]
+                   (reset! is-running? (if @is-running? (stop!) (start!)))
+                   (update-tabs! path))]
       ; add the toggle action to the button
       (s/listen toggle-btn :action toggle)
       ; create shortcuts
       (doto btn-group
-        (shortcuts/create-mappings {:toggle-logcat-button toggle})
-        shortcuts/create-hints)
+        (shortcuts/create-mappings! {:toggle-logcat-button toggle})
+        shortcuts/create-hints!)
       ; return a map describing the logcat view
       {:view (s/border-panel :north btn-group :center console)
-       :close-fn #(stop)
+       :close-fn! #(stop!)
        :should-remove-fn #(not (lein/is-android-project? parent-path))
        :italicize-fn (fn [] @is-running?)})))
 
-(defn show-editor
+(defn show-editor!
   [path]
   (let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
@@ -511,31 +512,31 @@
              :default-card)
          (s/show-card! editor-pane))
     ; update tabs
-    (update-tabs path)
+    (update-tabs! path)
     ; give the editor focus if it exists
     (when-let [editor (get-editor path)]
       (s/request-focus! editor))))
 
-(defn remove-editors
+(defn remove-editors!
   [path]
   (let [editor-pane (ui/get-editor-pane)]
-    (doseq [[editor-path {:keys [view close-fn should-remove-fn]}] @editors]
+    (doseq [[editor-path {:keys [view close-fn! should-remove-fn]}] @editors]
       (when (or (utils/is-parent-path? path editor-path)
                 (should-remove-fn))
         (swap! editors dissoc editor-path)
-        (close-fn)
+        (close-fn!)
         (.remove editor-pane view)))))
 
-(defn close-selected-editor
+(defn close-selected-editor!
   []
   (let [path (ui/get-selected-path)
         file (io/file path)
         new-path (if (.isDirectory file)
                    path
                    (.getCanonicalPath (.getParentFile file)))]
-    (remove-editors path)
-    (update-tabs new-path)
-    (ui/update-project-tree new-path))
+    (remove-editors! path)
+    (update-tabs! new-path)
+    (ui/update-project-tree! new-path))
   true)
 
 ; watchers
@@ -544,14 +545,14 @@
            :show-editor
            (fn [_ _ _ path]
              ; remove any editors that aren't valid anymore
-             (remove-editors nil)
+             (remove-editors! nil)
              ; show the selected editor
-             (show-editor path)))
-(add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes x)))
-(add-watch font-size :save-size (fn [_ _ _ x] (save-font-size x)))
+             (show-editor! path)))
+(add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes! x)))
+(add-watch font-size :save-size (fn [_ _ _ x] (save-font-size! x)))
 (add-watch paredit-enabled?
            :set-paredit
-           (fn [_ _ _ enable?] (set-paredit enable?)))
+           (fn [_ _ _ enable?] (set-paredit! enable?)))
 (add-watch paredit-enabled?
            :save-paredit
-           (fn [_ _ _ enable?] (save-paredit enable?)))
+           (fn [_ _ _ enable?] (save-paredit! enable?)))

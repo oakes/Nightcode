@@ -40,7 +40,7 @@
    :project-pane "&uarr; &darr; &crarr;"
    :toggle-logcat-button "S"})
 
-(defn create-mappings
+(defn create-mappings!
   "Maps the given pair of widget IDs and functions together."
   [panel pairs]
   (doseq [[id func] pairs]
@@ -64,7 +64,7 @@
          (is-visible? (.getParent widget)))
     true))
 
-(defn toggle-hint
+(defn toggle-hint!
   "Shows or hides the given hint."
   [^BalloonTip hint show?]
   (.refreshLocation hint)
@@ -72,16 +72,16 @@
     (s/show! hint)
     (s/hide! hint)))
 
-(defn toggle-hints
+(defn toggle-hints!
   "Shows or hides all hints in the given target."
   [target show?]
   (doseq [hint (s/select target [:BalloonTip])]
-    (toggle-hint hint show?)))
+    (toggle-hint! hint show?)))
 
-(defn create-hint
+(defn create-hint!
   "Creates a new hint on the given view with the given text."
   ([view text]
-    (create-hint false view text))
+    (create-hint! false view text))
   ([is-vertically-centered? ^JComponent view ^String text]
     (when text
       (let [text (str "<html><font face='Lucida Sans' color='#d3d3d3'>"
@@ -102,14 +102,14 @@
           (.setPositioner positioner)
           (.setVisible false))))))
 
-(defn create-hints
+(defn create-hints!
   "Creates hints for all widgets within given target with IDs in `mappings`."
   [target]
   (doseq [[id mapping] mappings]
     (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
-      (create-hint btn mapping))))
+      (create-hint! btn mapping))))
 
-(defn listen-for-shortcuts
+(defn listen-for-shortcuts!
   "Creates a global listener for shortcuts."
   [target func]
   (.addKeyEventDispatcher
@@ -123,7 +123,7 @@
           (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
                     (= (.getKeyCode e) KeyEvent/VK_META)
                     @is-down?)
-            (toggle-hints target @is-down?)))
+            (toggle-hints! target @is-down?)))
         ; run the supplied function if Ctrl is pressed
         (if (and @is-down?
                  (not (.isShiftDown e))
