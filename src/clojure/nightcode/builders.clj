@@ -93,9 +93,9 @@
       (ui/config! view id :background (when-not is-set? (color/color :red))))))
 
 (defn toggle-enable!
-  [{:keys [view is-running-fn]} path]
+  [{:keys [view process]} path]
   (let [is-java-project? (lein/is-java-project? path)
-        is-running? (apply is-running-fn [])
+        is-running? (not (nil? @process))
         buttons {:#run-button (not is-running?)
                  :#run-repl-button (not is-running?)
                  :#reload-button is-running?
@@ -217,7 +217,7 @@
     {:view build-group
      :close-fn! #(stop! nil)
      :should-remove-fn #(not (utils/is-project-path? path))
-     :is-running-fn #(not (nil? @process))}))
+     :process process}))
 
 (defn show-builder!
   [path]
