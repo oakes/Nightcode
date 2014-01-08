@@ -85,10 +85,10 @@
 
 (defn update-buttons!
   [pane ^TextEditorPane editor]
-  (when (ui/toggle-button! pane :#save-button (.isDirty editor))
+  (when (ui/config! pane :#save-button :enabled? (.isDirty editor))
     (update-tabs! (ui/get-selected-path)))
-  (ui/toggle-button! pane :#undo-button (.canUndo editor))
-  (ui/toggle-button! pane :#redo-button (.canRedo editor)))
+  (ui/config! pane :#undo-button :enabled? (.canUndo editor))
+  (ui/config! pane :#redo-button :enabled? (.canRedo editor)))
 
 (defn save-file!
   [_]

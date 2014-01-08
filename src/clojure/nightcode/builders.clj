@@ -60,7 +60,7 @@
 ; button toggling functions
 
 (defn toggle-visible!
-  [builder path]
+  [{:keys [view]} path]
   (let [is-android-project? (lein/is-android-project? path)
         is-ios-project? (lein/is-ios-project? path)
         is-java-project? (lein/is-java-project? path)
@@ -80,24 +80,22 @@
                  :#auto-button is-clojurescript-project?
                  :#check-versions-button is-project-clj?}]
     (doseq [[id should-show?] buttons]
-      (s/config! (s/select (:view builder) [id])
-                 :visible? should-show?))))
+      (ui/config! view id :visible? should-show?))))
 
 (defn toggle-color!
-  [builder path]
+  [{:keys [view]} path]
   (let [project-map (lein/read-project-clj path)
         sdk (get-in project-map [:android :sdk-path])
         robovm (get-in project-map [:ios :robovm-path])
         buttons {:#sdk-button (and sdk (.exists (io/file sdk)))
                  :#robovm-button (and robovm (.exists (io/file robovm)))}]
     (doseq [[id is-set?] buttons]
-      (s/config! (s/select (:view builder) [id])
-                 :background (when-not is-set? (color/color :red))))))
+      (ui/config! view id :background (when-not is-set? (color/color :red))))))
 
 (defn toggle-enable!
-  [builder path]
+  [{:keys [view is-running-fn]} path]
   (let [is-java-project? (lein/is-java-project? path)
-        is-running? (apply (:is-running? builder) [])
+        is-running? (apply is-running-fn [])
         buttons {:#run-button (not is-running?)
                  :#run-repl-button (not is-running?)
                  :#reload-button is-running?
@@ -107,7 +105,7 @@
                  :#stop-button is-running?
                  :#check-versions-button (not is-running?)}]
     (doseq [[id should-enable?] buttons]
-      (ui/toggle-button! (:view builder) id should-enable?))))
+      (ui/config! view id :enabled? should-enable?))))
 
 ; create and show/hide builders for each project
 
@@ -147,8 +145,8 @@
         stop! (fn [_]
                 (lein/stop-process! process))
         auto-build! (fn [_]
-                      (-> (s/select build-group [:#auto-button])
-                          (s/config! :selected? (nil? @auto-process)))
+                      (ui/config! build-group :#auto-button
+                                  :selected? (nil? @auto-process))
                       (if (nil? @auto-process)
                         (lein/cljsbuild-project! auto-process in out path)
                         (lein/stop-process! auto-process)))
@@ -219,7 +217,7 @@
     {:view build-group
      :close-fn! #(stop! nil)
      :should-remove-fn #(not (utils/is-project-path? path))
-     :is-running? #(not (nil? @process))}))
+     :is-running-fn #(not (nil? @process))}))
 
 (defn show-builder!
   [path]

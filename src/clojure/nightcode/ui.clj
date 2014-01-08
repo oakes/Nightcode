@@ -43,13 +43,12 @@
     (doto btn
       (.setPreferredSize (Dimension. width height)))))
 
-(defn toggle-button!
-  "Enables or disables an existing button if necessary."
-  [pane id should-enable?]
-  (let [button (s/select pane [id])
-        is-enabled? (s/config button :enabled?)]
-    (when (not= should-enable? is-enabled?)
-      (s/config! button :enabled? should-enable?)
+(defn config!
+  "Sets a widget's property if necessary."
+  [pane id k v]
+  (when-let [widget (s/select pane [id])]
+    (when (not= v (s/config widget k))
+      (s/config! widget k v)
       true)))
 
 (defmacro button
