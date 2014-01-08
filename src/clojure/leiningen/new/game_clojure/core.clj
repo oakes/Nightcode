@@ -7,10 +7,8 @@
 (defscreen main-screen
   :on-show
   (fn [screen entities]
-    (create-renderer! screen :type :stage)
-    (let [style (Label$LabelStyle. (BitmapFont.) (Color. 1 1 1 1))
-          label (Label. "Hello world!" style)]
-      [label]))
+    (update! screen :renderer (stage))
+    (conj entities (label "Hello world!" (color :white))))
   :on-render
   (fn [screen entities]
     (clear!)

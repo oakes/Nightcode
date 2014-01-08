@@ -365,7 +365,7 @@
   [process in out path]
   (stop-process! process)
   (->> (do (println (utils/get-string :checking_versions))
-         (start-process-directly! process path check-versions-in-project-task))
+         (start-process-indirectly! process path class-name "check-versions"))
        (start-thread! in out)))
 
 (defn new-project!
@@ -423,5 +423,6 @@
       "test" (test-project-task path project)
       "clean" (clean-project-task path project)
       "cljsbuild" (cljsbuild-project-task path project)
+      "check-versions" (check-versions-in-project-task path project)
       nil))
   (System/exit 0))
