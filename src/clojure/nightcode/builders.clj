@@ -57,11 +57,6 @@
          (binding [*read-eval* false])))
   (s/request-focus! (-> console .getViewport .getView)))
 
-(defn toggle-reload!
-  [target enable?]
-  (-> (s/select target [:#reload-button])
-      (s/config! :enabled? enable?)))
-
 ; create and show/hide builders for each project
 
 (defn create-builder
@@ -79,13 +74,10 @@
                       :center (s/config! console :id :build-console))
         ; create the actions for each button
         run! (fn [_]
-               (lein/run-project! process in out path)
-               (toggle-reload! build-group (lein/is-java-project? path)))
+               (lein/run-project! process in out path))
         run-repl! (fn [_]
                     (lein/run-repl-project! process in out path)
                     (s/request-focus! (-> console .getViewport .getView))
-                    (toggle-reload! build-group
-                                    (not (lein/is-java-project? path)))
                     (reset! last-reload (System/currentTimeMillis)))
         reload! (fn [_]
                   (if (lein/is-java-project? path)
@@ -155,11 +147,14 @@
                                        :text (utils/get-string :auto_build)
                                        :listen [:action auto-build!]
                                        :focusable? false)])]
-    ; disable the reload button when the process ends
+    ; enable/disable buttons appropriately
     (add-watch process
-               :toggle-reload
+               :toggle-buttons
                (fn [_ _ _ new-state]
-                 (when-not new-state (toggle-reload! build-group false))))
+                 (-> (s/select build-group [:#reload-button])
+                     (s/config! :enabled? (not (nil? new-state))))
+                 (-> (s/select build-group [:#run-repl-button])
+                     (s/config! :enabled? (nil? new-state)))))
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
