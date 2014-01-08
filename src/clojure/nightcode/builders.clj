@@ -57,6 +57,58 @@
          (binding [*read-eval* false])))
   (s/request-focus! (-> console .getViewport .getView)))
 
+; button toggling functions
+
+(defn toggle-visible!
+  [builder path]
+  (let [is-android-project? (lein/is-android-project? path)
+        is-ios-project? (lein/is-ios-project? path)
+        is-java-project? (lein/is-java-project? path)
+        is-clojurescript-project? (lein/is-clojurescript-project? path)
+        is-project-clj? (-> (ui/get-selected-path)
+                            io/file
+                            .getName
+                            (= "project.clj"))
+        buttons {:#run-repl-button (and (not is-ios-project?)
+                                        (not is-java-project?))
+                 :#reload-button (and (not is-ios-project?)
+                                      (not (and is-java-project?
+                                                is-android-project?)))
+                 :#test-button (not is-java-project?)
+                 :#sdk-button is-android-project?
+                 :#robovm-button is-ios-project?
+                 :#auto-button is-clojurescript-project?
+                 :#check-versions-button is-project-clj?}]
+    (doseq [[id should-show?] buttons]
+      (s/config! (s/select (:view builder) [id])
+                 :visible? should-show?))))
+
+(defn toggle-color!
+  [builder path]
+  (let [project-map (lein/read-project-clj path)
+        sdk (get-in project-map [:android :sdk-path])
+        robovm (get-in project-map [:ios :robovm-path])
+        buttons {:#sdk-button (and sdk (.exists (io/file sdk)))
+                 :#robovm-button (and robovm (.exists (io/file robovm)))}]
+    (doseq [[id is-set?] buttons]
+      (s/config! (s/select (:view builder) [id])
+                 :background (when-not is-set? (color/color :red))))))
+
+(defn toggle-enable!
+  [builder path]
+  (let [is-java-project? (lein/is-java-project? path)
+        is-running? (apply (:is-running? builder) [])
+        buttons {:#run-button (not is-running?)
+                 :#run-repl-button (not is-running?)
+                 :#reload-button is-running?
+                 :#build-button (not is-running?)
+                 :#test-button (not is-running?)
+                 :#clean-button (not is-running?)
+                 :#stop-button is-running?
+                 :#check-versions-button (not is-running?)}]
+    (doseq [[id should-enable?] buttons]
+      (ui/toggle-button! (:view builder) id should-enable?))))
+
 ; create and show/hide builders for each project
 
 (defn create-builder
@@ -113,8 +165,7 @@
                             (ui/button :id :reload-button
                                        :text (utils/get-string :reload)
                                        :listen [:action reload!]
-                                       :focusable? false
-                                       :enabled? false)
+                                       :focusable? false)
                             (ui/button :id :build-button
                                        :text (utils/get-string :build)
                                        :listen [:action build!]
@@ -147,13 +198,8 @@
                                        :text (utils/get-string :auto_build)
                                        :listen [:action auto-build!]
                                        :focusable? false)])]
-    ; enable/disable buttons appropriately
-    (add-watch process
-               :toggle-buttons
-               (fn [_ _ _ new-state]
-                 (doto build-group
-                   (ui/toggle-button! :#reload-button (not (nil? new-state)))
-                   (ui/toggle-button! :#run-repl-button (nil? new-state)))))
+    ; refresh the builder when the process state changes
+    (add-watch process :refresh-builder (fn [_ _ _ _] (show-builder! path)))
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
@@ -172,41 +218,8 @@
     ; return a map describing the builder
     {:view build-group
      :close-fn! #(stop! nil)
-     :should-remove-fn #(not (utils/is-project-path? path))}))
-
-(defn toggle-visibility!
-  [target path]
-  (let [is-android-project? (lein/is-android-project? path)
-        is-ios-project? (lein/is-ios-project? path)
-        is-java-project? (lein/is-java-project? path)
-        is-clojurescript-project? (lein/is-clojurescript-project? path)
-        is-project-clj? (-> (ui/get-selected-path)
-                            io/file
-                            .getName
-                            (= "project.clj"))
-        buttons {:#run-repl-button (and (not is-ios-project?)
-                                        (not is-java-project?))
-                 :#reload-button (and (not is-ios-project?)
-                                      (not (and is-java-project?
-                                                is-android-project?)))
-                 :#test-button (not is-java-project?)
-                 :#sdk-button is-android-project?
-                 :#robovm-button is-ios-project?
-                 :#auto-button is-clojurescript-project?
-                 :#check-versions-button is-project-clj?}]
-    (doseq [[id should-show?] buttons]
-      (s/config! (s/select target [id]) :visible? should-show?))))
-
-(defn toggle-color!
-  [target path]
-  (let [project-map (lein/read-project-clj path)
-        sdk (get-in project-map [:android :sdk-path])
-        robovm (get-in project-map [:ios :robovm-path])
-        buttons {:#sdk-button (and sdk (.exists (io/file sdk)))
-                 :#robovm-button (and robovm (.exists (io/file robovm)))}]
-    (doseq [[id is-set?] buttons]
-      (s/config! (s/select target [id])
-                 :background (when-not is-set? (color/color :red))))))
+     :should-remove-fn #(not (utils/is-project-path? path))
+     :is-running? #(not (nil? @process))}))
 
 (defn show-builder!
   [path]
@@ -221,10 +234,11 @@
     ; display the correct card
     (s/show-card! pane (if (contains? @builders path) path :default-card))
     ; modify pane based on the project
-    (when (contains? @builders path)
-      (doto (get-in @builders [path :view])
-        (toggle-visibility! path)
-        (toggle-color! path)))))
+    (when-let [builder (get @builders path)]
+      (doto builder
+        (toggle-visible! path)
+        (toggle-color! path)
+        (toggle-enable! path)))))
 
 (defn remove-builders!
   [path]
