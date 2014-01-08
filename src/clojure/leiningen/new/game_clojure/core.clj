@@ -1,8 +1,5 @@
 (ns {{namespace}}
-  (:require [play-clj.core :refer :all])
-  (:import [com.badlogic.gdx.graphics Color]
-           [com.badlogic.gdx.graphics.g2d BitmapFont]
-           [com.badlogic.gdx.scenes.scene2d.ui Label Label$LabelStyle]))
+  (:require [play-clj.core :refer :all]))
 
 (defscreen main-screen
   :on-show
@@ -12,8 +9,7 @@
   :on-render
   (fn [screen entities]
     (clear!)
-    (draw! screen entities)
-    entities))
+    (draw! screen entities)))
 
 (defgame {{app-name}}
   :on-create
