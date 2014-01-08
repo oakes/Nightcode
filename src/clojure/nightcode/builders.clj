@@ -81,7 +81,7 @@
                     (reset! last-reload (System/currentTimeMillis)))
         reload! (fn [_]
                   (if (lein/is-java-project? path)
-                    (lein/run-hot-swap in out path)
+                    (lein/run-hot-swap! in out path)
                     (eval-in-repl! console path @last-reload))
                   (reset! last-reload (System/currentTimeMillis)))
         build! (fn [_]

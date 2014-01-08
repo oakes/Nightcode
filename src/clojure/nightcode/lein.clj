@@ -368,7 +368,7 @@
          (start-process-directly! process path check-versions-in-project-task))
        (start-thread in out)))
 
-(defn new-project
+(defn new-project!
   [in out parent-path project-type project-name package-name]
   (->> (cond
          (= project-type :android-clojure)
@@ -403,7 +403,7 @@
        (binding [leiningen.core.main/*exit-process?* false])
        (start-thread in out)))
 
-(defn run-hot-swap
+(defn run-hot-swap!
   [in out path]
   (->> (hot-swap-project-task path (read-project-clj path))
        (start-thread in out)))
