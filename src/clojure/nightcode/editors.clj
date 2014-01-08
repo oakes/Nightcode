@@ -83,20 +83,12 @@
          (reset! tabs))
     (shortcuts/toggle-hint! @tabs @shortcuts/is-down?)))
 
-(defn toggle-button!
-  [pane id should-enable?]
-  (let [button (s/select pane [id])
-        is-enabled? (s/config button :enabled?)]
-    (when (not= should-enable? is-enabled?)
-      (s/config! button :enabled? should-enable?)
-      true)))
-
 (defn update-buttons!
   [pane ^TextEditorPane editor]
-  (when (toggle-button! pane :#save-button (.isDirty editor))
+  (when (ui/toggle-button! pane :#save-button (.isDirty editor))
     (update-tabs! (ui/get-selected-path)))
-  (toggle-button! pane :#undo-button (.canUndo editor))
-  (toggle-button! pane :#redo-button (.canRedo editor)))
+  (ui/toggle-button! pane :#undo-button (.canUndo editor))
+  (ui/toggle-button! pane :#redo-button (.canRedo editor)))
 
 (defn save-file!
   [_]

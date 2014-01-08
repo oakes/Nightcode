@@ -151,10 +151,9 @@
     (add-watch process
                :toggle-buttons
                (fn [_ _ _ new-state]
-                 (-> (s/select build-group [:#reload-button])
-                     (s/config! :enabled? (not (nil? new-state))))
-                 (-> (s/select build-group [:#run-repl-button])
-                     (s/config! :enabled? (nil? new-state)))))
+                 (doto build-group
+                   (ui/toggle-button! :#reload-button (not (nil? new-state)))
+                   (ui/toggle-button! :#run-repl-button (nil? new-state)))))
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
@@ -175,6 +174,40 @@
      :close-fn! #(stop! nil)
      :should-remove-fn #(not (utils/is-project-path? path))}))
 
+(defn toggle-visibility!
+  [target path]
+  (let [is-android-project? (lein/is-android-project? path)
+        is-ios-project? (lein/is-ios-project? path)
+        is-java-project? (lein/is-java-project? path)
+        is-clojurescript-project? (lein/is-clojurescript-project? path)
+        is-project-clj? (-> (ui/get-selected-path)
+                            io/file
+                            .getName
+                            (= "project.clj"))
+        buttons {:#run-repl-button (and (not is-ios-project?)
+                                        (not is-java-project?))
+                 :#reload-button (and (not is-ios-project?)
+                                      (not (and is-java-project?
+                                                is-android-project?)))
+                 :#test-button (not is-java-project?)
+                 :#sdk-button is-android-project?
+                 :#robovm-button is-ios-project?
+                 :#auto-button is-clojurescript-project?
+                 :#check-versions-button is-project-clj?}]
+    (doseq [[id should-show?] buttons]
+      (s/config! (s/select target [id]) :visible? should-show?))))
+
+(defn toggle-color!
+  [target path]
+  (let [project-map (lein/read-project-clj path)
+        sdk (get-in project-map [:android :sdk-path])
+        robovm (get-in project-map [:ios :robovm-path])
+        buttons {:#sdk-button (and sdk (.exists (io/file sdk)))
+                 :#robovm-button (and robovm (.exists (io/file robovm)))}]
+    (doseq [[id is-set?] buttons]
+      (s/config! (s/select target [id])
+                 :background (when-not is-set? (color/color :red))))))
+
 (defn show-builder!
   [path]
   (let [pane (s/select @ui/ui-root [:#builder-pane])]
@@ -189,37 +222,9 @@
     (s/show-card! pane (if (contains? @builders path) path :default-card))
     ; modify pane based on the project
     (when (contains? @builders path)
-      (let [project-map (lein/read-project-clj path)
-            is-android-project? (lein/is-android-project? path)
-            is-ios-project? (lein/is-ios-project? path)
-            is-java-project? (lein/is-java-project? path)
-            is-clojurescript-project? (lein/is-clojurescript-project? path)
-            is-project-clj? (-> (ui/get-selected-path)
-                                io/file
-                                .getName
-                                (= "project.clj"))
-            buttons {:#run-repl-button (and (not is-ios-project?)
-                                            (not is-java-project?))
-                     :#reload-button (and (not is-ios-project?)
-                                          (not (and is-java-project?
-                                                    is-android-project?)))
-                     :#test-button (not is-java-project?)
-                     :#sdk-button is-android-project?
-                     :#robovm-button is-ios-project?
-                     :#auto-button is-clojurescript-project?
-                     :#check-versions-button is-project-clj?}
-            sdk (get-in project-map [:android :sdk-path])
-            robovm (get-in project-map [:ios :robovm-path])]
-        ; show/hide buttons
-        (doseq [[id should-show?] buttons]
-          (-> (s/select (get-in @builders [path :view]) [id])
-              (s/config! :visible? should-show?)))
-        ; make buttons red if they aren't set
-        (doseq [[button set?]
-                {:#sdk-button (and sdk (.exists (io/file sdk)))
-                 :#robovm-button (and robovm (.exists (io/file robovm)))}]
-          (-> (s/select (get-in @builders [path :view]) [button])
-              (s/config! :background (when-not set? (color/color :red)))))))))
+      (doto (get-in @builders [path :view])
+        (toggle-visibility! path)
+        (toggle-color! path)))))
 
 (defn remove-builders!
   [path]
