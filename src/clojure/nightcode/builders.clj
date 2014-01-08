@@ -93,12 +93,12 @@
       (ui/config! view id :background (when-not is-set? (color/color :red))))))
 
 (defn toggle-enable!
-  [{:keys [view process]} path]
+  [{:keys [view process last-reload]} path]
   (let [is-java-project? (lein/is-java-project? path)
         is-running? (not (nil? @process))
         buttons {:#run-button (not is-running?)
                  :#run-repl-button (not is-running?)
-                 :#reload-button is-running?
+                 :#reload-button (not (nil? @last-reload))
                  :#build-button (not is-running?)
                  :#test-button (not is-running?)
                  :#clean-button (not is-running?)
@@ -118,17 +118,20 @@
         ; keep track of the processes and the last reload timestamp
         process (atom nil)
         auto-process (atom nil)
-        last-reload (atom 0)
+        last-reload (atom nil)
         ; create the main panel that will hold the console and buttons
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
         ; create the actions for each button
         run! (fn [_]
+               (when (lein/is-java-project? path)
+                 (reset! last-reload (System/currentTimeMillis)))
                (lein/run-project! process in out path))
         run-repl! (fn [_]
+                    (when (not (lein/is-java-project? path))
+                      (reset! last-reload (System/currentTimeMillis)))
                     (lein/run-repl-project! process in out path)
-                    (s/request-focus! (-> console .getViewport .getView))
-                    (reset! last-reload (System/currentTimeMillis)))
+                    (s/request-focus! (-> console .getViewport .getView)))
         reload! (fn [_]
                   (if (lein/is-java-project? path)
                     (lein/run-hot-swap! in out path)
@@ -197,7 +200,11 @@
                                        :listen [:action auto-build!]
                                        :focusable? false)])]
     ; refresh the builder when the process state changes
-    (add-watch process :refresh-builder (fn [_ _ _ _] (show-builder! path)))
+    (add-watch process
+               :refresh-builder
+               (fn [_ _ _ new-state]
+                 (when (nil? new-state) (reset! last-reload nil))
+                 (show-builder! path)))
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
@@ -217,7 +224,8 @@
     {:view build-group
      :close-fn! #(stop! nil)
      :should-remove-fn #(not (utils/is-project-path? path))
-     :process process}))
+     :process process
+     :last-reload last-reload}))
 
 (defn show-builder!
   [path]
