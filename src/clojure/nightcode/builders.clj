@@ -54,8 +54,7 @@
          read-string
          pr-str
          (.enterLine console)
-         (binding [*read-eval* false])))
-  (s/request-focus! (-> console .getViewport .getView)))
+         (binding [*read-eval* false]))))
 
 ; button toggling functions
 
