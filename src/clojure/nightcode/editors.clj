@@ -227,7 +227,6 @@
 (def ^:const styles {"as"         SyntaxConstants/SYNTAX_STYLE_ACTIONSCRIPT
                      "asm"        SyntaxConstants/SYNTAX_STYLE_ASSEMBLER_X86
                      "bat"        SyntaxConstants/SYNTAX_STYLE_WINDOWS_BATCH
-                     "BAT"        SyntaxConstants/SYNTAX_STYLE_WINDOWS_BATCH
                      "c"          SyntaxConstants/SYNTAX_STYLE_C
                      "cc"         SyntaxConstants/SYNTAX_STYLE_C
                      "cl"         SyntaxConstants/SYNTAX_STYLE_LISP
@@ -252,7 +251,6 @@
                      "lisp"       SyntaxConstants/SYNTAX_STYLE_LISP
                      "lua"        SyntaxConstants/SYNTAX_STYLE_LUA
                      "makefile"   SyntaxConstants/SYNTAX_STYLE_MAKEFILE
-                     "Makefile"   SyntaxConstants/SYNTAX_STYLE_MAKEFILE
                      "markdown"   SyntaxConstants/SYNTAX_STYLE_NONE
                      "md"         SyntaxConstants/SYNTAX_STYLE_NONE
                      "pas"        SyntaxConstants/SYNTAX_STYLE_DELPHI
