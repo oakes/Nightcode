@@ -4,4 +4,4 @@ Nightcode is a simple IDE for Clojure and Java. It integrates a copy of Leininge
 
 ## Licensing
 
-All source files that originate from this project are dedicated to the public domain. That particularly includes the files in `src/clojure/nightcode`. All third-party code in this project remains under their original licenses. I would love pull requests, and will assume that they are also dedicated to the public domain.
+All files that originate from this project are dedicated to the public domain. That particularly includes the files in `src/clojure/nightcode`. All third-party code in this project remains under their original licenses. I would love pull requests, and will assume that they are also dedicated to the public domain.
