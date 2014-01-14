@@ -1,5 +1,6 @@
 (ns {{namespace}}
-  (:require [play-clj.core :refer :all]))
+  (:require [play-clj.core :refer :all]
+            [play-clj.ui :refer :all]))
 
 (defscreen main-screen
   :on-show
@@ -9,6 +10,7 @@
   :on-render
   (fn [screen entities]
     (clear!)
+    (render! screen)
     (draw! screen entities)))
 
 (defgame {{app-name}}
