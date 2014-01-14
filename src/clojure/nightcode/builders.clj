@@ -112,8 +112,6 @@
   [path]
   (let [; create new console object with a reader/writer
         console (ui/create-console)
-        in (ui/get-console-input console)
-        out (ui/get-console-output console)
         ; keep track of the processes and the last reload timestamp
         process (atom nil)
         auto-process (atom nil)
@@ -125,33 +123,35 @@
         run! (fn [_]
                (when (lein/is-java-project? path)
                  (reset! last-reload (System/currentTimeMillis)))
-               (lein/run-project! process in out path))
+               (lein/run-project! process (ui/get-io! console) path))
         run-repl! (fn [_]
                     (when (not (lein/is-java-project? path))
                       (reset! last-reload (System/currentTimeMillis)))
-                    (lein/run-repl-project! process in out path)
+                    (lein/run-repl-project! process (ui/get-io! console) path)
                     (s/request-focus! (-> console .getViewport .getView)))
         reload! (fn [_]
                   (if (lein/is-java-project? path)
-                    (lein/run-hot-swap! in out path)
+                    (lein/run-hot-swap! (ui/get-io! console) path)
                     (eval-in-repl! console path @last-reload))
                   (reset! last-reload (System/currentTimeMillis)))
         build! (fn [_]
-                 (lein/build-project! process in out path))
+                 (lein/build-project! process (ui/get-io! console) path))
         test! (fn [_]
-                (lein/test-project! process in out path))
+                (lein/test-project! process (ui/get-io! console) path))
         clean! (fn [_]
-                 (lein/clean-project! process in out path))
-        check-versions! (fn [_]
-                          (lein/check-versions-in-project! process in out path))
+                 (lein/clean-project! process (ui/get-io! console) path))
+        check-versions!
+        (fn [_]
+          (lein/check-versions-in-project! process (ui/get-io! console) path))
         stop! (fn [_]
                 (lein/stop-process! process))
-        auto-build! (fn [_]
-                      (ui/config! build-group :#auto-button
-                                  :selected? (nil? @auto-process))
-                      (if (nil? @auto-process)
-                        (lein/cljsbuild-project! auto-process in out path)
-                        (lein/stop-process! auto-process)))
+        auto-build!
+        (fn [_]
+          (ui/config! build-group :#auto-button
+                      :selected? (nil? @auto-process))
+          (if (nil? @auto-process)
+            (lein/cljsbuild-project! auto-process (ui/get-io! console) path)
+            (lein/stop-process! auto-process)))
         ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
                     :items [(ui/button :id :run-button

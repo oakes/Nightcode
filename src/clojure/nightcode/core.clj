@@ -20,9 +20,8 @@
   [console]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
         create-new-project! (fn [_]
-                              (try (p/new-project! (:in console) (:out console))
-                                (catch Exception e
-                                  (.enterLine (:view console) ""))))
+                              (try (p/new-project! console)
+                                (catch Exception e (.enterLine console ""))))
         btn-group (s/horizontal-panel
                     :items [(ui/button :id :new-project-button
                                        :text (utils/get-string :new_project)
@@ -72,13 +71,13 @@
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
-  [console]
-  (let [run (fn []
-              (s/request-focus! (-> console :view .getViewport .getView))
-              (lein/run-repl! (:process console) (:in console) (:out console)))]
+  [process console]
+  (let [run (fn [& _]
+              (s/request-focus! (-> console .getViewport .getView))
+              (lein/run-repl! process (ui/get-io! console)))]
     (run)
-    (doto (s/config! (:view console) :id :repl-console)
-      (shortcuts/create-mappings! {:repl-console (fn [_] (run))}))))
+    (doto (s/config! console :id :repl-console)
+      (shortcuts/create-mappings! {:repl-console run}))))
 
 (defn get-editor-pane
   "Returns the pane with the editors."
@@ -94,13 +93,10 @@
   "Returns the entire window with all panes."
   []
   (let [process (atom nil)
-        view (ui/create-console)
-        in (ui/get-console-input view)
-        out (ui/get-console-output view)
-        console {:process process :view view :in in :out out}]
+        console (ui/create-console)]
     (s/left-right-split
       (s/top-bottom-split (get-project-pane console)
-                          (get-repl-pane console)
+                          (get-repl-pane process console)
                           :divider-location 0.8
                           :resize-weight 0.5)
       (s/top-bottom-split (get-editor-pane)

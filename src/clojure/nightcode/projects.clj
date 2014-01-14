@@ -99,12 +99,11 @@
 ; actions for project tree buttons
 
 (defn new-project!
-  [in out]
+  [console]
   (when-let [dir (chooser/choose-file :type :save)]
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog! dir)]
-      (lein/new-project! in
-                         out
+      (lein/new-project! (ui/get-io! console)
                          (.getParent dir)
                          project-type
                          project-name

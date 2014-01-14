@@ -484,8 +484,6 @@
   (when (= (.getName (io/file path)) ui/logcat-name)
     (let [; create new console object with a reader/writer
           console (ui/create-console)
-          in (ui/get-console-input console)
-          out (ui/get-console-output console)
           ; keep track of the process and whether it's running
           process (atom nil)
           is-running? (atom false)
@@ -497,7 +495,7 @@
           ; create the toggle action
           parent-path (-> path io/file .getParentFile .getCanonicalPath)
           start! (fn []
-                   (lein/run-logcat! process in out parent-path)
+                   (lein/run-logcat! process (ui/get-io! console) parent-path)
                    (s/config! toggle-btn :text (utils/get-string :stop))
                    true)
           stop! (fn []

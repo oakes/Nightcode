@@ -144,31 +144,41 @@ public class JConsole extends JScrollPane
 		// make	sure popup menu	follows	Look & Feel
 		UIManager.addPropertyChangeListener(this);
 
-		outPipe = cout;
-		if (outPipe == null) {
-			outPipe = new PipedWriter();
-			try {
-				in = new PipedReader((PipedWriter) outPipe);
-			} catch (IOException e) {
-				print("Console internal	error (1)...", Color.red);
-			}
-		}
-
-		inPipe = cin;
-		if (inPipe == null) {
-			PipedWriter pout = new PipedWriter();
-			out = new PrintWriter(pout);
-			try {
-				inPipe = new PipedReader(pout);
-			} catch (IOException e) {
-				print("Console internal error: " + e);
-			}
-		}
-		// Start the inpipe watcher
-		new Thread(this).start();
-
-
 		requestFocus();
+	}
+
+	public void init() {
+		try {
+			if (outPipe != null) {
+			 	outPipe.close();
+			}
+			if (out != null) {
+				in.close();
+			}
+			if (inPipe != null) {
+				inPipe.close();
+			}
+			if (in != null) {
+				in.close();
+			}
+		} catch (IOException e) {}
+		
+		outPipe = new PipedWriter();
+		try {
+			in = new PipedReader((PipedWriter) outPipe);
+		} catch (IOException e) {
+			print("Console internal	error (1)...", Color.red);
+		}
+
+		PipedWriter pout = new PipedWriter();
+		out = new PrintWriter(pout);
+		try {
+			inPipe = new PipedReader(pout);
+		} catch (IOException e) {
+			print("Console internal error: " + e);
+		}
+		
+		new Thread(this).start();
 	}
 
 	public void setInterruptFunction(IFn interruptFunction) {
@@ -730,25 +740,21 @@ public class JConsole extends JScrollPane
 		}
 	}
 
-	private void inPipeWatcher() {
-		char[] ca = new char[256]; //	arbitrary blocking factor
+	private void inPipeWatcher() throws IOException {
+		char[] ca = new char[256];
 		int read;
-		while (true) {
-			try {
-				if ((read = inPipe.read(ca)) != -1) {
-					print(new String(ca, 0, read));
-				}
-			} catch (IOException e) {
-				try {
-					Thread.sleep(500);
-				} catch (Exception e2) {}
-			}
-			//text.repaint();
+		while ((read = inPipe.read(ca)) != -1) {
+			print(new String(ca, 0, read));
 		}
 	}
 
 	public void run() {
-		inPipeWatcher();
+		while (true) {
+			try {
+				inPipeWatcher();
+			} catch (IOException e) {
+			}
+		}
 	}
 
 	public String toString() {

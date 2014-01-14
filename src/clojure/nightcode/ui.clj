@@ -66,15 +66,12 @@
   []
   (JConsole.))
 
-(defn get-console-input
-  "Returns the Reader for the given console object."
+(defn get-io!
+  "Returns the Reader and Writer for the given console object."
   [console]
-  (LineNumberingPushbackReader. (.getIn console)))
-
-(defn get-console-output
-  "Returns the Writer for the given console object."
-  [console]
-  (.getOut console))
+  (.init console)
+  [(LineNumberingPushbackReader. (.getIn console))
+   (.getOut console)])
 
 (defn get-project-tree
   "Returns the project tree."
