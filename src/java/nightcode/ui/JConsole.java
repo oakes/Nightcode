@@ -749,11 +749,9 @@ public class JConsole extends JScrollPane
 	}
 
 	public void run() {
-		while (true) {
-			try {
-				inPipeWatcher();
-			} catch (IOException e) {
-			}
+		try {
+			inPipeWatcher();
+		} catch (IOException e) {
 		}
 	}
 
