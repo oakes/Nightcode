@@ -44,15 +44,11 @@
   [console path timestamp]
   (let [source-paths (-> (lein/read-project-clj path)
                          (lein/stale-clojure-sources timestamp))
-        contents (for [source-path source-paths]
-                   (slurp source-path))
-        names (for [source-path source-paths]
-                (.getName (io/file source-path)))]
-    (->> (format "(do %s\n\"%s\")"
-                 (clojure.string/join "\n" contents)
+        commands (map #(format "(load-file \"%s\")" %) source-paths)
+        names (map #(.getName (io/file %)) source-paths)]
+    (->> (format "(do %s \"%s\")"
+                 (clojure.string/join " " commands)
                  (clojure.string/join ", " names))
-         read-string
-         pr-str
          (.enterLine console)
          (binding [*read-eval* false]))))
 
