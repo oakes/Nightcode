@@ -17,7 +17,7 @@
   (:import [com.camick TextPrompt]
            [java.awt.event KeyEvent KeyListener]
            [javax.swing JComponent KeyStroke]
-           [javax.swing.event DocumentListener]
+           [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [org.fife.ui.autocomplete
             AutoCompletion BasicCompletion DefaultCompletionProvider]
            [org.fife.ui.rsyntaxtextarea
@@ -71,16 +71,25 @@
   (doto @ui/ui-root .invalidate .validate)
   (let [editor-pane (ui/get-editor-pane)]
     (when @tabs (.closeBalloon @tabs))
-    (->> (for [[editor-path {:keys [italicize-fn]}] (reverse @editors)]
-           (let [underline-fn #(utils/is-parent-path? path editor-path)
-                 add-italics #(if (italicize-fn) (str "<i>" % "</i>") %)
-                 add-underline #(if (underline-fn) (str "<u>" % "</u>") %)]
-             (-> editor-path io/file .getName add-italics add-underline)))
+    (->> (for [[e-path {:keys [italicize-fn]}] (reverse @editors)]
+           (format "<a href='%s' style='text-decoration: %s;
+                                        font-style: %s;'>%s</a>"
+                   e-path
+                   (if (utils/is-parent-path? path e-path) "underline" "none")
+                   (if (italicize-fn) "italic" "normal")
+                   (-> e-path io/file .getName)))
          (cons "<center>PgUp PgDn</center>")
          (clojure.string/join "<br/>")
-         (str "<html>")
+         shortcuts/wrap-hint-text
+         (s/editor-pane :editable? false :content-type "text/html" :text)
          (shortcuts/create-hint! true editor-pane)
          (reset! tabs))
+    (s/listen (.getContents @tabs)
+              :hyperlink
+              (fn [e]
+                (when (= (.getEventType e) HyperlinkEvent$EventType/ACTIVATED)
+                  (binding [*reorder-tabs?* false]
+                    (ui/update-project-tree! (.getDescription e))))))
     (shortcuts/toggle-hint! @tabs @shortcuts/is-down?)))
 
 (defn update-buttons!

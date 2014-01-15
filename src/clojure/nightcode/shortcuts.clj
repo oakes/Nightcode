@@ -78,18 +78,19 @@
   (doseq [hint (s/select target [:BalloonTip])]
     (toggle-hint! hint show?)))
 
+(defn wrap-hint-text
+  [^String text]
+  (str "<html><font face='Lucida Sans' color='#d3d3d3'>" text "</font></html>"))
+
 (defn create-hint!
   "Creates a new hint on the given view with the given text."
-  ([view text]
-    (create-hint! false view text))
-  ([is-vertically-centered? ^JComponent view ^String text]
-    (when text
-      (let [text (str "<html><font face='Lucida Sans' color='#d3d3d3'>"
-                      text
-                      "</font></html>")
-            style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
+  ([view contents]
+    (create-hint! false view (wrap-hint-text contents)))
+  ([is-vertically-centered? view contents]
+    (when contents
+      (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
             ^CenteredPositioner positioner (CenteredPositioner. 0)
-            ^BalloonTip tip (BalloonTip. view text style false)
+            ^BalloonTip tip (BalloonTip. view contents style false)
             y (if is-vertically-centered?
                 (-> (/ (.getHeight view) 2)
                     (+ (/ (.getHeight tip) 2))
