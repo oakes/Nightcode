@@ -8,7 +8,8 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils])
-  (:import [java.awt.event WindowAdapter]
+  (:import [java.awt Dimension]
+           [java.awt.event WindowAdapter]
            [javax.swing.event TreeExpansionListener TreeSelectionListener]
            [javax.swing.tree TreeSelectionModel]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
@@ -104,7 +105,9 @@
       (s/top-bottom-split (get-editor-pane)
                           (get-builder-pane)
                           :divider-location 0.8
-                          :resize-weight 0.5))))
+                          :resize-weight 0.5)
+      :divider-location 0.4
+      :resize-weight 0)))
 
 (defn confirm-exit-app!
   []

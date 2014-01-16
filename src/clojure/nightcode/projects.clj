@@ -27,8 +27,7 @@
   (when-let [path (-> e .getPath utils/tree-path-to-str)]
     (when (not= path @ui/tree-selection)
       (reset! ui/tree-selection path)
-      (utils/write-pref! :selection @ui/tree-selection)
-      (-> @ui/ui-root .getContentPane .resetToPreferredSizes))))
+      (utils/write-pref! :selection @ui/tree-selection))))
 
 (defn move-project-tree-selection!
   [diff]
