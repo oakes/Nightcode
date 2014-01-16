@@ -232,9 +232,9 @@
 
 (defn stop-process!
   [process]
-  (when-let [p @process]
-    (reset! process nil)
-    (.destroy p)))
+  (when @process
+    (.destroy @process))
+  (reset! process nil))
 
 ; low-level commands
 
