@@ -8,8 +8,7 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils])
-  (:import [java.awt Dimension]
-           [java.awt.event WindowAdapter]
+  (:import [java.awt.event WindowAdapter]
            [javax.swing.event TreeExpansionListener TreeSelectionListener]
            [javax.swing.tree TreeSelectionModel]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
