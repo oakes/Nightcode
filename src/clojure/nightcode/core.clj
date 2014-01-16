@@ -20,7 +20,7 @@
   [console console-io]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
         create-new-project! (fn [_]
-                              (try (p/new-project! console-io)
+                              (try (p/new-project! @console-io)
                                 (catch Exception e (.enterLine console ""))))
         btn-group (s/horizontal-panel
                     :items [(ui/button :id :new-project-button
@@ -74,7 +74,8 @@
   [process console console-io]
   (let [run (fn [& _]
               (s/request-focus! (-> console .getViewport .getView))
-              (lein/run-repl! process console-io))]
+              (reset! console-io (ui/get-io! console))
+              (lein/run-repl! process @console-io))]
     (run)
     (doto (s/config! console :id :repl-console)
       (shortcuts/create-mappings! {:repl-console run}))))
@@ -94,7 +95,7 @@
   []
   (let [process (atom nil)
         console (ui/create-console)
-        console-io (ui/get-io! console)]
+        console-io (atom nil)]
     (s/left-right-split
       (s/top-bottom-split (get-project-pane console console-io)
                           (get-repl-pane process console console-io)
