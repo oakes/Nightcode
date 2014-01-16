@@ -17,10 +17,10 @@
 
 (defn get-project-pane
   "Returns the pane with the project tree."
-  [console]
+  [console console-io]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
         create-new-project! (fn [_]
-                              (try (p/new-project! console)
+                              (try (p/new-project! console-io)
                                 (catch Exception e (.enterLine console ""))))
         btn-group (s/horizontal-panel
                     :items [(ui/button :id :new-project-button
@@ -71,10 +71,10 @@
 
 (defn get-repl-pane
   "Returns the pane with the REPL."
-  [process console]
+  [process console console-io]
   (let [run (fn [& _]
               (s/request-focus! (-> console .getViewport .getView))
-              (lein/run-repl! process (ui/get-io! console)))]
+              (lein/run-repl! process console-io))]
     (run)
     (doto (s/config! console :id :repl-console)
       (shortcuts/create-mappings! {:repl-console run}))))
@@ -93,10 +93,11 @@
   "Returns the entire window with all panes."
   []
   (let [process (atom nil)
-        console (ui/create-console)]
+        console (ui/create-console)
+        console-io (ui/get-io! console)]
     (s/left-right-split
-      (s/top-bottom-split (get-project-pane console)
-                          (get-repl-pane process console)
+      (s/top-bottom-split (get-project-pane console console-io)
+                          (get-repl-pane process console console-io)
                           :divider-location 0.8
                           :resize-weight 0.5)
       (s/top-bottom-split (get-editor-pane)
