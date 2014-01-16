@@ -117,14 +117,13 @@
                       :center (s/config! console :id :build-console))
         ; create the actions for each button
         run! (fn [_]
+               (lein/run-project! process (ui/get-io! console) path)
                (when (lein/is-java-project? path)
-                 (reset! last-reload (System/currentTimeMillis)))
-               (lein/run-project! process (ui/get-io! console) path))
+                 (reset! last-reload (System/currentTimeMillis))))
         run-repl! (fn [_]
-                    (when (not (lein/is-java-project? path))
-                      (reset! last-reload (System/currentTimeMillis)))
                     (lein/run-repl-project! process (ui/get-io! console) path)
-                    (s/request-focus! (-> console .getViewport .getView)))
+                    (when (not (lein/is-java-project? path))
+                      (reset! last-reload (System/currentTimeMillis))))
         reload! (fn [_]
                   (if (lein/is-java-project? path)
                     (lein/run-hot-swap! (ui/get-io! console) path)
