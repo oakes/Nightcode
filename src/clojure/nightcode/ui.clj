@@ -110,7 +110,7 @@
   "Returns the root path that the selected path is contained within."
   []
   (when-let [^String path (get-selected-path)]
-    (-> #(.startsWith path (str % File/separator))
+    (-> #(or (.startsWith path (str % File/separator)) (= path %))
         (filter @tree-projects)
         first)))
 
