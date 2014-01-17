@@ -10,8 +10,7 @@
   :on-render
   (fn [screen entities]
     (clear!)
-    (render! screen)
-    (draw! screen entities)))
+    (render! screen entities)))
 
 (defgame {{app-name}}
   :on-create
