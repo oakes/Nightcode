@@ -135,18 +135,18 @@
                 (lein/test-project! process (ui/get-io! console) path))
         clean! (fn [_]
                  (lein/clean-project! process (ui/get-io! console) path))
-        check-versions!
-        (fn [_]
-          (lein/check-versions-in-project! process (ui/get-io! console) path))
+        check-versions! (fn [_]
+                          (lein/check-versions-in-project!
+                            process (ui/get-io! console) path))
         stop! (fn [_]
                 (lein/stop-process! process))
-        auto-build!
-        (fn [_]
-          (ui/config! build-group :#auto-button
-                      :selected? (nil? @auto-process))
-          (if (nil? @auto-process)
-            (lein/cljsbuild-project! auto-process (ui/get-io! console) path)
-            (lein/stop-process! auto-process)))
+        auto-build! (fn [_]
+                      (ui/config! build-group :#auto-button
+                                  :selected? (nil? @auto-process))
+                      (if (nil? @auto-process)
+                        (lein/cljsbuild-project!
+                          auto-process (ui/get-io! console) path)
+                        (lein/stop-process! auto-process)))
         ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
                     :items [(ui/button :id :run-button
@@ -197,8 +197,11 @@
     (add-watch process
                :refresh-builder
                (fn [_ _ _ new-state]
-                 (when (nil? new-state) (reset! last-reload nil))
-                 (show-builder! path)))
+                 (when (nil? new-state)
+                   (reset! last-reload nil))
+                 (-> (ui/get-selected-path)
+                     ui/get-project-path
+                     show-builder!)))
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
