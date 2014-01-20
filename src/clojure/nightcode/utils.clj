@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.xml :as xml])
   (:import [java.io File]
+           [java.nio.file Files Path]
            [java.util Locale]
            [java.util.prefs Preferences]
            [javax.swing.tree TreePath]))
@@ -129,21 +130,9 @@
            (.isDirectory (io/file parent-path))
            (.startsWith child-path (str parent-path File/separator)))))
 
-(defn call-static-method
-  [^Class klass ^String method-name param-classes & args]
-  (-> klass
-      (.getDeclaredMethod method-name
-                          (into-array Class param-classes))
-      (.invoke nil (into-array Object args))))
-
 (defn is-text-file?
   "Returns true if the file is of type text, false otherwise."
   [^File file]
-  (try (let [files-klass (Class/forName "java.nio.file.Files")
-             path-klass (Class/forName "java.nio.file.Path")]
-         (-> files-klass
-             (call-static-method "probeContentType" [path-klass] (.toPath file))
-             (or "")
-             (.startsWith "text")))
-       (catch ClassNotFoundException _
-         false)))
+  (-> (Files/probeContentType ^Path (.toPath file))
+    (or "")
+    (.startsWith "text")))
