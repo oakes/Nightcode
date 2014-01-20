@@ -11,6 +11,7 @@
             [leiningen.fruit]
             [leiningen.javac]
             [leiningen.new]
+            [leiningen.new.play-clj]
             [leiningen.new.templates]
             [leiningen.trampoline]
             [leiningen.repl]
@@ -373,6 +374,8 @@
   (->> (cond
          (= project-type :android-clojure)
          (leiningen.droid.new/new project-name package-name)
+         (= project-type :game-clojure)
+         (leiningen.new.play-clj/play-clj project-name package-name)
          (= project-type :ios-clojure)
          (leiningen.fruit/fruit {} "new" project-name package-name)
          (= project-type :ios-java)
