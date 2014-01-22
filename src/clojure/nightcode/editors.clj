@@ -32,7 +32,7 @@
 (def tabs (atom nil))
 (def ^:dynamic *reorder-tabs?* true)
 
-(def theme-resource (atom "dark.xml"))
+(def theme-resource (atom (io/resource "dark.xml")))
 
 (defn get-editor
   [path]
@@ -472,7 +472,7 @@
                               (removeUpdate [this e]
                                 (update-buttons! text-group text-area))))
       ; load the appropriate (default: dark) theme
-      (-> (io/resource @theme-resource)
+      (-> @theme-resource
           io/input-stream
           Theme/load
           (.apply text-area))
