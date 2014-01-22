@@ -95,18 +95,22 @@
   []
   (let [process (atom nil)
         console (ui/create-console)
-        console-io (atom nil)]
-    (s/left-right-split
-      (s/top-bottom-split (get-project-pane console console-io)
-                          (get-repl-pane process console console-io)
-                          :divider-location 0.8
-                          :resize-weight 0.5)
-      (s/top-bottom-split (get-editor-pane)
-                          (get-builder-pane)
-                          :divider-location 0.8
-                          :resize-weight 0.5)
-      :divider-location 0.4
-      :resize-weight 0)))
+        console-io (atom nil)
+        one-touch! #(doto % (.setOneTouchExpandable true))]
+    (one-touch!
+      (s/left-right-split
+        (one-touch!
+          (s/top-bottom-split (get-project-pane console console-io)
+                              (get-repl-pane process console console-io)
+                              :divider-location 0.8
+                              :resize-weight 0.5))
+        (one-touch!
+          (s/top-bottom-split (get-editor-pane)
+                              (get-builder-pane)
+                              :divider-location 0.8
+                              :resize-weight 0.5))
+        :divider-location 0.4
+        :resize-weight 0))))
 
 (defn confirm-exit-app!
   []
