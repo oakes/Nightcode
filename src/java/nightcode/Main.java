@@ -1,8 +1,8 @@
 package nightcode;
 
 import java.awt.SplashScreen;
-
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 /**
  * This class handles loading of Nightcode namespaces while the splash image
@@ -47,6 +47,16 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        Properties props = System.getProperties();
+        // properties to make font rendering smoother on Linux+OracleJVM/OpenJDK
+        // should make no difference on other OSes and JVMs
+        // set properties only if the user has not overidden them
+        if (props.getProperty("awt.useSystemAAFontSettings") == null
+                && props.getProperty("sun.java2d.xrender") == null) {
+            props.setProperty("awt.useSystemAAFontSettings", "lcd");
+            props.setProperty("sun.java2d.xrender", "true");
+        }
+        // initialize and launch Nightcode
         new Main().init(args);
     }
 
