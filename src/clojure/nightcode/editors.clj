@@ -211,7 +211,8 @@
           is-printable-char? (-> text-area .getFont (.canDisplay key-code))
           is-valid-search? (and (> (count find-text) 0)
                                 is-printable-char?
-                                (not @shortcuts/is-down?))
+                                (not @shortcuts/is-down?)
+                                (not= (.getKeyCode e) KeyEvent/VK_SHIFT))
           context (SearchContext. find-text)]
       (when is-valid-search?
         (.setRegularExpression context true)
