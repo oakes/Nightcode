@@ -108,7 +108,7 @@
   "Returns the entire window with all panes."
   []
   (let [process (atom nil)
-        console (editors/create-console)
+        console (editors/create-console "clj")
         console-io (atom nil)
         one-touch! #(doto % (.setOneTouchExpandable true))]
     (one-touch!

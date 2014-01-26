@@ -295,6 +295,11 @@
                      "xml"        SyntaxConstants/SYNTAX_STYLE_XML})
 (def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})
 (def ^:const wrap-exts #{"md" "txt"})
+(def ^:const completer-keys #{KeyEvent/VK_ENTER
+                              KeyEvent/VK_UP
+                              KeyEvent/VK_DOWN})
+(def ^:const console-ignore-shortcut-keys #{KeyEvent/VK_Z
+                                            KeyEvent/VK_Y})
 
 (defn get-extension
   [path]
@@ -395,19 +400,16 @@
       (keyReleased [this e] nil)
       (keyTyped [this e] nil)
       (keyPressed [this e]
-        (when (and (= (.getKeyCode e) 10)
-                   (-> @ui/ui-root .getOwnedWindows alength (> 0))
-                   (-> @ui/ui-root .getOwnedWindows (aget 0) .isVisible))
-          (let [ks (KeyStroke/getKeyStroke KeyEvent/VK_ENTER 0)
-                condition JComponent/WHEN_FOCUSED]
-            (.processKeyBinding text-area ks e condition true))
+        (when (some #(.isVisible %) (.getOwnedWindows @ui/ui-root))
+          (when (contains? completer-keys (.getKeyCode e))
+            (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
+                  condition JComponent/WHEN_FOCUSED]
+              (.processKeyBinding text-area ks e condition true)))
           (.consume e))))))
 
 (defn create-console
-  []
-  (let [text-area (create-text-area)
-        extension "clj"
-        consume-commands #{KeyEvent/VK_Z KeyEvent/VK_Y}]
+  [extension]
+  (let [text-area (create-text-area)]
     (doto text-area
       (.setSyntaxEditingStyle (get styles extension))
       (.setLineWrap true)
@@ -417,7 +419,7 @@
           (keyTyped [this e] nil)
           (keyPressed [this e]
             (when (and @shortcuts/is-down?
-                       (contains? consume-commands (.getKeyCode e)))
+                       (contains? console-ignore-shortcut-keys (.getKeyCode e)))
               (.consume e))))))
     (when-let [completer (create-completer text-area extension)]
       (install-completer! text-area completer))
@@ -540,7 +542,7 @@
   [path]
   (when (= (.getName (io/file path)) ui/logcat-name)
     (let [; create new console object with a reader/writer
-          console (create-console)
+          console (create-console nil)
           ; keep track of the process and whether it's running
           process (atom nil)
           is-running? (atom false)

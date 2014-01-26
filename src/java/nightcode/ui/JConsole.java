@@ -158,7 +158,9 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	}
 
 	public void keyPressed(KeyEvent e) {
-		type(e);
+		if (!e.isConsumed()) {
+			type(e);
+		}
 		gotUp = false;
 	}
 

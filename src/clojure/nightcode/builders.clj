@@ -107,7 +107,7 @@
 (defn create-builder
   [path]
   (let [; create new console object
-        console (editors/create-console)
+        console (editors/create-console "clj")
         ; keep track of the processes and the last reload timestamp
         process (atom nil)
         auto-process (atom nil)
