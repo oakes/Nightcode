@@ -329,8 +329,6 @@
             (processKeyBinding [ks e condition pressed]
               (proxy-super processKeyBinding ks e condition pressed)))
     (.setAntiAliasingEnabled true)
-    (.setSyntaxEditingStyle (get styles "clj"))
-    (.setLineWrap true)
     apply-settings!))
   ([path]
     (let [extension (get-extension path)]
@@ -409,7 +407,19 @@
 (defn create-console
   []
   (let [text-area (create-text-area)
-        completer (create-completer text-area "clj")]
+        completer (create-completer text-area "clj")
+        consume-commands #{KeyEvent/VK_Z KeyEvent/VK_Y}]
+    (doto text-area
+      (.setSyntaxEditingStyle (get styles "clj"))
+      (.setLineWrap true)
+      (.addKeyListener
+        (reify KeyListener
+          (keyReleased [this e] nil)
+          (keyTyped [this e] nil)
+          (keyPressed [this e]
+            (when (and @shortcuts/is-down?
+                       (contains? consume-commands (.getKeyCode e)))
+              (.consume e))))))
     (.install completer text-area)
     (JConsole. text-area)))
 
