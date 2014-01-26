@@ -7,7 +7,8 @@
             [seesaw.core :as s])
   (:import [java.awt.event InputMethodListener KeyEvent KeyListener]))
 
-(defn exec-command [cmd widget buffer]
+(defn exec-command
+  [cmd widget buffer]
   (let [old-parse-tree (paredit.parser/buffer-parse-tree @buffer nil)
         old-text (paredit.loc-utils/node-text old-parse-tree)
         new-text (s/value widget)
@@ -24,7 +25,8 @@
                            :length (- (.getSelectionEnd widget)
                                       (.getSelectionStart widget))})))
 
-(defn insert-result [w pe]
+(defn insert-result
+  [w pe]
   (dorun
     (map #(if (= 0 (:length %))
             (.insert w (:text %) (:offset %))
@@ -75,17 +77,20 @@
    ["M" "Right"] :paredit-expand-right
    ["M" "Left"] :paredit-expand-left})
 
-(defn exec-paredit [k w buffer enable?]
-  (when-let [cmd (or (default-keymap k)
-                     (and @enable? (advanced-keymap k)))]
+(defn exec-paredit
+  [k w buffer enable-default? enable-advanced?]
+  (when-let [cmd (or (and enable-default? (default-keymap k))
+                     (and @enable-advanced? (advanced-keymap k)))]
     (let [result (exec-command cmd w buffer)]
       (insert-result w result))
     cmd))
 
-(defn convert-input-method-event [event]
+(defn convert-input-method-event
+  [event]
   ["M" (os-x-charmap (str (.first (.getText event))))])
 
-(defn convert-key-event [event]
+(defn convert-key-event
+  [event]
   (let [key-code (.getKeyCode event)
         key-char (.getKeyChar event)]
     [(cond
@@ -97,38 +102,37 @@
        (KeyEvent/getKeyText key-code)
        (str key-char))]))
 
-(defn key-event-handler [w buffer enable?]
+(defn key-event-handler
+  [w buffer enable-default? enable-advanced?]
   (reify KeyListener
     (keyReleased [this e] nil)
     (keyTyped [this e]
-      (when (and @enable?
+      (when (and @enable-advanced?
                  (get #{"(" ")" "[" "]" "{" "}" "\""}
                       (str (.getKeyChar e))))
         (.consume e)))
     (keyPressed [this e]
       (when-not (.isConsumed e)
         (let [k (convert-key-event e)
-              p (exec-paredit k w buffer enable?)]
+              p (exec-paredit k w buffer enable-default? enable-advanced?)]
           (if p (.consume e) (format/exec-format k w)))))))
 
-(defn input-method-event-handler [w buffer enable?]
+(defn input-method-event-handler
+  [w buffer enable-default? enable-advanced?]
   (reify InputMethodListener
     (inputMethodTextChanged [this e]
       (let [k (convert-input-method-event e)
-            p (exec-paredit k w buffer enable?)]
+            p (exec-paredit k w buffer enable-default? enable-advanced?)]
         (when p (.consume e))))))
 
-(defn get-toggle-fn [w]
+(defn init-paredit!
+  [w enable-default?]
   (let [buffer (atom (paredit.parser/edit-buffer nil 0 -1 (s/value w)))
-        enable? (atom true)]
+        enable-advanced? (atom true)]
     (doto w
-      (.addKeyListener (key-event-handler w buffer enable?))
-      (.addInputMethodListener (input-method-event-handler w buffer enable?)))
-    (fn [enable-paredit?]
-      (reset! enable? enable-paredit?))))
-
-(defn paredit-widget [x]
-  (doto (if (string? x)
-          (javax.swing.JTextArea. x)
-          x)
-    get-toggle-fn))
+      (.addKeyListener
+        (key-event-handler w buffer enable-default? enable-advanced?))
+      (.addInputMethodListener
+        (input-method-event-handler w buffer enable-default? enable-advanced?)))
+    (fn [enable?]
+      (reset! enable-advanced? enable?))))

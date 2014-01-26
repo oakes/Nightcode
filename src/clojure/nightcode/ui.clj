@@ -3,8 +3,7 @@
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
-  (:import [nightcode.ui JConsole]
-           [clojure.lang LineNumberingPushbackReader]
+  (:import [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
            [java.awt Dimension FontMetrics]
            [java.io File FilenameFilter]
@@ -60,11 +59,6 @@
   "Creates an adjusted toggle."
   [& body]
   `(adjust-button! (s/toggle ~@body)))
-
-(defn create-console
-  "Creates a new console object."
-  []
-  (JConsole.))
 
 (defn get-io!
   "Returns the Reader and Writer for the given console object."

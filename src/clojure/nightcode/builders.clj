@@ -22,6 +22,12 @@
          (s/select (get-in @builders [path :view]))
          first)))
 
+(defn set-paredit!
+  [enable?]
+  (doseq [[path builder-map] @builders]
+    (when-let [toggle-paredit-fn! (:toggle-paredit-fn! builder-map)]
+      (toggle-paredit-fn! enable?))))
+
 ; actions for builder buttons
 
 (defn set-android-sdk!
@@ -106,8 +112,8 @@
 
 (defn create-builder
   [path]
-  (let [; create new console object with a reader/writer
-        console (ui/create-console)
+  (let [; create new console object
+        console (editors/create-console)
         ; keep track of the processes and the last reload timestamp
         process (atom nil)
         auto-process (atom nil)
@@ -222,7 +228,9 @@
      :close-fn! #(stop! nil)
      :should-remove-fn #(not (utils/is-project-path? path))
      :process process
-     :last-reload last-reload}))
+     :last-reload last-reload
+     :toggle-paredit-fn!
+     (editors/init-paredit! (.getTextArea console) false true)}))
 
 (defn show-builder!
   [path]
@@ -262,3 +270,6 @@
              (remove-builders! nil)
              ; show the selected builder
              (show-builder! (ui/get-project-path path))))
+(add-watch editors/paredit-enabled?
+           :set-builder-paredit
+           (fn [_ _ _ enable?] (set-paredit! enable?)))

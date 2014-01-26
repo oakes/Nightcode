@@ -18,6 +18,7 @@
            [java.awt.event KeyEvent KeyListener]
            [javax.swing JComponent KeyStroke]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
+           [nightcode.ui JConsole]
            [org.fife.ui.autocomplete
             AutoCompletion BasicCompletion DefaultCompletionProvider]
            [org.fife.ui.rsyntaxtextarea
@@ -30,9 +31,8 @@
 (def font-size (atom (utils/read-pref :font-size)))
 (def paredit-enabled? (atom (utils/read-pref :enable-paredit)))
 (def tabs (atom nil))
-(def ^:dynamic *reorder-tabs?* true)
-
 (def theme-resource (atom (io/resource "dark.xml")))
+(def ^:dynamic *reorder-tabs?* true)
 
 (defn get-editor
   [path]
@@ -143,6 +143,15 @@
 (defn increase-font-size!
   [_]
   (swap! font-size inc))
+
+(defn do-completion!
+  [_]
+  (when-let [{:keys [text-area completer] :as editor-map}
+             (get @editors (ui/get-selected-path))]
+    (when text-area
+      (s/request-focus! text-area))
+    (when completer
+      (.doCompletion completer))))
 
 (defn set-paredit!
   [enable?]
@@ -294,48 +303,64 @@
   (or (get styles (get-extension path))
       SyntaxConstants/SYNTAX_STYLE_NONE))
 
+(defn apply-settings!
+  [text-area]
+  ; set theme
+  (-> @theme-resource
+      io/input-stream
+      Theme/load
+      (.apply text-area))
+  ; set font size
+  (->> (or @font-size (reset! font-size (-> text-area .getFont .getSize)))
+       (set-font-size! text-area)))
+
 (defn get-text-area
-  [path]
-  (doto (proxy [TextEditorPane] []
-          (setMarginLineEnabled [is-enabled?]
-            (proxy-super setMarginLineEnabled is-enabled?))
-          (setMarginLinePosition [size]
-            (proxy-super setMarginLinePosition size))
-          (processKeyBinding [ks e condition pressed]
-            (proxy-super processKeyBinding ks e condition pressed)))
-    (.load (FileLocation/create path) nil)
-    .discardAllEdits
+  ([]
+    (doto (proxy [TextEditorPane] []
+            (setMarginLineEnabled [is-enabled?]
+              (proxy-super setMarginLineEnabled is-enabled?))
+            (setMarginLinePosition [size]
+              (proxy-super setMarginLinePosition size))
+            (processKeyBinding [ks e condition pressed]
+              (proxy-super processKeyBinding ks e condition pressed)))
     (.setAntiAliasingEnabled true)
-    (.setSyntaxEditingStyle (get-syntax-style path))
-    (.setLineWrap (contains? wrap-exts (get-extension path)))
-    (.setMarginLineEnabled true)
-    (.setMarginLinePosition 80)))
+    (.setSyntaxEditingStyle (get styles "clj"))
+    apply-settings!))
+  ([path]
+    (let [extension (get-extension path)]
+      (doto (get-text-area)
+        (.load (FileLocation/create path) nil)
+        .discardAllEdits
+        (.setSyntaxEditingStyle (get-syntax-style path))
+        (.setLineWrap (contains? wrap-exts extension))
+        (.setMarginLineEnabled true)
+        (.setMarginLinePosition 80)
+        (.setTabSize (if (contains? clojure-exts extension) 2 4))))))
 
 (defn get-completion-context
-  [prefix]
-  (when-let [editor (get-selected-editor)]
-    (let [caretpos (.getCaretPosition editor)
-          all-text (.getText editor)
-          first-str (subs all-text 0 (- caretpos (count prefix)))
-          second-str (subs all-text caretpos)]
-      (-> (str first-str "__prefix__" second-str)
-          parser/parse
-          loc-utils/parsed-root-loc
-          (static-analysis/top-level-code-form caretpos)
-          first
-          loc-utils/node-text
-          read-string
-          (try (catch Exception _))))))
+  [text-area prefix]
+  (let [caretpos (.getCaretPosition text-area)
+        all-text (.getText text-area)
+        first-str (subs all-text 0 (- caretpos (count prefix)))
+        second-str (subs all-text caretpos)]
+    (-> (str first-str "__prefix__" second-str)
+        parser/parse
+        loc-utils/parsed-root-loc
+        (static-analysis/top-level-code-form caretpos)
+        first
+        loc-utils/node-text
+        read-string
+        (try (catch Exception _)))))
 
 (defn get-completion-provider
-  [extension]
+  [text-area extension]
   (cond
     ; clojure
     (contains? clojure-exts extension)
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
         (let [prefix (.getAlreadyEnteredText this comp)
-              context (get-completion-context prefix)]
+              context (get-completion-context text-area prefix)]
           (for [symbol-str (compliment/completions prefix context)]
             (->> (str "<html><body><pre><span style='font-size: 11px;'>"
                       (compliment/documentation symbol-str)
@@ -366,7 +391,7 @@
 
 (defn get-completer
   [text-area extension]
-  (when-let [provider (get-completion-provider extension)]
+  (when-let [provider (get-completion-provider text-area extension)]
     (doto (AutoCompletion. provider)
       (.setShowDescWindow true)
       (.setAutoCompleteSingleChoices false)
@@ -375,20 +400,34 @@
       (.install text-area)
       (set-completion-listener! text-area))))
 
+(defn create-console
+  []
+  (let [text-area (get-text-area)
+        completer (get-completer text-area "clj")]
+    (.install completer text-area)
+    (JConsole. text-area)))
+
+(defn init-paredit!
+  [text-area enable-default? enable-advanced?]
+  (let [toggle-paredit-fn! (pw/init-paredit! text-area enable-default?)]
+    (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
+    (when enable-advanced? toggle-paredit-fn!)))
+
+(defn is-valid-file?
+  [path]
+  (let [pathfile (io/file path)]
+    (and (.isFile pathfile)
+         (or (contains? styles (get-extension path))
+             (utils/is-text-file? pathfile)))))
+
 (defn create-editor
-  [path extension]
-  (when (let [pathfile (io/file path)]
-          (and (.isFile pathfile) (or (contains? styles extension)
-                                      (utils/is-text-file? pathfile))))
+  [path]
+  (when (is-valid-file? path)
     (let [; create the text editor object
           ^TextEditorPane text-area (get-text-area path)
-          ; get the functions for performing completion and toggling paredit
-          completer (get-completer text-area extension)
-          do-completion-fn! (fn [_]
-                              (s/request-focus! text-area)
-                              (when completer (.doCompletion completer)))
+          extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
-          toggle-paredit-fn! (when is-clojure? (pw/get-toggle-fn text-area))
+          completer (get-completer text-area extension)
           ; create the buttons with their actions attached
           btn-group (ui/wrap-panel
                       :items [(ui/button :id :save-button
@@ -415,7 +454,7 @@
                                          :text (utils/get-string :doc)
                                          :focusable? false
                                          :visible? (not (nil? completer))
-                                         :listen [:action do-completion-fn!])
+                                         :listen [:action do-completion!])
                               (ui/toggle :id :paredit-button
                                          :text (utils/get-string :paredit)
                                          :focusable? false
@@ -437,8 +476,6 @@
           text-group (s/border-panel
                        :north btn-group
                        :center (RTextScrollPane. text-area))]
-      ; enable paredit if necessary
-      (when toggle-paredit-fn! (toggle-paredit-fn! @paredit-enabled?))
       ; create shortcuts
       (doto text-group
         (shortcuts/create-mappings! {:save-button save-file!
@@ -446,7 +483,7 @@
                                      :redo-button redo-file!
                                      :font-dec-button decrease-font-size!
                                      :font-inc-button increase-font-size!
-                                     :doc-button do-completion-fn!
+                                     :doc-button do-completion!
                                      :paredit-button toggle-paredit!
                                      :find-field focus-on-find!
                                      :replace-field focus-on-replace!})
@@ -457,8 +494,7 @@
                          :#replace-field (utils/get-string :replace)}]
         (doto (TextPrompt. text (s/select text-group [id]))
           (.changeAlpha 0.5)))
-      ; set more properties of the text area
-      (when is-clojure? (.setTabSize text-area 2))
+      ; update buttons every time a key is typed
       (s/listen text-area
                 :key-released
                 (fn [e] (update-buttons! text-group text-area)))
@@ -471,28 +507,21 @@
                                 (update-buttons! text-group text-area))
                               (removeUpdate [this e]
                                 (update-buttons! text-group text-area))))
-      ; load the appropriate (default: dark) theme
-      (-> @theme-resource
-          io/input-stream
-          Theme/load
-          (.apply text-area))
-      ; set the font size from preferences
-      (if @font-size
-        (set-font-size! text-area @font-size)
-        (reset! font-size (-> text-area .getFont .getSize)))
       ; return a map describing the editor
       {:view text-group
+       :text-area text-area
+       :completer completer
        :close-fn! #(when (.isDirty text-area)
                      (save-file! nil))
        :italicize-fn #(.isDirty text-area)
        :should-remove-fn #(not (.exists (io/file path)))
-       :toggle-paredit-fn! toggle-paredit-fn!})))
+       :toggle-paredit-fn! (init-paredit! text-area is-clojure? is-clojure?)})))
 
 (defn create-logcat
   [path]
   (when (= (.getName (io/file path)) ui/logcat-name)
     (let [; create new console object with a reader/writer
-          console (ui/create-console)
+          console (create-console)
           ; keep track of the process and whether it's running
           process (atom nil)
           is-running? (atom false)
@@ -531,7 +560,7 @@
   (let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
-      (when-let [editor (or (create-editor path (get-extension path))
+      (when-let [editor (or (create-editor path)
                             (create-logcat path))]
         (swap! editors assoc path editor)
         (.add editor-pane (:view editor) path)))
@@ -583,7 +612,7 @@
 (add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes! x)))
 (add-watch font-size :save-size (fn [_ _ _ x] (save-font-size! x)))
 (add-watch paredit-enabled?
-           :set-paredit
+           :set-editor-paredit
            (fn [_ _ _ enable?] (set-paredit! enable?)))
 (add-watch paredit-enabled?
            :save-paredit

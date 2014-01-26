@@ -45,6 +45,7 @@ import java.util.Vector;
 import java.awt.Cursor;
 import javax.swing.text.*;
 import javax.swing.*;
+import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import clojure.lang.IFn;
 
 /**
@@ -58,11 +59,7 @@ import clojure.lang.IFn;
  * including Color and Image support, key press bug workaround
  */
 public class JConsole extends JScrollPane
-	implements Runnable, KeyListener,
-	MouseListener, ActionListener, PropertyChangeListener {
-	private final static String CUT = "Cut";
-	private final static String COPY = "Copy";
-	private final static String PASTE = "Paste";
+	implements Runnable, KeyListener, MouseListener, PropertyChangeListener {
 
 	private IFn interruptFunction;
 	private IFn eofFunction;
@@ -90,7 +87,7 @@ public class JConsole extends JScrollPane
 	private final int HIST_MAX = 1000000;
 
 	private JPopupMenu menu;
-	private JTextPane text;
+	private TextEditorPane text;
 	private DefaultStyledDocument doc;
 
 	NameCompletion nameCompletion;
@@ -99,46 +96,19 @@ public class JConsole extends JScrollPane
 	// hack to prevent key repeat for some reason?
 	private boolean gotUp = true;
 
-	public JConsole() {
-		this(null, null, new Font("Monospaced", Font.PLAIN, 14));
+	public JConsole(TextEditorPane pane) {
+		this(pane, new Font("Monospaced", Font.PLAIN, 14));
 	}
 
-	public JConsole(Font font) {
-		this(null, null, font);
-	}
-
-	public JConsole(Reader cin, Writer cout, Font font) {
+	public JConsole(TextEditorPane pane, Font font) {
 		super();
 
-		// Special TextPane which catches for cut and paste, both L&F keys and
-		// programmatic	behaviour
-		text = new JTextPane(doc = new DefaultStyledDocument()) {
-			public void cut() {
-				if (text.getCaretPosition() < cmdStart) {
-					super.copy();
-				} else {
-					super.cut();
-				}
-			}
-
-			public void paste() {
-				forceCaretMoveToEnd();
-				super.paste();
-			}
-		};
-
+		text = pane;		
 		text.setFont(font);
 		text.setText("");
 		text.setMargin(new Insets(7, 5, 7, 5));
 		text.addKeyListener(this);
 		setViewportView(text);
-
-		// create popup	menu
-		menu = new JPopupMenu("JConsole	Menu");
-		menu.add(new JMenuItem(CUT)).addActionListener(this);
-		menu.add(new JMenuItem(COPY)).addActionListener(this);
-		menu.add(new JMenuItem(PASTE)).addActionListener(this);
-
 		text.addMouseListener(this);
 
 		// make	sure popup menu	follows	Look & Feel
@@ -598,7 +568,6 @@ public class JConsole extends JScrollPane
 
 		invokeAndWait(new Runnable() {
 			public void run() {
-				text.insertIcon(icon);
 				resetCommandStart();
 				text.setCaretPosition(cmdStart);
 			}
@@ -616,12 +585,9 @@ public class JConsole extends JScrollPane
 	public void print(final Object o, final Font font, final Color color) {
 		invokeAndWait(new Runnable() {
 			public void run() {
-				AttributeSet old = getStyle();
-				setStyle(font, color);
 				append(String.valueOf(o));
 				resetCommandStart();
 				text.setCaretPosition(cmdStart);
-				setStyle(old, true);
 			}
 		});
 	}
@@ -647,89 +613,11 @@ public class JConsole extends JScrollPane
 	) {
 		invokeAndWait(new Runnable() {
 			public void run() {
-				AttributeSet old = getStyle();
-				setStyle(fontFamilyName, size, color, bold, italic, underline);
 				append(String.valueOf(o));
 				resetCommandStart();
 				text.setCaretPosition(cmdStart);
-				setStyle(old, true);
 			}
 		});
-	}
-
-	private AttributeSet setStyle(Font font) {
-		return setStyle(font, null);
-	}
-
-	private AttributeSet setStyle(Color color) {
-		return setStyle(null, color);
-	}
-
-	private AttributeSet setStyle(Font font, Color color) {
-		if (font != null) {
-			return setStyle(font.getFamily(), font.getSize(), color,
-				font.isBold(), font.isItalic(),
-				StyleConstants.isUnderline(getStyle()));
-		} else {
-			return setStyle(null, -1, color);
-		}
-	}
-
-	private AttributeSet setStyle(
-		String fontFamilyName, int size, Color color) {
-		MutableAttributeSet attr = new SimpleAttributeSet();
-		if (color != null) {
-			StyleConstants.setForeground(attr, color);
-		}
-		if (fontFamilyName != null) {
-			StyleConstants.setFontFamily(attr, fontFamilyName);
-		}
-		if (size != -1) {
-			StyleConstants.setFontSize(attr, size);
-		}
-
-		setStyle(attr);
-
-		return getStyle();
-	}
-
-	private AttributeSet setStyle(
-		String fontFamilyName,
-		int size,
-		Color color,
-		boolean bold,
-		boolean italic,
-		boolean underline
-	) {
-		MutableAttributeSet attr = new SimpleAttributeSet();
-		if (color != null) {
-			StyleConstants.setForeground(attr, color);
-		}
-		if (fontFamilyName != null) {
-			StyleConstants.setFontFamily(attr, fontFamilyName);
-		}
-		if (size != -1) {
-			StyleConstants.setFontSize(attr, size);
-		}
-		StyleConstants.setBold(attr, bold);
-		StyleConstants.setItalic(attr, italic);
-		StyleConstants.setUnderline(attr, underline);
-
-		setStyle(attr);
-
-		return getStyle();
-	}
-
-	private void setStyle(AttributeSet attributes) {
-		setStyle(attributes, false);
-	}
-
-	private void setStyle(AttributeSet attributes, boolean overWrite) {
-		text.setCharacterAttributes(attributes, overWrite);
-	}
-
-	private AttributeSet getStyle() {
-		return text.getCharacterAttributes();
 	}
 
 	public void setFont(Font font) {
@@ -791,18 +679,6 @@ public class JConsole extends JScrollPane
 		}
 	}
 
-	// handle cut, copy	and paste
-	public void actionPerformed(ActionEvent event) {
-		String cmd = event.getActionCommand();
-		if (cmd.equals(CUT)) {
-			text.cut();
-		} else if (cmd.equals(COPY)) {
-			text.copy();
-		} else if (cmd.equals(PASTE)) {
-			text.paste();
-		}
-	}
-
 	/**
 	 * If not in the event thread run via SwingUtilities.invokeAndWait()
 	 */
@@ -833,5 +709,9 @@ public class JConsole extends JScrollPane
 
 	private int textLength() {
 		return text.getDocument().getLength();
+	}
+
+	public TextEditorPane getTextArea() {
+		return text;
 	}
 }

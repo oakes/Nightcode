@@ -94,9 +94,14 @@
   "Returns the entire window with all panes."
   []
   (let [process (atom nil)
-        console (ui/create-console)
+        console (editors/create-console)
+        paredit-fn! (editors/init-paredit! (.getTextArea console) false true)
         console-io (atom nil)
         one-touch! #(doto % (.setOneTouchExpandable true))]
+    (add-watch editors/paredit-enabled?
+               :set-repl-paredit
+               (fn [_ _ _ enable?]
+                 (paredit-fn! enable?)))
     (one-touch!
       (s/left-right-split
         (one-touch!
