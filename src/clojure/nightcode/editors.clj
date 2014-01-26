@@ -407,7 +407,6 @@
   []
   (let [text-area (create-text-area)
         extension "clj"
-        completer (create-completer text-area extension)
         consume-commands #{KeyEvent/VK_Z KeyEvent/VK_Y}]
     (doto text-area
       (.setSyntaxEditingStyle (get styles extension))
@@ -419,8 +418,9 @@
           (keyPressed [this e]
             (when (and @shortcuts/is-down?
                        (contains? consume-commands (.getKeyCode e)))
-              (.consume e)))))
-      (install-completer! completer))
+              (.consume e))))))
+    (when-let [completer (create-completer text-area extension)]
+      (install-completer! text-area completer))
     (JConsole. text-area)))
 
 (defn init-paredit!
@@ -515,7 +515,8 @@
                 :key-released
                 (fn [e] (update-buttons! text-group text-area)))
       ; install completer
-      (install-completer! text-area completer)
+      (when completer
+        (install-completer! text-area completer))
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
