@@ -356,7 +356,7 @@
         read-string
         (try (catch Exception _)))))
 
-(defn get-completion-provider
+(defn create-completion-provider
   [text-area extension]
   (cond
     ; clojure
@@ -376,8 +376,18 @@
     ; anything else
     :else nil))
 
-(defn set-completion-listener!
-  [completer text-area]
+(defn create-completer
+  [text-area extension]
+  (when-let [provider (create-completion-provider text-area extension)]
+    (doto (AutoCompletion. provider)
+      (.setShowDescWindow true)
+      (.setAutoCompleteSingleChoices false)
+      (.setChoicesWindowSize 150 300)
+      (.setDescriptionWindowSize 600 300))))
+
+(defn install-completer!
+  [text-area completer]
+  (.install completer text-area)
   ; this is an ugly way of making sure paredit-widget doesn't
   ; receive the KeyEvent if the AutoComplete window is visible
   (.addKeyListener text-area
@@ -393,24 +403,14 @@
             (.processKeyBinding text-area ks e condition true))
           (.consume e))))))
 
-(defn create-completer
-  [text-area extension]
-  (when-let [provider (get-completion-provider text-area extension)]
-    (doto (AutoCompletion. provider)
-      (.setShowDescWindow true)
-      (.setAutoCompleteSingleChoices false)
-      (.setChoicesWindowSize 150 300)
-      (.setDescriptionWindowSize 600 300)
-      (.install text-area)
-      (set-completion-listener! text-area))))
-
 (defn create-console
   []
   (let [text-area (create-text-area)
-        completer (create-completer text-area "clj")
+        extension "clj"
+        completer (create-completer text-area extension)
         consume-commands #{KeyEvent/VK_Z KeyEvent/VK_Y}]
     (doto text-area
-      (.setSyntaxEditingStyle (get styles "clj"))
+      (.setSyntaxEditingStyle (get styles extension))
       (.setLineWrap true)
       (.addKeyListener
         (reify KeyListener
@@ -419,8 +419,8 @@
           (keyPressed [this e]
             (when (and @shortcuts/is-down?
                        (contains? consume-commands (.getKeyCode e)))
-              (.consume e))))))
-    (.install completer text-area)
+              (.consume e)))))
+      (install-completer! completer))
     (JConsole. text-area)))
 
 (defn init-paredit!
@@ -440,7 +440,7 @@
   [path]
   (when (is-valid-file? path)
     (let [; create the text editor object
-          ^TextEditorPane text-area (create-text-area path)
+          text-area (create-text-area path)
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
@@ -514,6 +514,8 @@
       (s/listen text-area
                 :key-released
                 (fn [e] (update-buttons! text-group text-area)))
+      ; install completer
+      (install-completer! text-area completer)
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
                             (reify DocumentListener
