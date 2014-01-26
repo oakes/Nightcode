@@ -22,12 +22,6 @@
          (s/select (get-in @builders [path :view]))
          first)))
 
-(defn set-paredit!
-  [enable?]
-  (doseq [[path builder-map] @builders]
-    (when-let [toggle-paredit-fn! (:toggle-paredit-fn! builder-map)]
-      (toggle-paredit-fn! enable?))))
-
 ; actions for builder buttons
 
 (defn set-android-sdk!
@@ -270,6 +264,11 @@
              (remove-builders! nil)
              ; show the selected builder
              (show-builder! (ui/get-project-path path))))
+(add-watch editors/font-size
+           :set-builder-font-size
+           (fn [_ _ _ x]
+             (apply editors/set-font-sizes! x (vals @builders))))
 (add-watch editors/paredit-enabled?
            :set-builder-paredit
-           (fn [_ _ _ enable?] (set-paredit! enable?)))
+           (fn [_ _ _ enable?]
+             (apply editors/set-paredit! enable? (vals @builders))))

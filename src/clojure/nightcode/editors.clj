@@ -34,35 +34,39 @@
 (def theme-resource (atom (io/resource "dark.xml")))
 (def ^:dynamic *reorder-tabs?* true)
 
-(defn get-editor
-  [path]
-  (when (contains? @editors path)
+(defn get-text-area
+  [view]
+  (when view
     (->> [:<org.fife.ui.rsyntaxtextarea.TextEditorPane>]
-         (s/select (get-in @editors [path :view]))
+         (s/select view)
          first)))
 
-(defn get-selected-editor
-  []
-  (get-editor (ui/get-selected-path)))
+(defn get-text-area-from-path
+  [path]
+  (get-text-area (get-in @editors [path :view])))
 
-(defn get-selected-editor-pane
+(defn get-selected-text-area
+  []
+  (get-text-area-from-path (ui/get-selected-path)))
+
+(defn get-selected-editor
   []
   (get-in @editors [(ui/get-selected-path) :view]))
 
 (defn is-unsaved?
   [path]
-  (when-let [editor (get-editor path)]
-    (.isDirty editor)))
+  (when-let [text-area (get-text-area-from-path path)]
+    (.isDirty text-area)))
 
 (defn get-editor-text
   []
-  (when-let [editor (get-selected-editor)]
-    (.getText editor)))
+  (when-let [text-area (get-selected-text-area)]
+    (.getText text-area)))
 
 (defn get-editor-selected-text
   []
-  (when-let [editor (get-selected-editor)]
-    (.getSelectedText editor)))
+  (when-let [text-area (get-selected-text-area)]
+    (.getSelectedText text-area)))
 
 ; actions for editor buttons
 
@@ -93,44 +97,44 @@
     (shortcuts/toggle-hint! @tabs @shortcuts/is-down?)))
 
 (defn update-buttons!
-  [pane ^TextEditorPane editor]
-  (when (ui/config! pane :#save-button :enabled? (.isDirty editor))
+  [editor ^TextEditorPane text-area]
+  (when (ui/config! editor :#save-button :enabled? (.isDirty text-area))
     (update-tabs! (ui/get-selected-path)))
-  (ui/config! pane :#undo-button :enabled? (.canUndo editor))
-  (ui/config! pane :#redo-button :enabled? (.canRedo editor)))
+  (ui/config! editor :#undo-button :enabled? (.canUndo text-area))
+  (ui/config! editor :#redo-button :enabled? (.canRedo text-area)))
 
 (defn save-file!
   [_]
-  (when-let [editor (get-selected-editor)]
+  (when-let [text-area (get-selected-text-area)]
     (io!
       (with-open [w (io/writer (io/file (ui/get-selected-path)))]
-        (.write editor w)))
-    (.setDirty editor false)
-    (s/request-focus! editor)
-    (update-buttons! (get-selected-editor-pane) editor))
+        (.write text-area w)))
+    (.setDirty text-area false)
+    (s/request-focus! text-area)
+    (update-buttons! (get-selected-editor) text-area))
   true)
 
 (defn undo-file!
   [_]
-  (when-let [editor (get-selected-editor)]
-    (.undoLastAction editor)
-    (update-buttons! (get-selected-editor-pane) editor)))
+  (when-let [text-area (get-selected-text-area)]
+    (.undoLastAction text-area)
+    (update-buttons! (get-selected-editor) text-area)))
 
 (defn redo-file!
   [_]
-  (when-let [editor (get-selected-editor)]
-    (.redoLastAction editor)
-    (update-buttons! (get-selected-editor-pane) editor)))
+  (when-let [text-area (get-selected-text-area)]
+    (.redoLastAction text-area)
+    (update-buttons! (get-selected-editor) text-area)))
 
 (defn set-font-size!
-  [editor size]
-  (.setFont editor (-> editor .getFont (.deriveFont (float size)))))
+  [text-area size]
+  (.setFont text-area (-> text-area .getFont (.deriveFont (float size)))))
 
 (defn set-font-sizes!
-  [size]
-  (doseq [[path editor-map] @editors]
-    (when-let [editor (get-editor path)]
-      (set-font-size! editor size))))
+  [size & maps]
+  (doseq [m maps]
+    (when-let [text-area (get-text-area (:view m))]
+      (set-font-size! text-area size))))
 
 (defn save-font-size!
   [size]
@@ -154,12 +158,12 @@
       (.doCompletion completer))))
 
 (defn set-paredit!
-  [enable?]
-  (doseq [[path editor-map] @editors]
-    (when-let [toggle-paredit-fn! (:toggle-paredit-fn! editor-map)]
+  [enable? & maps]
+  (doseq [m maps]
+    (when-let [toggle-paredit-fn! (:toggle-paredit-fn! m)]
       (toggle-paredit-fn! enable?))
-    (-> (s/select (:view editor-map) [:#paredit-button])
-        (s/config! :selected? enable?))))
+    (when-let [paredit-button (s/select (:view m) [:#paredit-button])]
+      (s/config! paredit-button :selected? enable?))))
 
 (defn save-paredit!
   [enable?]
@@ -185,8 +189,8 @@
 
 (defn focus-on-field!
   [id]
-  (when-let [pane (get-selected-editor-pane)]
-    (doto (s/select pane [id])
+  (when-let [editor (get-selected-editor)]
+    (doto (s/select editor [id])
       s/request-focus!
       .selectAll)))
 
@@ -200,11 +204,11 @@
 
 (defn find-text!
   [e]
-  (when-let [editor (get-selected-editor)]
+  (when-let [text-area (get-selected-text-area)]
     (let [key-code (.getKeyCode e)
           is-enter-key? (= key-code 10)
           find-text (s/text e)
-          is-printable-char? (-> editor .getFont (.canDisplay key-code))
+          is-printable-char? (-> text-area .getFont (.canDisplay key-code))
           is-valid-search? (and (> (count find-text) 0)
                                 is-printable-char?
                                 (not @shortcuts/is-down?))
@@ -212,33 +216,33 @@
       (when is-valid-search?
         (.setRegularExpression context true)
         (when-not is-enter-key?
-          (.setCaretPosition editor 0))
+          (.setCaretPosition text-area 0))
         (when (.isShiftDown e)
           (.setSearchForward context false)))
       (if (and is-valid-search?
-               (not (try (SearchEngine/find editor context)
+               (not (try (SearchEngine/find text-area context)
                       (catch Exception e false))))
         (s/config! e :background (color/color :red))
         (s/config! e :background nil)))))
 
 (defn replace-text!
   [e]
-  (when-let [editor (get-selected-editor)]
+  (when-let [text-area (get-selected-text-area)]
     (let [key-code (.getKeyCode e)
           is-enter-key? (= key-code 10)
-          pane (get-selected-editor-pane)
-          find-text (s/text (s/select pane [:#find-field]))
+          editor (get-selected-editor)
+          find-text (s/text (s/select editor [:#find-field]))
           replace-text (s/text e)
           context (SearchContext. find-text)]
       (.setReplaceWith context replace-text)
       (if (and is-enter-key?
                (or (= (count find-text) 0)
-                   (not (try (SearchEngine/replaceAll editor context)
+                   (not (try (SearchEngine/replaceAll text-area context)
                           (catch Exception e false)))))
         (s/config! e :background (color/color :red))
         (s/config! e :background nil))
       (when is-enter-key?
-        (update-buttons! pane editor)))))
+        (update-buttons! editor text-area)))))
 
 ; create and show/hide editors for each file
 
@@ -314,7 +318,7 @@
   (->> (or @font-size (reset! font-size (-> text-area .getFont .getSize)))
        (set-font-size! text-area)))
 
-(defn get-text-area
+(defn create-text-area
   ([]
     (doto (proxy [TextEditorPane] []
             (setMarginLineEnabled [is-enabled?]
@@ -329,7 +333,7 @@
     apply-settings!))
   ([path]
     (let [extension (get-extension path)]
-      (doto (get-text-area)
+      (doto (create-text-area)
         (.load (FileLocation/create path) nil)
         .discardAllEdits
         (.setSyntaxEditingStyle (get-syntax-style path))
@@ -390,7 +394,7 @@
             (.processKeyBinding text-area ks e condition true))
           (.consume e))))))
 
-(defn get-completer
+(defn create-completer
   [text-area extension]
   (when-let [provider (get-completion-provider text-area extension)]
     (doto (AutoCompletion. provider)
@@ -403,8 +407,8 @@
 
 (defn create-console
   []
-  (let [text-area (get-text-area)
-        completer (get-completer text-area "clj")]
+  (let [text-area (create-text-area)
+        completer (create-completer text-area "clj")]
     (.install completer text-area)
     (JConsole. text-area)))
 
@@ -425,10 +429,10 @@
   [path]
   (when (is-valid-file? path)
     (let [; create the text editor object
-          ^TextEditorPane text-area (get-text-area path)
+          ^TextEditorPane text-area (create-text-area path)
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
-          completer (get-completer text-area extension)
+          completer (create-completer text-area extension)
           ; create the buttons with their actions attached
           btn-group (ui/wrap-panel
                       :items [(ui/button :id :save-button
@@ -561,23 +565,23 @@
   (let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
-      (when-let [editor (or (create-editor path)
-                            (create-logcat path))]
-        (swap! editors assoc path editor)
-        (.add editor-pane (:view editor) path)))
+      (when-let [editor-map (or (create-editor path)
+                                (create-logcat path))]
+        (swap! editors assoc path editor-map)
+        (.add editor-pane (:view editor-map) path)))
     ; display the correct card
-    (->> (or (when-let [editor (get @editors path)]
+    (->> (or (when-let [editor-map (get @editors path)]
                (when *reorder-tabs?*
                  (swap! editors dissoc path)
-                 (swap! editors assoc path editor))
+                 (swap! editors assoc path editor-map))
                path)
              :default-card)
          (s/show-card! editor-pane))
     ; update tabs
     (update-tabs! path)
     ; give the editor focus if it exists
-    (when-let [editor (get-editor path)]
-      (s/request-focus! editor))))
+    (when-let [text-area (get-text-area-from-path path)]
+      (s/request-focus! text-area))))
 
 (defn remove-editors!
   [path]
@@ -610,11 +614,19 @@
              (remove-editors! nil)
              ; show the selected editor
              (show-editor! path)))
-(add-watch font-size :set-size (fn [_ _ _ x] (set-font-sizes! x)))
-(add-watch font-size :save-size (fn [_ _ _ x] (save-font-size! x)))
+(add-watch font-size
+           :set-editor-font-size
+           (fn [_ _ _ x]
+             (apply set-font-sizes! x (vals @editors))))
+(add-watch font-size
+           :save-font-size
+           (fn [_ _ _ x]
+             (save-font-size! x)))
 (add-watch paredit-enabled?
            :set-editor-paredit
-           (fn [_ _ _ enable?] (set-paredit! enable?)))
+           (fn [_ _ _ enable?]
+             (apply set-paredit! enable? (vals @editors))))
 (add-watch paredit-enabled?
            :save-paredit
-           (fn [_ _ _ enable?] (save-paredit! enable?)))
+           (fn [_ _ _ enable?]
+             (save-paredit! enable?)))
