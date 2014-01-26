@@ -325,6 +325,7 @@
               (proxy-super processKeyBinding ks e condition pressed)))
     (.setAntiAliasingEnabled true)
     (.setSyntaxEditingStyle (get styles "clj"))
+    (.setLineWrap true)
     apply-settings!))
   ([path]
     (let [extension (get-extension path)]

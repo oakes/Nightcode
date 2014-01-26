@@ -33,20 +33,18 @@
 
 package nightcode.ui;
 
+import clojure.lang.IFn;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Vector;
 import java.awt.Cursor;
 import javax.swing.text.*;
 import javax.swing.*;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
-import clojure.lang.IFn;
 
 /**
  * A JFC/Swing based console for the BeanShell desktop.
@@ -58,8 +56,7 @@ import clojure.lang.IFn;
  * Improvements by: Daniel Leuck
  * including Color and Image support, key press bug workaround
  */
-public class JConsole extends JScrollPane
-	implements Runnable, KeyListener, MouseListener, PropertyChangeListener {
+public class JConsole extends JScrollPane implements Runnable, KeyListener {
 
 	private IFn interruptFunction;
 	private IFn eofFunction;
@@ -86,7 +83,6 @@ public class JConsole extends JScrollPane
 	private int histLine = 0;
 	private final int HIST_MAX = 1000000;
 
-	private JPopupMenu menu;
 	private TextEditorPane text;
 	private DefaultStyledDocument doc;
 
@@ -105,14 +101,9 @@ public class JConsole extends JScrollPane
 
 		text = pane;		
 		text.setFont(font);
-		text.setText("");
-		text.setMargin(new Insets(7, 5, 7, 5));
+		text.setMargin(new Insets(0, 5, 0, 5));
 		text.addKeyListener(this);
 		setViewportView(text);
-		text.addMouseListener(this);
-
-		// make	sure popup menu	follows	Look & Feel
-		UIManager.addPropertyChangeListener(this);
 
 		requestFocus();
 	}
@@ -438,18 +429,14 @@ public class JConsole extends JScrollPane
 		text.repaint();
 	}
 
-
 	private void enter() {
 		String s = getCmd();
 
-		if (s.length() == 0)      // special hack	for empty return!
-		{
-			s = ";\n";
-		} else {
+		if (s.length() > 0) {
 			history.addElement(s);
-			s = s + "\n";
 		}
 
+		s = s + "\n";
 		append("\n");
 		histLine = 0;
 		acceptLine(s);
@@ -503,12 +490,7 @@ public class JConsole extends JScrollPane
 		text.repaint();
 	}
 
-	String ZEROS = "000";
-
 	private void acceptLine(String line) {
-		//FIXME: what did this do?
-		//line = buf.toString();
-
 		if (outPipe == null) {
 			print("Console internal	error: cannot output ...", Color.red);
 		} else {
@@ -520,7 +502,6 @@ public class JConsole extends JScrollPane
 				throw new RuntimeException("Console pipe broken...");
 			}
 		}
-		//text.repaint();
 	}
 
 	public void enterLine(String line) {
@@ -543,9 +524,6 @@ public class JConsole extends JScrollPane
 		});
 	}
 
-	/**
-	 * Prints "\\n" (i.e. newline)
-	 */
 	public void println() {
 		print("\n");
 		text.repaint();
@@ -620,14 +598,6 @@ public class JConsole extends JScrollPane
 		});
 	}
 
-	public void setFont(Font font) {
-		super.setFont(font);
-
-		if (text != null) {
-			text.setFont(font);
-		}
-	}
-
 	private void inPipeWatcher() throws IOException {
 		char[] ca = new char[256];
 		int read;
@@ -645,38 +615,6 @@ public class JConsole extends JScrollPane
 
 	public String toString() {
 		return "BeanShell console";
-	}
-
-	// MouseListener Interface
-	public void mouseClicked(MouseEvent event) {
-	}
-
-	public void mousePressed(MouseEvent event) {
-		if (event.isPopupTrigger()) {
-			menu.show(
-				(Component) event.getSource(), event.getX(), event.getY());
-		}
-	}
-
-	public void mouseReleased(MouseEvent event) {
-		if (event.isPopupTrigger()) {
-			menu.show((Component) event.getSource(), event.getX(),
-				event.getY());
-		}
-		text.repaint();
-	}
-
-	public void mouseEntered(MouseEvent event) {
-	}
-
-	public void mouseExited(MouseEvent event) {
-	}
-
-	// property	change
-	public void propertyChange(PropertyChangeEvent event) {
-		if (event.getPropertyName().equals("lookAndFeel")) {
-			SwingUtilities.updateComponentTreeUI(menu);
-		}
 	}
 
 	/**
