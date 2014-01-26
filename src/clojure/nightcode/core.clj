@@ -123,7 +123,7 @@
                               (get-builder-pane)
                               :divider-location 0.8
                               :resize-weight 0.5))
-        :divider-location 0.4
+        :divider-location 0.35
         :resize-weight 0))))
 
 (defn confirm-exit-app!
@@ -149,7 +149,7 @@
                                  " "
                                  (utils/get-version))
                      :content (get-window-content)
-                     :width 1152
+                     :width 1200
                      :height 768
                      :on-close :nothing)
         ; create the shortcut hints for the main buttons
