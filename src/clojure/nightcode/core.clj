@@ -117,12 +117,12 @@
           (s/top-bottom-split (get-project-pane console console-io)
                               (get-repl-pane process console console-io)
                               :divider-location 0.8
-                              :resize-weight 1))
+                              :resize-weight 0.5))
         (one-touch!
           (s/top-bottom-split (get-editor-pane)
                               (get-builder-pane)
                               :divider-location 0.8
-                              :resize-weight 1))
+                              :resize-weight 0.5))
         :divider-location 0.35
         :resize-weight 0))))
 
