@@ -127,6 +127,7 @@
         :resize-weight 0))))
 
 (defn confirm-exit-app!
+  "Displays a dialog confirming whether the program should shut down."
   []
   (let [unsaved-paths (->> (keys @editors/editors)
                            (filter editors/is-unsaved?)

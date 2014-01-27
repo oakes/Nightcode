@@ -173,10 +173,12 @@
            :update-project-buttons
            (fn [_ _ _ path]
              (s/config! (s/select @ui/ui-root [:#remove-button])
-                        :enabled?
-                        (and path (or (contains? @ui/tree-projects path)
-                                      (.isFile (io/file path)))))
+                        :enabled? (and (not (nil? path))
+                                       (or (contains? @ui/tree-projects path)
+                                           (.isFile (io/file path)))))
              (s/config! (s/select @ui/ui-root [:#new-file-button])
-                        :visible? (and path (.isDirectory (io/file path))))
+                        :visible? (and (not (nil? path))
+                                       (.isDirectory (io/file path))))
              (s/config! (s/select @ui/ui-root [:#rename-file-button])
-                        :visible? (and path (.isFile (io/file path))))))
+                        :visible? (and (not (nil? path))
+                                       (.isFile (io/file path))))))

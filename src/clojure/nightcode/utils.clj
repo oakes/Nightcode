@@ -51,12 +51,12 @@
 (defn tree-path-to-str
   "Gets the string path for the given JTree path object."
   [^TreePath tree-path]
-  (-> tree-path
-      .getPath
-      last
-      .getUserObject
-      :file
-      .getCanonicalPath))
+  (some-> tree-path
+          .getPath
+          last
+          .getUserObject
+          :file
+          .getCanonicalPath))
 
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."

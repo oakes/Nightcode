@@ -201,4 +201,7 @@
             (.setSelectionPath tree tree-path)))))
     ; select the first project if there is nothing selected
     (when (nil? (.getSelectionPath tree))
-      (.setSelectionRow tree 0))))
+      (.setSelectionRow tree 0))
+    ; if there is still nothing selected, reset atom so the buttons refresh
+    (when (nil? @tree-selection)
+      (reset! tree-selection nil))))
