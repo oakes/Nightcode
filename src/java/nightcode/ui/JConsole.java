@@ -93,21 +93,14 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	private boolean gotUp = true;
 
 	public JConsole(TextEditorPane pane) {
-		this(pane, new Font("Monospaced", Font.PLAIN, pane.getFont().getSize()));
-	}
-
-	public JConsole(TextEditorPane pane, Font font) {
 		super();
 
-		text = pane;		
-		text.setFont(font);
+		text = pane;
 		text.setMargin(new Insets(0, 5, 0, 5));
 		text.addKeyListener(this);
 		setViewportView(text);
 
 		init();
-
-		requestFocus();
 	}
 
 	public void init() {
