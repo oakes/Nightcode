@@ -1,7 +1,5 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as io]
-            [clojure.pprint :as pp]
-            [clojure.zip :as zip]
             [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
             [nightcode.lein :as lein]

@@ -15,7 +15,7 @@
            [org.pushingpixels.substance.api.skin GraphiteSkin])
   (:gen-class))
 
-(defn get-project-pane
+(defn create-project-pane
   "Returns the pane with the project tree."
   [console console-io]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
@@ -69,7 +69,7 @@
                                  :remove-button p/remove-item!})
     project-pane))
 
-(defn get-repl-pane
+(defn create-repl-pane
   "Returns the pane with the REPL."
   [process console console-io]
   (let [run! (fn [& _]
@@ -94,17 +94,17 @@
     (doto (s/config! console :id :repl-console)
       (shortcuts/create-mappings! {:repl-console run!}))))
 
-(defn get-editor-pane
+(defn create-editor-pane
   "Returns the pane with the editors."
   []
   (s/card-panel :id :editor-pane :items [["" :default-card]]))
 
-(defn get-builder-pane
+(defn create-builder-pane
   "Returns the pane with the builders."
   []
   (s/card-panel :id :builder-pane :items [["" :default-card]]))
 
-(defn get-window-content
+(defn create-window-content
   "Returns the entire window with all panes."
   []
   (let [process (atom nil)
@@ -114,13 +114,13 @@
     (one-touch!
       (s/left-right-split
         (one-touch!
-          (s/top-bottom-split (get-project-pane console console-io)
-                              (get-repl-pane process console console-io)
+          (s/top-bottom-split (create-project-pane console console-io)
+                              (create-repl-pane process console console-io)
                               :divider-location 0.8
                               :resize-weight 0.5))
         (one-touch!
-          (s/top-bottom-split (get-editor-pane)
-                              (get-builder-pane)
+          (s/top-bottom-split (create-editor-pane)
+                              (create-builder-pane)
                               :divider-location 0.8
                               :resize-weight 0.5))
         :divider-location 0.35
@@ -136,6 +136,45 @@
       (System/exit 0)
       true)))
 
+(defn create-window
+  "Creates the main window."
+  []
+  (doto (s/frame :title (str (utils/get-string :app_name)
+                             " "
+                             (utils/get-version))
+                 :content (create-window-content)
+                 :width 1200
+                 :height 768
+                 :on-close :nothing)
+    ; create the shortcut hints for the main buttons
+    shortcuts/create-hints!
+    ; listen for keys while modifier is down
+    (shortcuts/listen-for-shortcuts!
+      (fn [key-code]
+        (case key-code
+          ; enter
+          10 (p/toggle-project-tree-selection!)
+          ; page up
+          33 (p/move-tab-selection! -1)
+          ; page down
+          34 (p/move-tab-selection! 1)
+          ; up
+          38 (p/move-project-tree-selection! -1)
+          ; down
+          40 (p/move-project-tree-selection! 1)
+          ; Q
+          81 (confirm-exit-app!)
+          ; W
+          87 (editors/close-selected-editor!)
+          ; else
+          false)))
+    ; when the window state changes
+    (.addWindowListener (proxy [WindowAdapter] []
+                          (windowActivated [e]
+                            (ui/update-project-tree!))
+                          (windowClosing [e]
+                            (confirm-exit-app!))))))
+
 (defn -main
   "Launches the main window."
   [& args]
@@ -145,43 +184,6 @@
     (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.))))
   (s/invoke-later
     ; create and show the frame
-    (reset! ui/ui-root
-      (doto (s/frame :title (str (utils/get-string :app_name)
-                                 " "
-                                 (utils/get-version))
-                     :content (get-window-content)
-                     :width 1200
-                     :height 768
-                     :on-close :nothing)
-        ; create the shortcut hints for the main buttons
-        shortcuts/create-hints!
-        ; listen for keys while modifier is down
-        (shortcuts/listen-for-shortcuts!
-          (fn [key-code]
-            (case key-code
-              ; enter
-              10 (p/toggle-project-tree-selection!)
-              ; page up
-              33 (p/move-tab-selection! -1)
-              ; page down
-              34 (p/move-tab-selection! 1)
-              ; up
-              38 (p/move-project-tree-selection! -1)
-              ; down
-              40 (p/move-project-tree-selection! 1)
-              ; Q
-              81 (confirm-exit-app!)
-              ; W
-              87 (editors/close-selected-editor!)
-              ; else
-              false)))
-        ; update the project tree when window comes into focus
-        (.addWindowListener (proxy [WindowAdapter] []
-                              (windowActivated [e]
-                                (ui/update-project-tree!))
-                              (windowClosing [e]
-                                (confirm-exit-app!))))
-        ; show the frame
-        s/show!))
+    (s/show! (reset! ui/ui-root (create-window)))
     ; initialize the project pane
     (ui/update-project-tree!)))

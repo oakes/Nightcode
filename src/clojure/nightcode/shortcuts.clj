@@ -1,6 +1,5 @@
 (ns nightcode.shortcuts
-  (:require [nightcode.utils :as utils]
-            [seesaw.core :as s]
+  (:require [seesaw.core :as s]
             [seesaw.keymap :as keymap])
   (:import [java.awt Color Component KeyboardFocusManager KeyEventDispatcher
             Toolkit]

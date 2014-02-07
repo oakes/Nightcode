@@ -134,5 +134,5 @@
   "Returns true if the file is of type text, false otherwise."
   [^File file]
   (-> (Files/probeContentType ^Path (.toPath file))
-    (or "")
-    (.startsWith "text")))
+      (or "")
+      (.startsWith "text")))
