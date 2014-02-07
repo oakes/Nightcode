@@ -8,7 +8,7 @@
                  [leiningen "2.3.4"]
                  [lein-ancient "0.5.4" :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.2"]
-                 [lein-droid "0.2.1"]
+                 [lein-droid "0.2.2"]
                  [lein-fruit "0.1.1"]
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojure/clojure "1.5.1"]
