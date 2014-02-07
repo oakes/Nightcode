@@ -199,9 +199,7 @@
                (fn [_ _ _ new-state]
                  (when (nil? new-state)
                    (reset! last-reload nil))
-                 (-> (ui/get-selected-path)
-                     ui/get-project-path
-                     show-builder!)))
+                 (-> @ui/tree-selection ui/get-project-path show-builder!)))
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)

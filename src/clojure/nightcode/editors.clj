@@ -333,8 +333,8 @@
               (proxy-super setMarginLinePosition size))
             (processKeyBinding [ks e condition pressed]
               (proxy-super processKeyBinding ks e condition pressed)))
-    (.setAntiAliasingEnabled true)
-    apply-settings!))
+      (.setAntiAliasingEnabled true)
+      apply-settings!))
   ([path]
     (let [extension (get-extension path)]
       (doto (create-text-area)
