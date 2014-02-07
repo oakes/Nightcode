@@ -155,9 +155,9 @@
           ; enter
           10 (p/toggle-project-tree-selection!)
           ; page up
-          33 (p/move-tab-selection! -1)
+          33 (editors/move-tab-selection! -1)
           ; page down
-          34 (p/move-tab-selection! 1)
+          34 (editors/move-tab-selection! 1)
           ; up
           38 (p/move-project-tree-selection! -1)
           ; down

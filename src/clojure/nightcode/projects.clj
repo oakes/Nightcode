@@ -41,21 +41,6 @@
       (.setSelectionRow project-tree new-row)))
   true)
 
-(defn move-tab-selection!
-  [diff]
-  (let [paths (reverse (keys @editors/editors))
-        index (.indexOf paths (ui/get-selected-path))
-        max-index (- (count paths) 1)
-        new-index (+ index diff)
-        new-index (cond
-                    (< new-index 0) max-index
-                    (> new-index max-index) 0
-                    :else new-index)]
-    (when (> (count paths) 0)
-      (binding [editors/*reorder-tabs?* false]
-        (ui/update-project-tree! (nth paths new-index)))))
-  true)
-
 (defn toggle-project-tree-selection!
   []
   (let [project-tree (ui/get-project-tree)]
