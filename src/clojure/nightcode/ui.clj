@@ -164,14 +164,16 @@
 
 ; create and update the project tree
 
-(defn create-project-tree
+(defn sort-project-set
+  "Sorts project set alphabetically."
+  [project-set]
+  (sort-by #(.getName (io/file %)) project-set))
+
+(defn create-project-tree!
   "Creates a new project tree."
   []
-  (reset! tree-projects
-          (-> #(.getName (io/file %))
-              (sort-by (utils/read-pref :project-set))
-              set))
-  (-> @tree-projects
+  (-> (reset! tree-projects (utils/read-pref :project-set))
+      sort-project-set
       vec
       root-node
       (DefaultTreeModel. false)))
@@ -184,7 +186,7 @@
     (update-project-tree! (get-project-tree) new-selection))
   ([^JTree tree ^String new-selection]
     ; put new data in the tree
-    (.setModel tree (create-project-tree))
+    (.setModel tree (create-project-tree!))
     ; wipe out the in-memory expansions
     (reset! tree-expansions #{})
     ; get the expansion/selection and apply them to the tree
