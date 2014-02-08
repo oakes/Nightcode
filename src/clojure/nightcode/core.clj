@@ -8,7 +8,8 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils])
-  (:import [java.awt.event WindowAdapter]
+  (:import [java.awt Window]
+           [java.awt.event WindowAdapter]
            [javax.swing.event TreeExpansionListener TreeSelectionListener]
            [javax.swing.tree TreeSelectionModel]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
@@ -136,6 +137,16 @@
       (System/exit 0)
       true)))
 
+(defn enable-full-screen!
+  "Enables full screen mode on OS X."
+  [window]
+  (try
+    (some-> (Class/forName "com.apple.eawt.FullScreenUtilities")
+            (.getMethod "setWindowCanFullScreen"
+                        (into-array Class [Window Boolean/TYPE]))
+            (.invoke nil (object-array [window true])))
+    (catch Exception _)))
+
 (defn create-window
   "Creates the main window."
   []
@@ -168,7 +179,8 @@
           87 (editors/close-selected-editor!)
           ; else
           false)))
-    ; when the window state changes
+    ; set various window properties
+    enable-full-screen!
     (.addWindowListener (proxy [WindowAdapter] []
                           (windowActivated [e]
                             (ui/update-project-tree!))
