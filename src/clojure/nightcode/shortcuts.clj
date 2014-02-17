@@ -1,5 +1,6 @@
 (ns nightcode.shortcuts
-  (:require [seesaw.core :as s]
+  (:require [nightcode.ui :as ui]
+            [seesaw.core :as s]
             [seesaw.keymap :as keymap])
   (:import [java.awt Color Component KeyboardFocusManager KeyEventDispatcher
             Toolkit]
@@ -100,6 +101,11 @@
         (doto positioner
           (.enableFixedAttachLocation true)
           (.setAttachLocation 0.5 y))
+        (when-let [container (some-> @ui/ui-root
+                                     .getGlassPane
+                                     (s/select [:JLayeredPane])
+                                     first)]
+          (.setTopLevelContainer tip container))
         (doto tip
           (.setPositioner positioner)
           (.setVisible false))))))
@@ -108,8 +114,8 @@
   "Creates hints for all widgets within given target with IDs in `mappings`."
   [target]
   (doseq [[id mapping] mappings]
-    (when-let [btn (s/select target [(keyword (str "#" (name id)))])]
-      (create-hint! btn mapping))))
+    (some-> (s/select target [(keyword (str "#" (name id)))])
+            (create-hint! mapping))))
 
 (defn listen-for-shortcuts!
   "Creates a global listener for shortcuts."
