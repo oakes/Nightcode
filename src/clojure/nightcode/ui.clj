@@ -185,9 +185,11 @@
 (defn update-project-tree!
   "Updates the project tree, optionally with a new selection."
   ([]
-    (update-project-tree! (get-project-tree) nil))
+    (some-> (get-project-tree)
+            (update-project-tree! nil)))
   ([^String new-selection]
-    (update-project-tree! (get-project-tree) new-selection))
+    (some-> (get-project-tree)
+            (update-project-tree! new-selection)))
   ([^JTree tree ^String new-selection]
     ; put new data in the tree
     (.setModel tree (create-project-tree!))
