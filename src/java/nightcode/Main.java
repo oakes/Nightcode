@@ -35,7 +35,7 @@ public class Main {
     }
 
     private void init(String[] args) throws Exception {
-        SplashScreen splash = SplashScreen.getSplashScreen();
+        final SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash == null) {
             System.err.println("Cannot launch splash screen. Proceeding.");
         }
