@@ -34,8 +34,21 @@ public class Main {
         m.invoke(null, (Object) args);
     }
 
+    private boolean hasFullScreenButton() {
+        try {
+            Class.forName("com.apple.eawt.FullScreenUtilities");
+        } catch (ClassNotFoundException e1) {
+            return false;
+        }
+
+        return true;
+    }
+
     private void init(String[] args) throws Exception {
-        final SplashScreen splash = SplashScreen.getSplashScreen();
+        SplashScreen splash = null;
+        if (hasFullScreenButton()) {
+            splash = SplashScreen.getSplashScreen();
+        }
         if (splash == null) {
             System.err.println("Cannot launch splash screen. Proceeding.");
         }
