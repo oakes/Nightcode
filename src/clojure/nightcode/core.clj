@@ -143,7 +143,7 @@
   (some-> (try (Class/forName "com.apple.eawt.FullScreenUtilities")
             (catch Throwable _))
           (.getMethod "setWindowCanFullScreen"
-                      (into-array Class [Window Boolean/TYPE]))
+            (into-array Class [Window Boolean/TYPE]))
           (.invoke nil (object-array [window true]))))
 
 (defn create-window
@@ -151,7 +151,7 @@
   []
   (doto (s/frame :title (str (utils/get-string :app_name)
                              " "
-                             (utils/get-version))
+                             (utils/get-version "nightcode.core"))
                  :content (create-window-content)
                  :width 1200
                  :height 768
