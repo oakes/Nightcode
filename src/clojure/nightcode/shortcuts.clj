@@ -51,7 +51,8 @@
                         ; only run the function if the button is enabled
                         (let [button-id (keyword (str "#" (name id)))
                               button (s/select panel [button-id])]
-                          (when (and (s/config button :enabled?)
+                          (when (and button
+                                     (s/config button :enabled?)
                                      (s/config button :visible?))
                             (func e))))
                       :scope :global))))

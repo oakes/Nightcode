@@ -454,6 +454,53 @@
          (or (contains? styles (get-extension path))
              (utils/is-text-file? pathfile)))))
 
+(def ^:dynamic editor-controls [:save :undo :redo :font-dec :font-inc
+                                :doc :paredit :paredit-help :find :replace])
+
+(defn create-control
+  [k]
+  (case k
+    :save (ui/button :id :save-button
+                     :text (utils/get-string :save)
+                     :focusable? false
+                     :listen [:action save-file!])
+    :undo (ui/button :id :undo-button
+                     :text (utils/get-string :undo)
+                     :focusable? false
+                     :listen [:action undo-file!])
+    :redo (ui/button :id :redo-button
+                     :text (utils/get-string :redo)
+                     :focusable? false
+                     :listen [:action redo-file!])
+    :font-dec (ui/button :id :font-dec-button
+                         :text (utils/get-string :font_dec)
+                         :focusable? false
+                         :listen [:action decrease-font-size!])
+    :font-inc (ui/button :id :font-inc-button
+                         :text (utils/get-string :font_inc)
+                         :focusable? false
+                         :listen [:action increase-font-size!])
+    :doc (ui/button :id :doc-button
+                    :text (utils/get-string :doc)
+                    :focusable? false
+                    :listen [:action do-completion!])
+    :paredit (ui/toggle :id :paredit-button
+                        :text (utils/get-string :paredit)
+                        :focusable? false
+                        :selected? @paredit-enabled?
+                        :listen [:action toggle-paredit!])
+    :paredit-help (ui/button :id :paredit-help-button
+                             :text (utils/get-string :paredit_help)
+                             :focusable? false
+                             :listen [:action show-paredit-help!])
+    :find (s/text :id :find-field
+                  :columns 8
+                  :listen [:key-released find-text!])
+    :replace (s/text :id :replace-field
+                     :columns 8
+                     :listen [:key-released replace-text!])
+    nil))
+
 (defn create-editor
   [path]
   (when (is-valid-file? path)
@@ -462,50 +509,17 @@
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
+          editor-controls (remove (fn [k]
+                                    (-> (concat []
+                                                (if-not is-clojure?
+                                                  [:paredit :paredit-help])
+                                                (if-not completer
+                                                  [:doc]))
+                                        set
+                                        (contains? k)))
+                                  editor-controls)
           ; create the buttons with their actions attached
-          btn-group (ui/wrap-panel
-                      :items [(ui/button :id :save-button
-                                         :text (utils/get-string :save)
-                                         :focusable? false
-                                         :listen [:action save-file!])
-                              (ui/button :id :undo-button
-                                         :text (utils/get-string :undo)
-                                         :focusable? false
-                                         :listen [:action undo-file!])
-                              (ui/button :id :redo-button
-                                         :text (utils/get-string :redo)
-                                         :focusable? false
-                                         :listen [:action redo-file!])
-                              (ui/button :id :font-dec-button
-                                         :text (utils/get-string :font_dec)
-                                         :focusable? false
-                                         :listen [:action decrease-font-size!])
-                              (ui/button :id :font-inc-button
-                                         :text (utils/get-string :font_inc)
-                                         :focusable? false
-                                         :listen [:action increase-font-size!])
-                              (ui/button :id :doc-button
-                                         :text (utils/get-string :doc)
-                                         :focusable? false
-                                         :visible? (not (nil? completer))
-                                         :listen [:action do-completion!])
-                              (ui/toggle :id :paredit-button
-                                         :text (utils/get-string :paredit)
-                                         :focusable? false
-                                         :visible? is-clojure?
-                                         :selected? @paredit-enabled?
-                                         :listen [:action toggle-paredit!])
-                              (ui/button :id :paredit-help-button
-                                         :text (utils/get-string :paredit_help)
-                                         :focusable? false
-                                         :visible? is-clojure?
-                                         :listen [:action show-paredit-help!])
-                              (s/text :id :find-field
-                                      :columns 8
-                                      :listen [:key-released find-text!])
-                              (s/text :id :replace-field
-                                      :columns 8
-                                      :listen [:key-released replace-text!])])
+          btn-group (ui/wrap-panel :items (map create-control editor-controls))
           ; create the main panel
           text-group (s/border-panel
                        :north btn-group
@@ -526,8 +540,9 @@
       ; add prompt text to the fields
       (doseq [[id text] {:#find-field (utils/get-string :find)
                          :#replace-field (utils/get-string :replace)}]
-        (doto (TextPrompt. text (s/select text-group [id]))
-          (.changeAlpha 0.5)))
+        (when-let [control (s/select text-group [id])]
+          (doto (TextPrompt. text control)
+            (.changeAlpha 0.5))))
       ; update buttons every time a key is typed
       (s/listen text-area
                 :key-released
