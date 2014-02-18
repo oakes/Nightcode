@@ -10,34 +10,6 @@
            [java.util.prefs Preferences]
            [javax.swing.tree TreePath]))
 
-; project
-
-(defn get-exec-file
-  "Returns the executable as a java.io.File."
-  [class-name]
-  (-> (Class/forName class-name)
-      .getProtectionDomain
-      .getCodeSource
-      .getLocation
-      .toURI
-      io/file))
-
-(defn get-project
-  "Returns the project.clj file as a list."
-  [class-name]
-  (when (.isFile (get-exec-file class-name))
-    (->> (io/resource "project.clj")
-         slurp
-         read-string
-         (binding [*read-eval* false]))))
-
-(defn get-version
-  "Returns the version number from the project.clj file."
-  [class-name]
-  (if-let [project (get-project class-name)]
-    (nth project 2)
-    "beta"))
-
 ; preferences
 
 (def ^Preferences prefs (.node (Preferences/userRoot) "nightcode"))
@@ -77,6 +49,25 @@
     res-name))
 
 ; paths and encodings
+
+(defn get-exec-file
+  "Returns the executable as a java.io.File."
+  [class-name]
+  (-> (Class/forName class-name)
+      .getProtectionDomain
+      .getCodeSource
+      .getLocation
+      .toURI
+      io/file))
+
+(defn get-project
+  "Returns the project.clj file as a list."
+  [class-name]
+  (when (.isFile (get-exec-file class-name))
+    (->> (io/resource "project.clj")
+         slurp
+         read-string
+         (binding [*read-eval* false]))))
 
 (defn tree-path-to-str
   "Gets the string path for the given JTree path object."

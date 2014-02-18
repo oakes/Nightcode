@@ -151,7 +151,9 @@
   []
   (doto (s/frame :title (str (utils/get-string :app_name)
                              " "
-                             (utils/get-version "nightcode.core"))
+                             (if-let [p (utils/get-project "nightcode.core")]
+                               (nth p 2)
+                               "beta"))
                  :content (create-window-content)
                  :width 1200
                  :height 768
