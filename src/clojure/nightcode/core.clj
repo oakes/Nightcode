@@ -140,12 +140,11 @@
 (defn enable-full-screen!
   "Enables full screen mode on OS X."
   [window]
-  (try
-    (some-> (Class/forName "com.apple.eawt.FullScreenUtilities")
-            (.getMethod "setWindowCanFullScreen"
-                        (into-array Class [Window Boolean/TYPE]))
-            (.invoke nil (object-array [window true])))
-    (catch Exception _)))
+  (some-> (try (Class/forName "com.apple.eawt.FullScreenUtilities")
+            (catch Throwable _))
+          (.getMethod "setWindowCanFullScreen"
+                      (into-array Class [Window Boolean/TYPE]))
+          (.invoke nil (object-array [window true]))))
 
 (defn create-window
   "Creates the main window."
