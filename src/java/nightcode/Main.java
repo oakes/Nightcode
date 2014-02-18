@@ -1,6 +1,5 @@
 package nightcode;
 
-import java.awt.*;
 import java.lang.reflect.Method;
 import java.util.Properties;
 import javax.swing.*;
@@ -13,8 +12,6 @@ import javax.swing.*;
  * 1. Loads nightcode.core/-main using reflection (it takes time)
  * 2. Closes splash screen
  * 3. Invokes nightcode.core/-main
- * See: http://docs.oracle.com/javase/tutorial/uiswing/misc/splashscreen.html
- * See (creating animated loader image): http://preloaders.net/en/search/text
  */
 public class Main {
 
@@ -46,7 +43,7 @@ public class Main {
 
         Method m = loadNightcodeMain();
 
-		window.setVisible(false);
+        window.setVisible(false);
         window.dispose();
 
         invokeNightcodeMain(m, args);
