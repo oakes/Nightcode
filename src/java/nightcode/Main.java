@@ -46,7 +46,7 @@ public class Main {
 
     private void init(String[] args) throws Exception {
         SplashScreen splash = null;
-        if (hasFullScreenButton()) {
+        if (!hasFullScreenButton()) {
             splash = SplashScreen.getSplashScreen();
         }
         if (splash == null) {
