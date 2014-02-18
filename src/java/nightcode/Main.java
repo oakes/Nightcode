@@ -2,7 +2,6 @@ package nightcode;
 
 import java.awt.*;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Properties;
 import javax.swing.*;
 
