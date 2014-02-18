@@ -2,8 +2,7 @@
   (:require [clojure.java.io :as io]
             [nightcode.lein :as lein]
             [nightcode.utils :as utils]
-            [seesaw.core :as s]
-            [seesaw.util :as s-util])
+            [seesaw.core :as s])
   (:import [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
            [java.awt Dimension FontMetrics]
@@ -12,9 +11,6 @@
            [javax.swing.tree DefaultTreeModel]))
 
 ; create and retrieve widgets
-
-(extend-protocol s-util/Children
-  java.awt.Component (children [this] nil))
 
 (def ui-root (atom nil))
 
