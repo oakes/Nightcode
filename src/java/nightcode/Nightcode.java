@@ -13,7 +13,7 @@ import javax.swing.*;
  * 2. Closes splash screen
  * 3. Invokes nightcode.core/-main
  */
-public class Main {
+public class Nightcode {
 
     private Method loadNightcodeMain() throws Exception {
         final String cn = "nightcode.core";
@@ -60,7 +60,7 @@ public class Main {
             props.setProperty("sun.java2d.xrender", "true");
         }
         // initialize and launch Nightcode
-        new Main().init(args);
+        new Nightcode().init(args);
     }
 
 }
