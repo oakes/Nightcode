@@ -381,26 +381,6 @@
          (System/setProperty "leiningen.original.pwd" parent-path))
        (redirect-io in-out)))
 
-(defn run-repl!
-  [process in-out]
-  (stop-process! process)
-  (->> (start-process-indirectly! process nil "clojure.main")
-       (start-thread! in-out)))
-
-(defn run-logcat!
-  [process in-out path]
-  (stop-process! process)
-  (->> (start-process! process
-                       nil
-                       (-> (read-project-clj path)
-                           :android
-                           :sdk-path
-                           (leiningen.droid.utils/sdk-binary :adb))
-                       "logcat"
-                       "*:I")
-       (binding [leiningen.core.main/*exit-process?* false])
-       (start-thread! in-out)))
-
 (defn run-hot-swap!
   [in-out path]
   (->> (hot-swap-project-task path (read-project-clj path))

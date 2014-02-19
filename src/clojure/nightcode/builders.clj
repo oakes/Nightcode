@@ -253,6 +253,13 @@
         (close-fn!)
         (.remove pane view)))))
 
+; pane
+
+(defn create-pane
+  "Returns the pane with the builders."
+  []
+  (s/card-panel :id :builder-pane :items [["" :default-card]]))
+
 ; watchers
 
 (add-watch ui/tree-selection

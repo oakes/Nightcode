@@ -8,7 +8,9 @@
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
-            [seesaw.core :as s]))
+            [seesaw.core :as s])
+  (:import [javax.swing.event TreeExpansionListener TreeSelectionListener]
+           [javax.swing.tree TreeSelectionModel]))
 
 ; manipulate expansions and selection
 
@@ -151,6 +153,61 @@
   [e]
   (when (remove-from-project-tree! (ui/get-selected-path))
     (ui/update-project-tree! (ui/get-project-root-path))))
+
+; pane
+
+(defn create-pane
+  "Returns the pane with the project tree."
+  [console console-io]
+  (let [project-tree (s/tree :id :project-tree :focusable? true)
+        create-new-project! (fn [_]
+                              (try (new-project! @console-io)
+                                (catch Exception _ (.enterLine console ""))))
+        btn-group (s/horizontal-panel
+                    :items [(ui/button :id :new-project-button
+                                       :text (utils/get-string :new_project)
+                                       :listen [:action create-new-project!]
+                                       :focusable? false)
+                            (ui/button :id :new-file-button
+                                       :text (utils/get-string :new_file)
+                                       :listen [:action new-file!]
+                                       :focusable? false)
+                            (ui/button :id :rename-file-button
+                                       :text (utils/get-string :rename_file)
+                                       :listen [:action rename-file!]
+                                       :focusable? false
+                                       :visible? false)
+                            (ui/button :id :import-button
+                                       :text (utils/get-string :import)
+                                       :listen [:action import-project!]
+                                       :focusable? false)
+                            (ui/button :id :remove-button
+                                       :text (utils/get-string :remove)
+                                       :listen [:action remove-item!]
+                                       :focusable? false)
+                            :fill-h])
+        project-pane (s/vertical-panel
+                       :id :project-pane
+                       :items [btn-group (s/scrollable project-tree)])]
+    (doto project-tree
+      (.setRootVisible false)
+      (.setShowsRootHandles true)
+      (.addTreeExpansionListener
+        (reify TreeExpansionListener
+          (treeCollapsed [this e] (remove-expansion! e))
+          (treeExpanded [this e] (add-expansion! e))))
+      (.addTreeSelectionListener
+        (reify TreeSelectionListener
+          (valueChanged [this e] (set-selection! e))))
+      (-> .getSelectionModel
+          (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION)))
+    (shortcuts/create-mappings! project-pane
+                                {:new-project-button create-new-project!
+                                 :new-file-button new-file!
+                                 :rename-file-button rename-file!
+                                 :import-button import-project!
+                                 :remove-button remove-item!})
+    project-pane))
 
 ; watchers
 

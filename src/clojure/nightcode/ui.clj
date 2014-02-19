@@ -1,6 +1,5 @@
 (ns nightcode.ui
   (:require [clojure.java.io :as io]
-            [nightcode.lein :as lein]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
   (:import [clojure.lang LineNumberingPushbackReader]
@@ -110,7 +109,15 @@
 
 ; data for the project tree
 
-(def ^:const logcat-name "*LogCat*")
+(def ^:dynamic *node-adjustment-types* [:logcat])
+
+(defmulti adjust-nodes (fn [type _ _] type) :default nil)
+
+(defmethod adjust-nodes nil [_ _ children] children)
+
+(defn reduce-nodes
+  [parent children]
+  (reduce #(adjust-nodes %2 parent %1) children *node-adjustment-types*))
 
 (defn get-node
   "Returns a map describing an item with the given file object."
@@ -130,13 +137,7 @@
   (->> (for [child children]
          (get-node child))
        (sort-by #(:name %))
-       (cons (when (and (:file node)
-                        (-> (.getCanonicalPath (:file node))
-                            lein/is-android-project?))
-               {:html "<html><b><font color='green'>LogCat</font></b></html>"
-                :name "LogCat"
-                :file (io/file (:file node) logcat-name)}))
-       (remove nil?)
+       (reduce-nodes node)
        vec))
 
 (defn file-node

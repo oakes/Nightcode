@@ -2,7 +2,6 @@
   (:require [clojure.java.io :as io]
             [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
-            [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -448,15 +447,8 @@
     (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
     (when enable-advanced? toggle-paredit-fn!)))
 
-(defn is-valid-file?
-  [path]
-  (let [pathfile (io/file path)]
-    (and (.isFile pathfile)
-         (or (contains? styles (get-extension path))
-             (utils/is-text-file? pathfile)))))
-
-(def ^:dynamic editor-widgets [:save :undo :redo :font-dec :font-inc
-                               :doc :paredit :paredit-help :find :replace])
+(def ^:dynamic *editor-widgets* [:save :undo :redo :font-dec :font-inc
+                                 :doc :paredit :paredit-help :find :replace])
 
 (defn create-widget
   [k]
@@ -502,9 +494,19 @@
                      :listen [:key-released replace-text!])
     nil))
 
-(defn create-editor
+(defn valid-file?
   [path]
-  (when (is-valid-file? path)
+  (let [pathfile (io/file path)]
+    (and (.isFile pathfile)
+         (or (contains? styles (get-extension path))
+             (utils/is-text-file? pathfile)))))
+
+(defmulti create-editor (fn [type _] type) :default nil)
+
+(defmethod create-editor nil [_ _])
+
+(defmethod create-editor :file [_ path]
+  (when (valid-file? path)
     (let [; create the text editor object
           text-area (create-text-area path)
           extension (get-extension path)
@@ -518,7 +520,7 @@
                                                  [:doc]))
                                        set
                                        (contains? k)))
-                                 editor-widgets)
+                                 *editor-widgets*)
           ; create the widgets
           widget-group (ui/wrap-panel :items (map create-widget editor-widgets))
           ; create the main panel
@@ -553,13 +555,13 @@
         (install-completer! text-area completer))
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
-                            (reify DocumentListener
-                              (changedUpdate [this e]
-                                (update-buttons! text-group text-area))
-                              (insertUpdate [this e]
-                                (update-buttons! text-group text-area))
-                              (removeUpdate [this e]
-                                (update-buttons! text-group text-area))))
+        (reify DocumentListener
+          (changedUpdate [this e]
+            (update-buttons! text-group text-area))
+          (insertUpdate [this e]
+            (update-buttons! text-group text-area))
+          (removeUpdate [this e]
+            (update-buttons! text-group text-area))))
       ; return a map describing the editor
       {:view text-group
        :text-area text-area
@@ -570,51 +572,15 @@
        :should-remove-fn #(not (.exists (io/file path)))
        :toggle-paredit-fn! (init-paredit! text-area is-clojure? is-clojure?)})))
 
-(defn create-logcat
-  [path]
-  (when (= (.getName (io/file path)) ui/logcat-name)
-    (let [; create new console object with a reader/writer
-          console (create-console nil)
-          ; keep track of the process and whether it's running
-          process (atom nil)
-          is-running? (atom false)
-          ; create the start/stop button
-          toggle-btn (s/button :id :toggle-logcat-button
-                               :text (utils/get-string :start))
-          ; create the main panel
-          widget-group (ui/wrap-panel :items [toggle-btn])
-          ; create the toggle action
-          parent-path (-> path io/file .getParentFile .getCanonicalPath)
-          start! (fn []
-                   (lein/run-logcat! process (ui/get-io! console) parent-path)
-                   (s/config! toggle-btn :text (utils/get-string :stop))
-                   true)
-          stop! (fn []
-                  (lein/stop-process! process)
-                  (s/config! toggle-btn :text (utils/get-string :start))
-                  false)
-          toggle! (fn [_]
-                    (reset! is-running? (if @is-running? (stop!) (start!)))
-                    (update-tabs! path))]
-      ; add the toggle action to the button
-      (s/listen toggle-btn :action toggle!)
-      ; create shortcuts
-      (doto widget-group
-        (shortcuts/create-mappings! {:toggle-logcat-button toggle!})
-        shortcuts/create-hints!)
-      ; return a map describing the logcat view
-      {:view (s/border-panel :north widget-group :center console)
-       :close-fn! #(stop!)
-       :should-remove-fn #(not (lein/is-android-project? parent-path))
-       :italicize-fn (fn [] @is-running?)})))
+(def ^:dynamic *editor-types* [:file :logcat])
 
 (defn show-editor!
   [path]
   (let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
-      (when-let [editor-map (or (create-editor path)
-                                (create-logcat path))]
+      (when-let [editor-map (some #(if-not (nil? %) %)
+                                  (map #(create-editor % path) *editor-types*))]
         (swap! editors assoc path editor-map)
         (.add editor-pane (:view editor-map) path)))
     ; display the correct card
@@ -652,6 +618,13 @@
     (update-tabs! new-path)
     (ui/update-project-tree! new-path))
   true)
+
+; pane
+
+(defn create-pane
+  "Returns the pane with the editors."
+  []
+  (s/card-panel :id :editor-pane :items [["" :default-card]]))
 
 ; watchers
 
