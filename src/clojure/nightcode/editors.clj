@@ -206,9 +206,10 @@
 (defn focus-on-field!
   [id]
   (when-let [editor (get-selected-editor)]
-    (doto (s/select editor [id])
-      s/request-focus!
-      .selectAll)))
+    (when-let [widget (s/select editor [id])]
+      (doto widget
+        s/request-focus!
+        .selectAll))))
 
 (defn focus-on-find!
   [_]
@@ -454,10 +455,10 @@
          (or (contains? styles (get-extension path))
              (utils/is-text-file? pathfile)))))
 
-(def ^:dynamic editor-controls [:save :undo :redo :font-dec :font-inc
-                                :doc :paredit :paredit-help :find :replace])
+(def ^:dynamic editor-widgets [:save :undo :redo :font-dec :font-inc
+                               :doc :paredit :paredit-help :find :replace])
 
-(defn create-control
+(defn create-widget
   [k]
   (case k
     :save (ui/button :id :save-button
@@ -509,20 +510,20 @@
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
-          editor-controls (remove (fn [k]
-                                    (-> (concat []
-                                                (if-not is-clojure?
-                                                  [:paredit :paredit-help])
-                                                (if-not completer
-                                                  [:doc]))
-                                        set
-                                        (contains? k)))
-                                  editor-controls)
-          ; create the buttons with their actions attached
-          btn-group (ui/wrap-panel :items (map create-control editor-controls))
+          editor-widgets (remove (fn [k]
+                                   (-> (concat []
+                                               (if-not is-clojure?
+                                                 [:paredit :paredit-help])
+                                               (if-not completer
+                                                 [:doc]))
+                                       set
+                                       (contains? k)))
+                                 editor-widgets)
+          ; create the widgets
+          widget-group (ui/wrap-panel :items (map create-widget editor-widgets))
           ; create the main panel
           text-group (s/border-panel
-                       :north btn-group
+                       :north widget-group
                        :center (RTextScrollPane. text-area))]
       ; create shortcuts
       (doto text-group
@@ -540,8 +541,8 @@
       ; add prompt text to the fields
       (doseq [[id text] {:#find-field (utils/get-string :find)
                          :#replace-field (utils/get-string :replace)}]
-        (when-let [control (s/select text-group [id])]
-          (doto (TextPrompt. text control)
+        (when-let [widget (s/select text-group [id])]
+          (doto (TextPrompt. text widget)
             (.changeAlpha 0.5))))
       ; update buttons every time a key is typed
       (s/listen text-area
@@ -581,7 +582,7 @@
           toggle-btn (s/button :id :toggle-logcat-button
                                :text (utils/get-string :start))
           ; create the main panel
-          btn-group (ui/wrap-panel :items [toggle-btn])
+          widget-group (ui/wrap-panel :items [toggle-btn])
           ; create the toggle action
           parent-path (-> path io/file .getParentFile .getCanonicalPath)
           start! (fn []
@@ -598,11 +599,11 @@
       ; add the toggle action to the button
       (s/listen toggle-btn :action toggle!)
       ; create shortcuts
-      (doto btn-group
+      (doto widget-group
         (shortcuts/create-mappings! {:toggle-logcat-button toggle!})
         shortcuts/create-hints!)
       ; return a map describing the logcat view
-      {:view (s/border-panel :north btn-group :center console)
+      {:view (s/border-panel :north widget-group :center console)
        :close-fn! #(stop!)
        :should-remove-fn #(not (lein/is-android-project? parent-path))
        :italicize-fn (fn [] @is-running?)})))
