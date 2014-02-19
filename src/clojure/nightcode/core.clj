@@ -10,6 +10,7 @@
             [nightcode.utils :as utils])
   (:import [java.awt Window]
            [java.awt.event WindowAdapter]
+           [java.lang.reflect InvocationHandler Proxy]
            [javax.swing.event TreeExpansionListener TreeSelectionListener]
            [javax.swing.tree TreeSelectionModel]
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
@@ -141,10 +142,33 @@
   "Enables full screen mode on OS X."
   [window]
   (some-> (try (Class/forName "com.apple.eawt.FullScreenUtilities")
-            (catch Throwable _))
+            (catch Exception _))
           (.getMethod "setWindowCanFullScreen"
             (into-array Class [Window Boolean/TYPE]))
           (.invoke nil (object-array [window true]))))
+
+(defn add-window-listener!
+  "Sets callbacks for window events."
+  [window]
+  ; make sure the window listener is called on OS X
+  (when-let [quit-class (try (Class/forName "com.apple.eawt.QuitHandler")
+                          (catch Exception _))]
+    (some-> (try (Class/forName "com.apple.eawt.Application")
+              (catch Exception _))
+            (.getMethod "getApplication" (into-array Class []))
+            (.invoke nil (object-array []))
+            (.setQuitHandler
+              (Proxy/newProxyInstance (.getClassLoader quit-class)
+                                      (into-array Class [quit-class])
+                                      (reify InvocationHandler
+                                        (invoke [this proxy method args]))))))
+  ; create and add the listener
+  (.addWindowListener window
+    (proxy [WindowAdapter] []
+      (windowActivated [e]
+        (ui/update-project-tree!))
+      (windowClosing [e]
+        (confirm-exit-app!)))))
 
 (defn create-window
   "Creates the main window."
@@ -182,11 +206,7 @@
           false)))
     ; set various window properties
     enable-full-screen!
-    (.addWindowListener (proxy [WindowAdapter] []
-                          (windowActivated [e]
-                            (ui/update-project-tree!))
-                          (windowClosing [e]
-                            (confirm-exit-app!))))))
+    add-window-listener!))
 
 (defn -main
   "Launches the main window."
