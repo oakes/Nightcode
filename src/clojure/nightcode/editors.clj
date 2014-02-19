@@ -505,7 +505,7 @@
 
 (defmethod create-editor nil [_ _])
 
-(defmethod create-editor :file [_ path]
+(defmethod create-editor :text [_ path]
   (when (valid-file? path)
     (let [; create the text editor object
           text-area (create-text-area path)
@@ -572,7 +572,7 @@
        :should-remove-fn #(not (.exists (io/file path)))
        :toggle-paredit-fn! (init-paredit! text-area is-clojure? is-clojure?)})))
 
-(def ^:dynamic *editor-types* [:file :logcat])
+(def ^:dynamic *editor-types* [:text :logcat])
 
 (defn show-editor!
   [path]
