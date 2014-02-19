@@ -167,13 +167,13 @@
           ; enter
           10 (p/toggle-project-tree-selection!)
           ; page up
-          33 (p/move-project-tree-selection! -1)
+          33 (editors/move-tab-selection! -1)
           ; page down
-          34 (p/move-project-tree-selection! 1)
+          34 (editors/move-tab-selection! 1)
           ; up
-          38 (editors/move-tab-selection! -1)
+          38 (p/move-project-tree-selection! -1)
           ; down
-          40 (editors/move-tab-selection! 1)
+          40 (p/move-project-tree-selection! 1)
           ; Q
           81 (confirm-exit-app!)
           ; W

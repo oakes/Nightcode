@@ -96,7 +96,7 @@
                    (if (utils/is-parent-path? path e-path) "underline" "none")
                    (if (italicize-fn) "italic" "normal")
                    (-> e-path io/file .getName)))
-         (cons "<center>&uarr; &darr;</center>")
+         (cons "<center>PgUp PgDn</center>")
          (clojure.string/join "<br/>")
          shortcuts/wrap-hint-text
          (s/editor-pane :editable? false :content-type "text/html" :text)

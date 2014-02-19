@@ -37,7 +37,7 @@
    :find-field "F"
    :replace-field "shift R"
    :repl-console "shift E"
-   :project-pane "PgUp PgDn &crarr;"
+   :project-pane "&uarr; &darr; &crarr;"
    :toggle-logcat-button "S"})
 
 (defn create-mappings!
