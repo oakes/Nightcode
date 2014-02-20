@@ -6,6 +6,11 @@
             [seesaw.icon :as icon])
   (:import [javax.swing JRadioButton]))
 
+(defn center!
+  [dialog]
+  (.setLocationRelativeTo dialog nil)
+  dialog)
+
 (defn show-remove-dialog!
   [is-project?]
   (-> (s/dialog :content (utils/get-string (if is-project?
@@ -19,6 +24,7 @@
                  (s/button :text (utils/get-string :cancel)
                            :listen [:action #(s/return-from-dialog % false)])])
       s/pack!
+      center!
       s/show!))
 
 (defn show-file-path-dialog!
@@ -33,6 +39,7 @@
                    (s/button :text (utils/get-string :cancel)
                              :listen [:action #(s/return-from-dialog % nil)])])
         s/pack!
+        center!
         s/show!)))
 
 (defn show-project-clj-dialog!
@@ -45,6 +52,7 @@
                                     :listen [:action
                                              #(s/return-from-dialog % false)])])
       s/pack!
+      center!
       s/show!))
 
 (defn show-project-type-dialog!
@@ -100,6 +108,7 @@
                               :listen [:action #(s/return-from-dialog
                                                   % (finish))])])
         s/pack!
+        center!
         s/show!)))
 
 (defn show-shut-down-dialog!
@@ -117,4 +126,5 @@
                                     :listen [:action
                                              #(s/return-from-dialog % false)])])
       s/pack!
+      center!
       s/show!))
