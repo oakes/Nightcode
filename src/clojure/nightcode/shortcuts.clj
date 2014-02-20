@@ -11,51 +11,52 @@
            [net.java.balloontip.styles ToolTipBalloonStyle]))
 
 (def is-down? (atom false))
-(def ^:const mappings
-  {:new-project "P"
-   :new-file "N"
-   :rename-file "M"
-   :import "O"
-   :remove "G"
-   :run "R"
-   :run-repl "E"
-   :reload "shift S"
-   :build "B"
-   :test "T"
-   :clean "L"
-   :check-versions "shift V"
-   :stop "I"
-   :sdk "shift K"
-   :auto "shift A"
-   :save "S"
-   :undo "Z"
-   :redo "Y"
-   :font-dec "MINUS"
-   :font-inc "EQUALS"
-   :doc "SPACE"
-   :paredit "shift P"
-   :find "F"
-   :replace "shift R"
-   :close "W"
-   :repl-console "shift E"
-   :project-pane "&uarr; &darr; &crarr;"
-   :toggle-logcat "S"})
+(def ^:const mappings {:new-project "P"
+                       :new-file "N"
+                       :rename-file "M"
+                       :import "O"
+                       :remove "G"
+                       :run "R"
+                       :run-repl "E"
+                       :reload "shift S"
+                       :build "B"
+                       :test "T"
+                       :clean "L"
+                       :check-versions "shift V"
+                       :stop "I"
+                       :sdk "shift K"
+                       :auto "shift A"
+                       :save "S"
+                       :undo "Z"
+                       :redo "Y"
+                       :font-dec "MINUS"
+                       :font-inc "EQUALS"
+                       :doc "SPACE"
+                       :paredit "shift P"
+                       :find "F"
+                       :replace "shift R"
+                       :close "W"
+                       :repl-console "shift E"
+                       :project-pane "&uarr; &darr; &crarr;"
+                       :toggle-logcat "S"})
 
 (defn create-mapping!
   "Makes the widget associated with `id` us `func` as its action."
-  [panel id func]
-  (when-let [mapping (get mappings id)]
-    (keymap/map-key panel
-                    (str "menu " mapping)
-                    (fn [e]
-                      ; only run the function if the widget is enabled
-                      (let [widget-id (keyword (str "#" (name id)))
-                            widget (s/select panel [widget-id])]
-                        (when (and widget
-                                   (s/config widget :enabled?)
-                                   (s/config widget :visible?))
-                          (func e))))
-                    :scope :global)))
+  ([widget func]
+    (create-mapping! widget (s/id-of widget) func))
+  ([panel id func]
+    (when-let [mapping (get mappings id)]
+      (keymap/map-key panel
+                      (str "menu " mapping)
+                      (fn [e]
+                        ; only run the function if the widget is enabled
+                        (let [widget-id (keyword (str "#" (name id)))
+                              widget (s/select panel [widget-id])]
+                          (when (and widget
+                                     (s/config widget :enabled?)
+                                     (s/config widget :visible?))
+                            (func e))))
+                      :scope :global))))
 
 (defn create-mappings!
   "Creates a mapping for each pair of widget IDs and functions."

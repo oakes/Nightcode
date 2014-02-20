@@ -448,6 +448,11 @@
     (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
     (when enable-advanced? toggle-paredit-fn!)))
 
+(defn text-prompt!
+  [widget text]
+  (doto (TextPrompt. text widget)
+    (.changeAlpha 0.5)))
+
 (defn remove-editors!
   [path]
   (let [editor-pane (ui/get-editor-pane)]
@@ -474,53 +479,71 @@
                                  :doc :paredit :paredit-help :find :replace
                                  :close])
 
-(defn create-widget
+(defn create-action
   [k]
+  (case k
+    :save save-file!
+    :undo undo-file!
+    :redo redo-file!
+    :font-dec decrease-font-size!
+    :font-inc increase-font-size!
+    :doc do-completion!
+    :paredit toggle-paredit!
+    :paredit-help show-paredit-help!
+    :find focus-on-find!
+    :replace focus-on-replace!
+    :close close-selected-editor!
+    nil))
+
+(defn create-widget
+  [k action-fn!]
   (case k
     :save (ui/button :id k
                      :text (utils/get-string :save)
                      :focusable? false
-                     :listen [:action save-file!])
+                     :listen [:action action-fn!])
     :undo (ui/button :id k
                      :text (utils/get-string :undo)
                      :focusable? false
-                     :listen [:action undo-file!])
+                     :listen [:action action-fn!])
     :redo (ui/button :id k
                      :text (utils/get-string :redo)
                      :focusable? false
-                     :listen [:action redo-file!])
+                     :listen [:action action-fn!])
     :font-dec (ui/button :id k
                          :text (utils/get-string :font_dec)
                          :focusable? false
-                         :listen [:action decrease-font-size!])
+                         :listen [:action action-fn!])
     :font-inc (ui/button :id k
                          :text (utils/get-string :font_inc)
                          :focusable? false
-                         :listen [:action increase-font-size!])
+                         :listen [:action action-fn!])
     :doc (ui/button :id k
                     :text (utils/get-string :doc)
                     :focusable? false
-                    :listen [:action do-completion!])
+                    :listen [:action action-fn!])
     :paredit (ui/toggle :id k
                         :text (utils/get-string :paredit)
                         :focusable? false
                         :selected? @paredit-enabled?
-                        :listen [:action toggle-paredit!])
+                        :listen [:action action-fn!])
     :paredit-help (ui/button :id k
                              :text (utils/get-string :paredit_help)
                              :focusable? false
-                             :listen [:action show-paredit-help!])
-    :find (s/text :id k
-                  :columns 8
-                  :listen [:key-released find-text!])
-    :replace (s/text :id k
-                     :columns 8
-                     :listen [:key-released replace-text!])
+                             :listen [:action action-fn!])
+    :find (doto (s/text :id k
+                        :columns 8
+                        :listen [:key-released find-text!])
+            (text-prompt! (utils/get-string :find)))
+    :replace (doto (s/text :id k
+                           :columns 8
+                           :listen [:key-released replace-text!])
+               (text-prompt! (utils/get-string :replace)))
     :close (ui/button :id k
                       :text "X"
                       :focusable? false
-                      :listen [:action close-selected-editor!])
-    k))
+                      :listen [:action action-fn!])
+    (s/make-widget k)))
 
 (defn valid-file?
   [path]
@@ -550,30 +573,20 @@
                                        (contains? k)))
                                  *editor-widgets*)
           ; create the widgets
-          widget-group (ui/wrap-panel :items (map create-widget editor-widgets))
+          widget-group (ui/wrap-panel
+                         :items (map (fn [k]
+                                       (let [a (create-action k)]
+                                         (doto (create-widget k a)
+                                           (shortcuts/create-mapping! a))))
+                                     editor-widgets))
           ; create the main panel
           text-group (s/border-panel
                        :north widget-group
                        :center (RTextScrollPane. text-area))]
       ; create shortcuts
       (doto text-group
-        (shortcuts/create-mappings! {:save save-file!
-                                     :undo undo-file!
-                                     :redo redo-file!
-                                     :font-dec decrease-font-size!
-                                     :font-inc increase-font-size!
-                                     :doc do-completion!
-                                     :paredit toggle-paredit!
-                                     :find focus-on-find!
-                                     :replace focus-on-replace!})
         shortcuts/create-hints!
         (update-buttons! text-area))
-      ; add prompt text to the fields
-      (doseq [[id text] {:#find (utils/get-string :find)
-                         :#replace (utils/get-string :replace)}]
-        (when-let [widget (s/select text-group [id])]
-          (doto (TextPrompt. text widget)
-            (.changeAlpha 0.5))))
       ; update buttons every time a key is typed
       (s/listen text-area
                 :key-released

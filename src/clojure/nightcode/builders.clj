@@ -25,7 +25,7 @@
 ; actions for builder buttons
 
 (defn set-android-sdk!
-  [_]
+  [& _]
   (when-let [dir (chooser/choose-file :dir (utils/read-pref :android-sdk)
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
@@ -33,7 +33,7 @@
     (show-builder! @ui/tree-selection)))
 
 (defn set-robovm!
-  [_]
+  [& _]
   (when-let [dir (chooser/choose-file :dir (utils/read-pref :robovm)
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
@@ -103,95 +103,115 @@
 
 ; create and show/hide builders for each project
 
+(def ^:dynamic *builder-widgets* [:run :run-repl :reload :build :test
+                                  :clean :check-versions :stop :auto])
+
+(defn create-action
+  [k path [console build-group] [process auto-process last-reload]]
+  (case k
+    :run (fn [& _]
+           (lein/run-project! process (ui/get-io! console) path)
+           (when (lein/is-java-project? path)
+             (reset! last-reload (System/currentTimeMillis))))
+    :run-repl (fn [& _]
+                (lein/run-repl-project! process (ui/get-io! console) path)
+                (when (not (lein/is-java-project? path))
+                  (reset! last-reload (System/currentTimeMillis))))
+    :reload (fn [& _]
+              (if (lein/is-java-project? path)
+                (lein/run-hot-swap! (ui/get-io! console) path)
+                (eval-in-repl! console path @last-reload))
+              (reset! last-reload (System/currentTimeMillis)))
+    :build (fn [& _]
+             (lein/build-project! process (ui/get-io! console) path))
+    :test (fn [& _]
+            (lein/test-project! process (ui/get-io! console) path))
+    :clean (fn [& _]
+             (lein/clean-project! process (ui/get-io! console) path))
+    :check-versions (fn [& _]
+                      (lein/check-versions-in-project!
+                        process (ui/get-io! console) path))
+    :stop (fn [& _]
+            (lein/stop-process! process))
+    :sdk set-android-sdk!
+    :robovm set-robovm!
+    :auto (fn [& _]
+            (ui/config! build-group :#auto :selected? (nil? @auto-process))
+            (if (nil? @auto-process)
+              (lein/cljsbuild-project!
+                auto-process (ui/get-io! console) path)
+              (lein/stop-process! auto-process)))
+    nil))
+
+(defn create-widget
+  [k action-fn!]
+  (case k
+    :run (ui/button :id k
+                    :text (utils/get-string :run)
+                    :listen [:action action-fn!]
+                    :focusable? false)
+    :run-repl (ui/button :id k
+                         :text (utils/get-string :run_with_repl)
+                         :listen [:action action-fn!]
+                         :focusable? false)
+    :reload (ui/button :id k
+                       :text (utils/get-string :reload)
+                       :listen [:action action-fn!]
+                       :focusable? false)
+    :build (ui/button :id k
+                      :text (utils/get-string :build)
+                      :listen [:action action-fn!]
+                      :focusable? false)
+    :test (ui/button :id k
+                     :text (utils/get-string :test)
+                     :listen [:action action-fn!]
+                     :focusable? false)
+    :clean (ui/button :id k
+                      :text (utils/get-string :clean)
+                      :listen [:action action-fn!]
+                      :focusable? false)
+    :check-versions (ui/button :id k
+                               :text (utils/get-string :check_versions)
+                               :listen [:action action-fn!]
+                               :focusable? false)
+    :stop (ui/button :id k
+                     :text (utils/get-string :stop)
+                     :listen [:action action-fn!]
+                     :focusable? false)
+    :sdk (ui/button :id k
+                    :text (utils/get-string :android_sdk)
+                    :listen [:action action-fn!]
+                    :focusable? false)
+    :robovm (ui/button :id k
+                       :text (utils/get-string :robovm)
+                       :listen [:action action-fn!]
+                       :focusable? false)
+    :auto (ui/toggle :id k
+                     :text (utils/get-string :auto_build)
+                     :listen [:action action-fn!]
+                     :focusable? false)
+    (s/make-widget k)))
+
 (defn create-builder
   [path]
-  (let [; create new console object
-        console (editors/create-console "clj")
-        ; keep track of the processes and the last reload timestamp
+  (let [; create the atoms that keep track of important values
         process (atom nil)
         auto-process (atom nil)
         last-reload (atom nil)
-        ; create the main panel that will hold the console and buttons
+        ; create the console and the panel that holds it
+        console (editors/create-console "clj")
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
-        ; create the actions for each button
-        run! (fn [_]
-               (lein/run-project! process (ui/get-io! console) path)
-               (when (lein/is-java-project? path)
-                 (reset! last-reload (System/currentTimeMillis))))
-        run-repl! (fn [_]
-                    (lein/run-repl-project! process (ui/get-io! console) path)
-                    (when (not (lein/is-java-project? path))
-                      (reset! last-reload (System/currentTimeMillis))))
-        reload! (fn [_]
-                  (if (lein/is-java-project? path)
-                    (lein/run-hot-swap! (ui/get-io! console) path)
-                    (eval-in-repl! console path @last-reload))
-                  (reset! last-reload (System/currentTimeMillis)))
-        build! (fn [_]
-                 (lein/build-project! process (ui/get-io! console) path))
-        test! (fn [_]
-                (lein/test-project! process (ui/get-io! console) path))
-        clean! (fn [_]
-                 (lein/clean-project! process (ui/get-io! console) path))
-        check-versions! (fn [_]
-                          (lein/check-versions-in-project!
-                            process (ui/get-io! console) path))
-        stop! (fn [_]
-                (lein/stop-process! process))
-        auto-build! (fn [_]
-                      (ui/config! build-group :#auto
-                                  :selected? (nil? @auto-process))
-                      (if (nil? @auto-process)
-                        (lein/cljsbuild-project!
-                          auto-process (ui/get-io! console) path)
-                        (lein/stop-process! auto-process)))
+        ; put the atoms and views in vectors to make it easier to pass them
+        atoms [process auto-process last-reload]
+        views [console build-group]
         ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
-                    :items [(ui/button :id :run
-                                       :text (utils/get-string :run)
-                                       :listen [:action run!]
-                                       :focusable? false)
-                            (ui/button :id :run-repl
-                                       :text (utils/get-string :run_with_repl)
-                                       :listen [:action run-repl!]
-                                       :focusable? false)
-                            (ui/button :id :reload
-                                       :text (utils/get-string :reload)
-                                       :listen [:action reload!]
-                                       :focusable? false)
-                            (ui/button :id :build
-                                       :text (utils/get-string :build)
-                                       :listen [:action build!]
-                                       :focusable? false)
-                            (ui/button :id :test
-                                       :text (utils/get-string :test)
-                                       :listen [:action test!]
-                                       :focusable? false)
-                            (ui/button :id :clean
-                                       :text (utils/get-string :clean)
-                                       :listen [:action clean!]
-                                       :focusable? false)
-                            (ui/button :id :check-versions
-                                       :text (utils/get-string :check_versions)
-                                       :listen [:action check-versions!]
-                                       :focusable? false)
-                            (ui/button :id :stop
-                                       :text (utils/get-string :stop)
-                                       :listen [:action stop!]
-                                       :focusable? false)
-                            (ui/button :id :sdk
-                                       :text (utils/get-string :android_sdk)
-                                       :listen [:action set-android-sdk!]
-                                       :focusable? false)
-                            (ui/button :id :robovm
-                                       :text (utils/get-string :robovm)
-                                       :listen [:action set-robovm!]
-                                       :focusable? false)
-                            (ui/toggle :id :auto
-                                       :text (utils/get-string :auto_build)
-                                       :listen [:action auto-build!]
-                                       :focusable? false)])]
+                    :items (map (fn [k]
+                                  (let [a (create-action k path views atoms)]
+                                    (doto (create-widget k a)
+                                      (shortcuts/create-mapping! a))))
+                                *builder-widgets*))]
     ; refresh the builder when the process state changes
     (add-watch process
                :refresh-builder
@@ -202,26 +222,15 @@
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
-      (shortcuts/create-mappings! {:run run!
-                                   :run-repl run-repl!
-                                   :reload reload!
-                                   :build build!
-                                   :test test!
-                                   :clean clean!
-                                   :check-versions check-versions!
-                                   :stop stop!
-                                   :sdk set-android-sdk!
-                                   :robovm set-robovm!
-                                   :auto auto-build!})
       shortcuts/create-hints!)
     ; return a map describing the builder
     {:view build-group
-     :close-fn! #(stop! nil)
+     :close-fn! (create-action :stop path views atoms)
      :should-remove-fn #(not (utils/is-project-path? path))
      :process process
      :last-reload last-reload
-     :toggle-paredit-fn!
-     (editors/init-paredit! (.getTextArea console) false true)}))
+     :toggle-paredit-fn! (editors/init-paredit!
+                           (.getTextArea console) false true)}))
 
 (defn show-builder!
   [path]
