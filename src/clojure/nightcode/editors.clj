@@ -448,8 +448,31 @@
     (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
     (when enable-advanced? toggle-paredit-fn!)))
 
+(defn remove-editors!
+  [path]
+  (let [editor-pane (ui/get-editor-pane)]
+    (doseq [[editor-path {:keys [view close-fn! should-remove-fn]}] @editors]
+      (when (or (utils/is-parent-path? path editor-path)
+                (should-remove-fn))
+        (swap! editors dissoc editor-path)
+        (close-fn!)
+        (.remove editor-pane view)))))
+
+(defn close-selected-editor!
+  [& _]
+  (let [path (ui/get-selected-path)
+        file (io/file path)
+        new-path (if (.isDirectory file)
+                   path
+                   (.getCanonicalPath (.getParentFile file)))]
+    (remove-editors! path)
+    (update-tabs! new-path)
+    (ui/update-project-tree! new-path))
+  true)
+
 (def ^:dynamic *editor-widgets* [:save :undo :redo :font-dec :font-inc
-                                 :doc :paredit :paredit-help :find :replace])
+                                 :doc :paredit :paredit-help :find :replace
+                                 :close])
 
 (defn create-widget
   [k]
@@ -493,7 +516,11 @@
     :replace (s/text :id :replace-field
                      :columns 8
                      :listen [:key-released replace-text!])
-    nil))
+    :close (ui/button :id :close-button
+                      :text "X"
+                      :focusable? false
+                      :listen [:action close-selected-editor!])
+    k))
 
 (defn valid-file?
   [path]
@@ -597,28 +624,6 @@
     ; give the editor focus if it exists
     (when-let [text-area (get-text-area-from-path path)]
       (s/request-focus! text-area))))
-
-(defn remove-editors!
-  [path]
-  (let [editor-pane (ui/get-editor-pane)]
-    (doseq [[editor-path {:keys [view close-fn! should-remove-fn]}] @editors]
-      (when (or (utils/is-parent-path? path editor-path)
-                (should-remove-fn))
-        (swap! editors dissoc editor-path)
-        (close-fn!)
-        (.remove editor-pane view)))))
-
-(defn close-selected-editor!
-  []
-  (let [path (ui/get-selected-path)
-        file (io/file path)
-        new-path (if (.isDirectory file)
-                   path
-                   (.getCanonicalPath (.getParentFile file)))]
-    (remove-editors! path)
-    (update-tabs! new-path)
-    (ui/update-project-tree! new-path))
-  true)
 
 ; pane
 
