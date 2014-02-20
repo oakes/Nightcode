@@ -64,16 +64,15 @@
                             io/file
                             .getName
                             (= "project.clj"))
-        buttons {:#run-repl-button (and (not is-ios-project?)
-                                        (not is-java-project?))
-                 :#reload-button (and (not is-ios-project?)
-                                      (not (and is-java-project?
-                                                is-android-project?)))
-                 :#test-button (not is-java-project?)
-                 :#sdk-button is-android-project?
-                 :#robovm-button is-ios-project?
-                 :#auto-button is-clojurescript-project?
-                 :#check-versions-button is-project-clj?}]
+        buttons {:#run-repl (and (not is-ios-project?)
+                                 (not is-java-project?))
+                 :#reload (and (not is-ios-project?)
+                               (not (and is-java-project? is-android-project?)))
+                 :#test (not is-java-project?)
+                 :#sdk is-android-project?
+                 :#robovm is-ios-project?
+                 :#auto is-clojurescript-project?
+                 :#check-versions is-project-clj?}]
     (doseq [[id should-show?] buttons]
       (ui/config! view id :visible? should-show?))))
 
@@ -82,8 +81,8 @@
   (let [project-map (lein/read-project-clj path)
         sdk (get-in project-map [:android :sdk-path])
         robovm (get-in project-map [:ios :robovm-path])
-        buttons {:#sdk-button (and sdk (.exists (io/file sdk)))
-                 :#robovm-button (and robovm (.exists (io/file robovm)))}]
+        buttons {:#sdk (and sdk (.exists (io/file sdk)))
+                 :#robovm (and robovm (.exists (io/file robovm)))}]
     (doseq [[id is-set?] buttons]
       (ui/config! view id :background (when-not is-set? (color/color :red))))))
 
@@ -91,14 +90,14 @@
   [{:keys [view process last-reload]} path]
   (let [is-java-project? (lein/is-java-project? path)
         is-running? (not (nil? @process))
-        buttons {:#run-button (not is-running?)
-                 :#run-repl-button (not is-running?)
-                 :#reload-button (not (nil? @last-reload))
-                 :#build-button (not is-running?)
-                 :#test-button (not is-running?)
-                 :#clean-button (not is-running?)
-                 :#stop-button is-running?
-                 :#check-versions-button (not is-running?)}]
+        buttons {:#run (not is-running?)
+                 :#run-repl (not is-running?)
+                 :#reload (not (nil? @last-reload))
+                 :#build (not is-running?)
+                 :#test (not is-running?)
+                 :#clean (not is-running?)
+                 :#stop is-running?
+                 :#check-versions (not is-running?)}]
     (doseq [[id should-enable?] buttons]
       (ui/config! view id :enabled? should-enable?))))
 
@@ -141,7 +140,7 @@
         stop! (fn [_]
                 (lein/stop-process! process))
         auto-build! (fn [_]
-                      (ui/config! build-group :#auto-button
+                      (ui/config! build-group :#auto
                                   :selected? (nil? @auto-process))
                       (if (nil? @auto-process)
                         (lein/cljsbuild-project!
@@ -149,47 +148,47 @@
                         (lein/stop-process! auto-process)))
         ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
-                    :items [(ui/button :id :run-button
+                    :items [(ui/button :id :run
                                        :text (utils/get-string :run)
                                        :listen [:action run!]
                                        :focusable? false)
-                            (ui/button :id :run-repl-button
+                            (ui/button :id :run-repl
                                        :text (utils/get-string :run_with_repl)
                                        :listen [:action run-repl!]
                                        :focusable? false)
-                            (ui/button :id :reload-button
+                            (ui/button :id :reload
                                        :text (utils/get-string :reload)
                                        :listen [:action reload!]
                                        :focusable? false)
-                            (ui/button :id :build-button
+                            (ui/button :id :build
                                        :text (utils/get-string :build)
                                        :listen [:action build!]
                                        :focusable? false)
-                            (ui/button :id :test-button
+                            (ui/button :id :test
                                        :text (utils/get-string :test)
                                        :listen [:action test!]
                                        :focusable? false)
-                            (ui/button :id :clean-button
+                            (ui/button :id :clean
                                        :text (utils/get-string :clean)
                                        :listen [:action clean!]
                                        :focusable? false)
-                            (ui/button :id :check-versions-button
+                            (ui/button :id :check-versions
                                        :text (utils/get-string :check_versions)
                                        :listen [:action check-versions!]
                                        :focusable? false)
-                            (ui/button :id :stop-button
+                            (ui/button :id :stop
                                        :text (utils/get-string :stop)
                                        :listen [:action stop!]
                                        :focusable? false)
-                            (ui/button :id :sdk-button
+                            (ui/button :id :sdk
                                        :text (utils/get-string :android_sdk)
                                        :listen [:action set-android-sdk!]
                                        :focusable? false)
-                            (ui/button :id :robovm-button
+                            (ui/button :id :robovm
                                        :text (utils/get-string :robovm)
                                        :listen [:action set-robovm!]
                                        :focusable? false)
-                            (ui/toggle :id :auto-button
+                            (ui/toggle :id :auto
                                        :text (utils/get-string :auto_build)
                                        :listen [:action auto-build!]
                                        :focusable? false)])]
@@ -203,17 +202,17 @@
     ; add the buttons to the main panel and create shortcuts
     (doto build-group
       (s/config! :north btn-group)
-      (shortcuts/create-mappings! {:run-button run!
-                                   :run-repl-button run-repl!
-                                   :reload-button reload!
-                                   :build-button build!
-                                   :test-button test!
-                                   :clean-button clean!
-                                   :check-versions-button check-versions!
-                                   :stop-button stop!
-                                   :sdk-button set-android-sdk!
-                                   :robovm-button set-robovm!
-                                   :auto-button auto-build!})
+      (shortcuts/create-mappings! {:run run!
+                                   :run-repl run-repl!
+                                   :reload reload!
+                                   :build build!
+                                   :test test!
+                                   :clean clean!
+                                   :check-versions check-versions!
+                                   :stop stop!
+                                   :sdk set-android-sdk!
+                                   :robovm set-robovm!
+                                   :auto auto-build!})
       shortcuts/create-hints!)
     ; return a map describing the builder
     {:view build-group

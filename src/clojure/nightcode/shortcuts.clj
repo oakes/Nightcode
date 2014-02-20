@@ -12,51 +12,56 @@
 
 (def is-down? (atom false))
 (def ^:const mappings
-  {:new-project-button "P"
-   :new-file-button "N"
-   :rename-file-button "M"
-   :import-button "O"
-   :remove-button "G"
-   :run-button "R"
-   :run-repl-button "E"
-   :reload-button "shift S"
-   :build-button "B"
-   :test-button "T"
-   :clean-button "L"
-   :check-versions-button "shift V"
-   :stop-button "I"
-   :sdk-button "shift K"
-   :auto-button "shift A"
-   :save-button "S"
-   :undo-button "Z"
-   :redo-button "Y"
-   :font-dec-button "MINUS"
-   :font-inc-button "EQUALS"
-   :doc-button "SPACE"
-   :paredit-button "shift P"
-   :find-field "F"
-   :replace-field "shift R"
-   :close-button "W"
+  {:new-project "P"
+   :new-file "N"
+   :rename-file "M"
+   :import "O"
+   :remove "G"
+   :run "R"
+   :run-repl "E"
+   :reload "shift S"
+   :build "B"
+   :test "T"
+   :clean "L"
+   :check-versions "shift V"
+   :stop "I"
+   :sdk "shift K"
+   :auto "shift A"
+   :save "S"
+   :undo "Z"
+   :redo "Y"
+   :font-dec "MINUS"
+   :font-inc "EQUALS"
+   :doc "SPACE"
+   :paredit "shift P"
+   :find "F"
+   :replace "shift R"
+   :close "W"
    :repl-console "shift E"
    :project-pane "&uarr; &darr; &crarr;"
-   :toggle-logcat-button "S"})
+   :toggle-logcat "S"})
+
+(defn create-mapping!
+  "Makes the widget associated with `id` us `func` as its action."
+  [panel id func]
+  (when-let [mapping (get mappings id)]
+    (keymap/map-key panel
+                    (str "menu " mapping)
+                    (fn [e]
+                      ; only run the function if the widget is enabled
+                      (let [widget-id (keyword (str "#" (name id)))
+                            widget (s/select panel [widget-id])]
+                        (when (and widget
+                                   (s/config widget :enabled?)
+                                   (s/config widget :visible?))
+                          (func e))))
+                    :scope :global)))
 
 (defn create-mappings!
-  "Maps the given pair of widget IDs and functions together."
+  "Creates a mapping for each pair of widget IDs and functions."
   [panel pairs]
   (doseq [[id func] pairs]
-    (when-let [mapping (get mappings id)]
-      (keymap/map-key panel
-                      (str "menu " mapping)
-                      (fn [e]
-                        ; only run the function if the button is enabled
-                        (let [button-id (keyword (str "#" (name id)))
-                              button (s/select panel [button-id])]
-                          (when (and button
-                                     (s/config button :enabled?)
-                                     (s/config button :visible?))
-                            (func e))))
-                      :scope :global))))
+    (create-mapping! panel id func)))
 
 (defn is-visible?
   "Determines whether the given widget is visible."

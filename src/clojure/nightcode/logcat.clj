@@ -34,7 +34,7 @@
           process (atom nil)
           is-running? (atom false)
           ; create the start/stop button
-          toggle-btn (s/button :id :toggle-logcat-button
+          toggle-btn (s/button :id :toggle-logcat
                                :text (utils/get-string :start))
           ; create the main panel
           widget-group (ui/wrap-panel :items [toggle-btn])
@@ -55,7 +55,7 @@
       (s/listen toggle-btn :action toggle!)
       ; create shortcuts
       (doto widget-group
-        (shortcuts/create-mappings! {:toggle-logcat-button toggle!})
+        (shortcuts/create-mappings! {:toggle-logcat toggle!})
         shortcuts/create-hints!)
       ; return a map describing the logcat view
       {:view (s/border-panel :north widget-group :center console)

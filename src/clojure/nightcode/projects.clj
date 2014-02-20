@@ -164,24 +164,24 @@
                               (try (new-project! @console-io)
                                 (catch Exception _ (.enterLine console ""))))
         btn-group (s/horizontal-panel
-                    :items [(ui/button :id :new-project-button
+                    :items [(ui/button :id :new-project
                                        :text (utils/get-string :new_project)
                                        :listen [:action create-new-project!]
                                        :focusable? false)
-                            (ui/button :id :new-file-button
+                            (ui/button :id :new-file
                                        :text (utils/get-string :new_file)
                                        :listen [:action new-file!]
                                        :focusable? false)
-                            (ui/button :id :rename-file-button
+                            (ui/button :id :rename-file
                                        :text (utils/get-string :rename_file)
                                        :listen [:action rename-file!]
                                        :focusable? false
                                        :visible? false)
-                            (ui/button :id :import-button
+                            (ui/button :id :import
                                        :text (utils/get-string :import)
                                        :listen [:action import-project!]
                                        :focusable? false)
-                            (ui/button :id :remove-button
+                            (ui/button :id :remove
                                        :text (utils/get-string :remove)
                                        :listen [:action remove-item!]
                                        :focusable? false)
@@ -202,11 +202,11 @@
       (-> .getSelectionModel
           (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION)))
     (shortcuts/create-mappings! project-pane
-                                {:new-project-button create-new-project!
-                                 :new-file-button new-file!
-                                 :rename-file-button rename-file!
-                                 :import-button import-project!
-                                 :remove-button remove-item!})
+                                {:new-project create-new-project!
+                                 :new-file new-file!
+                                 :rename-file rename-file!
+                                 :import import-project!
+                                 :remove remove-item!})
     project-pane))
 
 ; watchers
@@ -214,13 +214,13 @@
 (add-watch ui/tree-selection
            :update-project-buttons
            (fn [_ _ _ path]
-             (s/config! (s/select @ui/ui-root [:#remove-button])
+             (s/config! (s/select @ui/ui-root [:#remove])
                         :enabled? (and (not (nil? path))
                                        (or (contains? @ui/tree-projects path)
                                            (.isFile (io/file path)))))
-             (s/config! (s/select @ui/ui-root [:#new-file-button])
+             (s/config! (s/select @ui/ui-root [:#new-file])
                         :visible? (and (not (nil? path))
                                        (.isDirectory (io/file path))))
-             (s/config! (s/select @ui/ui-root [:#rename-file-button])
+             (s/config! (s/select @ui/ui-root [:#rename-file])
                         :visible? (and (not (nil? path))
                                        (.isFile (io/file path))))))

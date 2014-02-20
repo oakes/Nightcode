@@ -113,10 +113,10 @@
 
 (defn update-buttons!
   [editor ^TextEditorPane text-area]
-  (when (ui/config! editor :#save-button :enabled? (.isDirty text-area))
+  (when (ui/config! editor :#save :enabled? (.isDirty text-area))
     (update-tabs! @ui/tree-selection))
-  (ui/config! editor :#undo-button :enabled? (.canUndo text-area))
-  (ui/config! editor :#redo-button :enabled? (.canRedo text-area)))
+  (ui/config! editor :#undo :enabled? (.canUndo text-area))
+  (ui/config! editor :#redo :enabled? (.canRedo text-area)))
 
 (defn save-file!
   [_]
@@ -177,7 +177,7 @@
   (doseq [m maps]
     (when-let [toggle-paredit-fn! (:toggle-paredit-fn! m)]
       (toggle-paredit-fn! enable?))
-    (when-let [paredit-button (s/select (:view m) [:#paredit-button])]
+    (when-let [paredit-button (s/select (:view m) [:#paredit])]
       (s/config! paredit-button :selected? enable?))))
 
 (defn save-paredit!
@@ -212,11 +212,11 @@
 
 (defn focus-on-find!
   [_]
-  (focus-on-field! :#find-field))
+  (focus-on-field! :#find))
 
 (defn focus-on-replace!
   [_]
-  (focus-on-field! :#replace-field))
+  (focus-on-field! :#replace))
 
 (defn find-text!
   [e]
@@ -248,7 +248,7 @@
     (let [key-code (.getKeyCode e)
           is-enter-key? (= key-code 10)
           editor (get-selected-editor)
-          find-text (s/text (s/select editor [:#find-field]))
+          find-text (s/text (s/select editor [:#find]))
           replace-text (s/text e)
           context (SearchContext. find-text)]
       (.setReplaceWith context replace-text)
@@ -477,46 +477,46 @@
 (defn create-widget
   [k]
   (case k
-    :save (ui/button :id :save-button
+    :save (ui/button :id k
                      :text (utils/get-string :save)
                      :focusable? false
                      :listen [:action save-file!])
-    :undo (ui/button :id :undo-button
+    :undo (ui/button :id k
                      :text (utils/get-string :undo)
                      :focusable? false
                      :listen [:action undo-file!])
-    :redo (ui/button :id :redo-button
+    :redo (ui/button :id k
                      :text (utils/get-string :redo)
                      :focusable? false
                      :listen [:action redo-file!])
-    :font-dec (ui/button :id :font-dec-button
+    :font-dec (ui/button :id k
                          :text (utils/get-string :font_dec)
                          :focusable? false
                          :listen [:action decrease-font-size!])
-    :font-inc (ui/button :id :font-inc-button
+    :font-inc (ui/button :id k
                          :text (utils/get-string :font_inc)
                          :focusable? false
                          :listen [:action increase-font-size!])
-    :doc (ui/button :id :doc-button
+    :doc (ui/button :id k
                     :text (utils/get-string :doc)
                     :focusable? false
                     :listen [:action do-completion!])
-    :paredit (ui/toggle :id :paredit-button
+    :paredit (ui/toggle :id k
                         :text (utils/get-string :paredit)
                         :focusable? false
                         :selected? @paredit-enabled?
                         :listen [:action toggle-paredit!])
-    :paredit-help (ui/button :id :paredit-help-button
+    :paredit-help (ui/button :id k
                              :text (utils/get-string :paredit_help)
                              :focusable? false
                              :listen [:action show-paredit-help!])
-    :find (s/text :id :find-field
+    :find (s/text :id k
                   :columns 8
                   :listen [:key-released find-text!])
-    :replace (s/text :id :replace-field
+    :replace (s/text :id k
                      :columns 8
                      :listen [:key-released replace-text!])
-    :close (ui/button :id :close-button
+    :close (ui/button :id k
                       :text "X"
                       :focusable? false
                       :listen [:action close-selected-editor!])
@@ -557,20 +557,20 @@
                        :center (RTextScrollPane. text-area))]
       ; create shortcuts
       (doto text-group
-        (shortcuts/create-mappings! {:save-button save-file!
-                                     :undo-button undo-file!
-                                     :redo-button redo-file!
-                                     :font-dec-button decrease-font-size!
-                                     :font-inc-button increase-font-size!
-                                     :doc-button do-completion!
-                                     :paredit-button toggle-paredit!
-                                     :find-field focus-on-find!
-                                     :replace-field focus-on-replace!})
+        (shortcuts/create-mappings! {:save save-file!
+                                     :undo undo-file!
+                                     :redo redo-file!
+                                     :font-dec decrease-font-size!
+                                     :font-inc increase-font-size!
+                                     :doc do-completion!
+                                     :paredit toggle-paredit!
+                                     :find focus-on-find!
+                                     :replace focus-on-replace!})
         shortcuts/create-hints!
         (update-buttons! text-area))
       ; add prompt text to the fields
-      (doseq [[id text] {:#find-field (utils/get-string :find)
-                         :#replace-field (utils/get-string :replace)}]
+      (doseq [[id text] {:#find (utils/get-string :find)
+                         :#replace (utils/get-string :replace)}]
         (when-let [widget (s/select text-group [id])]
           (doto (TextPrompt. text widget)
             (.changeAlpha 0.5))))
