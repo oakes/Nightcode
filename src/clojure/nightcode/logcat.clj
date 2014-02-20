@@ -26,41 +26,66 @@
        (binding [leiningen.core.main/*exit-process?* false])
        (lein/start-thread! in-out)))
 
+(def ^:dynamic *logcat-widgets* [:toggle-logcat :close])
+
+(defn create-action
+  [k path [console panel] [process is-running?]]
+  (case k
+    :toggle-logcat (let [start! (fn []
+                                  (run! process (ui/get-io! console) path)
+                                  (ui/config! panel
+                                              :#toggle-logcat
+                                              :text (utils/get-string :stop))
+                                  true)
+                         stop! (fn []
+                                 (lein/stop-process! process)
+                                  (ui/config! panel
+                                              :#toggle-logcat
+                                              :text (utils/get-string :start))
+                                 false)]
+                     (fn [& _]
+                       (reset! is-running? (if @is-running? (stop!) (start!)))
+                       (editors/update-tabs! path)))
+    :close editors/close-selected-editor!
+    nil))
+
+(defn create-widget
+  [k action-fn!]
+  (case k
+    :toggle-logcat (s/button :id k
+                             :text (utils/get-string :start)
+                             :listen [:action action-fn!])
+    :close (ui/button :id k
+                      :text "X"
+                      :focusable? false
+                      :listen [:action action-fn!])
+    (s/make-widget k)))
+
 (defmethod editors/create-editor :logcat [_ path]
   (when (= (.getName (io/file path)) logcat-name)
-    (let [; create new console object with a reader/writer
+    (let [; create the console and the panel that holds it
           console (editors/create-console nil)
-          ; keep track of the process and whether it's running
+          panel (ui/wrap-panel)
+          ; create the atoms that keep track of important values
           process (atom nil)
           is-running? (atom false)
-          ; create the start/stop button
-          toggle-btn (s/button :id :toggle-logcat
-                               :text (utils/get-string :start))
-          ; create the main panel
-          widget-group (ui/wrap-panel :items [toggle-btn])
-          ; create the toggle action
-          parent-path (-> path io/file .getParentFile .getCanonicalPath)
-          start! (fn []
-                   (run! process (ui/get-io! console) parent-path)
-                   (s/config! toggle-btn :text (utils/get-string :stop))
-                   true)
-          stop! (fn []
-                  (lein/stop-process! process)
-                  (s/config! toggle-btn :text (utils/get-string :start))
-                  false)
-          toggle! (fn [_]
-                    (reset! is-running? (if @is-running? (stop!) (start!)))
-                    (editors/update-tabs! path))]
-      ; add the toggle action to the button
-      (s/listen toggle-btn :action toggle!)
-      ; create shortcuts
-      (doto widget-group
-        (shortcuts/create-mappings! {:toggle-logcat toggle!})
+          ; put the views and atoms in vectors to make it easier to pass them
+          views [console panel]
+          atoms [process is-running?]
+          ; get the path of the parent directory
+          path (-> path io/file .getParentFile .getCanonicalPath)]
+      ; add widgets and create hints
+      (doto panel
+        (s/config! :items (map (fn [k]
+                                 (let [a (create-action k path views atoms)]
+                                   (doto (create-widget k a)
+                                     (shortcuts/create-mapping! a))))
+                               *logcat-widgets*))
         shortcuts/create-hints!)
       ; return a map describing the logcat view
-      {:view (s/border-panel :north widget-group :center console)
-       :close-fn! #(stop!)
-       :should-remove-fn #(not (lein/is-android-project? parent-path))
+      {:view (s/border-panel :north panel :center console)
+       :close-fn! #(lein/stop-process! process)
+       :should-remove-fn #(not (lein/is-android-project? path))
        :italicize-fn (fn [] @is-running?)})))
 
 (defmethod ui/adjust-nodes :logcat [_ parent children]

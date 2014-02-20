@@ -156,36 +156,57 @@
 
 ; pane
 
+(def ^:dynamic *project-widgets* [:new-project :new-file :rename-file
+                                  :import :remove :fill-h])
+
+(defn create-action
+  [k console console-io]
+  (case k
+    :new-project (fn [& _]
+                   (try (new-project! @console-io)
+                     (catch Exception _ (.enterLine console ""))))
+    :new-file new-file!
+    :rename-file rename-file!
+    :import import-project!
+    :remove remove-item!
+    nil))
+
+(defn create-widget
+  [k action-fn!]
+  (case k
+    :new-project (ui/button :id k
+                            :text (utils/get-string :new_project)
+                            :listen [:action action-fn!]
+                            :focusable? false)
+    :new-file (ui/button :id k
+                         :text (utils/get-string :new_file)
+                         :listen [:action action-fn!]
+                         :focusable? false)
+    :rename-file (ui/button :id k
+                            :text (utils/get-string :rename_file)
+                            :listen [:action action-fn!]
+                            :focusable? false
+                            :visible? false)
+    :import (ui/button :id k
+                       :text (utils/get-string :import)
+                       :listen [:action action-fn!]
+                       :focusable? false)
+    :remove (ui/button :id k
+                       :text (utils/get-string :remove)
+                       :listen [:action action-fn!]
+                       :focusable? false)
+    (s/make-widget k)))
+
 (defn create-pane
   "Returns the pane with the project tree."
   [console console-io]
   (let [project-tree (s/tree :id :project-tree :focusable? true)
-        create-new-project! (fn [_]
-                              (try (new-project! @console-io)
-                                (catch Exception _ (.enterLine console ""))))
         btn-group (s/horizontal-panel
-                    :items [(ui/button :id :new-project
-                                       :text (utils/get-string :new_project)
-                                       :listen [:action create-new-project!]
-                                       :focusable? false)
-                            (ui/button :id :new-file
-                                       :text (utils/get-string :new_file)
-                                       :listen [:action new-file!]
-                                       :focusable? false)
-                            (ui/button :id :rename-file
-                                       :text (utils/get-string :rename_file)
-                                       :listen [:action rename-file!]
-                                       :focusable? false
-                                       :visible? false)
-                            (ui/button :id :import
-                                       :text (utils/get-string :import)
-                                       :listen [:action import-project!]
-                                       :focusable? false)
-                            (ui/button :id :remove
-                                       :text (utils/get-string :remove)
-                                       :listen [:action remove-item!]
-                                       :focusable? false)
-                            :fill-h])
+                    :items (map (fn [k]
+                                  (let [a (create-action k console console-io)]
+                                    (doto (create-widget k a)
+                                      (shortcuts/create-mapping! a))))
+                                *project-widgets*))
         project-pane (s/vertical-panel
                        :id :project-pane
                        :items [btn-group (s/scrollable project-tree)])]
@@ -201,12 +222,6 @@
           (valueChanged [this e] (set-selection! e))))
       (-> .getSelectionModel
           (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION)))
-    (shortcuts/create-mappings! project-pane
-                                {:new-project create-new-project!
-                                 :new-file new-file!
-                                 :rename-file rename-file!
-                                 :import import-project!
-                                 :remove remove-item!})
     project-pane))
 
 ; watchers
