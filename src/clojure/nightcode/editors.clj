@@ -313,7 +313,8 @@
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const completer-keys #{KeyEvent/VK_ENTER
                               KeyEvent/VK_UP
-                              KeyEvent/VK_DOWN})
+                              KeyEvent/VK_DOWN
+                              KeyEvent/VK_ESCAPE})
 (def ^:const console-ignore-shortcut-keys #{KeyEvent/VK_Z
                                             KeyEvent/VK_Y})
 
