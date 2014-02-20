@@ -82,12 +82,6 @@
 (def tree-expansions (atom #{}))
 (def tree-selection (atom nil))
 
-(defn get-selected-path
-  "Returns the path selected in the project tree."
-  []
-  (when-let [^JTree tree (get-project-tree)]
-    (-> tree .getSelectionPath utils/tree-path-to-str)))
-
 (defn get-project-path
   "Returns the project path that the given path is contained within."
   [^String path]
@@ -102,7 +96,7 @@
 (defn get-project-root-path
   "Returns the root path that the selected path is contained within."
   []
-  (when-let [^String path (get-selected-path)]
+  (when-let [^String path @tree-selection]
     (-> #(or (.startsWith path (str % File/separator)) (= path %))
         (filter @tree-projects)
         first)))

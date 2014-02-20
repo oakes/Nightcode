@@ -75,7 +75,7 @@
 
 (defn enter-file-path!
   [default-file-name]
-  (let [selected-path (ui/get-selected-path)
+  (let [selected-path @ui/tree-selection
         project-path (ui/get-project-root-path)
         default-path (str (utils/get-relative-dir project-path selected-path)
                           (or default-file-name
@@ -100,7 +100,7 @@
 
 (defn new-file!
   [e]
-  (let [default-file-name (if (-> (ui/get-selected-path)
+  (let [default-file-name (if (-> @ui/tree-selection
                                   ui/get-project-path
                                   lein/is-java-project?)
                             "Example.java" "example.clj")]
@@ -120,7 +120,7 @@
     (let [project-path (ui/get-project-root-path)
           new-file (io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
-          selected-path (ui/get-selected-path)]
+          selected-path @ui/tree-selection]
       (when (not= new-path selected-path)
         (editors/remove-editors! selected-path)
         (io!
@@ -151,7 +151,7 @@
 
 (defn remove-item!
   [e]
-  (when (remove-from-project-tree! (ui/get-selected-path))
+  (when (remove-from-project-tree! @ui/tree-selection)
     (ui/update-project-tree! (ui/get-project-root-path))))
 
 ; pane

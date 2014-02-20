@@ -30,7 +30,7 @@
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
     (utils/write-pref! :android-sdk (.getCanonicalPath dir))
-    (show-builder! (ui/get-selected-path))))
+    (show-builder! @ui/tree-selection)))
 
 (defn set-robovm!
   [_]
@@ -38,7 +38,7 @@
                                       :selection-mode :dirs-only
                                       :remember-directory? false)]
     (utils/write-pref! :robovm (.getCanonicalPath dir))
-    (show-builder! (ui/get-selected-path))))
+    (show-builder! @ui/tree-selection)))
 
 (defn eval-in-repl!
   [console path timestamp]
@@ -60,7 +60,7 @@
         is-ios-project? (lein/is-ios-project? path)
         is-java-project? (lein/is-java-project? path)
         is-clojurescript-project? (lein/is-clojurescript-project? path)
-        is-project-clj? (-> (ui/get-selected-path)
+        is-project-clj? (-> @ui/tree-selection
                             io/file
                             .getName
                             (= "project.clj"))

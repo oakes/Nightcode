@@ -43,11 +43,11 @@
 
 (defn get-selected-text-area
   []
-  (get-text-area-from-path (ui/get-selected-path)))
+  (get-text-area-from-path @ui/tree-selection))
 
 (defn get-selected-editor
   []
-  (get-in @editors [(ui/get-selected-path) :view]))
+  (get-in @editors [@ui/tree-selection :view]))
 
 (defn is-unsaved?
   [path]
@@ -71,7 +71,7 @@
 (defn move-tab-selection!
   [diff]
   (let [paths (reverse (keys @editors))
-        index (.indexOf paths (ui/get-selected-path))
+        index (.indexOf paths @ui/tree-selection)
         max-index (- (count paths) 1)
         new-index (+ index diff)
         new-index (cond
@@ -114,7 +114,7 @@
 (defn update-buttons!
   [editor ^TextEditorPane text-area]
   (when (ui/config! editor :#save-button :enabled? (.isDirty text-area))
-    (update-tabs! (ui/get-selected-path)))
+    (update-tabs! @ui/tree-selection))
   (ui/config! editor :#undo-button :enabled? (.canUndo text-area))
   (ui/config! editor :#redo-button :enabled? (.canRedo text-area)))
 
@@ -122,7 +122,7 @@
   [_]
   (when-let [text-area (get-selected-text-area)]
     (io!
-      (with-open [w (io/writer (io/file (ui/get-selected-path)))]
+      (with-open [w (io/writer (io/file @ui/tree-selection))]
         (.write text-area w)))
     (.setDirty text-area false)
     (s/request-focus! text-area)
@@ -166,7 +166,7 @@
 (defn do-completion!
   [_]
   (when-let [{:keys [text-area completer] :as editor-map}
-             (get @editors (ui/get-selected-path))]
+             (get @editors @ui/tree-selection)]
     (when text-area
       (s/request-focus! text-area))
     (when completer
@@ -460,7 +460,7 @@
 
 (defn close-selected-editor!
   [& _]
-  (let [path (ui/get-selected-path)
+  (let [path @ui/tree-selection
         file (io/file path)
         new-path (if (.isDirectory file)
                    path
