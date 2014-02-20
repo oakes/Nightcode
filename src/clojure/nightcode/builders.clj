@@ -194,17 +194,17 @@
 
 (defn create-builder
   [path]
-  (let [; create the atoms that keep track of important values
-        process (atom nil)
-        auto-process (atom nil)
-        last-reload (atom nil)
-        ; create the console and the panel that holds it
+  (let [; create the console and the panel that holds it
         console (editors/create-console "clj")
         build-group (s/border-panel
                       :center (s/config! console :id :build-console))
-        ; put the atoms and views in vectors to make it easier to pass them
-        atoms [process auto-process last-reload]
+        ; create the atoms that keep track of important values
+        process (atom nil)
+        auto-process (atom nil)
+        last-reload (atom nil)
+        ; put the views and atoms in vectors to make it easier to pass them
         views [console build-group]
+        atoms [process auto-process last-reload]
         ; create the buttons with their actions attached
         btn-group (ui/wrap-panel
                     :items (map (fn [k]
