@@ -43,7 +43,8 @@
               (Proxy/newProxyInstance (.getClassLoader quit-class)
                                       (into-array Class [quit-class])
                                       (reify InvocationHandler
-                                        (invoke [this proxy method args]))))))
+                                        (invoke [this proxy method args]
+                                          (confirm-exit-app!)))))))
   ; create and add the listener
   (.addWindowListener window
     (proxy [WindowAdapter] []
