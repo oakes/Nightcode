@@ -43,8 +43,8 @@
                                (nth p 2)
                                "beta"))
                  :content (create-window-content)
-                 :width 1200
-                 :height 768
+                 :width 1280
+                 :height 800
                  :on-close :nothing)
     ; create the shortcut hints for the main buttons
     shortcuts/create-hints!
