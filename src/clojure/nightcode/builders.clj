@@ -219,10 +219,11 @@
                  (when (nil? new-state)
                    (reset! last-reload nil))
                  (-> @ui/tree-selection ui/get-project-path show-builder!)))
-    ; add the buttons to the main panel and create shortcuts
-    (doto build-group
-      (s/config! :north btn-group)
-      shortcuts/create-hints!)
+    ; add the widget bar if necessary
+    (when (> (count *builder-widgets*) 0)
+      (doto build-group
+        (s/config! :north btn-group)
+        shortcuts/create-hints!))
     ; return a map describing the builder
     {:view build-group
      :close-fn! (create-action :stop path views atoms)

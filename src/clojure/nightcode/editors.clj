@@ -563,6 +563,7 @@
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
+          ; remove buttons if they aren't applicable
           editor-widgets (remove (fn [k]
                                    (-> (concat []
                                                (if-not is-clojure?
@@ -581,12 +582,13 @@
                                      editor-widgets))
           ; create the main panel
           text-group (s/border-panel
-                       :north widget-group
                        :center (RTextScrollPane. text-area))]
-      ; create shortcuts
-      (doto text-group
-        shortcuts/create-hints!
-        (update-buttons! text-area))
+      ; add the widget bar if necessary
+      (when (> (count editor-widgets) 0)
+        (doto text-group
+          (s/config! :north widget-group)
+          shortcuts/create-hints!
+          (update-buttons! text-area)))
       ; update buttons every time a key is typed
       (s/listen text-area
                 :key-released
