@@ -119,7 +119,7 @@
   (ui/config! editor :#redo :enabled? (.canRedo text-area)))
 
 (defn save-file!
-  [_]
+  [& _]
   (when-let [text-area (get-selected-text-area)]
     (io!
       (with-open [w (io/writer (io/file @ui/tree-selection))]
@@ -130,13 +130,13 @@
   true)
 
 (defn undo-file!
-  [_]
+  [& _]
   (when-let [text-area (get-selected-text-area)]
     (.undoLastAction text-area)
     (update-buttons! (get-selected-editor) text-area)))
 
 (defn redo-file!
-  [_]
+  [& _]
   (when-let [text-area (get-selected-text-area)]
     (.redoLastAction text-area)
     (update-buttons! (get-selected-editor) text-area)))
@@ -156,15 +156,15 @@
   (utils/write-pref! :font-size size))
 
 (defn decrease-font-size!
-  [_]
+  [& _]
   (swap! font-size dec))
 
 (defn increase-font-size!
-  [_]
+  [& _]
   (swap! font-size inc))
 
 (defn do-completion!
-  [_]
+  [& _]
   (when-let [{:keys [text-area completer] :as editor-map}
              (get @editors @ui/tree-selection)]
     (when text-area
@@ -185,11 +185,11 @@
   (utils/write-pref! :enable-paredit enable?))
 
 (defn toggle-paredit!
-  [_]
+  [& _]
   (reset! paredit-enabled? (not @paredit-enabled?)))
 
 (defn show-paredit-help!
-  [_]
+  [& _]
   (let [commands (->> pw/advanced-keymap
                       (apply concat)
                       (cons #(compare %1 %2))
@@ -211,11 +211,11 @@
         .selectAll))))
 
 (defn focus-on-find!
-  [_]
+  [& _]
   (focus-on-field! :#find))
 
 (defn focus-on-replace!
-  [_]
+  [& _]
   (focus-on-field! :#replace))
 
 (defn find-text!
@@ -608,7 +608,7 @@
        :text-area text-area
        :completer completer
        :close-fn! #(when (.isDirty text-area)
-                     (save-file! nil))
+                     (save-file!))
        :italicize-fn #(.isDirty text-area)
        :should-remove-fn #(not (.exists (io/file path)))
        :toggle-paredit-fn! (init-paredit! text-area is-clojure? is-clojure?)})))
