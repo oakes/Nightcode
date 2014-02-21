@@ -35,4 +35,5 @@
     (run!)
     ; create a shortcut to restart the repl
     (doto (s/config! console :id :repl-console)
+      shortcuts/create-hints!
       (shortcuts/create-mappings! {:repl-console run!}))))

@@ -46,8 +46,6 @@
                  :width 1280
                  :height 800
                  :on-close :nothing)
-    ; create the shortcut hints for the main buttons
-    shortcuts/create-hints!
     ; listen for keys while modifier is down
     (shortcuts/listen-for-shortcuts!
       (fn [key-code]

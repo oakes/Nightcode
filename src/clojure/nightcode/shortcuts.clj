@@ -41,25 +41,23 @@
                        :toggle-logcat "S"})
 
 (defn create-mapping!
-  "Makes the widget associated with `id` us `func` as its action."
-  ([widget func]
-    (create-mapping! widget (s/id-of widget) func))
-  ([panel id func]
-    (when-let [mapping (get mappings id)]
-      (keymap/map-key panel
-                      (str "menu " mapping)
-                      (fn [e]
-                        ; only run the function if the widget is enabled
-                        (let [widget-id (keyword (str "#" (name id)))
-                              widget (s/select panel [widget-id])]
-                          (when (and widget
-                                     (s/config widget :enabled?)
-                                     (s/config widget :visible?))
-                            (func e))))
-                      :scope :global))))
+  "Maps `func` to the key combo associated with `id`."
+  [panel id func]
+  (when-let [mapping (get mappings id)]
+    (keymap/map-key panel
+                    (str "menu " mapping)
+                    (fn [e]
+                      ; only run the function if the widget is enabled
+                      (let [widget-id (keyword (str "#" (name id)))
+                            widget (s/select panel [widget-id])]
+                        (when (and widget
+                                   (s/config widget :enabled?)
+                                   (s/config widget :visible?))
+                          (func e))))
+                    :scope :global)))
 
 (defn create-mappings!
-  "Creates a mapping for each pair of widget IDs and functions."
+  "Maps key combos associated with each id and func pairs."
   [panel pairs]
   (doseq [[id func] pairs]
     (create-mapping! panel id func)))

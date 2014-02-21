@@ -28,63 +28,62 @@
 
 (def ^:dynamic *logcat-widgets* [:toggle-logcat :close])
 
-(defn create-action
-  [k path [console panel] [process is-running?]]
-  (case k
-    :toggle-logcat (let [start! (fn []
-                                  (run! process (ui/get-io! console) path)
-                                  (ui/config! panel
-                                              :#toggle-logcat
-                                              :text (utils/get-string :stop))
-                                  true)
-                         stop! (fn []
-                                 (lein/stop-process! process)
-                                  (ui/config! panel
-                                              :#toggle-logcat
-                                              :text (utils/get-string :start))
-                                 false)]
-                     (fn [& _]
-                       (reset! is-running? (if @is-running? (stop!) (start!)))
-                       (editors/update-tabs! path)))
-    :close editors/close-selected-editor!
-    nil))
+(defn create-actions
+  [path console panel process is-running?]
+  (let [start! (fn []
+                 (run! process (ui/get-io! console) path)
+                 (ui/config! panel
+                             :#toggle-logcat
+                             :text (utils/get-string :stop))
+                 true)
+        stop! (fn []
+                (lein/stop-process! process)
+                (ui/config! panel
+                            :#toggle-logcat
+                            :text (utils/get-string :start))
+                false)]
+    {:stop-logcat stop!
+     :start-logcat start!
+     :toggle-logcat (fn [& _]
+                      (reset! is-running? (if @is-running? (stop!) (start!)))
+                      (editors/update-tabs! path))
+     :close editors/close-selected-editor!}))
 
-(defn create-widget
-  [k action-fn!]
-  (case k
-    :toggle-logcat (s/button :id k
-                             :text (utils/get-string :start)
-                             :listen [:action action-fn!])
-    :close (ui/button :id k
-                      :text "X"
-                      :focusable? false
-                      :listen [:action action-fn!])
-    (s/make-widget k)))
+(defn create-widgets
+  [actions]
+  {:toggle-logcat (s/button :id :toggle-logcat
+                            :text (utils/get-string :start)
+                            :listen [:action (:toggle-logcat actions)])
+   :close (ui/button :id :close
+                     :text "X"
+                     :focusable? false
+                     :listen [:action (:close actions)])})
 
 (defmethod editors/create-editor :logcat [_ path]
   (when (= (.getName (io/file path)) logcat-name)
-    (let [; create the console and the panel that holds it
+    (let [; create the console and the pane that holds it
           console (editors/create-console nil)
-          panel (ui/wrap-panel)
-          ; create the atoms that keep track of important values
+          logcat-pane (s/border-panel :center console)
+          ; create atoms to hold important values
           process (atom nil)
           is-running? (atom false)
-          ; put the views and atoms in vectors to make it easier to pass them
-          views [console panel]
-          atoms [process is-running?]
           ; get the path of the parent directory
-          path (-> path io/file .getParentFile .getCanonicalPath)]
-      ; add widgets and create hints
-      (doto panel
-        (s/config! :items (map (fn [k]
-                                 (let [a (create-action k path views atoms)]
-                                   (doto (create-widget k a)
-                                     (shortcuts/create-mapping! a))))
-                               *logcat-widgets*))
-        shortcuts/create-hints!)
+          path (-> path io/file .getParentFile .getCanonicalPath)
+          ; create the actions and widgets
+          actions (create-actions path console logcat-pane process is-running?)
+          widgets (create-widgets actions)
+          ; create the bar that holds the widgets
+          widget-bar (ui/wrap-panel
+                       :items (map #(get widgets % %) *logcat-widgets*))]
+      ; add the widget bar if necessary
+      (when (> (count *logcat-widgets*) 0)
+        (doto logcat-pane
+          (s/config! :north widget-bar)
+          shortcuts/create-hints!
+          (shortcuts/create-mappings! actions)))
       ; return a map describing the logcat view
-      {:view (s/border-panel :north panel :center console)
-       :close-fn! #(lein/stop-process! process)
+      {:view logcat-pane
+       :close-fn! (:stop-logcat actions)
        :should-remove-fn #(not (lein/is-android-project? path))
        :italicize-fn (fn [] @is-running?)})))
 

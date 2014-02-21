@@ -479,71 +479,67 @@
                                  :doc :paredit :paredit-help :find :replace
                                  :close])
 
-(defn create-action
-  [k]
-  (case k
-    :save save-file!
-    :undo undo-file!
-    :redo redo-file!
-    :font-dec decrease-font-size!
-    :font-inc increase-font-size!
-    :doc do-completion!
-    :paredit toggle-paredit!
-    :paredit-help show-paredit-help!
-    :find focus-on-find!
-    :replace focus-on-replace!
-    :close close-selected-editor!
-    nil))
+(defn create-actions
+  []
+  {:save save-file!
+   :undo undo-file!
+   :redo redo-file!
+   :font-dec decrease-font-size!
+   :font-inc increase-font-size!
+   :doc do-completion!
+   :paredit toggle-paredit!
+   :paredit-help show-paredit-help!
+   :find focus-on-find!
+   :replace focus-on-replace!
+   :close close-selected-editor!})
 
-(defn create-widget
-  [k action-fn!]
-  (case k
-    :save (ui/button :id k
-                     :text (utils/get-string :save)
-                     :focusable? false
-                     :listen [:action action-fn!])
-    :undo (ui/button :id k
-                     :text (utils/get-string :undo)
-                     :focusable? false
-                     :listen [:action action-fn!])
-    :redo (ui/button :id k
-                     :text (utils/get-string :redo)
-                     :focusable? false
-                     :listen [:action action-fn!])
-    :font-dec (ui/button :id k
-                         :text (utils/get-string :font_dec)
-                         :focusable? false
-                         :listen [:action action-fn!])
-    :font-inc (ui/button :id k
-                         :text (utils/get-string :font_inc)
-                         :focusable? false
-                         :listen [:action action-fn!])
-    :doc (ui/button :id k
-                    :text (utils/get-string :doc)
+(defn create-widgets
+  [actions]
+  {:save (ui/button :id :save
+                    :text (utils/get-string :save)
                     :focusable? false
-                    :listen [:action action-fn!])
-    :paredit (ui/toggle :id k
-                        :text (utils/get-string :paredit)
+                    :listen [:action (:save actions)])
+   :undo (ui/button :id :undo
+                    :text (utils/get-string :undo)
+                    :focusable? false
+                    :listen [:action (:undo actions)])
+   :redo (ui/button :id :redo
+                    :text (utils/get-string :redo)
+                    :focusable? false
+                    :listen [:action (:redo actions)])
+   :font-dec (ui/button :id :font-dec
+                        :text (utils/get-string :font_dec)
                         :focusable? false
-                        :selected? @paredit-enabled?
-                        :listen [:action action-fn!])
-    :paredit-help (ui/button :id k
-                             :text (utils/get-string :paredit_help)
-                             :focusable? false
-                             :listen [:action action-fn!])
-    :find (doto (s/text :id k
-                        :columns 8
-                        :listen [:key-released find-text!])
-            (text-prompt! (utils/get-string :find)))
-    :replace (doto (s/text :id k
-                           :columns 8
-                           :listen [:key-released replace-text!])
-               (text-prompt! (utils/get-string :replace)))
-    :close (ui/button :id k
-                      :text "X"
-                      :focusable? false
-                      :listen [:action action-fn!])
-    (s/make-widget k)))
+                        :listen [:action (:font-dec actions)])
+   :font-inc (ui/button :id :font-inc
+                        :text (utils/get-string :font_inc)
+                        :focusable? false
+                        :listen [:action (:font-inc actions)])
+   :doc (ui/button :id :doc
+                   :text (utils/get-string :doc)
+                   :focusable? false
+                   :listen [:action (:doc actions)])
+   :paredit (ui/toggle :id :paredit
+                       :text (utils/get-string :paredit)
+                       :focusable? false
+                       :selected? @paredit-enabled?
+                       :listen [:action (:paredit actions)])
+   :paredit-help (ui/button :id :paredit-help
+                            :text (utils/get-string :paredit_help)
+                            :focusable? false
+                            :listen [:action (:paredit-help actions)])
+   :find (doto (s/text :id :find
+                       :columns 8
+                       :listen [:key-released find-text!])
+           (text-prompt! (utils/get-string :find)))
+   :replace (doto (s/text :id :replace
+                          :columns 8
+                          :listen [:key-released replace-text!])
+              (text-prompt! (utils/get-string :replace)))
+   :close (ui/button :id :close
+                     :text "X"
+                     :focusable? false
+                     :listen [:action (:close actions)])})
 
 (defn valid-file?
   [path]
@@ -558,11 +554,16 @@
 
 (defmethod create-editor :text [_ path]
   (when (valid-file? path)
-    (let [; create the text editor object
+    (let [; create the text editor and the pane that will hold it
           text-area (create-text-area path)
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
+          editor-pane (s/border-panel
+                        :center (RTextScrollPane. text-area))
+          ; create the actions and widgets
+          actions (create-actions)
+          widgets (create-widgets actions)
           ; remove buttons if they aren't applicable
           editor-widgets (remove (fn [k]
                                    (-> (concat []
@@ -573,26 +574,20 @@
                                        set
                                        (contains? k)))
                                  *editor-widgets*)
-          ; create the widgets
-          widget-group (ui/wrap-panel
-                         :items (map (fn [k]
-                                       (let [a (create-action k)]
-                                         (doto (create-widget k a)
-                                           (shortcuts/create-mapping! a))))
-                                     editor-widgets))
-          ; create the main panel
-          text-group (s/border-panel
-                       :center (RTextScrollPane. text-area))]
+          ; create the bar that holds the widgets
+          widget-bar (ui/wrap-panel
+                       :items (map #(get widgets % %) editor-widgets))]
       ; add the widget bar if necessary
       (when (> (count editor-widgets) 0)
-        (doto text-group
-          (s/config! :north widget-group)
+        (doto editor-pane
+          (s/config! :north widget-bar)
           shortcuts/create-hints!
+          (shortcuts/create-mappings! actions)
           (update-buttons! text-area)))
       ; update buttons every time a key is typed
       (s/listen text-area
                 :key-released
-                (fn [e] (update-buttons! text-group text-area)))
+                (fn [e] (update-buttons! editor-pane text-area)))
       ; install completer
       (when completer
         (install-completer! text-area completer))
@@ -600,13 +595,13 @@
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
           (changedUpdate [this e]
-            (update-buttons! text-group text-area))
+            (update-buttons! editor-pane text-area))
           (insertUpdate [this e]
-            (update-buttons! text-group text-area))
+            (update-buttons! editor-pane text-area))
           (removeUpdate [this e]
-            (update-buttons! text-group text-area))))
+            (update-buttons! editor-pane text-area))))
       ; return a map describing the editor
-      {:view text-group
+      {:view editor-pane
        :text-area text-area
        :completer completer
        :close-fn! #(when (.isDirty text-area)
