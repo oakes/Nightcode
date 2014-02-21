@@ -2,6 +2,7 @@
   (:require [nightcode.cli-args :as cli-args]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
+            [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [seesaw.core :as s])
   (:import [java.awt Window]
@@ -49,7 +50,8 @@
   (.addWindowListener window
     (proxy [WindowAdapter] []
       (windowActivated [e]
-        (ui/update-project-tree!))
+        (ui/update-project-tree!)
+        (shortcuts/toggle-hints! @ui/root false))
       (windowClosing [e]
         (confirm-exit-app!)))))
 
