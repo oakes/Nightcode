@@ -76,6 +76,11 @@
   []
   (s/select @root [:#project-tree]))
 
+(defn get-builder-pane
+  "Returns the builder pane."
+  []
+  (s/select @root [:#builder-pane]))
+
 (defn get-editor-pane
   "Returns the editor pane."
   []

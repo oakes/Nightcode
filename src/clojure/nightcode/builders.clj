@@ -229,7 +229,7 @@
 
 (defn show-builder!
   [path]
-  (let [pane (s/select @ui/root [:#builder-pane])]
+  (when-let [pane (ui/get-builder-pane)]
     ; create new builder if necessary
     (when (and path
                (utils/is-project-path? path)

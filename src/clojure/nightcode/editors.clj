@@ -609,7 +609,7 @@
 
 (defn show-editor!
   [path]
-  (let [editor-pane (ui/get-editor-pane)]
+  (when-let [editor-pane (ui/get-editor-pane)]
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
       (when-let [editor-map (some #(if-not (nil? %) %)
