@@ -85,7 +85,7 @@
 
 (defn update-tabs!
   [path]
-  (doto @ui/ui-root .invalidate .validate)
+  (doto @ui/root .invalidate .validate)
   (let [editor-pane (ui/get-editor-pane)]
     (when @tabs (.closeBalloon @tabs))
     (->> (for [[e-path {:keys [italicize-fn]}] (reverse @editors)]
@@ -417,7 +417,7 @@
       (keyReleased [this e] nil)
       (keyTyped [this e] nil)
       (keyPressed [this e]
-        (when (some #(.isVisible %) (.getOwnedWindows @ui/ui-root))
+        (when (some #(.isVisible %) (.getOwnedWindows @ui/root))
           (when (contains? completer-keys (.getKeyCode e))
             (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
                   condition JComponent/WHEN_FOCUSED]

@@ -107,7 +107,7 @@
         (doto positioner
           (.enableFixedAttachLocation true)
           (.setAttachLocation 0.5 y))
-        (when-let [container (some-> @ui/ui-root
+        (when-let [container (some-> @ui/root
                                      .getGlassPane
                                      (s/select [:JLayeredPane])
                                      first)]

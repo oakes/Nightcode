@@ -234,13 +234,13 @@
 (add-watch ui/tree-selection
            :update-project-buttons
            (fn [_ _ _ path]
-             (s/config! (s/select @ui/ui-root [:#remove])
+             (s/config! (s/select @ui/root [:#remove])
                         :enabled? (and (not (nil? path))
                                        (or (contains? @ui/tree-projects path)
                                            (.isFile (io/file path)))))
-             (s/config! (s/select @ui/ui-root [:#new-file])
+             (s/config! (s/select @ui/root [:#new-file])
                         :visible? (and (not (nil? path))
                                        (.isDirectory (io/file path))))
-             (s/config! (s/select @ui/ui-root [:#rename-file])
+             (s/config! (s/select @ui/root [:#rename-file])
                         :visible? (and (not (nil? path))
                                        (.isFile (io/file path))))))

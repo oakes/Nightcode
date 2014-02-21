@@ -11,7 +11,7 @@
 
 ; create and retrieve widgets
 
-(def ui-root (atom nil))
+(def root (atom nil))
 
 (defn wrap-panel
   "Returns a panel based on FlowLayout that allows its contents to wrap."
@@ -69,12 +69,12 @@
 (defn get-project-tree
   "Returns the project tree."
   []
-  (s/select @ui-root [:#project-tree]))
+  (s/select @root [:#project-tree]))
 
 (defn get-editor-pane
   "Returns the editor pane."
   []
-  (s/select @ui-root [:#editor-pane]))
+  (s/select @root [:#editor-pane]))
 
 ; keep track of the projects/expansions/selection
 

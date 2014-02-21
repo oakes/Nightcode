@@ -229,7 +229,7 @@
 
 (defn show-builder!
   [path]
-  (let [pane (s/select @ui/ui-root [:#builder-pane])]
+  (let [pane (s/select @ui/root [:#builder-pane])]
     ; create new builder if necessary
     (when (and path
                (utils/is-project-path? path)
@@ -248,7 +248,7 @@
 
 (defn remove-builders!
   [path]
-  (let [pane (s/select @ui/ui-root [:#builder-pane])]
+  (let [pane (s/select @ui/root [:#builder-pane])]
     (doseq [[builder-path {:keys [view close-fn! should-remove-fn]}] @builders]
       (when (or (utils/is-parent-path? path builder-path)
                 (should-remove-fn))

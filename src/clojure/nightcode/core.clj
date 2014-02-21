@@ -76,6 +76,6 @@
   (window/set-theme! args)
   (s/invoke-later
     ; create and show the frame
-    (s/show! (reset! ui/ui-root (create-window)))
+    (s/show! (reset! ui/root (create-window)))
     ; initialize the project pane
     (ui/update-project-tree!)))
