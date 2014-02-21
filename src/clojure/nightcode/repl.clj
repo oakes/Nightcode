@@ -5,7 +5,7 @@
             [nightcode.ui :as ui]
             [seesaw.core :as s]))
 
-(defn run!
+(defn run-repl!
   "Starts a REPL process."
   [process in-out]
   (lein/stop-process! process)
@@ -14,11 +14,11 @@
 
 (defn create-pane
   "Returns the pane with the REPL."
-  [process console console-io]
-  (let [run! (fn [& _]
+  [console]
+  (let [process (atom nil)
+        run! (fn [& _]
                (s/request-focus! (-> console .getViewport .getView))
-               (reset! console-io (ui/get-io! console))
-               (run! process @console-io))
+               (run-repl! process (ui/get-io! console)))
         console-map {:view console
                      :toggle-paredit-fn! (editors/init-paredit!
                                            (.getTextArea console) false true)}]

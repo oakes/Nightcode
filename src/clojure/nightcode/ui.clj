@@ -59,12 +59,17 @@
   [& body]
   `(adjust-button! (s/toggle ~@body)))
 
-(defn get-io!
+(defn get-io
   "Returns the Reader and Writer for the given console object."
   [console]
-  (.init console)
   [(LineNumberingPushbackReader. (.getIn console))
    (.getOut console)])
+
+(defn get-io!
+  "Creates a new Reader and Writer before returning them."
+  [console]
+  (.init console)
+  (get-io console))
 
 (defn get-project-tree
   "Returns the project tree."

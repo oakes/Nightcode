@@ -15,15 +15,13 @@
 (defn create-window-content
   "Returns the entire window with all panes."
   []
-  (let [process (atom nil)
-        console (editors/create-console "clj")
-        console-io (atom nil)
+  (let [console (editors/create-console "clj")
         one-touch! #(doto % (.setOneTouchExpandable true))]
     (one-touch!
       (s/left-right-split
         (one-touch!
-          (s/top-bottom-split (projects/create-pane console console-io)
-                              (repl/create-pane process console console-io)
+          (s/top-bottom-split (projects/create-pane console)
+                              (repl/create-pane console)
                               :divider-location 0.8
                               :resize-weight 0.5))
         (one-touch!

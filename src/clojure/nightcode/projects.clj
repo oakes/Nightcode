@@ -85,11 +85,11 @@
 ; actions for project tree buttons
 
 (defn new-project!
-  [console-io]
+  [console]
   (when-let [dir (chooser/choose-file :type :save)]
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog! dir)]
-      (lein/new-project! console-io
+      (lein/new-project! (ui/get-io console)
                          (.getParent dir)
                          project-type
                          project-name
@@ -160,9 +160,9 @@
                                   :import :remove :fill-h])
 
 (defn create-actions
-  [console console-io]
+  [console]
   {:new-project (fn [& _]
-                  (try (new-project! @console-io)
+                  (try (new-project! console)
                     (catch Exception _ (.enterLine console ""))))
    :new-file new-file!
    :rename-file rename-file!
@@ -195,14 +195,14 @@
 
 (defn create-pane
   "Returns the pane with the project tree."
-  [console console-io]
+  [console]
   (let [; create the project tree and the pane that will hold it
         project-tree (s/tree :id :project-tree :focusable? true)
         project-pane (s/border-panel
                        :id :project-pane
                        :center (s/scrollable project-tree))
         ; create the actions and widgets
-        actions (create-actions console console-io)
+        actions (create-actions console)
         widgets (create-widgets actions)
         ; create the bar that holds the widgets
         widget-bar (ui/wrap-panel

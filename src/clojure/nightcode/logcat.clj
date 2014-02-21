@@ -11,7 +11,7 @@
 
 (def ^:const logcat-name "*LogCat*")
 
-(defn run!
+(defn run-logcat!
   "Starts a LogCat process."
   [process in-out path]
   (lein/stop-process! process)
@@ -31,7 +31,7 @@
 (defn create-actions
   [path console panel process is-running?]
   (let [start! (fn []
-                 (run! process (ui/get-io! console) path)
+                 (run-logcat! process (ui/get-io! console) path)
                  (ui/config! panel
                              :#toggle-logcat
                              :text (utils/get-string :stop))
