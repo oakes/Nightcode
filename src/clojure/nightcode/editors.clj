@@ -325,11 +325,6 @@
        (subs path)
        clojure.string/lower-case))
 
-(defn get-syntax-style
-  [path]
-  (or (get styles (get-extension path))
-      SyntaxConstants/SYNTAX_STYLE_NONE))
-
 (defn apply-settings!
   [text-area]
   ; set theme
@@ -357,7 +352,7 @@
       (doto (create-text-area)
         (.load (FileLocation/create path) nil)
         .discardAllEdits
-        (.setSyntaxEditingStyle (get-syntax-style path))
+        (.setSyntaxEditingStyle (get styles extension))
         (.setLineWrap (contains? wrap-exts extension))
         (.setMarginLineEnabled true)
         (.setMarginLinePosition 80)
