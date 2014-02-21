@@ -7,23 +7,23 @@
   (:gen-class))
 
 (defn init-completer!
-  [text-area]
-  (->> (editors/create-completer text-area "clj")
-       (editors/install-completer! text-area)))
+  [text-area extension]
+  (some->> (editors/create-completer text-area extension)
+           (editors/install-completer! text-area)))
 
 (defn create-window-content
-  []
+  [extension]
   (doto (editors/create-text-area)
-    (.setSyntaxEditingStyle (get editors/styles "clj"))
+    (.setSyntaxEditingStyle (get editors/styles extension))
     (.setTabSize 2)
-    init-completer!
+    (init-completer! extension)
     (editors/init-paredit! true true)
     (.setText "(println \"Hello, world!\")")))
 
 (defn create-window
   []
   (doto (s/frame :title "Nightpad"
-                 :content (create-window-content)
+                 :content (create-window-content "clj")
                  :on-close :exit
                  :size [800 :by 600])
     ; listen for keys while modifier is down
