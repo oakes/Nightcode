@@ -1,15 +1,41 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [nightcode.ui :as ui]
             [nightcode.utils :as utils]
+            [seesaw.chooser :as chooser]
             [seesaw.core :as s]
             [seesaw.icon :as icon])
-  (:import [javax.swing JRadioButton]))
+  (:import [java.awt FileDialog]
+           [javax.swing JRadioButton]))
 
 (defn center!
   [dialog]
   (.setLocationRelativeTo dialog nil)
   dialog)
+
+(defn osx?
+  []
+  (try (Class/forName "com.apple.eawt.FullScreenUtilities")
+    (catch Exception _)))
+
+(defn show-save-dialog!
+  []
+  (if (osx?)
+    (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
+      (let [dlg (FileDialog. @ui/root "" FileDialog/SAVE)]
+        (.setVisible dlg true)
+        (io/file (.getDirectory dlg) (.getFile dlg))))
+    (chooser/choose-file :type :save)))
+
+(defn show-open-dialog!
+  []
+  (if (osx?)
+    (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
+      (let [dlg (FileDialog. @ui/root "" FileDialog/LOAD)]
+        (.setVisible dlg true)
+        (io/file (.getDirectory dlg) (.getFile dlg))))
+    (chooser/choose-file :type :open :selection-mode :dirs-only)))
 
 (defn show-remove-dialog!
   [is-project?]

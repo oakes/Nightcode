@@ -7,7 +7,6 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
-            [seesaw.chooser :as chooser]
             [seesaw.core :as s])
   (:import [javax.swing.event TreeExpansionListener TreeSelectionListener]
            [javax.swing.tree TreeSelectionModel]))
@@ -86,7 +85,7 @@
 
 (defn new-project!
   [console]
-  (when-let [dir (chooser/choose-file :type :save)]
+  (when-let [dir (dialogs/show-save-dialog!)]
     (when-let [[project-type project-name package-name project-dir]
                (dialogs/show-project-type-dialog! dir)]
       (lein/new-project! (ui/get-io console)
@@ -131,7 +130,7 @@
 
 (defn import-project!
   [e]
-  (when-let [dir (chooser/choose-file :type :open :selection-mode :dirs-only)]
+  (when-let [dir (dialogs/show-open-dialog!)]
     ; offer to create project.clj if necessary
     (when (and (.exists (io/file dir "src"))
                (not (.exists (io/file dir "project.clj")))
