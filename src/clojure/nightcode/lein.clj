@@ -55,6 +55,20 @@
             (or (get-in project [:ios :robovm-path])
                 (utils/read-pref :robovm))))
 
+(defn add-local-repo
+  [project]
+  (let [home (System/getProperty "user.home")
+        dir (System/getProperty "SandboxDirectory")]
+    (if (and home dir (nil? (:local-repo project)))
+      (assoc project :local-repo (str home "/" dir "/.m2"))
+      project)))
+
+(defn add-props
+  [args]
+  (if-let [dir (System/getProperty "SandboxDirectory")]
+    (concat [(first args) (str "-DSandboxDirectory=" dir)] (rest args))
+    args))
+
 (defn read-project-clj
   [path]
   (when path
@@ -64,6 +78,7 @@
         (-> (leiningen.core.project/read project-clj-path)
             add-sdk-path
             add-robovm-path
+            add-local-repo
             (try (catch Exception e {})))))))
 
 (defn read-android-project
@@ -174,7 +189,7 @@
 (defn start-process!
   [process path & args]
   (reset! process (.exec (Runtime/getRuntime)
-                         (into-array (flatten args))
+                         (into-array (add-props (flatten args)))
                          nil
                          (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)

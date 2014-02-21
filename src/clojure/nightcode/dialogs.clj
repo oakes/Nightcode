@@ -14,14 +14,9 @@
   (.setLocationRelativeTo dialog nil)
   dialog)
 
-(defn osx?
-  []
-  (try (Class/forName "com.apple.eawt.FullScreenUtilities")
-    (catch Exception _)))
-
 (defn show-save-dialog!
   []
-  (if (osx?)
+  (if (System/getProperty "SandboxDirectory")
     (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
       (let [dlg (FileDialog. @ui/root "" FileDialog/SAVE)]
         (.setVisible dlg true)
@@ -30,7 +25,7 @@
 
 (defn show-open-dialog!
   []
-  (if (osx?)
+  (if (System/getProperty "SandboxDirectory")
     (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
       (let [dlg (FileDialog. @ui/root "" FileDialog/LOAD)]
         (.setVisible dlg true)
