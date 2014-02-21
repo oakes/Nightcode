@@ -470,9 +470,9 @@
     (ui/update-project-tree! new-path))
   true)
 
-(def ^:dynamic *editor-widgets* [:save :undo :redo :font-dec :font-inc
-                                 :doc :paredit :paredit-help :find :replace
-                                 :close])
+(def ^:dynamic *widgets* [:save :undo :redo :font-dec :font-inc
+                          :doc :paredit :paredit-help :find :replace
+                          :close])
 
 (defn create-actions
   []
@@ -560,20 +560,19 @@
           actions (create-actions)
           widgets (create-widgets actions)
           ; remove buttons if they aren't applicable
-          editor-widgets (remove (fn [k]
-                                   (-> (concat []
-                                               (if-not is-clojure?
-                                                 [:paredit :paredit-help])
-                                               (if-not completer
-                                                 [:doc]))
-                                       set
-                                       (contains? k)))
-                                 *editor-widgets*)
+          *widgets* (remove (fn [k]
+                              (-> (concat []
+                                          (if-not is-clojure?
+                                            [:paredit :paredit-help])
+                                          (if-not completer
+                                            [:doc]))
+                                set
+                                (contains? k)))
+                            *widgets*)
           ; create the bar that holds the widgets
-          widget-bar (ui/wrap-panel
-                       :items (map #(get widgets % %) editor-widgets))]
+          widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       ; add the widget bar if necessary
-      (when (> (count editor-widgets) 0)
+      (when (> (count *widgets*) 0)
         (doto editor-pane
           (s/config! :north widget-bar)
           shortcuts/create-hints!
@@ -605,7 +604,7 @@
        :should-remove-fn #(not (.exists (io/file path)))
        :toggle-paredit-fn! (init-paredit! text-area is-clojure? is-clojure?)})))
 
-(def ^:dynamic *editor-types* [:text :logcat])
+(def ^:dynamic *types* [:text :logcat])
 
 (defn show-editor!
   [path]
@@ -613,7 +612,7 @@
     ; create new editor if necessary
     (when (and path (not (contains? @editors path)))
       (when-let [editor-map (some #(if-not (nil? %) %)
-                                  (map #(create-editor % path) *editor-types*))]
+                                  (map #(create-editor % path) *types*))]
         (swap! editors assoc path editor-map)
         (.add editor-pane (:view editor-map) path)))
     ; display the correct card

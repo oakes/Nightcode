@@ -156,8 +156,8 @@
 
 ; pane
 
-(def ^:dynamic *project-widgets* [:new-project :new-file :rename-file
-                                  :import :remove :fill-h])
+(def ^:dynamic *widgets* [:new-project :new-file :rename-file
+                          :import :remove :fill-h])
 
 (defn create-actions
   [console]
@@ -205,10 +205,9 @@
         actions (create-actions console)
         widgets (create-widgets actions)
         ; create the bar that holds the widgets
-        widget-bar (ui/wrap-panel
-                     :items (map #(get widgets % %) *project-widgets*))]
+        widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
     ; add the widget bar if necessary
-    (when (> (count *project-widgets*) 0)
+    (when (> (count *widgets*) 0)
       (doto project-pane
         (s/config! :north widget-bar)
         shortcuts/create-hints!

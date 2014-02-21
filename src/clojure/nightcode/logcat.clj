@@ -26,7 +26,7 @@
        (binding [leiningen.core.main/*exit-process?* false])
        (lein/start-thread! in-out)))
 
-(def ^:dynamic *logcat-widgets* [:toggle-logcat :close])
+(def ^:dynamic *widgets* [:toggle-logcat :close])
 
 (defn create-actions
   [path console panel process is-running?]
@@ -73,10 +73,9 @@
           actions (create-actions path console logcat-pane process is-running?)
           widgets (create-widgets actions)
           ; create the bar that holds the widgets
-          widget-bar (ui/wrap-panel
-                       :items (map #(get widgets % %) *logcat-widgets*))]
+          widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       ; add the widget bar if necessary
-      (when (> (count *logcat-widgets*) 0)
+      (when (> (count *widgets*) 0)
         (doto logcat-pane
           (s/config! :north widget-bar)
           shortcuts/create-hints!

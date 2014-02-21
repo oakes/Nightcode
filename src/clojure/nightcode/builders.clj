@@ -103,8 +103,8 @@
 
 ; create and show/hide builders for each project
 
-(def ^:dynamic *builder-widgets* [:run :run-repl :reload :build :test
-                                  :clean :check-versions :stop :auto])
+(def ^:dynamic *widgets* [:run :run-repl :reload :build :test
+                          :clean :check-versions :stop :auto])
 
 (defn create-actions
   [path console build-pane process auto-process last-reload]
@@ -203,10 +203,9 @@
                                 process auto-process last-reload)
         widgets (create-widgets actions)
         ; create the bar that holds the widgets
-        widget-bar (ui/wrap-panel
-                     :items (map #(get widgets % %) *builder-widgets*))]
+        widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
     ; add the widget bar if necessary
-    (when (> (count *builder-widgets*) 0)
+    (when (> (count *widgets*) 0)
       (doto build-pane
         (s/config! :north widget-bar)
         shortcuts/create-hints!
