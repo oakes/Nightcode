@@ -110,6 +110,8 @@
 (defmethod adjust-nodes nil [_ _ children] children)
 
 (defn reduce-nodes
+  "Runs the nodes through whatever `adjust-nodes` multi-methods are indicated in
+*node-adjustment-types*"
   [parent children]
   (reduce #(adjust-nodes %2 parent %1) children *node-adjustment-types*))
 
@@ -201,6 +203,6 @@
     ; select the first project if there is nothing selected
     (when (nil? (.getSelectionPath tree))
       (.setSelectionRow tree 0))
-    ; if there is still nothing selected, reset atom so the buttons refresh
-    (when (nil? @tree-selection)
+    ; if the project tree is blank, reset atom so the buttons refresh
+    (when (= 0 (count @tree-projects))
       (reset! tree-selection nil))))
