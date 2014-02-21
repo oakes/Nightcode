@@ -207,9 +207,12 @@
                                     (doto (create-widget k a)
                                       (shortcuts/create-mapping! a))))
                                 *project-widgets*))
+        scroll-pane (s/scrollable project-tree)
         project-pane (s/vertical-panel
                        :id :project-pane
-                       :items [btn-group (s/scrollable project-tree)])]
+                       :items (if (> (count *project-widgets*) 0)
+                                [btn-group scroll-pane]
+                                [scroll-pane]))]
     (doto project-tree
       (.setRootVisible false)
       (.setShowsRootHandles true)
