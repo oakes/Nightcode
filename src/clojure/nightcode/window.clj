@@ -58,7 +58,7 @@
   (.addWindowListener window
     (proxy [WindowAdapter] []
       (windowActivated [e]
-        (ui/update-project-tree!)
-        (shortcuts/toggle-hints! @ui/root false))
+        (shortcuts/toggle-hints! @ui/root false)
+        (ui/update-project-tree!))
       (windowClosing [e]
         (confirm-exit-app!)))))
