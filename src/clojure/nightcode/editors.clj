@@ -433,8 +433,8 @@
             (when (and @shortcuts/is-down?
                        (contains? console-ignore-shortcut-keys (.getKeyCode e)))
               (.consume e))))))
-    (when-let [completer (create-completer text-area extension)]
-      (install-completer! text-area completer))
+    (some->> (create-completer text-area extension)
+             (install-completer! text-area))
     (JConsole. text-area)))
 
 (defn init-paredit!
@@ -554,8 +554,7 @@
           extension (get-extension path)
           is-clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
-          editor-pane (s/border-panel
-                        :center (RTextScrollPane. text-area))
+          editor-pane (s/border-panel :center (RTextScrollPane. text-area))
           ; create the actions and widgets
           actions (create-actions)
           widgets (create-widgets actions)
