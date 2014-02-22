@@ -60,7 +60,9 @@
   (let [home (System/getProperty "user.home")
         dir (System/getProperty "SandboxDirectory")]
     (if (and home dir (nil? (:local-repo project)))
-      (assoc project :local-repo (str home "/" dir "/.m2"))
+      (some->> (io/file home dir ".m2")
+               .getCanonicalPath
+               (assoc project :local-repo))
       project)))
 
 (defn add-props
