@@ -123,24 +123,32 @@
     (some-> (s/select target [(keyword (str "#" (name id)))])
             (create-hint! mapping))))
 
+(defn run-shortcut!
+  "Runs shortcut command if applicable, returning a boolean indicating success."
+  [target func e]
+  ; show or hide the shortcut hints
+  (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
+        current-modifier (.getModifiers e)]
+    (reset! is-down? (= (bit-and modifier current-modifier) modifier))
+    (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
+              (= (.getKeyCode e) KeyEvent/VK_META)
+              @is-down?)
+      (toggle-hints! target @is-down?)))
+  ; run the supplied function if Ctrl is pressed
+  (if (and @is-down?
+           (not (.isShiftDown e))
+           (= (.getID e) KeyEvent/KEY_PRESSED))
+    (func (.getKeyCode e))
+    false))
+
 (defn listen-for-shortcuts!
   "Creates a global listener for shortcuts."
   [target func]
-  (.addKeyEventDispatcher
-    (KeyboardFocusManager/getCurrentKeyboardFocusManager)
-    (proxy [KeyEventDispatcher] []
-      (dispatchKeyEvent [^KeyEvent e]
-        ; show or hide the shortcut hints
-        (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
-              current-modifier (.getModifiers e)]
-          (reset! is-down? (= (bit-and modifier current-modifier) modifier))
-          (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
-                    (= (.getKeyCode e) KeyEvent/VK_META)
-                    @is-down?)
-            (toggle-hints! target @is-down?)))
-        ; run the supplied function if Ctrl is pressed
-        (if (and @is-down?
-                 (not (.isShiftDown e))
-                 (= (.getID e) KeyEvent/KEY_PRESSED))
-          (func (.getKeyCode e))
-          false)))))
+  (let [manager (KeyboardFocusManager/getCurrentKeyboardFocusManager)]
+    (.addKeyEventDispatcher
+      manager
+      (proxy [KeyEventDispatcher] []
+        (dispatchKeyEvent [^KeyEvent e]
+          (if (= target (.getFocusedWindow manager))
+            (run-shortcut! target func e)
+            false))))))
