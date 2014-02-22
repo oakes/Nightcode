@@ -54,8 +54,12 @@
 
 (defn add-to-project-tree!
   [path]
-  (let [project-set (utils/read-pref :project-set)]
-    (utils/write-pref! :project-set (set (conj project-set path)))))
+  (let [proj-set (utils/read-pref :project-set)
+        permission-map (utils/read-pref :permission-map)]
+    (utils/write-pref! :project-set (set (conj proj-set path)))
+    (some->> (utils/write-file-permission! path)
+             (assoc permission-map path)
+             (utils/write-pref! :permission-map))))
 
 (defn remove-from-project-tree!
   [path]
@@ -63,11 +67,11 @@
     (when (dialogs/show-remove-dialog! is-project?)
       (editors/remove-editors! path)
       (if is-project?
-        (do
-          (utils/write-pref! :project-set
-                             (->> (utils/read-pref :project-set)
-                                  (remove #(= % path))
-                                  set))
+        (let [proj-set (utils/read-pref :project-set)
+              permission-map (utils/read-pref :permission-map)]
+          (utils/write-pref! :project-set (set (remove #(= % path) proj-set)))
+          (some->> (dissoc permission-map path)
+                   (utils/write-pref! :permission-map))
           (builders/remove-builders! path))
         (utils/delete-file-recursively! @ui/tree-projects path))
       true)))

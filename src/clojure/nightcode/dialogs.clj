@@ -14,22 +14,26 @@
   (.setLocationRelativeTo dialog nil)
   dialog)
 
+(defn show-native-dialog!
+  [mode]
+  (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
+    (let [dlg (doto (FileDialog. @ui/root "" mode)
+                (.setVisible true))
+          d (.getDirectory dlg)
+          f (.getFile dlg)]
+      (when (and d f)
+        (io/file d f)))))
+
 (defn show-save-dialog!
   []
   (if (System/getProperty "SandboxDirectory")
-    (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
-      (let [dlg (FileDialog. @ui/root "" FileDialog/SAVE)]
-        (.setVisible dlg true)
-        (io/file (.getDirectory dlg) (.getFile dlg))))
+    (show-native-dialog! FileDialog/SAVE)
     (chooser/choose-file :type :save)))
 
 (defn show-open-dialog!
   []
   (if (System/getProperty "SandboxDirectory")
-    (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
-      (let [dlg (FileDialog. @ui/root "" FileDialog/LOAD)]
-        (.setVisible dlg true)
-        (io/file (.getDirectory dlg) (.getFile dlg))))
+    (show-native-dialog! FileDialog/LOAD)
     (chooser/choose-file :type :open :selection-mode :dirs-only)))
 
 (defn show-remove-dialog!

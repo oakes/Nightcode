@@ -146,3 +146,38 @@
   (-> (Files/probeContentType ^Path (.toPath file))
       (or "")
       (.startsWith "text")))
+
+; objc
+
+(defn get-objc-client
+  []
+  (some-> (try (Class/forName "ca.weblite.objc.Client")
+            (catch Exception _))
+          (.getMethod "getInstance" (into-array Class []))
+          (.invoke nil (object-array []))))
+
+(defn base64->nsdata
+  [text]
+  (some-> (get-objc-client)
+          (.sendProxy "NSData" "data" (object-array []))
+          (.send "initWithBase64Encoding:" (object-array [text]))))
+
+(defn write-file-permission!
+  [path]
+  (some-> (get-objc-client)
+          (.sendProxy "NSURL" "fileURLWithPath:" (object-array [path]))
+          (.sendProxy "bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:"
+            (object-array [nil nil nil nil]))
+          (.sendString "base64Encoding" (object-array []))))
+
+(defn read-file-permission!
+  [text]
+  (some-> (get-objc-client)
+          (.sendProxy "NSURL" "URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:"
+            (object-array [(base64->nsdata text) nil nil false nil]))
+          (.send "startAccessingSecurityScopedResource" (object-array []))))
+
+(defn read-file-permissions!
+  []
+  (doseq [[path text] (read-pref :permission-map)]
+    (read-file-permission! text)))

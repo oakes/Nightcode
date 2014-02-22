@@ -11,6 +11,14 @@
            [org.pushingpixels.substance.api SubstanceLookAndFeel]
            [org.pushingpixels.substance.api.skin GraphiteSkin]))
 
+(defn set-theme!
+  "Sets the theme based on the command line arguments."
+  [args]
+  (s/native!)
+  (let [{:keys [shade skin-object theme-resource]} (cli-args/parse-args args)]
+    (when theme-resource (reset! editors/theme-resource theme-resource))
+    (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.)))))
+
 (defn confirm-exit-app!
   "Displays a dialog confirming whether the program should shut down."
   []
@@ -54,11 +62,3 @@
         (shortcuts/toggle-hints! @ui/root false))
       (windowClosing [e]
         (confirm-exit-app!)))))
-
-(defn set-theme!
-  "Sets the theme based on the command line arguments."
-  [args]
-  (s/native!)
-  (let [{:keys [shade skin-object theme-resource]} (cli-args/parse-args args)]
-    (when theme-resource (reset! editors/theme-resource theme-resource))
-    (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.)))))

@@ -72,6 +72,7 @@
   "Launches the main window."
   [& args]
   (window/set-theme! args)
+  (utils/read-file-permissions!)
   (s/invoke-later
     ; create and show the frame
     (s/show! (reset! ui/root (create-window)))
