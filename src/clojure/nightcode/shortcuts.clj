@@ -123,18 +123,27 @@
     (some-> (s/select target [(keyword (str "#" (name id)))])
             (create-hint! mapping))))
 
-(defn run-shortcut!
-  "Runs shortcut command if applicable, returning a boolean indicating success."
-  [target func e]
-  ; show or hide the shortcut hints
+(defn update-hints!
+  "Shows or hides the hints based on the key event."
+  [target e]
   (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
         current-modifier (.getModifiers e)]
     (reset! is-down? (= (bit-and modifier current-modifier) modifier))
     (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
               (= (.getKeyCode e) KeyEvent/VK_META)
               @is-down?)
-      (toggle-hints! target @is-down?)))
-  ; run the supplied function if Ctrl is pressed
+      (toggle-hints! target @is-down?))))
+
+(defn is-focused-window?
+  "Returns true if `window` is currently in focus."
+  [window]
+  (-> (KeyboardFocusManager/getCurrentKeyboardFocusManager)
+      .getFocusedWindow
+      (= window)))
+
+(defn run-shortcut!
+  "Runs shortcut command if applicable, returning a boolean indicating success."
+  [target func e]
   (if (and @is-down?
            (not (.isShiftDown e))
            (= (.getID e) KeyEvent/KEY_PRESSED))
@@ -144,11 +153,11 @@
 (defn listen-for-shortcuts!
   "Creates a global listener for shortcuts."
   [target func]
-  (let [manager (KeyboardFocusManager/getCurrentKeyboardFocusManager)]
-    (.addKeyEventDispatcher
-      manager
-      (proxy [KeyEventDispatcher] []
-        (dispatchKeyEvent [^KeyEvent e]
-          (if (= target (.getFocusedWindow manager))
-            (run-shortcut! target func e)
-            false))))))
+  (.addKeyEventDispatcher
+    (KeyboardFocusManager/getCurrentKeyboardFocusManager)
+    (proxy [KeyEventDispatcher] []
+      (dispatchKeyEvent [^KeyEvent e]
+        (update-hints! target e)
+        (if (is-focused-window? target)
+          (run-shortcut! target func e)
+          false)))))

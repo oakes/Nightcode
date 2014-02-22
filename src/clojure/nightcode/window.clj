@@ -38,10 +38,9 @@
             (into-array Class [Window Boolean/TYPE]))
           (.invoke nil (object-array [window true]))))
 
-(defn add-listener!
-  "Sets callbacks for window events."
-  [window]
-  ; make sure the window listener is called on OS X
+(defn disable-quit-handler!
+  "Disables the default quit handler on OS X."
+  []
   (when-let [quit-class (try (Class/forName "com.apple.eawt.QuitHandler")
                           (catch Exception _))]
     (some-> (try (Class/forName "com.apple.eawt.Application")
@@ -52,9 +51,12 @@
               (Proxy/newProxyInstance (.getClassLoader quit-class)
                                       (into-array Class [quit-class])
                                       (reify InvocationHandler
-                                        (invoke [this proxy method args]
-                                          (confirm-exit-app!)))))))
-  ; create and add the listener
+                                        (invoke [this proxy method args])))))))
+
+(defn add-listener!
+  "Sets callbacks for window events."
+  [window]
+  (disable-quit-handler!)
   (.addWindowListener window
     (proxy [WindowAdapter] []
       (windowActivated [e]
