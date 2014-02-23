@@ -28,21 +28,27 @@
 
 (defn set-android-sdk!
   [& _]
-  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
-    (let [k :android-sdk
-          p (.getCanonicalPath d)]
-      (sandbox/update-permission-map! k p)
-      (utils/write-pref! k p))
-    (show-builder! @ui/tree-selection)))
+  (if (sandbox/get-dir)
+    (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
+    (when-let [d (dialogs/show-open-dialog!
+                   (utils/read-pref :android-sdk) false)]
+      (let [k :android-sdk
+            p (.getCanonicalPath d)]
+        ;(sandbox/update-permission-map! k p)
+        (utils/write-pref! k p))
+      (show-builder! @ui/tree-selection))))
 
 (defn set-robovm!
   [& _]
-  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
-    (let [k :robovm
-          p (.getCanonicalPath d)]
-      (sandbox/update-permission-map! k p)
-      (utils/write-pref! k p))
-    (show-builder! @ui/tree-selection)))
+  (if (sandbox/get-dir)
+    (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
+    (when-let [d (dialogs/show-open-dialog!
+                   (utils/read-pref :android-sdk) false)]
+      (let [k :robovm
+            p (.getCanonicalPath d)]
+        ;(sandbox/update-permission-map! k p)
+        (utils/write-pref! k p))
+      (show-builder! @ui/tree-selection))))
 
 (defn eval-in-repl!
   [console path timestamp]

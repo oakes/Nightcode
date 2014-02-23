@@ -112,6 +112,9 @@
                [:android-java :android "Java"]
                [:ios-java :ios "Java"]
                [:web-clojure :web "ClojureScript"]]
+        types (if (sandbox/get-dir)
+                (remove #(contains? #{:ios :android} (second %)) types)
+                types)
         finish (fn []
                  (let [project-type (s/id-of (s/selection group))
                        project-name (-> raw-project-name
