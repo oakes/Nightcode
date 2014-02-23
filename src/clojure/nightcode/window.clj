@@ -60,8 +60,11 @@
   (.addWindowListener window
     (proxy [WindowAdapter] []
       (windowActivated [e]
+        ; force hints to hide
+        (reset! shortcuts/is-down? false)
         (shortcuts/toggle-hint! @editors/tabs false)
         (shortcuts/toggle-hints! @ui/root false)
+        ; update the tree to reflect any changes in the filesystem
         (ui/update-project-tree!))
       (windowClosing [e]
         (confirm-exit-app!)))))
