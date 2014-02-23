@@ -1,6 +1,7 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [nightcode.sandbox :as sandbox]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
@@ -13,6 +14,13 @@
   [dialog]
   (.setLocationRelativeTo dialog nil)
   dialog)
+
+(defn show-simple-dialog!
+  [text]
+  (-> (s/dialog :content text)
+      s/pack!
+      center!
+      s/show!))
 
 (defn show-native-dialog!
   [dir mode]
@@ -27,7 +35,7 @@
 
 (defn show-save-dialog!
   []
-  (if (System/getProperty "SandboxDirectory")
+  (if (sandbox/get-dir)
     (show-native-dialog! nil FileDialog/SAVE)
     (chooser/choose-file :type :save)))
 
@@ -35,7 +43,7 @@
   ([]
     (show-open-dialog! nil true))
   ([dir remember-directory?]
-    (if (System/getProperty "SandboxDirectory")
+    (if (sandbox/get-dir)
       (show-native-dialog! dir FileDialog/LOAD)
       (chooser/choose-file :type :open
                            :dir dir

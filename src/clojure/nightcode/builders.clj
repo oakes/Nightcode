@@ -3,6 +3,7 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
+            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -28,13 +29,19 @@
 (defn set-android-sdk!
   [& _]
   (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
-    (utils/write-pref-and-permission-map! :android-sdk (.getCanonicalPath d))
+    (let [k :android-sdk
+          p (.getCanonicalPath d)]
+      (sandbox/update-permission-map! k p)
+      (utils/write-pref! k p))
     (show-builder! @ui/tree-selection)))
 
 (defn set-robovm!
   [& _]
   (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
-    (utils/write-pref-and-permission-map! :robovm (.getCanonicalPath d))
+    (let [k :robovm
+          p (.getCanonicalPath d)]
+      (sandbox/update-permission-map! k p)
+      (utils/write-pref! k p))
     (show-builder! @ui/tree-selection)))
 
 (defn eval-in-repl!

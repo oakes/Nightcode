@@ -18,6 +18,7 @@
             [leiningen.run]
             [leiningen.test]
             [leiningen.uberjar]
+            [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe]
            [com.sun.jdi Bootstrap]
@@ -41,14 +42,6 @@
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
 
-(defn get-robovm-sandbox-path
-  []
-  (let [home (System/getProperty "user.home")
-        dir (System/getProperty "SandboxDirectory")]
-    (when (and home dir)
-      (->> (io/file home dir ".robovm" "cache")
-           .getCanonicalPath))))
-
 (defn add-sdk-path
   [project]
   (assoc-in project
@@ -63,22 +56,6 @@
             (or (get-in project [:ios :robovm-path])
                 (utils/read-pref :robovm))))
 
-(defn add-local-repo
-  [project]
-  (let [home (System/getProperty "user.home")
-        dir (System/getProperty "SandboxDirectory")]
-    (if (and home dir (nil? (:local-repo project)))
-      (->> (io/file home dir ".m2")
-           .getCanonicalPath
-           (assoc project :local-repo))
-      project)))
-
-(defn add-props
-  [args]
-  (if-let [dir (System/getProperty "SandboxDirectory")]
-    (concat [(first args) (str "-DSandboxDirectory=" dir)] (rest args))
-    args))
-
 (defn read-project-clj
   [path]
   (when path
@@ -88,7 +65,7 @@
         (-> (leiningen.core.project/read project-clj-path)
             add-sdk-path
             add-robovm-path
-            add-local-repo
+            sandbox/add-local-repo
             (try (catch Exception e {})))))))
 
 (defn read-android-project
@@ -199,7 +176,7 @@
 (defn start-process!
   [process path & args]
   (reset! process (.exec (Runtime/getRuntime)
-                         (into-array (add-props (flatten args)))
+                         (into-array (sandbox/add-props (flatten args)))
                          nil
                          (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
@@ -267,7 +244,7 @@
       (doseq [cmd ["build" "apk" "install" "run"]]
         (leiningen.droid/execute-subtask project cmd [])))
     (is-ios-project? path)
-    (if-let [dir (get-robovm-sandbox-path)]
+    (if-let [dir (sandbox/get-path ".robovm" "cache")]
       (leiningen.fruit/fruit project "doall" "-cache" dir)
       (leiningen.fruit/fruit project "doall"))
     :else
@@ -293,7 +270,7 @@
             read-android-project
             leiningen.droid/execute-release-routine)
     (is-ios-project? path)
-    (if-let [dir (get-robovm-sandbox-path)]
+    (if-let [dir (sandbox/get-path ".robovm" "cache")]
       (leiningen.fruit/fruit project "release" "-cache" dir)
       (leiningen.fruit/fruit project "release"))
     :else
