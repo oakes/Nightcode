@@ -1,6 +1,6 @@
 (defproject nightedit "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
-  :dependencies [[nightcode "0.3.0-SNAPSHOT"
+  :dependencies [[nightcode "LATEST"
                   :exclusions [leiningen
                                lein-ancient
                                lein-cljsbuild
