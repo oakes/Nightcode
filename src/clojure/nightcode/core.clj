@@ -41,8 +41,8 @@
                                (nth p 2)
                                "beta"))
                  :content (create-window-content)
-                 :width 1280
-                 :height 800
+                 :width 1242
+                 :height 768
                  :on-close :nothing)
     ; listen for keys while modifier is down
     (shortcuts/listen-for-shortcuts!
