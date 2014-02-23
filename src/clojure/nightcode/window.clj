@@ -60,6 +60,7 @@
   (.addWindowListener window
     (proxy [WindowAdapter] []
       (windowActivated [e]
+        (shortcuts/toggle-hint! @editors/tabs false)
         (shortcuts/toggle-hints! @ui/root false)
         (ui/update-project-tree!))
       (windowClosing [e]
