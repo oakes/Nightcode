@@ -107,7 +107,8 @@
                 (when (= (.getEventType e) HyperlinkEvent$EventType/ACTIVATED)
                   (binding [*reorder-tabs?* false]
                     (ui/update-project-tree! (.getDescription e))))))
-    (shortcuts/toggle-hint! @tabs @shortcuts/is-down?)))
+    (when (> (count @editors) 0)
+      (shortcuts/toggle-hint! @tabs @shortcuts/is-down?))))
 
 ; button bar actions
 
