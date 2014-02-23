@@ -49,14 +49,14 @@
   (some-> (get-objc-client)
           (.sendProxy "NSURL" "fileURLWithPath:" (object-array [path]))
           (.sendProxy "bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:"
-            (object-array [nil nil nil nil]))
+            (object-array [2048 nil nil nil]))
           (.sendString "base64Encoding" (object-array []))))
 
 (defn read-file-permission!
   [text]
   (some-> (get-objc-client)
           (.sendProxy "NSURL" "URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:"
-            (object-array [(base64->nsdata text) nil nil false nil]))
+            (object-array [(base64->nsdata text) 1024 nil false nil]))
           (.send "startAccessingSecurityScopedResource" (object-array []))))
 
 (defn read-file-permissions!
