@@ -17,7 +17,9 @@
 (defn write-pref!
   "Writes a key-value pair to the preference file."
   [k v]
-  (io! (.put prefs (name k) (pr-str v))))
+  (io! (doto prefs
+         (.put (name k) (pr-str v))
+         .flush)))
 
 (defn read-pref
   "Reads value from the given key in the preference file."
@@ -181,3 +183,21 @@
   []
   (doseq [[path text] (read-pref :permission-map)]
     (read-file-permission! text)))
+
+(defn add-to-permission-map!
+  [path]
+  (some->> (write-file-permission! path)
+           (assoc (read-pref :permission-map) path)
+           (write-pref! :permission-map)))
+
+(defn remove-from-permission-map!
+  [path]
+  (some->> (dissoc (read-pref :permission-map) path)
+           (write-pref! :permission-map)))
+
+(defn write-pref-and-permission-map!
+  [k path]
+  (when-let [old-path (read-pref k)]
+    (remove-from-permission-map! old-path))
+  (add-to-permission-map! path)
+  (write-pref! k path))

@@ -1,5 +1,6 @@
 (ns nightcode.builders
   (:require [clojure.java.io :as io]
+            [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
@@ -26,18 +27,14 @@
 
 (defn set-android-sdk!
   [& _]
-  (when-let [dir (chooser/choose-file :dir (utils/read-pref :android-sdk)
-                                      :selection-mode :dirs-only
-                                      :remember-directory? false)]
-    (utils/write-pref! :android-sdk (.getCanonicalPath dir))
+  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
+    (utils/write-pref-and-permission-map! :android-sdk (.getCanonicalPath d))
     (show-builder! @ui/tree-selection)))
 
 (defn set-robovm!
   [& _]
-  (when-let [dir (chooser/choose-file :dir (utils/read-pref :robovm)
-                                      :selection-mode :dirs-only
-                                      :remember-directory? false)]
-    (utils/write-pref! :robovm (.getCanonicalPath dir))
+  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
+    (utils/write-pref-and-permission-map! :robovm (.getCanonicalPath d))
     (show-builder! @ui/tree-selection)))
 
 (defn eval-in-repl!

@@ -41,6 +41,14 @@
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
 
+(defn get-robovm-sandbox-path
+  []
+  (let [home (System/getProperty "user.home")
+        dir (System/getProperty "SandboxDirectory")]
+    (when (and home dir)
+      (->> (io/file home dir ".robovm" "cache")
+           .getCanonicalPath))))
+
 (defn add-sdk-path
   [project]
   (assoc-in project
@@ -259,7 +267,9 @@
       (doseq [cmd ["build" "apk" "install" "run"]]
         (leiningen.droid/execute-subtask project cmd [])))
     (is-ios-project? path)
-    (leiningen.fruit/fruit project "doall")
+    (if-let [dir (get-robovm-sandbox-path)]
+      (leiningen.fruit/fruit project "doall" "-cache" dir)
+      (leiningen.fruit/fruit project "doall"))
     :else
     (leiningen.run/run project)))
 
@@ -283,7 +293,9 @@
             read-android-project
             leiningen.droid/execute-release-routine)
     (is-ios-project? path)
-    (leiningen.fruit/fruit project "release")
+    (if-let [dir (get-robovm-sandbox-path)]
+      (leiningen.fruit/fruit project "release" "-cache" dir)
+      (leiningen.fruit/fruit project "release"))
     :else
     (leiningen.uberjar/uberjar project)))
 
