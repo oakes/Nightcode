@@ -73,10 +73,11 @@
 (defn toggle-hint!
   "Shows or hides the given hint."
   [^BalloonTip hint show?]
-  (.refreshLocation hint)
-  (if (and show? (is-visible? (.getAttachedComponent hint)))
-    (s/show! hint)
-    (s/hide! hint)))
+  (when hint
+    (.refreshLocation hint)
+    (if (and show? (is-visible? (.getAttachedComponent hint)))
+      (s/show! hint)
+      (s/hide! hint))))
 
 (defn toggle-hints!
   "Shows or hides all hints in the given target."
