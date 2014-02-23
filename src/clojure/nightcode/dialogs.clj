@@ -28,7 +28,7 @@
 (defn show-save-dialog!
   []
   (if (System/getProperty "SandboxDirectory")
-    (show-native-dialog! FileDialog/SAVE)
+    (show-native-dialog! nil FileDialog/SAVE)
     (chooser/choose-file :type :save)))
 
 (defn show-open-dialog!
