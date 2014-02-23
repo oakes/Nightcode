@@ -13,7 +13,8 @@
   (when-let [f (chooser/choose-file :type :open :selection-mode :dirs-only)]
     ; the binding allows you to remove and/or rearrange widgets
     (binding [builders/*widgets* [:run :run-repl :reload :build :test
-                                  :clean :check-versions :stop :auto]]
+                                  :clean :check-versions :stop
+                                  :sdk :robovm :auto]]
       ; resetting this atom is all you need to do to open the dir
       (reset! ui/tree-selection (.getCanonicalPath f)))))
 

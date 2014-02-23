@@ -104,7 +104,8 @@
 ; create and show/hide builders for each project
 
 (def ^:dynamic *widgets* [:run :run-repl :reload :build :test
-                          :clean :check-versions :stop :auto])
+                          :clean :check-versions :stop
+                          :sdk :robovm :auto])
 
 (defn create-actions
   [path console build-pane process auto-process last-reload]
