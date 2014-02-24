@@ -5,7 +5,6 @@
             [nightcode.logcat :as logcat]
             [nightcode.projects :as projects]
             [nightcode.repl :as repl]
-            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -73,7 +72,6 @@
   "Launches the main window."
   [& args]
   (window/set-theme! args)
-  (sandbox/read-file-permissions!)
   (s/invoke-later
     ; create and show the frame
     (s/show! (reset! ui/root (create-window)))

@@ -1,7 +1,6 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [nightcode.sandbox :as sandbox]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
@@ -35,20 +34,16 @@
 
 (defn show-save-dialog!
   []
-  (if (sandbox/get-dir)
-    (show-native-dialog! nil FileDialog/SAVE)
-    (chooser/choose-file :type :save)))
+  (chooser/choose-file :type :save))
 
 (defn show-open-dialog!
   ([]
     (show-open-dialog! nil true))
   ([dir remember-directory?]
-    (if (sandbox/get-dir)
-      (show-native-dialog! dir FileDialog/LOAD)
-      (chooser/choose-file :type :open
-                           :dir dir
-                           :selection-mode :dirs-only
-                           :remember-directory? remember-directory?))))
+    (chooser/choose-file :type :open
+                         :dir dir
+                         :selection-mode :dirs-only
+                         :remember-directory? remember-directory?)))
 
 (defn show-remove-dialog!
   [is-project?]
@@ -112,9 +107,6 @@
                [:android-java :android "Java"]
                [:ios-java :ios "Java"]
                [:web-clojure :web "ClojureScript"]]
-        types (if (sandbox/get-dir)
-                (remove #(contains? #{:ios :android} (second %)) types)
-                types)
         finish (fn []
                  (let [project-type (s/id-of (s/selection group))
                        project-name (-> raw-project-name
