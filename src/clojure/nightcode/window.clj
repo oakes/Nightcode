@@ -19,15 +19,22 @@
     (when theme-resource (reset! editors/theme-resource theme-resource))
     (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.)))))
 
-(defn confirm-exit-app!
+(defn show-shut-down-dialog!
   "Displays a dialog confirming whether the program should shut down."
   []
   (let [unsaved-paths (->> (keys @editors/editors)
                            (filter editors/is-unsaved?)
                            doall)]
-    (if (dialogs/show-shut-down-dialog! unsaved-paths)
-      (System/exit 0)
-      true)))
+    (dialogs/show-shut-down-dialog! unsaved-paths)))
+
+(defn confirm-exit-app!
+  "Shuts down unless a quit handler exists or the user cancels it."
+  []
+  (if (and (nil? (try (Class/forName "com.apple.eawt.QuitHandler")
+                   (catch Exception _)))
+           (show-shut-down-dialog!))
+    (System/exit 0)
+    true))
 
 (defn enable-full-screen!
   "Enables full screen mode on OS X."
@@ -38,21 +45,30 @@
             (into-array Class [Window Boolean/TYPE]))
           (.invoke nil (object-array [window true]))))
 
-(defn override-quit-handler!
-  "Overrides the default quit handler on OS X."
+(defn create-quit-handler
+  "Creates an OS X quit handler."
   []
   (when-let [quit-class (try (Class/forName "com.apple.eawt.QuitHandler")
                           (catch Exception _))]
+    (Proxy/newProxyInstance (.getClassLoader quit-class)
+                            (into-array Class [quit-class])
+                            (reify InvocationHandler
+                              (invoke [this proxy method args]
+                                (when (= (.getName method)
+                                         "handleQuitRequestWith")
+                                  (if (show-shut-down-dialog!)
+                                    (.performQuit (second args))
+                                    (.cancelQuit (second args)))))))))
+
+(defn override-quit-handler!
+  "Overrides the default quit handler on OS X."
+  []
+  (when-let [quit-handler (create-quit-handler)]
     (some-> (try (Class/forName "com.apple.eawt.Application")
               (catch Exception _))
             (.getMethod "getApplication" (into-array Class []))
             (.invoke nil (object-array []))
-            (.setQuitHandler
-              (Proxy/newProxyInstance (.getClassLoader quit-class)
-                                      (into-array Class [quit-class])
-                                      (reify InvocationHandler
-                                        (invoke [this proxy method args]
-                                          (confirm-exit-app!))))))))
+            (.setQuitHandler quit-handler))))
 
 (defn add-listener!
   "Sets callbacks for window events."
@@ -68,4 +84,5 @@
         ; update the tree to reflect any changes in the filesystem
         (ui/update-project-tree!))
       (windowClosing [e]
-        (confirm-exit-app!)))))
+        (when (show-shut-down-dialog!)
+          (System/exit 0))))))
