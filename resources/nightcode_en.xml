@@ -72,6 +72,4 @@
 
   <string name="ctrl">Ctrl</string>
   <string name="alt">Alt</string>
-
-  <string name="sandbox_apology">Sorry, this feature can't be used due to sandbox limitations.</string>
 </resources>
