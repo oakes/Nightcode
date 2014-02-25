@@ -4,6 +4,7 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
+            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -56,7 +57,8 @@
   [path]
   (->> (conj (utils/read-pref :project-set) path)
        set
-       (utils/write-pref! :project-set)))
+       (utils/write-pref! :project-set))
+  (sandbox/add-to-permission-map! path))
 
 (defn remove-from-project-tree!
   [path]
@@ -69,6 +71,7 @@
                (remove #(= % path))
                set
                (utils/write-pref! :project-set))
+          (sandbox/remove-from-permission-map! path)
           (builders/remove-builders! path))
         (utils/delete-file-recursively! @ui/tree-projects path))
       true)))

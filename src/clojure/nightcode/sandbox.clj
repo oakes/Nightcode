@@ -16,18 +16,33 @@
       (->> (apply io/file home dir dirs)
            .getCanonicalPath))))
 
-(defn add-local-repo
-  [project]
-  (let [path (get-path ".m2")]
-    (if (and path (nil? (:local-repo project)))
-      (assoc project :local-repo path)
-      project)))
+(defn get-env
+  []
+  (when-let [path (get-path ".lein")]
+    (into-array String [(str "LEIN_HOME=" path)])))
 
-(defn add-props
+(defn add-dir
   [args]
   (if-let [dir (get-dir)]
     (concat [(first args) (str "-DSandboxDirectory=" dir)] (rest args))
     args))
+
+(defn set-temp-dir!
+  []
+  (when-let [dir (get-path ".temp")]
+    (-> dir io/file .mkdirs)
+    (System/setProperty "java.io.tmpdir" dir)))
+
+(defn create-profiles-clj!
+  []
+  (let [profiles-clj (get-path ".lein" "profiles.clj")
+        m2 (get-path ".m2")
+        tmp (get-path ".temp")]
+    (when (and profiles-clj m2 tmp (not (.exists (io/file profiles-clj))))
+      (doto (io/file profiles-clj)
+        (-> .getParentFile .mkdirs)
+        (spit (pr-str {:user {:local-repo m2
+                              :jvm-opts [(str "-Djava.io.tmpdir=" tmp)]}}))))))
 
 ; objc
 

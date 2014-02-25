@@ -3,6 +3,7 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
+            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -27,15 +28,19 @@
 
 (defn set-android-sdk!
   [& _]
-  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
-    (utils/write-pref! :android-sdk (.getCanonicalPath d))
-    (show-builder! @ui/tree-selection)))
+  (if (sandbox/get-dir)
+    (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
+    (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
+      (utils/write-pref! :android-sdk (.getCanonicalPath d))
+      (show-builder! @ui/tree-selection))))
 
 (defn set-robovm!
   [& _]
-  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk) false)]
-    (utils/write-pref! :robovm (.getCanonicalPath d))
-    (show-builder! @ui/tree-selection)))
+  (if (sandbox/get-dir)
+    (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
+    (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
+      (utils/write-pref! :robovm (.getCanonicalPath d))
+      (show-builder! @ui/tree-selection))))
 
 (defn eval-in-repl!
   [console path timestamp]

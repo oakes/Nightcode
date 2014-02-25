@@ -18,6 +18,7 @@
             [leiningen.run]
             [leiningen.test]
             [leiningen.uberjar]
+            [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe]
            [com.sun.jdi Bootstrap]
@@ -174,8 +175,8 @@
 (defn start-process!
   [process path & args]
   (reset! process (.exec (Runtime/getRuntime)
-                         (into-array (flatten args))
-                         nil
+                         (into-array (sandbox/add-dir (flatten args)))
+                         (sandbox/get-env)
                          (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
                     (Thread. #(when @process (.destroy @process))))
@@ -206,6 +207,7 @@
 
 (defn start-process-directly!
   [process path func]
+  (sandbox/set-temp-dir!)
   (let [project-orig (read-project-clj path)
         jvm-opts (conj (:jvm-opts project-orig)
                        (str "-agentlib:jdwp="
@@ -390,6 +392,7 @@
 
 (defn -main
   [cmd & args]
+  (sandbox/set-temp-dir!)
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
         project (-> (read-project-clj path)
