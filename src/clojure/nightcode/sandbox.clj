@@ -13,8 +13,7 @@
   (let [home (System/getProperty "user.home")
         dir (get-dir)]
     (when (and home dir)
-      (->> (apply io/file home dir dirs)
-           .getCanonicalPath))))
+      (.getCanonicalPath (apply io/file home dir dirs)))))
 
 (defn get-env
   []
@@ -92,6 +91,6 @@
 
 (defn update-permission-map!
   [k path]
-  (when-let [old-path (utils/read-pref k)]
-    (remove-from-permission-map! old-path))
+  (some-> (utils/read-pref k)
+          remove-from-permission-map!)
   (add-to-permission-map! path))
