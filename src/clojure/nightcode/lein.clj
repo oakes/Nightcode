@@ -142,7 +142,8 @@
 
 (defn should-run-directly?
   [path]
-  (and (is-java-project? path)
+  (and (nil? (sandbox/get-dir))
+       (is-java-project? path)
        (not (is-android-project? path))
        (not (is-ios-project? path))))
 
@@ -207,7 +208,6 @@
 
 (defn start-process-directly!
   [process path func]
-  (sandbox/set-temp-dir!)
   (let [project-orig (read-project-clj path)
         jvm-opts (conj (:jvm-opts project-orig)
                        (str "-agentlib:jdwp="

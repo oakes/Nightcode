@@ -30,7 +30,7 @@
 (defn set-temp-dir!
   []
   (when-let [dir (get-path ".temp")]
-    (-> dir io/file .mkdirs)
+    (-> dir io/file .mkdir)
     (System/setProperty "java.io.tmpdir" dir)))
 
 (defn create-profiles-clj!
@@ -40,7 +40,7 @@
         tmp (get-path ".temp")]
     (when (and profiles-clj m2 tmp (not (.exists (io/file profiles-clj))))
       (doto (io/file profiles-clj)
-        (-> .getParentFile .mkdirs)
+        (-> .getParentFile .mkdir)
         (spit (pr-str {:user {:local-repo m2
                               :jvm-opts [(str "-Djava.io.tmpdir=" tmp)]}}))))))
 
