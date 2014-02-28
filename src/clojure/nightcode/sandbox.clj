@@ -26,10 +26,7 @@
 
 (defn set-home!
   []
-  (some->> (get-dir)
-           (io/file (System/getProperty "user.home"))
-           .getCanonicalPath
-           (System/setProperty "user.home")))
+  (some->> (get-dir) get-path (System/setProperty "user.home")))
 
 (defn set-temp-dir!
   []
