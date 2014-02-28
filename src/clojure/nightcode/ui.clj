@@ -191,8 +191,9 @@
     (some-> (get-project-tree)
             (update-project-tree! nil)))
   ([^String new-selection]
-    (some-> (get-project-tree)
-            (update-project-tree! new-selection)))
+    (if-let [tree (get-project-tree)]
+      (update-project-tree! tree new-selection)
+      (reset! tree-selection new-selection)))
   ([^JTree tree ^String new-selection]
     ; put new data in the tree
     (.setModel tree (create-project-tree!))
