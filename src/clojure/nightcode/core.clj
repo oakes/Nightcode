@@ -73,6 +73,7 @@
   "Launches the main window."
   [& args]
   (window/set-theme! args)
+  (sandbox/set-home!)
   (sandbox/create-profiles-clj!)
   (sandbox/read-file-permissions!)
   (s/invoke-later
