@@ -19,7 +19,8 @@
             [leiningen.test]
             [leiningen.uberjar]
             [nightcode.sandbox :as sandbox]
-            [nightcode.utils :as utils])
+            [nightcode.utils :as utils]
+            [robert.hooke])
   (:import [com.hypirion.io ClosingPipe Pipe]
            [com.sun.jdi Bootstrap]
            [org.apache.bcel.classfile ClassParser])
@@ -29,6 +30,13 @@
 (defonce class-name (str *ns*))
 
 ; utilities
+
+(defn is-java-project-map?
+  [project]
+  (or (:java-only project)
+      (= (count (:source-paths project)) 0)
+      (clojure.set/subset? (set (:source-paths project))
+                           (set (:java-source-paths project)))))
 
 (defn read-file
   [path]
@@ -56,6 +64,19 @@
             (or (get-in project [:ios :robovm-path])
                 (utils/read-pref :robovm))))
 
+(defn add-hot-swap-args
+  [project]
+  (if (is-java-project-map? project)
+    (->> (conj (:jvm-opts project)
+               (str "-agentlib:jdwp="
+                    "transport=dt_socket,"
+                    "server=y,"
+                    "suspend=n,"
+                    "address="
+                    debug-port))
+         (assoc project :jvm-opts))
+    project))
+
 (defn read-project-clj
   [path]
   (when path
@@ -65,6 +86,7 @@
         (-> (leiningen.core.project/read project-clj-path)
             add-sdk-path
             add-robovm-path
+            add-hot-swap-args
             (try (catch Exception e {})))))))
 
 (defn read-android-project
@@ -129,23 +151,17 @@
 
 (defn is-java-project?
   [path]
-  (when-let [project (read-project-clj path)]
-    (or (:java-only project)
-        (= (count (:source-paths project)) 0)
-        (clojure.set/subset? (set (:source-paths project))
-                             (set (:java-source-paths project))))))
+  (some-> (read-project-clj path) is-java-project-map?))
 
 (defn is-clojurescript-project?
   [path]
-  (when-let [project (read-project-clj path)]
-    (not (nil? (:cljsbuild project)))))
+  (-> (read-project-clj path) :cljsbuild nil? not))
 
 (defn should-run-directly?
   [path]
-  (and (nil? (sandbox/get-dir))
-       (is-java-project? path)
-       (not (is-android-project? path))
-       (not (is-ios-project? path))))
+  (and (not (is-android-project? path))
+       (not (is-ios-project? path))
+       (not (is-clojurescript-project? path))))
 
 ; start/stop thread/processes
 
@@ -208,25 +224,18 @@
 
 (defn start-process-directly!
   [process path func]
-  (let [project-orig (read-project-clj path)
-        jvm-opts (conj (:jvm-opts project-orig)
-                       (str "-agentlib:jdwp="
-                            "transport=dt_socket,"
-                            "server=y,"
-                            "suspend=n,"
-                            "address="
-                            debug-port))
-        project (assoc project-orig
-                       :eval-in :trampoline
-                       :jvm-opts jvm-opts)
-        forms leiningen.core.eval/trampoline-forms
-        profiles leiningen.core.eval/trampoline-profiles]
-    (reset! forms [])
-    (reset! profiles [])
-    (func path project)
-    (doseq [i (range (count @forms))]
-      (->> (leiningen.core.eval/shell-command project (nth @forms i))
-           (start-process! process path)))))
+  (robert.hooke/with-scope
+    (let [project (-> (read-project-clj path)
+                      (assoc :eval-in :trampoline)
+                      leiningen.core.project/init-project)
+          forms leiningen.core.eval/trampoline-forms
+          profiles leiningen.core.eval/trampoline-profiles]
+      (reset! forms [])
+      (reset! profiles [])
+      (func path project)
+      (doseq [i (range (count @forms))]
+        (->> (leiningen.core.eval/shell-command project (nth @forms i))
+             (start-process! process path))))))
 
 (defn stop-process!
   [process]
@@ -320,43 +329,33 @@
   [process in-out path]
   (stop-process! process)
   (->> (do (println (utils/get-string :running_with_repl))
-         (if (should-run-directly? path)
-           (start-process-directly! process path run-repl-project-task)
-           (start-process-indirectly! process path class-name "repl")))
+         (start-process-indirectly! process path class-name "repl"))
        (start-thread! in-out)))
 
 (defn build-project!
   [process in-out path]
   (stop-process! process)
   (->> (do (println (utils/get-string :building))
-         (if (should-run-directly? path)
-           (start-process-directly! process path build-project-task)
-           (start-process-indirectly! process path class-name "build")))
+         (start-process-indirectly! process path class-name "build"))
        (start-thread! in-out)))
 
 (defn test-project!
   [process in-out path]
   (stop-process! process)
   (->> (do (println (utils/get-string :testing))
-         (if (should-run-directly? path)
-           (start-process-directly! process path test-project-task)
-           (start-process-indirectly! process path class-name "test")))
+         (start-process-indirectly! process path class-name "test"))
        (start-thread! in-out)))
 
 (defn clean-project!
   [process in-out path]
   (stop-process! process)
   (->> (do (println (utils/get-string :cleaning))
-         (if (should-run-directly? path)
-           (start-process-directly! process path clean-project-task)
-           (start-process-indirectly! process path class-name "clean")))
+         (start-process-indirectly! process path class-name "clean"))
        (start-thread! in-out)))
 
 (defn cljsbuild-project!
   [process in-out path]
-  (->> (if (should-run-directly? path)
-         (start-process-directly! process path cljsbuild-project-task)
-         (start-process-indirectly! process path class-name "cljsbuild"))
+  (->> (start-process-indirectly! process path class-name "cljsbuild")
        (start-thread! in-out)))
 
 (defn check-versions-in-project!
