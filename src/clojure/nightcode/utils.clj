@@ -52,6 +52,16 @@
 
 ; paths and encodings
 
+(defn get-unsaved-paths-message
+  [unsaved-paths]
+  (when (seq unsaved-paths)
+    (str (get-string :unsaved_confirm)
+         \newline \newline
+         (->> unsaved-paths
+              (map #(.getName (io/file %)))
+              (clojure.string/join \newline))
+         \newline \newline)))
+
 (defn get-exec-file
   "Returns the executable as a java.io.File."
   [class-name]

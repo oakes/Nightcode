@@ -1,6 +1,5 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]
             [nightcode.sandbox :as sandbox]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -155,11 +154,7 @@
 
 (defn show-shut-down-dialog!
   [unsaved-paths]
-  (-> (s/dialog :content (str (when (seq unsaved-paths)
-                                (str (utils/get-string :unsaved_confirm)
-                                     \newline \newline
-                                     (str/join \newline unsaved-paths)
-                                     \newline \newline))
+  (-> (s/dialog :content (str (utils/get-unsaved-paths-message unsaved-paths)
                               (utils/get-string :quit_confirm))
                 :options [(s/button :text (utils/get-string :quit)
                                     :listen [:action
