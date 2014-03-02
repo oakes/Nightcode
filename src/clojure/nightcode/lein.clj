@@ -177,9 +177,8 @@
   [in-out func]
   (->> (fn []
          (try (func)
-           (catch Exception e (when-let [error (.getMessage e)]
-                                (println error))))
-         (println "\n===" (utils/get-string :finished) "==="))
+           (catch Exception e (some-> (.getMessage e) println))
+           (finally (println "\n===" (utils/get-string :finished) "==="))))
        (redirect-io in-out)
        (fn [])
        Thread.
