@@ -319,9 +319,7 @@
   [process in-out path]
   (stop-process! process)
   (->> (do (println (utils/get-string :running))
-         (if (should-run-directly? path)
-           (start-process-directly! process path run-project-task)
-           (start-process-indirectly! process path class-name "run")))
+         (start-process-indirectly! process path class-name "run"))
        (start-thread! in-out)))
 
 (defn run-repl-project!
