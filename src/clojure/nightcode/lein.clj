@@ -19,8 +19,7 @@
             [leiningen.test]
             [leiningen.uberjar]
             [nightcode.sandbox :as sandbox]
-            [nightcode.utils :as utils]
-            [robert.hooke])
+            [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe]
            [com.sun.jdi Bootstrap]
            [org.apache.bcel.classfile ClassParser])
@@ -157,12 +156,6 @@
   [path]
   (-> (read-project-clj path) :cljsbuild nil? not))
 
-(defn should-run-directly?
-  [path]
-  (and (not (is-android-project? path))
-       (not (is-ios-project? path))
-       (not (is-clojurescript-project? path))))
-
 ; start/stop thread/processes
 
 (defn redirect-io
@@ -220,21 +213,6 @@
                       (System/getProperty "java.class.path")
                       (.getCanonicalPath jar-file))
                     args)))
-
-(defn start-process-directly!
-  [process path func]
-  (robert.hooke/with-scope
-    (let [project (-> (read-project-clj path)
-                      (assoc :eval-in :trampoline)
-                      leiningen.core.project/init-project)
-          forms leiningen.core.eval/trampoline-forms
-          profiles leiningen.core.eval/trampoline-profiles]
-      (reset! forms [])
-      (reset! profiles [])
-      (func path project)
-      (doseq [i (range (count @forms))]
-        (->> (leiningen.core.eval/shell-command project (nth @forms i))
-             (start-process! process path))))))
 
 (defn stop-process!
   [process]
