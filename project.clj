@@ -19,7 +19,7 @@
                  [org.clojure/tools.cli "0.3.1"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"]
-                 [play-clj/lein-template "0.2.1"]
+                 [play-clj/lein-template "0.2.2"]
                  [seesaw "1.4.4"]]
   :resource-paths ["resources" "tools"]
   :source-paths ["src/clojure"]
