@@ -158,6 +158,6 @@
       (or "")
       (.startsWith "text")))
 
-(defn uri->path
-  [u]
-  (-> u Paths/get .normalize .toString))
+(defn uri->str
+  [uri]
+  (-> uri Paths/get .normalize .toString))

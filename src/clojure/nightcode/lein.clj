@@ -211,7 +211,7 @@
                     "-cp"
                     (if (.isDirectory (io/file jar-uri))
                       (System/getProperty "java.class.path")
-                      (utils/uri->path jar-uri))
+                      (utils/uri->str jar-uri))
                     args)))
 
 (defn stop-process!
