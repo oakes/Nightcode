@@ -4,7 +4,7 @@
             [clojure.xml :as xml])
   (:import [java.io File]
            [java.net URL]
-           [java.nio.file Files Path]
+           [java.nio.file Files Path Paths]
            [java.util Locale]
            [java.util.jar Manifest]
            [java.util.prefs Preferences]
@@ -62,20 +62,19 @@
               (clojure.string/join \newline))
          \newline \newline)))
 
-(defn get-exec-file
-  "Returns the executable as a java.io.File."
+(defn get-exec-uri
+  "Returns the executable as a java.net.URI."
   [class-name]
   (-> (Class/forName class-name)
       .getProtectionDomain
       .getCodeSource
       .getLocation
-      .toURI
-      io/file))
+      .toURI))
 
 (defn get-project
   "Returns the project.clj file as a list."
   [class-name]
-  (when (.isFile (get-exec-file class-name))
+  (when (.isFile (io/file (get-exec-uri class-name)))
     (->> (io/resource "project.clj")
          slurp
          read-string
@@ -158,3 +157,7 @@
   (-> (Files/probeContentType ^Path (.toPath file))
       (or "")
       (.startsWith "text")))
+
+(defn uri->path
+  [u]
+  (-> u Paths/get .normalize .toString))

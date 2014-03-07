@@ -204,14 +204,14 @@
   [process path & args]
   (let [project (read-project-clj path)
         java-cmd (or (:java-cmd project) (System/getenv "JAVA_CMD") "java")
-        jar-file (utils/get-exec-file class-name)]
+        jar-uri (utils/get-exec-uri class-name)]
     (start-process! process
                     path
                     java-cmd
                     "-cp"
-                    (if (.isDirectory jar-file)
+                    (if (.isDirectory (io/file jar-uri))
                       (System/getProperty "java.class.path")
-                      (.getCanonicalPath jar-file))
+                      (utils/uri->path jar-uri))
                     args)))
 
 (defn stop-process!
