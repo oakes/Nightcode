@@ -291,8 +291,8 @@
                      "lua"        SyntaxConstants/SYNTAX_STYLE_LUA
                      "makefile"   SyntaxConstants/SYNTAX_STYLE_MAKEFILE
                      "markdown"   SyntaxConstants/SYNTAX_STYLE_NONE
-                     "mustache"   SyntaxConstants/SYNTAX_STYLE_NONE
                      "md"         SyntaxConstants/SYNTAX_STYLE_NONE
+                     "mustache"   SyntaxConstants/SYNTAX_STYLE_NONE
                      "pas"        SyntaxConstants/SYNTAX_STYLE_DELPHI
                      "properties" SyntaxConstants/SYNTAX_STYLE_PROPERTIES_FILE
                      "php"        SyntaxConstants/SYNTAX_STYLE_PHP
