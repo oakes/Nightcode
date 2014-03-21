@@ -8,7 +8,7 @@
                  [com.fifesoft/rsyntaxtextarea "2.5.0"]
                  [compliment "0.0.3"]
                  [leiningen "2.3.4"]
-                 [lein-ancient "0.5.4" :exclusions [clj-aws-s3]]
+                 [lein-ancient "0.5.5" :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.2"]
                  [lein-droid "0.2.2"]
                  [lein-fruit "0.1.1"]
