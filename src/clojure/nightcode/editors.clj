@@ -351,7 +351,7 @@
   ([path]
     (let [extension (get-extension path)]
       (doto (create-text-area)
-        (.load (FileLocation/create path) nil)
+        (.load (FileLocation/create path) "UTF-8")
         .discardAllEdits
         (.setSyntaxEditingStyle (get styles extension))
         (.setLineWrap (contains? wrap-exts extension))
