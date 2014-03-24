@@ -16,6 +16,7 @@
   [args]
   (if-let [dir (get-dir)]
     (concat [(first args)
+             (str "-DSandboxDirectory=" dir)
              (str "-Duser.home=" (get-path dir))
              (str "-Djava.io.tmpdir=" (get-path dir ".temp"))]
             (rest args))
