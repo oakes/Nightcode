@@ -215,6 +215,18 @@
                       (utils/uri->str jar-uri))
                     args)))
 
+(defn start-process-directly!
+  [path func project]
+  (let [project (assoc project :eval-in :trampoline)
+        forms leiningen.core.eval/trampoline-forms
+        profiles leiningen.core.eval/trampoline-profiles]
+    (reset! forms [])
+    (reset! profiles [])
+    (func project)
+    (doseq [i (range (count @forms))]
+      (->> (leiningen.core.eval/shell-command project (nth @forms i))
+           (start-process! (atom nil) path)))))
+
 (defn stop-process!
   [process]
   (when @process
@@ -233,7 +245,7 @@
     (is-ios-project? path)
     (leiningen.fruit/fruit project "doall")
     :else
-    (leiningen.run/run project)))
+    (start-process-directly! path leiningen.run/run project)))
 
 (defn run-repl-project-task
   [path project]
@@ -367,8 +379,6 @@
 
 (defn -main
   [cmd & args]
-  (sandbox/set-home!)
-  (sandbox/set-temp-dir!)
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
         project (-> (read-project-clj path)
