@@ -5,8 +5,6 @@
                  [com.badlogicgames.gdx/gdx-backend-lwjgl "0.9.9"]
                  [com.badlogicgames.gdx/gdx-platform "0.9.9"
                   :classifier "natives-desktop"]]
-  :repositories [["sonatype"
-                  "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.5.1"]]}}
   
   :java-source-paths ["src" "src-common"]

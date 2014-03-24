@@ -2,8 +2,6 @@
   :description "FIXME: write description"
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9"]
                  [com.badlogicgames.gdx/gdx-backend-robovm "0.9.9"]]
-  :repositories [["sonatype"
-                  "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :java-source-paths ["src" "../desktop/src-common"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
   :java-only true

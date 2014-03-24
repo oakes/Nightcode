@@ -3,8 +3,6 @@
   
   :dependencies [[com.badlogicgames.gdx/gdx "0.9.9" :use-resources true]
                  [com.badlogicgames.gdx/gdx-backend-android "0.9.9"]]
-  :repositories [["sonatype"
-                  "https://oss.sonatype.org/content/repositories/snapshots/"]]
   :profiles {:dev {:android {:aot :all-with-unused}}
              :release {:android
                        {;; Specify the path to your private
