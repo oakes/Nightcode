@@ -15,30 +15,36 @@
 (defn add-dir
   [args]
   (if-let [dir (get-dir)]
-    (concat [(first args)
-             (str "-DSandboxDirectory=" dir)
-             (str "-Duser.home=" (get-path dir))
-             (str "-Djava.io.tmpdir=" (get-path dir ".temp"))]
-            (rest args))
+    (concat [(first args) (str "-DSandboxDirectory=" dir)] (rest args))
     args))
 
 (defn get-env
   []
-  (when-let [dir (get-dir)]
-    (into-array String [(str "LEIN_HOME=" (get-path dir ".lein"))])))
+  (let [path (get-path ".lein")]
+    (when (get-dir)
+      (into-array String [(str "LEIN_HOME=" path)]))))
+
+(defn set-home!
+  []
+  (some->> (get-dir) get-path (System/setProperty "user.home")))
+
+(defn set-temp-dir!
+  []
+  (let [dir (get-path ".temp")]
+    (when (get-dir)
+      (-> dir io/file .mkdir)
+      (System/setProperty "java.io.tmpdir" dir))))
 
 (defn create-profiles-clj!
   []
-  (when-let [dir (get-dir)]
-    (let [profiles-clj (get-path dir ".lein" "profiles.clj")
-          m2 (get-path dir ".m2")
-          tmp (get-path dir ".temp")]
-      (when (not (.exists (io/file profiles-clj)))
-        (doto (io/file profiles-clj)
-          (-> .getParentFile .mkdir)
-          (spit (pr-str {:user
-                         {:local-repo m2
-                          :jvm-opts [(str "-Djava.io.tmpdir=" tmp)]}})))))))
+  (let [profiles-clj (get-path ".lein" "profiles.clj")
+        m2 (get-path ".m2")
+        tmp (get-path ".temp")]
+    (when (and (get-dir) (not (.exists (io/file profiles-clj))))
+      (doto (io/file profiles-clj)
+        (-> .getParentFile .mkdir)
+        (spit (pr-str {:user {:local-repo m2
+                              :jvm-opts [(str "-Djava.io.tmpdir=" tmp)]}}))))))
 
 ; objc
 

@@ -367,6 +367,8 @@
 
 (defn -main
   [cmd & args]
+  (sandbox/set-home!)
+  (sandbox/set-temp-dir!)
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
         project (-> (read-project-clj path)
