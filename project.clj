@@ -14,7 +14,7 @@
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojars.oakes/autocomplete "2.5.2"]
                  [org.clojars.oakes/rsyntaxtextarea "2.5.2"]
-                 [org.clojure/clojure "1.5.1"]
+                 [org.clojure/clojure "1.6.0"]
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.flatland/ordered "1.5.2"]
