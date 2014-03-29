@@ -4,7 +4,8 @@
             [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
-            [seesaw.core :as s])
+            [seesaw.core :as s]
+            [seesaw.icon :as i])
   (:import [java.awt Window]
            [java.awt.event WindowAdapter]
            [java.lang.reflect InvocationHandler Proxy]
@@ -35,6 +36,15 @@
            (show-shut-down-dialog!))
     (System/exit 0)
     true))
+
+(defn set-icon!
+  "Sets the dock icon on OS X."
+  [path]
+  (some-> (try (Class/forName "com.apple.eawt.Application")
+            (catch Exception _))
+          (.getMethod "getApplication" (into-array Class []))
+          (.invoke nil (object-array []))
+          (.setDockIconImage (.getImage (i/icon path)))))
 
 (defn enable-full-screen!
   "Enables full screen mode on OS X."
