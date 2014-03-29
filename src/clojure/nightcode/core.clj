@@ -10,7 +10,8 @@
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [nightcode.window :as window]
-            [seesaw.core :as s])
+            [seesaw.core :as s]
+            [seesaw.icon :as i])
   (:gen-class))
 
 (defn create-window-content
@@ -80,9 +81,8 @@
 (def apple-set-icon-thunk
   `(do
      (import 'com.apple.eawt.Application)
-     (import 'javax.swing.ImageIcon)
      (-> (Application/getApplication)
-       (.setDockIconImage (.getImage (ImageIcon. "logo_splash.png"))))))
+       (.setDockIconImage (.getImage (i/icon "logo_splash.png"))))))
 
 (defn -main
   "Launches the main window."
