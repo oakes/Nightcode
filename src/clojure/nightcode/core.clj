@@ -10,7 +10,8 @@
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [nightcode.window :as window]
-            [seesaw.core :as s])
+            [seesaw.core :as s]
+            [seesaw.icon :as i])
   (:gen-class))
 
 (defn create-window-content
@@ -44,6 +45,7 @@
                  :content (create-window-content)
                  :width 1242
                  :height 768
+                 :icon "logo_splash.png"
                  :on-close :nothing)
     ; listen for keys while modifier is down
     (shortcuts/listen-for-shortcuts!
@@ -69,9 +71,24 @@
     window/enable-full-screen!
     window/add-listener!))
 
+(defn os-is-mac?
+  []
+  (-> (System/getProperty "os.name")
+    .toLowerCase
+    (.indexOf "mac")
+    (>= 0)))
+
+(def apple-set-icon-thunk
+  `(do
+     (import 'com.apple.eawt.Application)
+     (-> (Application/getApplication)
+       (.setDockIconImage (.getImage (i/icon "logo_splash.png"))))))
+
 (defn -main
   "Launches the main window."
   [& args]
+  (when (os-is-mac?) ; set application icon for Mac
+    (eval apple-set-icon-thunk))
   (window/set-theme! args)
   (sandbox/set-home!)
   (sandbox/create-profiles-clj!)
