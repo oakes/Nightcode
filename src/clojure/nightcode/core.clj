@@ -70,9 +70,25 @@
     window/enable-full-screen!
     window/add-listener!))
 
+(defn os-is-mac?
+  []
+  (-> (System/getProperty "os.name")
+    .toLowerCase
+    (.indexOf "mac")
+    (>= 0)))
+
+(def apple-set-icon-thunk
+  `(do
+     (import 'com.apple.eawt.Application)
+     (import 'javax.swing.ImageIcon)
+     (-> (Application/getApplication)
+       (.setDockIconImage (.getImage (ImageIcon. "logo_splash.png"))))))
+
 (defn -main
   "Launches the main window."
   [& args]
+  (when (os-is-mac?) ; set application icon for Mac
+    (eval apple-set-icon-thunk))
   (window/set-theme! args)
   (sandbox/set-home!)
   (sandbox/create-profiles-clj!)
