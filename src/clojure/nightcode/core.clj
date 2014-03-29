@@ -44,6 +44,7 @@
                  :content (create-window-content)
                  :width 1242
                  :height 768
+                 :icon "logo_splash.png"
                  :on-close :nothing)
     ; listen for keys while modifier is down
     (shortcuts/listen-for-shortcuts!
