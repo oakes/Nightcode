@@ -10,7 +10,7 @@
            [net.java.balloontip.positioners CenteredPositioner]
            [net.java.balloontip.styles ToolTipBalloonStyle]))
 
-(def is-down? (atom false))
+(def down? (atom false))
 (def ^:const mappings {:new-project "P"
                        :new-file "N"
                        :rename-file "M"
@@ -62,12 +62,12 @@
   (doseq [[id func] pairs]
     (create-mapping! panel id func)))
 
-(defn is-visible?
+(defn visible?
   "Determines whether the given widget is visible."
   [^Component widget]
   (if widget
     (and (.isVisible widget)
-         (is-visible? (.getParent widget)))
+         (visible? (.getParent widget)))
     true))
 
 (defn toggle-hint!
@@ -75,7 +75,7 @@
   [^BalloonTip hint show?]
   (when hint
     (.refreshLocation hint)
-    (if (and show? (is-visible? (.getAttachedComponent hint)))
+    (if (and show? (visible? (.getAttachedComponent hint)))
       (s/show! hint)
       (s/hide! hint))))
 
@@ -93,14 +93,14 @@
   "Creates a new hint on the given view with the given text."
   ([view contents]
     (create-hint! false view (wrap-hint-text contents)))
-  ([is-vertically-centered? view contents]
+  ([vertically-centered? view contents]
     (when contents
       (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
             ^CenteredPositioner positioner (CenteredPositioner. 0)
             ^BalloonTip tip (BalloonTip. view contents style false)
             view-height (.getHeight view)
             tip-height (.getHeight tip)
-            y (if (and (> view-height 0) is-vertically-centered?)
+            y (if (and (> view-height 0) vertically-centered?)
                 (-> (/ view-height 2)
                     (+ (/ tip-height 2))
                     (/ view-height))
@@ -129,13 +129,13 @@
   [target e]
   (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
         current-modifier (.getModifiers e)]
-    (reset! is-down? (= (bit-and modifier current-modifier) modifier))
+    (reset! down? (= (bit-and modifier current-modifier) modifier))
     (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
               (= (.getKeyCode e) KeyEvent/VK_META)
-              @is-down?)
-      (toggle-hints! target @is-down?))))
+              @down?)
+      (toggle-hints! target @down?))))
 
-(defn is-focused-window?
+(defn focused-window?
   "Returns true if `window` is currently in focus."
   [window]
   (-> (KeyboardFocusManager/getCurrentKeyboardFocusManager)
@@ -145,7 +145,7 @@
 (defn run-shortcut!
   "Runs shortcut command if applicable, returning a boolean indicating success."
   [target func e]
-  (if (and @is-down?
+  (if (and @down?
            (not (.isShiftDown e))
            (= (.getID e) KeyEvent/KEY_PRESSED))
     (func (.getKeyCode e))
@@ -159,6 +159,6 @@
     (proxy [KeyEventDispatcher] []
       (dispatchKeyEvent [^KeyEvent e]
         (update-hints! target e)
-        (if (is-focused-window? target)
+        (if (focused-window? target)
           (run-shortcut! target func e)
           false)))))

@@ -49,7 +49,7 @@
   []
   (get-in @editors [@ui/tree-selection :view]))
 
-(defn is-unsaved?
+(defn unsaved?
   [path]
   (when-let [text-area (get-text-area-from-path path)]
     (.isDirty text-area)))
@@ -92,7 +92,7 @@
            (format "<a href='%s' style='text-decoration: %s;
                                         font-style: %s;'>%s</a>"
                    e-path
-                   (if (utils/is-parent-path? path e-path) "underline" "none")
+                   (if (utils/parent-path? path e-path) "underline" "none")
                    (if (italicize-fn) "italic" "normal")
                    (-> e-path io/file .getName)))
          (cons "<center>PgUp PgDn</center>")
@@ -107,7 +107,7 @@
                 (when (= (.getEventType e) HyperlinkEvent$EventType/ACTIVATED)
                   (binding [*reorder-tabs?* false]
                     (ui/update-project-tree! (.getDescription e))))))
-    (shortcuts/toggle-hint! @tabs @shortcuts/is-down?)))
+    (shortcuts/toggle-hint! @tabs @shortcuts/down?)))
 
 ; button bar actions
 
@@ -221,21 +221,21 @@
   [e]
   (when-let [text-area (get-selected-text-area)]
     (let [key-code (.getKeyCode e)
-          is-enter-key? (= key-code 10)
+          enter-key? (= key-code 10)
           find-text (s/text e)
-          is-printable-char? (-> text-area .getFont (.canDisplay key-code))
-          is-valid-search? (and (> (count find-text) 0)
-                                is-printable-char?
-                                (not @shortcuts/is-down?)
+          printable-char? (-> text-area .getFont (.canDisplay key-code))
+          valid-search? (and (> (count find-text) 0)
+                                printable-char?
+                                (not @shortcuts/down?)
                                 (not= (.getKeyCode e) KeyEvent/VK_SHIFT))
           context (SearchContext. find-text)]
-      (when is-valid-search?
+      (when valid-search?
         (.setRegularExpression context true)
-        (when-not is-enter-key?
+        (when-not enter-key?
           (.setCaretPosition text-area 0))
         (when (.isShiftDown e)
           (.setSearchForward context false)))
-      (if (and is-valid-search?
+      (if (and valid-search?
                (not (try (SearchEngine/find text-area context)
                       (catch Exception e false))))
         (s/config! e :background (color/color :red))
@@ -245,19 +245,19 @@
   [e]
   (when-let [text-area (get-selected-text-area)]
     (let [key-code (.getKeyCode e)
-          is-enter-key? (= key-code 10)
+          enter-key? (= key-code 10)
           editor (get-selected-editor)
           find-text (s/text (s/select editor [:#find]))
           replace-text (s/text e)
           context (SearchContext. find-text)]
       (.setReplaceWith context replace-text)
-      (if (and is-enter-key?
+      (if (and enter-key?
                (or (= (count find-text) 0)
                    (not (try (SearchEngine/replaceAll text-area context)
                           (catch Exception e false)))))
         (s/config! e :background (color/color :red))
         (s/config! e :background nil))
-      (when is-enter-key?
+      (when enter-key?
         (update-buttons! editor text-area)))))
 
 ; create and show/hide editors for each file
@@ -339,8 +339,8 @@
 (defn create-text-area
   ([]
     (doto (proxy [TextEditorPane] []
-            (setMarginLineEnabled [is-enabled?]
-              (proxy-super setMarginLineEnabled is-enabled?))
+            (setMarginLineEnabled [enabled?]
+              (proxy-super setMarginLineEnabled enabled?))
             (setMarginLinePosition [size]
               (proxy-super setMarginLinePosition size))
             (processKeyBinding [ks e condition pressed]
@@ -430,7 +430,7 @@
           (keyReleased [this e] nil)
           (keyTyped [this e] nil)
           (keyPressed [this e]
-            (when (and @shortcuts/is-down?
+            (when (and @shortcuts/down?
                        (contains? console-ignore-shortcut-keys (.getKeyCode e)))
               (.consume e))))))
     (some->> (create-completer text-area extension)
@@ -452,7 +452,7 @@
   [path]
   (let [editor-pane (ui/get-editor-pane)]
     (doseq [[editor-path {:keys [view close-fn! should-remove-fn]}] @editors]
-      (when (or (utils/is-parent-path? path editor-path)
+      (when (or (utils/parent-path? path editor-path)
                 (should-remove-fn))
         (swap! editors dissoc editor-path)
         (close-fn!)
@@ -541,7 +541,7 @@
   (let [pathfile (io/file path)]
     (and (.isFile pathfile)
          (or (contains? styles (get-extension path))
-             (utils/is-text-file? pathfile)))))
+             (utils/text-file? pathfile)))))
 
 (defmulti create-editor (fn [type _] type) :default nil)
 
@@ -552,7 +552,7 @@
     (let [; create the text editor and the pane that will hold it
           text-area (create-text-area path)
           extension (get-extension path)
-          is-clojure? (contains? clojure-exts extension)
+          clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
           editor-pane (s/border-panel :center (RTextScrollPane. text-area))
           ; create the actions and widgets
@@ -561,7 +561,7 @@
           ; remove buttons if they aren't applicable
           *widgets* (remove (fn [k]
                               (-> (concat []
-                                          (if-not is-clojure?
+                                          (if-not clojure?
                                             [:paredit :paredit-help])
                                           (if-not completer
                                             [:doc]))
@@ -601,7 +601,7 @@
                      (save-file!))
        :italicize-fn #(.isDirty text-area)
        :should-remove-fn #(not (.exists (io/file path)))
-       :toggle-paredit-fn! (init-paredit! text-area is-clojure? is-clojure?)})))
+       :toggle-paredit-fn! (init-paredit! text-area clojure? clojure?)})))
 
 (def ^:dynamic *types* [:text :logcat])
 

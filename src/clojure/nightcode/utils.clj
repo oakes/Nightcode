@@ -135,14 +135,14 @@
       (clojure.string/replace "-" "_")
       (clojure.string/replace #"[^a-z0-9_.]" "")))
 
-(defn is-project-path?
+(defn project-path?
   "Determines if the given path contains a project.clj file."
   [^String path]
   (and path
        (.isDirectory (io/file path))
        (.exists (io/file path "project.clj"))))
 
-(defn is-parent-path?
+(defn parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
   [^String parent-path ^String child-path]
   (or (= parent-path child-path)
@@ -151,7 +151,7 @@
            (.isDirectory (io/file parent-path))
            (.startsWith child-path (str parent-path File/separator)))))
 
-(defn is-text-file?
+(defn text-file?
   "Returns true if the file is of type text, false otherwise."
   [^File file]
   (-> (Files/probeContentType ^Path (.toPath file))

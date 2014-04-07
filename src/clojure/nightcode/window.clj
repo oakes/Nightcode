@@ -24,7 +24,7 @@
   "Displays a dialog confirming whether the program should shut down."
   []
   (let [unsaved-paths (->> (keys @editors/editors)
-                           (filter editors/is-unsaved?)
+                           (filter editors/unsaved?)
                            doall)]
     (dialogs/show-shut-down-dialog! unsaved-paths)))
 
@@ -88,7 +88,7 @@
     (proxy [WindowAdapter] []
       (windowActivated [e]
         ; force hints to hide
-        (reset! shortcuts/is-down? false)
+        (reset! shortcuts/down? false)
         (shortcuts/toggle-hint! @editors/tabs false)
         (shortcuts/toggle-hints! @ui/root false)
         ; update the tree to reflect any changes in the filesystem

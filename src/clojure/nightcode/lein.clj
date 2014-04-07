@@ -30,7 +30,7 @@
 
 ; utilities
 
-(defn is-java-project-map?
+(defn java-project-map?
   [project]
   (or (:java-only project)
       (= (count (:source-paths project)) 0)
@@ -65,7 +65,7 @@
 
 (defn add-hot-swap-args
   [project]
-  (if (is-java-project-map? project)
+  (if (java-project-map? project)
     (->> (conj (:jvm-opts project)
                (str "-agentlib:jdwp="
                     "transport=dt_socket,"
@@ -140,19 +140,19 @@
 
 ; check project types
 
-(defn is-android-project?
+(defn android-project?
   [path]
   (.exists (io/file path "AndroidManifest.xml")))
 
-(defn is-ios-project?
+(defn ios-project?
   [path]
   (.exists (io/file path "Info.plist.xml")))
 
-(defn is-java-project?
+(defn java-project?
   [path]
-  (some-> (read-project-clj path) is-java-project-map?))
+  (some-> (read-project-clj path) java-project-map?))
 
-(defn is-clojurescript-project?
+(defn clojurescript-project?
   [path]
   (-> (read-project-clj path) :cljsbuild nil? not))
 
@@ -225,11 +225,11 @@
 (defn run-project-task
   [path project]
   (cond
-    (is-android-project? path)
+    (android-project? path)
     (when-let [project (read-android-project project)]
       (doseq [cmd ["build" "apk" "install" "run"]]
         (leiningen.droid/execute-subtask project cmd [])))
-    (is-ios-project? path)
+    (ios-project? path)
     (leiningen.fruit/fruit project "doall")
     :else
     (leiningen.run/run project)))
@@ -237,7 +237,7 @@
 (defn run-repl-project-task
   [path project]
   (cond
-    (is-android-project? path)
+    (android-project? path)
     (when-let [project (read-android-project project)]
       (doseq [cmd ["deploy" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
@@ -248,12 +248,12 @@
 (defn build-project-task
   [path project]
   (cond
-    (is-android-project? path)
+    (android-project? path)
     (some-> project
             leiningen.droid/transform-into-release
             read-android-project
             leiningen.droid/execute-release-routine)
-    (is-ios-project? path)
+    (ios-project? path)
     (leiningen.fruit/fruit project "release")
     :else
     (leiningen.uberjar/uberjar project)))

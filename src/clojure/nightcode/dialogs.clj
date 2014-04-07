@@ -50,12 +50,12 @@
                            :remember-directory? (nil? dir)))))
 
 (defn show-remove-dialog!
-  [is-project?]
-  (-> (s/dialog :content (utils/get-string (if is-project?
+  [project?]
+  (-> (s/dialog :content (utils/get-string (if project?
                                              :remove_project_warning
                                              :remove_file_warning))
                 :options
-                [(s/button :text (utils/get-string (if is-project?
+                [(s/button :text (utils/get-string (if project?
                                                      :remove_project
                                                      :remove_file))
                            :listen [:action #(s/return-from-dialog % true)])

@@ -97,7 +97,7 @@
   [^String path]
   (when path
     (when-let [file (io/file path)]
-      (if (or (utils/is-project-path? (.getCanonicalPath file))
+      (if (or (utils/project-path? (.getCanonicalPath file))
               (contains? @tree-projects (.getCanonicalPath file)))
         (.getCanonicalPath file)
         (when-let [parent-file (.getParentFile file)]
@@ -131,9 +131,9 @@
   (let [path (.getCanonicalPath file)
         file-name (.getName file)]
     {:html (cond
-             (utils/is-project-path? path) (str "<html><b><font color='gray'>"
-                                                file-name
-                                                "</font></b></html>"))
+             (utils/project-path? path) (str "<html><b><font color='gray'>"
+                                             file-name
+                                             "</font></b></html>"))
      :name file-name
      :file file}))
 
@@ -206,7 +206,7 @@
         (let [tree-path (.getPathForRow tree i)
               str-path (utils/tree-path-to-str tree-path)]
           (when (or (contains? expansion-set str-path)
-                    (utils/is-parent-path? str-path new-selection))
+                    (utils/parent-path? str-path new-selection))
             (.expandPath tree tree-path)
             (swap! tree-expansions conj str-path))
           (when (= selection str-path)

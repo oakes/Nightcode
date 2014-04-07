@@ -62,10 +62,10 @@
 
 (defn remove-from-project-tree!
   [path]
-  (let [is-project? (contains? @ui/tree-projects path)]
-    (when (dialogs/show-remove-dialog! is-project?)
+  (let [project? (contains? @ui/tree-projects path)]
+    (when (dialogs/show-remove-dialog! project?)
       (editors/remove-editors! path)
-      (if is-project?
+      (if project?
         (do
           (->> (utils/read-pref :project-set)
                (remove #(= % path))
@@ -105,7 +105,7 @@
   [e]
   (let [default-file-name (if (-> @ui/tree-selection
                                   ui/get-project-path
-                                  lein/is-java-project?)
+                                  lein/java-project?)
                             "Example.java" "example.clj")]
     (when-let [leaf-path (enter-file-path! default-file-name)]
       (let [new-file (io/file (ui/get-project-root-path) leaf-path)]
@@ -144,7 +144,7 @@
             :target-sdk "15"}
            (lein/create-file-from-template! dir
                                             "project.clj"
-                                            (if (lein/is-android-project? dir)
+                                            (if (lein/android-project? dir)
                                               "android-java"
                                               "console-java"))))
     ; show project root in the tree

@@ -29,7 +29,7 @@
 (def ^:dynamic *widgets* [:toggle-logcat :close])
 
 (defn create-actions
-  [path console panel process is-running?]
+  [path console panel process running?]
   (let [start! (fn []
                  (run-logcat! process (ui/get-io! console) path)
                  (ui/config! panel
@@ -45,7 +45,7 @@
     {:stop-logcat stop!
      :start-logcat start!
      :toggle-logcat (fn [& _]
-                      (reset! is-running? (if @is-running? (stop!) (start!)))
+                      (reset! running? (if @running? (stop!) (start!)))
                       (editors/update-tabs! path))
      :close editors/close-selected-editor!}))
 
@@ -66,11 +66,11 @@
           logcat-pane (s/border-panel :center console)
           ; create atoms to hold important values
           process (atom nil)
-          is-running? (atom false)
+          running? (atom false)
           ; get the path of the parent directory
           path (-> path io/file .getParentFile .getCanonicalPath)
           ; create the actions and widgets
-          actions (create-actions path console logcat-pane process is-running?)
+          actions (create-actions path console logcat-pane process running?)
           widgets (create-widgets actions)
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
@@ -83,11 +83,11 @@
       ; return a map describing the logcat view
       {:view logcat-pane
        :close-fn! (:stop-logcat actions)
-       :should-remove-fn #(not (lein/is-android-project? path))
-       :italicize-fn (fn [] @is-running?)})))
+       :should-remove-fn #(not (lein/android-project? path))
+       :italicize-fn (fn [] @running?)})))
 
 (defmethod ui/adjust-nodes :logcat [_ parent children]
-  (if (some-> (:file parent) .getCanonicalPath lein/is-android-project?)
+  (if (some-> (:file parent) .getCanonicalPath lein/android-project?)
     (cons {:html "<html><b><font color='green'>LogCat</font></b></html>"
            :name "LogCat"
            :file (io/file (:file parent) logcat-name)}

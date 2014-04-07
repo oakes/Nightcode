@@ -58,23 +58,23 @@
 
 (defn toggle-visible!
   [{:keys [view]} path]
-  (let [is-android-project? (lein/is-android-project? path)
-        is-ios-project? (lein/is-ios-project? path)
-        is-java-project? (lein/is-java-project? path)
-        is-clojurescript-project? (lein/is-clojurescript-project? path)
-        is-project-clj? (-> @ui/tree-selection
+  (let [android-project? (lein/android-project? path)
+        ios-project? (lein/ios-project? path)
+        java-project? (lein/java-project? path)
+        clojurescript-project? (lein/clojurescript-project? path)
+        project-clj? (-> @ui/tree-selection
                             io/file
                             .getName
                             (= "project.clj"))
-        buttons {:#run-repl (and (not is-ios-project?)
-                                 (not is-java-project?))
-                 :#reload (and (not is-ios-project?)
-                               (not (and is-java-project? is-android-project?)))
-                 :#test (not is-java-project?)
-                 :#sdk is-android-project?
-                 :#robovm is-ios-project?
-                 :#auto is-clojurescript-project?
-                 :#check-versions is-project-clj?}]
+        buttons {:#run-repl (and (not ios-project?)
+                                 (not java-project?))
+                 :#reload (and (not ios-project?)
+                               (not (and java-project? android-project?)))
+                 :#test (not java-project?)
+                 :#sdk android-project?
+                 :#robovm ios-project?
+                 :#auto clojurescript-project?
+                 :#check-versions project-clj?}]
     (doseq [[id should-show?] buttons]
       (ui/config! view id :visible? should-show?))))
 
@@ -85,21 +85,21 @@
         robovm (get-in project-map [:ios :robovm-path])
         buttons {:#sdk (and sdk (.exists (io/file sdk)))
                  :#robovm (and robovm (.exists (io/file robovm)))}]
-    (doseq [[id is-set?] buttons]
-      (ui/config! view id :background (when-not is-set? (color/color :red))))))
+    (doseq [[id set?] buttons]
+      (ui/config! view id :background (when-not set? (color/color :red))))))
 
 (defn toggle-enable!
   [{:keys [view process last-reload]} path]
-  (let [is-java-project? (lein/is-java-project? path)
-        is-running? (not (nil? @process))
-        buttons {:#run (not is-running?)
-                 :#run-repl (not is-running?)
+  (let [java-project? (lein/java-project? path)
+        running? (not (nil? @process))
+        buttons {:#run (not running?)
+                 :#run-repl (not running?)
                  :#reload (not (nil? @last-reload))
-                 :#build (not is-running?)
-                 :#test (not is-running?)
-                 :#clean (not is-running?)
-                 :#stop is-running?
-                 :#check-versions (not is-running?)}]
+                 :#build (not running?)
+                 :#test (not running?)
+                 :#clean (not running?)
+                 :#stop running?
+                 :#check-versions (not running?)}]
     (doseq [[id should-enable?] buttons]
       (ui/config! view id :enabled? should-enable?))))
 
@@ -113,14 +113,14 @@
   [path console build-pane process auto-process last-reload]
   {:run (fn [& _]
           (lein/run-project! process (ui/get-io! console) path)
-          (when (lein/is-java-project? path)
+          (when (lein/java-project? path)
             (reset! last-reload (System/currentTimeMillis))))
    :run-repl (fn [& _]
                (lein/run-repl-project! process (ui/get-io! console) path)
-               (when (not (lein/is-java-project? path))
+               (when (not (lein/java-project? path))
                  (reset! last-reload (System/currentTimeMillis))))
    :reload (fn [& _]
-             (if (lein/is-java-project? path)
+             (if (lein/java-project? path)
                (lein/run-hot-swap! (ui/get-io! console) path)
                (eval-in-repl! console path @last-reload))
              (reset! last-reload (System/currentTimeMillis)))
@@ -223,7 +223,7 @@
     ; return a map describing the builder
     {:view build-pane
      :close-fn! (:stop actions)
-     :should-remove-fn #(not (utils/is-project-path? path))
+     :should-remove-fn #(not (utils/project-path? path))
      :process process
      :last-reload last-reload
      :toggle-paredit-fn! (editors/init-paredit!
@@ -234,7 +234,7 @@
   (when-let [pane (ui/get-builder-pane)]
     ; create new builder if necessary
     (when (and path
-               (utils/is-project-path? path)
+               (utils/project-path? path)
                (not (contains? @builders path)))
       (when-let [builder (create-builder path)]
         (swap! builders assoc path builder)
@@ -252,7 +252,7 @@
   [path]
   (let [pane (s/select @ui/root [:#builder-pane])]
     (doseq [[builder-path {:keys [view close-fn! should-remove-fn]}] @builders]
-      (when (or (utils/is-parent-path? path builder-path)
+      (when (or (utils/parent-path? path builder-path)
                 (should-remove-fn))
         (swap! builders dissoc builder-path)
         (close-fn!)
