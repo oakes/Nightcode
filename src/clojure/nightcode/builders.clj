@@ -63,9 +63,9 @@
         java-project? (lein/java-project? path)
         clojurescript-project? (lein/clojurescript-project? path)
         project-clj? (-> @ui/tree-selection
-                            io/file
-                            .getName
-                            (= "project.clj"))
+                         io/file
+                         .getName
+                         (= "project.clj"))
         buttons {:#run-repl (and (not ios-project?)
                                  (not java-project?))
                  :#reload (and (not ios-project?)
