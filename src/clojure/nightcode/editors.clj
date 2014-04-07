@@ -192,8 +192,7 @@
   [& _]
   (let [commands (->> pw/advanced-keymap
                       (apply concat)
-                      (cons #(compare %1 %2))
-                      (apply sorted-map-by))
+                      (apply sorted-map-by #(compare %1 %2)))
         modifiers {"M" (utils/get-string :alt)
                    "C" (utils/get-string :ctrl)}]
     (->> (doseq [[k v] commands]
