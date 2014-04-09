@@ -614,6 +614,7 @@
                  (swap! editors dissoc path)
                  (swap! editors assoc path editor-map))
                path)
+             (when path :file-browser-card)
              :default-card)
          (s/show-card! editor-pane))
     ; update tabs
@@ -628,7 +629,8 @@
   "Returns the pane with the editors."
   []
   (s/card-panel :id :editor-pane
-                :items [[(file-browser/create-card) :default-card]]))
+                :items [["" :default-card]
+                        [(file-browser/create-card) :file-browser-card]]))
 
 ; watchers
 
