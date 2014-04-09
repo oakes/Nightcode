@@ -31,9 +31,7 @@
   <string name="remove_project">Remove Project</string>
   <string name="remove_file">Remove File</string>
 
-  <string name="enter_path">Enter a path relative to the project.</string>
   <string name="file_exists">File already exists.</string>
-
   <string name="project_clj_required">You need a project.clj file to build this project.</string>
   <string name="create_project_clj">Create project.clj</string>
   <string name="continue">Continue</string>

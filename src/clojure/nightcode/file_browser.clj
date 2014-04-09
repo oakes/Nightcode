@@ -8,30 +8,25 @@
             [seesaw.icon :as icon])
   (:import [javax.swing SwingConstants]))
 
-(defn enter-file-path!
-  [default-file-name]
-  (let [selected-path @ui/tree-selection
-        project-path (ui/get-project-root-path)
-        default-path (str (utils/get-relative-dir project-path selected-path)
-                          (or default-file-name
-                              (.getName (io/file selected-path))))]
-    (dialogs/show-file-path-dialog! default-path)))
+(defn enter-filename!
+  [default-filename]
+  (some->> (dialogs/show-file-path-dialog! default-filename)
+           (io/file @ui/tree-selection)))
 
 (defn new-file!
   [e]
-  (let [default-file-name (if (-> @ui/tree-selection
-                                  ui/get-project-path
-                                  lein/java-project?)
-                            "Example.java" "example.clj")]
-    (when-let [leaf-path (enter-file-path! default-file-name)]
-      (let [new-file (io/file (ui/get-project-root-path) leaf-path)]
-        (if (.exists new-file)
-          (s/alert (utils/get-string :file_exists))
-          (do
-            (io!
-              (.mkdirs (.getParentFile new-file))
-              (.createNewFile new-file))
-            (ui/update-project-tree! (.getCanonicalPath new-file))))))))
+  (let [default-filename (if (-> @ui/tree-selection
+                               ui/get-project-path
+                               lein/java-project?)
+                           "Example.java" "example.clj")]
+    (when-let [new-file (enter-filename! default-filename)]
+      (if (.exists new-file)
+        (s/alert (utils/get-string :file_exists))
+        (do
+          (io!
+            (.mkdirs (.getParentFile new-file))
+            (.createNewFile new-file))
+          (ui/update-project-tree! (.getCanonicalPath new-file)))))))
 
 (defn create-widgets
   []

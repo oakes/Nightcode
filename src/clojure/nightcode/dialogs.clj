@@ -68,11 +68,7 @@
 (defn show-file-path-dialog!
   [default-path]
   (let [text-field (s/text :id :new-file-path :text default-path)]
-    (-> (s/dialog :content (if default-path
-                             (s/vertical-panel
-                               :items [(utils/get-string :enter_path)
-                                       text-field])
-                             text-field)
+    (-> (s/dialog :content text-field
                   :options
                   [(s/button :text (utils/get-string :ok)
                              :listen [:action #(s/return-from-dialog

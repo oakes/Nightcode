@@ -3,7 +3,6 @@
             [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
-            [nightcode.file-browser :as file-browser]
             [nightcode.lein :as lein]
             [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
@@ -77,6 +76,15 @@
         (utils/delete-file-recursively! @ui/tree-projects path))
       true)))
 
+(defn enter-relative-file-path!
+  [default-file-name]
+  (let [selected-path @ui/tree-selection
+        project-path (ui/get-project-root-path)
+        default-path (str (utils/get-relative-dir project-path selected-path)
+                          (or default-file-name
+                              (.getName (io/file selected-path))))]
+    (dialogs/show-file-path-dialog! default-path)))
+
 ; actions for project tree buttons
 
 (defn new-project!
@@ -95,7 +103,7 @@
 
 (defn rename-file!
   [e]
-  (when-let [leaf-path (file-browser/enter-file-path! nil)]
+  (when-let [leaf-path (enter-relative-file-path! nil)]
     (let [project-path (ui/get-project-root-path)
           new-file (io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
