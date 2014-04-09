@@ -52,6 +52,13 @@
 
 ; paths and encodings
 
+(defn get-extension
+  [path]
+  (->> (.lastIndexOf path ".")
+       (+ 1)
+       (subs path)
+       clojure.string/lower-case))
+
 (defn get-unsaved-paths-message
   [unsaved-paths]
   (when (seq unsaved-paths)

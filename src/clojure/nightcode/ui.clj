@@ -15,7 +15,7 @@
 
 (defn wrap-panel
   "Returns a panel based on FlowLayout that allows its contents to wrap."
-  [& {:keys [items align hgap vgap]}]
+  [& {:keys [items align hgap vgap id]}]
   (let [align (case align
                 :left WrapLayout/LEFT
                 :center WrapLayout/CENTER
@@ -26,6 +26,7 @@
         hgap (or hgap 0)
         vgap (or vgap 0)
         panel (s/abstract-panel (WrapLayout. align hgap vgap) {})]
+    (s/config! panel :id id)
     (doseq [item items]
       (s/add! panel item))
     panel))

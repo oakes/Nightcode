@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [compliment.core :as compliment]
             [flatland.ordered.map :as flatland]
+            [nightcode.file-browser :as file-browser]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -318,13 +319,6 @@
 (def ^:const console-ignore-shortcut-keys #{KeyEvent/VK_Z
                                             KeyEvent/VK_Y})
 
-(defn get-extension
-  [path]
-  (->> (.lastIndexOf path ".")
-       (+ 1)
-       (subs path)
-       clojure.string/lower-case))
-
 (defn apply-settings!
   [text-area]
   ; set theme
@@ -348,7 +342,7 @@
       (.setAntiAliasingEnabled true)
       apply-settings!))
   ([path]
-    (let [extension (get-extension path)]
+    (let [extension (utils/get-extension path)]
       (doto (create-text-area)
         (.load (FileLocation/create path) "UTF-8")
         .discardAllEdits
@@ -540,7 +534,7 @@
   [path]
   (let [pathfile (io/file path)]
     (and (.isFile pathfile)
-         (or (contains? styles (get-extension path))
+         (or (contains? styles (utils/get-extension path))
              (utils/text-file? pathfile)))))
 
 (defmulti create-editor (fn [type _] type) :default nil)
@@ -551,7 +545,7 @@
   (when (valid-file? path)
     (let [; create the text editor and the pane that will hold it
           text-area (create-text-area path)
-          extension (get-extension path)
+          extension (utils/get-extension path)
           clojure? (contains? clojure-exts extension)
           completer (create-completer text-area extension)
           editor-pane (s/border-panel :center (RTextScrollPane. text-area))
@@ -633,7 +627,8 @@
 (defn create-pane
   "Returns the pane with the editors."
   []
-  (s/card-panel :id :editor-pane :items [["" :default-card]]))
+  (s/card-panel :id :editor-pane
+                :items [[(file-browser/create-card) :default-card]]))
 
 ; watchers
 

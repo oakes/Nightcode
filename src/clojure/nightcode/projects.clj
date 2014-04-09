@@ -3,6 +3,7 @@
             [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
+            [nightcode.file-browser :as file-browser]
             [nightcode.lein :as lein]
             [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
@@ -76,15 +77,6 @@
         (utils/delete-file-recursively! @ui/tree-projects path))
       true)))
 
-(defn enter-file-path!
-  [default-file-name]
-  (let [selected-path @ui/tree-selection
-        project-path (ui/get-project-root-path)
-        default-path (str (utils/get-relative-dir project-path selected-path)
-                          (or default-file-name
-                              (.getName (io/file selected-path))))]
-    (dialogs/show-file-path-dialog! default-path)))
-
 ; actions for project tree buttons
 
 (defn new-project!
@@ -101,25 +93,9 @@
         (add-to-project-tree! project-dir)
         (ui/update-project-tree! project-dir)))))
 
-(defn new-file!
-  [e]
-  (let [default-file-name (if (-> @ui/tree-selection
-                                  ui/get-project-path
-                                  lein/java-project?)
-                            "Example.java" "example.clj")]
-    (when-let [leaf-path (enter-file-path! default-file-name)]
-      (let [new-file (io/file (ui/get-project-root-path) leaf-path)]
-        (if (.exists new-file)
-          (s/alert (utils/get-string :file_exists))
-          (do
-            (io!
-              (.mkdirs (.getParentFile new-file))
-              (.createNewFile new-file))
-            (ui/update-project-tree! (.getCanonicalPath new-file))))))))
-
 (defn rename-file!
   [e]
-  (when-let [leaf-path (enter-file-path! nil)]
+  (when-let [leaf-path (file-browser/enter-file-path! nil)]
     (let [project-path (ui/get-project-root-path)
           new-file (io/file project-path leaf-path)
           new-path (.getCanonicalPath new-file)
@@ -159,7 +135,7 @@
 
 ; pane
 
-(def ^:dynamic *widgets* [:new-project :new-file :rename-file
+(def ^:dynamic *widgets* [:new-project :rename-file
                           :import :remove :fill-h])
 
 (defn create-actions
@@ -167,7 +143,6 @@
   {:new-project (fn [& _]
                   (try (new-project! console)
                     (catch Exception _ (.enterLine console ""))))
-   :new-file new-file!
    :rename-file rename-file!
    :import import-project!
    :remove remove-item!})
@@ -178,10 +153,6 @@
                            :text (utils/get-string :new_project)
                            :listen [:action (:new-project actions)]
                            :focusable? false)
-   :new-file (ui/button :id :new-file
-                        :text (utils/get-string :new_file)
-                        :listen [:action (:new-file actions)]
-                        :focusable? false)
    :rename-file (ui/button :id :rename-file
                            :text (utils/get-string :rename_file)
                            :listen [:action (:rename-file actions)]
@@ -241,9 +212,6 @@
                         :enabled? (and (not (nil? path))
                                        (or (contains? @ui/tree-projects path)
                                            (.isFile (io/file path)))))
-             (s/config! (s/select @ui/root [:#new-file])
-                        :visible? (and (not (nil? path))
-                                       (.isDirectory (io/file path))))
              (s/config! (s/select @ui/root [:#rename-file])
                         :visible? (and (not (nil? path))
                                        (.isFile (io/file path))))))
