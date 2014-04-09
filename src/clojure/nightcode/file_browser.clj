@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [nightcode.dialogs :as dialogs]
             [nightcode.lein :as lein]
+            [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.core :as s]
@@ -59,8 +60,10 @@
 
 (defn create-card
   []
-  (s/border-panel :north (ui/wrap-panel :items (create-widgets))
-                  :center (s/scrollable (ui/wrap-panel :id :files))))
+  (doto (s/border-panel :north (ui/wrap-panel :items (create-widgets))
+                        :center (s/scrollable (ui/wrap-panel :id :files)))
+    shortcuts/create-hints!
+    (shortcuts/create-mappings! {:new-file new-file!})))
 
 (defn update-card!
   []
