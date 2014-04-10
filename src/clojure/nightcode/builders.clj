@@ -32,7 +32,7 @@
     (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
     (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
       (utils/write-pref! :android-sdk (.getCanonicalPath d))
-      (show-builder! @ui/tree-selection))))
+      (show-builder! (ui/get-project-path @ui/tree-selection)))))
 
 (defn set-robovm!
   [& _]
@@ -40,7 +40,7 @@
     (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
     (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
       (utils/write-pref! :robovm (.getCanonicalPath d))
-      (show-builder! @ui/tree-selection))))
+      (show-builder! (ui/get-project-path @ui/tree-selection)))))
 
 (defn eval-in-repl!
   [console path timestamp]
@@ -219,7 +219,7 @@
                (fn [_ _ _ new-state]
                  (when (nil? new-state)
                    (reset! last-reload nil))
-                 (-> @ui/tree-selection ui/get-project-path show-builder!)))
+                 (show-builder! (ui/get-project-path @ui/tree-selection))))
     ; return a map describing the builder
     {:view build-pane
      :close-fn! (:stop actions)
