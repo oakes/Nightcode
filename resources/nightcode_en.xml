@@ -4,7 +4,7 @@
 
   <string name="new_project">New Project</string>
   <string name="new_file">New File</string>
-  <string name="rename_file">Rename File</string>
+  <string name="rename">Rename</string>
   <string name="import">Import</string>
   <string name="remove">Remove</string>
 

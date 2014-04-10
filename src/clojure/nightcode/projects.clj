@@ -143,15 +143,14 @@
 
 ; pane
 
-(def ^:dynamic *widgets* [:new-project :rename-file
-                          :import :remove :fill-h])
+(def ^:dynamic *widgets* [:new-project :import :rename :remove :fill-h])
 
 (defn create-actions
   [console]
   {:new-project (fn [& _]
                   (try (new-project! console)
                     (catch Exception _ (.enterLine console ""))))
-   :rename-file rename-file!
+   :rename rename-file!
    :import import-project!
    :remove remove-item!})
 
@@ -161,11 +160,10 @@
                            :text (utils/get-string :new_project)
                            :listen [:action (:new-project actions)]
                            :focusable? false)
-   :rename-file (ui/button :id :rename-file
-                           :text (utils/get-string :rename_file)
-                           :listen [:action (:rename-file actions)]
-                           :focusable? false
-                           :visible? false)
+   :rename (ui/button :id :rename
+                      :text (utils/get-string :rename)
+                      :listen [:action (:rename actions)]
+                      :focusable? false)
    :import (ui/button :id :import
                       :text (utils/get-string :import)
                       :listen [:action (:import actions)]
@@ -220,6 +218,6 @@
                         :enabled? (and (not (nil? path))
                                        (or (contains? @ui/tree-projects path)
                                            (.isFile (io/file path)))))
-             (s/config! (s/select @ui/root [:#rename-file])
-                        :visible? (and (not (nil? path))
+             (s/config! (s/select @ui/root [:#rename])
+                        :enabled? (and (not (nil? path))
                                        (.isFile (io/file path))))))

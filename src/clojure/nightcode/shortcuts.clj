@@ -13,7 +13,7 @@
 (def down? (atom false))
 (def ^:const mappings {:new-project "P"
                        :new-file "N"
-                       :rename-file "M"
+                       :rename "M"
                        :import "O"
                        :remove "G"
                        :run "R"
