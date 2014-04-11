@@ -54,7 +54,8 @@
                     :listen [:action
                              (fn [_]
                                (ui/update-project-tree! (.getCanonicalPath f)))]
-                    :focusable? false)
+                    :focusable? false
+                    :enabled? (or (.isDirectory f) (utils/valid-file? f)))
     (.setVerticalTextPosition SwingConstants/BOTTOM)
     (.setHorizontalTextPosition SwingConstants/CENTER))))
 

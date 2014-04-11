@@ -19,8 +19,7 @@
            [nightcode.ui JConsole]
            [org.fife.ui.autocomplete
             AutoCompletion BasicCompletion DefaultCompletionProvider]
-           [org.fife.ui.rsyntaxtextarea
-            FileLocation SyntaxConstants TextEditorPane Theme]
+           [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
 
 (def editors (atom (flatland/ordered-map)))
@@ -263,53 +262,6 @@
 
 ; create and show/hide editors for each file
 
-(def ^:const styles {"as"         SyntaxConstants/SYNTAX_STYLE_ACTIONSCRIPT
-                     "asm"        SyntaxConstants/SYNTAX_STYLE_ASSEMBLER_X86
-                     "bat"        SyntaxConstants/SYNTAX_STYLE_WINDOWS_BATCH
-                     "c"          SyntaxConstants/SYNTAX_STYLE_C
-                     "cc"         SyntaxConstants/SYNTAX_STYLE_C
-                     "cl"         SyntaxConstants/SYNTAX_STYLE_LISP
-                     "cpp"        SyntaxConstants/SYNTAX_STYLE_CPLUSPLUS
-                     "css"        SyntaxConstants/SYNTAX_STYLE_CSS
-                     "clj"        SyntaxConstants/SYNTAX_STYLE_CLOJURE
-                     "cljs"       SyntaxConstants/SYNTAX_STYLE_CLOJURE
-                     "cljx"       SyntaxConstants/SYNTAX_STYLE_CLOJURE
-                     "cs"         SyntaxConstants/SYNTAX_STYLE_CSHARP
-                     "dtd"        SyntaxConstants/SYNTAX_STYLE_DTD
-                     "edn"        SyntaxConstants/SYNTAX_STYLE_CLOJURE
-                     "groovy"     SyntaxConstants/SYNTAX_STYLE_GROOVY
-                     "h"          SyntaxConstants/SYNTAX_STYLE_C
-                     "hpp"        SyntaxConstants/SYNTAX_STYLE_CPLUSPLUS
-                     "htm"        SyntaxConstants/SYNTAX_STYLE_HTML
-                     "html"       SyntaxConstants/SYNTAX_STYLE_HTML
-                     "java"       SyntaxConstants/SYNTAX_STYLE_JAVA
-                     "js"         SyntaxConstants/SYNTAX_STYLE_JAVASCRIPT
-                     "json"       SyntaxConstants/SYNTAX_STYLE_JAVASCRIPT
-                     "jsp"        SyntaxConstants/SYNTAX_STYLE_JSP
-                     "jspx"       SyntaxConstants/SYNTAX_STYLE_JSP
-                     "lisp"       SyntaxConstants/SYNTAX_STYLE_LISP
-                     "lua"        SyntaxConstants/SYNTAX_STYLE_LUA
-                     "makefile"   SyntaxConstants/SYNTAX_STYLE_MAKEFILE
-                     "markdown"   SyntaxConstants/SYNTAX_STYLE_NONE
-                     "md"         SyntaxConstants/SYNTAX_STYLE_NONE
-                     "mustache"   SyntaxConstants/SYNTAX_STYLE_NONE
-                     "pas"        SyntaxConstants/SYNTAX_STYLE_DELPHI
-                     "properties" SyntaxConstants/SYNTAX_STYLE_PROPERTIES_FILE
-                     "php"        SyntaxConstants/SYNTAX_STYLE_PHP
-                     "pl"         SyntaxConstants/SYNTAX_STYLE_PERL
-                     "pm"         SyntaxConstants/SYNTAX_STYLE_PERL
-                     "py"         SyntaxConstants/SYNTAX_STYLE_PYTHON
-                     "rb"         SyntaxConstants/SYNTAX_STYLE_RUBY
-                     "s"          SyntaxConstants/SYNTAX_STYLE_ASSEMBLER_X86
-                     "sbt"        SyntaxConstants/SYNTAX_STYLE_SCALA
-                     "scala"      SyntaxConstants/SYNTAX_STYLE_SCALA
-                     "sh"         SyntaxConstants/SYNTAX_STYLE_UNIX_SHELL
-                     "sql"        SyntaxConstants/SYNTAX_STYLE_SQL
-                     "tcl"        SyntaxConstants/SYNTAX_STYLE_TCL
-                     "tex"        SyntaxConstants/SYNTAX_STYLE_LATEX
-                     "txt"        SyntaxConstants/SYNTAX_STYLE_NONE
-                     "xhtml"      SyntaxConstants/SYNTAX_STYLE_XML
-                     "xml"        SyntaxConstants/SYNTAX_STYLE_XML})
 (def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const completer-keys #{KeyEvent/VK_ENTER
@@ -346,7 +298,7 @@
       (doto (create-text-area)
         (.load (FileLocation/create path) "UTF-8")
         .discardAllEdits
-        (.setSyntaxEditingStyle (get styles extension))
+        (.setSyntaxEditingStyle (get utils/styles extension))
         (.setLineWrap (contains? wrap-exts extension))
         (.setMarginLineEnabled true)
         (.setMarginLinePosition 80)
@@ -417,7 +369,7 @@
   [extension]
   (let [text-area (create-text-area)]
     (doto text-area
-      (.setSyntaxEditingStyle (get styles extension))
+      (.setSyntaxEditingStyle (get utils/styles extension))
       (.setLineWrap true)
       (.addKeyListener
         (reify KeyListener
@@ -530,19 +482,12 @@
                      :focusable? false
                      :listen [:action (:close actions)])})
 
-(defn valid-file?
-  [path]
-  (let [pathfile (io/file path)]
-    (and (.isFile pathfile)
-         (or (contains? styles (utils/get-extension path))
-             (utils/text-file? pathfile)))))
-
 (defmulti create-editor (fn [type _] type) :default nil)
 
 (defmethod create-editor nil [_ _])
 
 (defmethod create-editor :text [_ path]
-  (when (valid-file? path)
+  (when (utils/valid-file? (io/file path))
     (let [; create the text editor and the pane that will hold it
           text-area (create-text-area path)
           extension (utils/get-extension path)
