@@ -9,7 +9,7 @@
                  [lein-ancient "0.5.4" :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.3"]
                  [lein-droid "0.2.2"]
-                 [lein-fruit "0.1.1"]
+                 [lein-fruit "0.2.0"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [org.apache.bcel/bcel "5.2"]
                  [org.clojars.oakes/autocomplete "2.5.2"]

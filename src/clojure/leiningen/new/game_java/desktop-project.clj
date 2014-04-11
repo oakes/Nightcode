@@ -5,7 +5,7 @@
                  [com.badlogicgames.gdx/gdx-backend-lwjgl "0.9.9"]
                  [com.badlogicgames.gdx/gdx-platform "0.9.9"
                   :classifier "natives-desktop"]]
-  :profiles {:dev {:dependencies [[org.clojure/clojure "1.5.1"]]}}
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.6.0"]]}}
   
   :java-source-paths ["src" "src-common"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
