@@ -94,7 +94,7 @@
                            (map create-tile)
                            (remove nil?)))
     (s/config! (s/select file-browser [:#up])
-               :enabled? (not (contains? @ui/tree-projects path)))))
+               :visible? (not (contains? @ui/tree-projects path)))))
 
 (add-watch ui/tree-selection
            :show-file-browser
