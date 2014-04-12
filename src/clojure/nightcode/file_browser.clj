@@ -1,7 +1,6 @@
 (ns nightcode.file-browser
   (:require [clojure.java.io :as io]
             [nightcode.dialogs :as dialogs]
-            [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -16,18 +15,14 @@
 
 (defn new-file!
   [e]
-  (let [default-filename (if (-> @ui/tree-selection
-                               ui/get-project-path
-                               lein/java-project?)
-                           "Example.java" "example.clj")]
-    (when-let [new-file (enter-filename! default-filename)]
-      (if (.exists new-file)
-        (s/alert (utils/get-string :file_exists))
-        (do
-          (io!
-            (.mkdirs (.getParentFile new-file))
-            (.createNewFile new-file))
-          (ui/update-project-tree! (.getCanonicalPath new-file)))))))
+  (when-let [new-file (enter-filename! "example.clj")]
+    (if (.exists new-file)
+      (s/alert (utils/get-string :file_exists))
+      (do
+        (io!
+          (.mkdirs (.getParentFile new-file))
+          (.createNewFile new-file))
+        (ui/update-project-tree! (.getCanonicalPath new-file))))))
 
 (defn create-widgets
   []
