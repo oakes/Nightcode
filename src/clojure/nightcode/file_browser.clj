@@ -8,6 +8,22 @@
             [seesaw.icon :as icon])
   (:import [javax.swing SwingConstants]))
 
+(defn go-up!
+  [& _]
+  (-> @ui/tree-selection
+      io/file
+      .getParentFile
+      .getCanonicalPath
+      ui/update-project-tree!))
+
+(defn create-up-button
+  []
+  (doto (ui/button :id :up
+                   :text "^^"
+                   :focusable? false
+                   :listen [:action go-up!])
+    (s/text! (shortcuts/wrap-hint-text "&uarr;"))))
+
 (defn enter-filename!
   [default-filename]
   (some->> (dialogs/show-file-path-dialog! default-filename)
@@ -24,9 +40,15 @@
           (.createNewFile new-file))
         (ui/update-project-tree! (.getCanonicalPath new-file))))))
 
+(defn create-actions
+  []
+  {:up go-up!
+   :new-file new-file!})
+
 (defn create-widgets
   []
-  [(ui/button :id :new-file
+  [(create-up-button)
+   (ui/button :id :new-file
               :text (utils/get-string :new_file)
               :listen [:action new-file!]
               :focusable? false)])
@@ -56,22 +78,26 @@
 
 (defn create-card
   []
-  (doto (s/border-panel :north (ui/wrap-panel :items (create-widgets))
-                        :center (s/scrollable (ui/wrap-panel :id :files)))
+  (doto (s/border-panel :id :file-browser
+                        :north (ui/wrap-panel :items (create-widgets))
+                        :center (s/scrollable (ui/wrap-panel :id :file-grid)))
     shortcuts/create-hints!
-    (shortcuts/create-mappings! {:new-file new-file!})))
+    (shortcuts/create-mappings! (create-actions))))
 
 (defn update-card!
-  []
-  (when-let [file-grid (s/select @ui/root [:#files])]
-    (s/config! file-grid :items (->> (io/file @ui/tree-selection)
-                                     .listFiles
-                                     sort
-                                     (map create-tile)
-                                     (remove nil?)))))
+  [path]
+  (when-let [file-browser (s/select @ui/root [:#file-browser])]
+    (s/config! (s/select file-browser [:#file-grid])
+               :items (->> (io/file path)
+                           .listFiles
+                           sort
+                           (map create-tile)
+                           (remove nil?)))
+    (s/config! (s/select file-browser [:#up])
+               :enabled? (not (contains? @ui/tree-projects path)))))
 
 (add-watch ui/tree-selection
            :show-file-browser
            (fn [_ _ _ path]
              (when (and path (.isDirectory (io/file path)))
-               (update-card!))))
+               (update-card! path))))
