@@ -445,7 +445,7 @@
 (defn create-widgets
   [actions]
   {:up (doto (ui/button :id :up
-                        :text "  "
+                        :text "^^"
                         :focusable? false
                         :listen [:action (:up actions)])
          (s/text! (shortcuts/wrap-hint-text "&uarr;")))
