@@ -30,7 +30,7 @@
                               (builders/create-pane)
                               :divider-location 0.8
                               :resize-weight 0.5))
-        :divider-location 0.35
+        :divider-location 0.32
         :resize-weight 0))))
 
 (defn create-window

@@ -26,6 +26,7 @@
                        :stop "I"
                        :sdk "shift K"
                        :auto "shift A"
+                       :up "U"
                        :save "S"
                        :undo "Z"
                        :redo "Y"

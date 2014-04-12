@@ -111,6 +111,14 @@
 
 ; button bar actions
 
+(defn go-up!
+  [& _]
+  (-> @ui/tree-selection
+      io/file
+      .getParentFile
+      .getCanonicalPath
+      ui/update-project-tree!))
+
 (defn update-buttons!
   [editor ^TextEditorPane text-area]
   (when (ui/config! editor :#save :enabled? (.isDirty text-area))
@@ -416,13 +424,13 @@
     (ui/update-project-tree! new-path))
   true)
 
-(def ^:dynamic *widgets* [:save :undo :redo :font-dec :font-inc
-                          :doc :paredit :paredit-help :find :replace
-                          :close])
+(def ^:dynamic *widgets* [:up :save :undo :redo :font-dec :font-inc
+                          :doc :paredit :paredit-help :find :replace :close])
 
 (defn create-actions
   []
-  {:save save-file!
+  {:up go-up!
+   :save save-file!
    :undo undo-file!
    :redo redo-file!
    :font-dec decrease-font-size!
@@ -436,7 +444,12 @@
 
 (defn create-widgets
   [actions]
-  {:save (ui/button :id :save
+  {:up (doto (ui/button :id :up
+                        :text "  "
+                        :focusable? false
+                        :listen [:action (:up actions)])
+         (s/text! (shortcuts/wrap-hint-text "&uarr;")))
+   :save (ui/button :id :save
                     :text (utils/get-string :save)
                     :focusable? false
                     :listen [:action (:save actions)])
