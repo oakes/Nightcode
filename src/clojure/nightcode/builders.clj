@@ -45,10 +45,12 @@
 (defn eval-in-repl!
   [console path timestamp]
   (let [source-paths (-> (lein/read-project-clj path)
-                         (lein/stale-clojure-sources timestamp))
-        commands (vec (map #(list 'load-file %) source-paths))
-        names (vec (map #(-> % io/file .getName) source-paths))]
-    (->> (conj commands names)
+                         (lein/stale-clojure-sources timestamp)
+                         utils/sort-by-dependency)
+        commands (map #(read-string (str \( 'do (slurp %) \newline \)))
+                      source-paths)
+        names (map #(-> % io/file .getName) source-paths)]
+    (->> (conj (vec commands) (vec names))
          (cons 'do)
          pr-str
          (.enterLine console)

@@ -1,6 +1,8 @@
 (ns nightcode.utils
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.tools.namespace.file :as file]
+            [clojure.tools.namespace.parse :as parse]
             [clojure.xml :as xml])
   (:import [java.io File]
            [java.net URL]
@@ -227,3 +229,21 @@
   "Converts a java.net.URI to a String."
   [uri]
   (-> uri Paths/get .normalize .toString))
+
+(defn ^:private ns-info
+  [path]
+  (let [form (-> path io/file file/read-file-ns-decl)]
+    {:ns (second form)
+     :deps (parse/deps-from-ns-decl form)}))
+
+(defn sort-by-dependency
+  "Sorts the paths from least to most dependent."
+  [paths]
+  (let [deps (->> paths
+                  (map #(vector % (ns-info %)))
+                  (into {}))]
+    (sort #(cond
+             (contains? (get-in deps [%1 :deps]) (get-in deps [%2 :ns])) 1
+             (contains? (get-in deps [%2 :deps]) (get-in deps [%1 :ns])) -1
+             :else 0)
+          paths)))

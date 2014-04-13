@@ -17,6 +17,7 @@
                  [org.clojure/clojure "1.6.0"]
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
+                 [org.clojure/tools.namespace "0.2.4"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"]
                  [play-clj/lein-template "0.2.4"]
