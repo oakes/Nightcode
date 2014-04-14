@@ -266,7 +266,7 @@
 (defn add-watchers!
   [path extension text-area completer]
   (let [clojure? (contains? clojure-exts extension)
-        clojure-file? (and clojure? (.exists (io/file path)))]
+        clojure-file? (and clojure? (.isFile (io/file path)))]
     (add-watch font-size
                (utils/hashed-keyword path)
                (fn [_ _ _ x]
