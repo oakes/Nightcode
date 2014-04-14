@@ -265,8 +265,8 @@
 
 (defn add-watchers!
   [path extension text-area completer]
-  (let [exists? (.exists (io/file path))
-        clojure? (contains? clojure-exts extension)]
+  (let [clojure? (contains? clojure-exts extension)
+        clojure-file? (and clojure? (.exists (io/file path)))]
     (add-watch font-size
                (utils/hashed-keyword path)
                (fn [_ _ _ x]
@@ -276,11 +276,11 @@
                  (utils/hashed-keyword path)
                  (fn [_ _ _ enable?]
                    (.setAutoActivationEnabled completer enable?))))
-    (when-let [toggle-paredit-fn! (init-paredit! text-area exists? clojure?)]
+    (when-let [toggle-fn! (init-paredit! text-area clojure-file? clojure?)]
       (add-watch paredit-enabled?
                  (utils/hashed-keyword path)
                  (fn [_ _ _ enable?]
-                   (toggle-paredit-fn! enable?))))))
+                   (toggle-fn! enable?))))))
 
 (defn add-button-watchers!
   [path pane]
