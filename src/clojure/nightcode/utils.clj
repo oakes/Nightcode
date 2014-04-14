@@ -5,11 +5,13 @@
             [clojure.tools.namespace.parse :as parse]
             [clojure.xml :as xml])
   (:import [java.io File]
+           [java.math BigInteger]
            [java.net URL]
            [java.nio.file Files Path Paths]
            [java.util Locale]
            [java.util.jar Manifest]
            [java.util.prefs Preferences]
+           [java.security MessageDigest]
            [javax.swing.tree TreePath]
            [org.fife.ui.rsyntaxtextarea SyntaxConstants]))
 
@@ -247,3 +249,12 @@
              (contains? (get-in deps [%2 :deps]) (get-in deps [%1 :ns])) -1
              :else 0)
           paths)))
+
+(defn ^:private create-hash
+  [data-barray]
+  (.digest (MessageDigest/getInstance "SHA1") data-barray))
+
+(defn hashed-keyword
+  "Returns the SHA1 hash of the given string as a keyword."
+  [s]
+  (->> (.getBytes s "UTF-8") create-hash BigInteger. (format "%x") keyword))

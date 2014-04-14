@@ -196,7 +196,7 @@
 (defn create-builder
   [path]
   (let [; create console and the pane that will hold it
-        console (editors/create-console "clj")
+        console (editors/create-console path)
         build-pane (s/border-panel
                      :center (s/config! console :id :build-console))
         ; create atoms to hold important values
@@ -258,6 +258,7 @@
                 (should-remove-fn))
         (swap! builders dissoc builder-path)
         (close-fn!)
+        (editors/remove-watchers! builder-path)
         (.remove pane view)))))
 
 ; pane
@@ -276,11 +277,3 @@
              (remove-builders! nil)
              ; show the selected builder
              (show-builder! (ui/get-project-path path))))
-(add-watch editors/font-size
-           :set-builder-font-size
-           (fn [_ _ _ x]
-             (apply editors/set-font-sizes! x (vals @builders))))
-(add-watch editors/paredit-enabled?
-           :set-builder-paredit
-           (fn [_ _ _ enable?]
-             (apply editors/set-paredit! enable? (vals @builders))))

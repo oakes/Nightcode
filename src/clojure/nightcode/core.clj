@@ -16,7 +16,7 @@
 (defn create-window-content
   "Returns the entire window with all panes."
   []
-  (let [console (editors/create-console "clj")
+  (let [console (editors/create-console "*repl*")
         one-touch! #(doto % (.setOneTouchExpandable true))]
     (one-touch!
       (s/left-right-split

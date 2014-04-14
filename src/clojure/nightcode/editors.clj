@@ -24,7 +24,8 @@
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
-(def paredit-enabled? (atom (utils/read-pref :enable-paredit)))
+(def paredit-enabled? (atom (or (utils/read-pref :enable-paredit) false)))
+(def doc-enabled? (atom (or (utils/read-pref :enable-doc) false)))
 (def tabs (atom nil))
 (def theme-resource (atom (io/resource "dark.xml")))
 
@@ -145,12 +146,6 @@
   [text-area size]
   (.setFont text-area (-> text-area .getFont (.deriveFont (float size)))))
 
-(defn set-font-sizes!
-  [size & maps]
-  (doseq [m maps]
-    (when-let [text-area (get-text-area (:view m))]
-      (set-font-size! text-area size))))
-
 (defn save-font-size!
   [size]
   (utils/write-pref! :font-size size))
@@ -163,30 +158,21 @@
   [& _]
   (swap! font-size inc))
 
-(defn do-completion!
-  [& _]
-  (when-let [{:keys [text-area completer] :as editor-map}
-             (get @editors @ui/tree-selection)]
-    (when text-area
-      (s/request-focus! text-area))
-    (when completer
-      (.doCompletion completer))))
-
-(defn set-paredit!
-  [enable? & maps]
-  (doseq [m maps]
-    (when-let [toggle-paredit-fn! (:toggle-paredit-fn! m)]
-      (toggle-paredit-fn! enable?))
-    (when-let [paredit-button (s/select (:view m) [:#paredit])]
-      (s/config! paredit-button :selected? enable?))))
-
 (defn save-paredit!
   [enable?]
   (utils/write-pref! :enable-paredit enable?))
 
+(defn save-doc!
+  [enabled?]
+  (utils/write-pref! :enable-doc enabled?))
+
 (defn toggle-paredit!
   [& _]
   (reset! paredit-enabled? (not @paredit-enabled?)))
+
+(defn toggle-doc!
+  [& _]
+  (reset! doc-enabled? (not @doc-enabled?)))
 
 (defn show-paredit-help!
   [& _]
@@ -260,7 +246,7 @@
       (when enter-key?
         (update-buttons! editor text-area)))))
 
-; create and show/hide editors for each file
+; create and display editors
 
 (def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})
 (def ^:const wrap-exts #{"md" "txt"})
@@ -270,6 +256,51 @@
                               KeyEvent/VK_ESCAPE})
 (def ^:const console-ignore-shortcut-keys #{KeyEvent/VK_Z
                                             KeyEvent/VK_Y})
+
+(defn init-paredit!
+  [text-area enable-default? enable-advanced?]
+  (let [toggle-paredit-fn! (pw/init-paredit! text-area enable-default?)]
+    (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
+    (when enable-advanced? toggle-paredit-fn!)))
+
+(defn add-watchers!
+  ([path text-area completer]
+    (let [extension (utils/get-extension path)
+          clojure? (contains? clojure-exts extension)]
+      (add-watch font-size
+                 (utils/hashed-keyword path)
+                 (fn [_ _ _ x]
+                   (set-font-size! text-area x)))
+      (when-let [toggle-paredit-fn! (init-paredit! text-area clojure? clojure?)]
+        (add-watch paredit-enabled?
+                   (utils/hashed-keyword path)
+                   (fn [_ _ _ enable?]
+                     (toggle-paredit-fn! enable?))))
+      (when completer
+        (add-watch doc-enabled?
+                   (utils/hashed-keyword path)
+                   (fn [_ _ _ enable?]
+                     (.setAutoActivationEnabled completer enable?))))))
+  ([path text-area completer pane]
+    (add-watchers! path text-area completer)
+    (add-watch paredit-enabled?
+               (utils/hashed-keyword (str "button:" path))
+               (fn [_ _ _ enable?]
+                 (some-> (s/select pane [:#paredit])
+                         (s/config! :selected? enable?))))
+    (add-watch doc-enabled?
+               (utils/hashed-keyword (str "button:" path))
+               (fn [_ _ _ enable?]
+                 (some-> (s/select pane [:#doc])
+                         (s/config! :selected? enable?))))))
+
+(defn remove-watchers!
+  [path]
+  (remove-watch font-size (utils/hashed-keyword path))
+  (remove-watch paredit-enabled? (utils/hashed-keyword path))
+  (remove-watch doc-enabled? (utils/hashed-keyword path))
+  (remove-watch paredit-enabled? (utils/hashed-keyword (str "button:" path)))
+  (remove-watch doc-enabled? (utils/hashed-keyword (str "button:" path))))
 
 (defn apply-settings!
   [text-area]
@@ -335,7 +366,9 @@
                  (BasicCompletion. this symbol-str nil)))))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
-            (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch))))
+            (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch)))
+      (isAutoActivateOkay [comp]
+        true))
     ; anything else
     :else nil))
 
@@ -345,6 +378,9 @@
     (doto (AutoCompletion. provider)
       (.setShowDescWindow true)
       (.setAutoCompleteSingleChoices false)
+      (.setAutoCompleteEnabled true)
+      (.setAutoActivationEnabled @doc-enabled?)
+      (.setAutoActivationDelay 200)
       (.setChoicesWindowSize 150 300)
       (.setDescriptionWindowSize 600 300))))
 
@@ -366,28 +402,26 @@
           (.consume e))))))
 
 (defn create-console
-  [extension]
-  (let [text-area (create-text-area)]
-    (doto text-area
-      (.setSyntaxEditingStyle (get utils/styles extension))
-      (.setLineWrap true)
-      (.addKeyListener
-        (reify KeyListener
-          (keyReleased [this e] nil)
-          (keyTyped [this e] nil)
-          (keyPressed [this e]
-            (when (and @shortcuts/down?
-                       (contains? console-ignore-shortcut-keys (.getKeyCode e)))
-              (.consume e))))))
-    (some->> (create-completer text-area extension)
-             (install-completer! text-area))
-    (JConsole. text-area)))
-
-(defn init-paredit!
-  [text-area enable-default? enable-advanced?]
-  (let [toggle-paredit-fn! (pw/init-paredit! text-area enable-default?)]
-    (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
-    (when enable-advanced? toggle-paredit-fn!)))
+  ([path]
+    (create-console path "clj"))
+  ([path extension]
+    (let [text-area (create-text-area)
+          completer (create-completer text-area extension)]
+      (add-watchers! path text-area completer)
+      (doto text-area
+        (.setSyntaxEditingStyle (get utils/styles extension))
+        (.setLineWrap true)
+        (.addKeyListener
+          (reify KeyListener
+            (keyReleased [this e] nil)
+            (keyTyped [this e] nil)
+            (keyPressed [this e]
+              (when (and @shortcuts/down?
+                         (contains? console-ignore-shortcut-keys
+                                    (.getKeyCode e)))
+                (.consume e))))))
+      (some->> completer (install-completer! text-area))
+      (JConsole. text-area))))
 
 (defn text-prompt!
   [widget text]
@@ -402,6 +436,7 @@
                 (should-remove-fn))
         (swap! editors dissoc editor-path)
         (close-fn!)
+        (remove-watchers! editor-path)
         (.remove editor-pane view)))))
 
 (defn close-selected-editor!
@@ -427,7 +462,7 @@
    :redo redo-file!
    :font-dec decrease-font-size!
    :font-inc increase-font-size!
-   :doc do-completion!
+   :doc toggle-doc!
    :paredit toggle-paredit!
    :paredit-help show-paredit-help!
    :find focus-on-find!
@@ -457,9 +492,10 @@
                         :text (utils/get-string :font_inc)
                         :focusable? false
                         :listen [:action (:font-inc actions)])
-   :doc (ui/button :id :doc
+   :doc (ui/toggle :id :doc
                    :text (utils/get-string :doc)
                    :focusable? false
+                   :selected? @doc-enabled?
                    :listen [:action (:doc actions)])
    :paredit (ui/toggle :id :paredit
                        :text (utils/get-string :paredit)
@@ -521,9 +557,10 @@
       (s/listen text-area
                 :key-released
                 (fn [e] (update-buttons! editor-pane text-area)))
-      ; install completer
-      (when completer
-        (install-completer! text-area completer))
+      ; add watchers
+      (add-watchers! path text-area completer editor-pane)
+      ; install completer if it exists
+      (some->> completer (install-completer! text-area))
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
@@ -536,12 +573,10 @@
       ; return a map describing the editor
       {:view editor-pane
        :text-area text-area
-       :completer completer
        :close-fn! #(when (.isDirty text-area)
                      (save-file!))
        :italicize-fn #(.isDirty text-area)
-       :should-remove-fn #(not (.exists (io/file path)))
-       :toggle-paredit-fn! (init-paredit! text-area clojure? clojure?)})))
+       :should-remove-fn #(not (.exists (io/file path)))})))
 
 (def ^:dynamic *types* [:text :logcat])
 
@@ -588,18 +623,14 @@
              ; show the selected editor
              (show-editor! path)))
 (add-watch font-size
-           :set-editor-font-size
-           (fn [_ _ _ x]
-             (apply set-font-sizes! x (vals @editors))))
-(add-watch font-size
            :save-font-size
            (fn [_ _ _ x]
              (save-font-size! x)))
 (add-watch paredit-enabled?
-           :set-editor-paredit
-           (fn [_ _ _ enable?]
-             (apply set-paredit! enable? (vals @editors))))
-(add-watch paredit-enabled?
            :save-paredit
            (fn [_ _ _ enable?]
              (save-paredit! enable?)))
+(add-watch doc-enabled?
+           :save-doc
+           (fn [_ _ _ enable?]
+             (save-doc! enable?)))

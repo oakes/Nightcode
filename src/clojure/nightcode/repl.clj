@@ -18,19 +18,7 @@
   (let [process (atom nil)
         run! (fn [& _]
                (s/request-focus! (-> console .getViewport .getView))
-               (run-repl! process (ui/get-io! console)))
-        console-map {:view console
-                     :toggle-paredit-fn! (editors/init-paredit!
-                                           (.getTextArea console) false true)}]
-    ; set the font size and paredit
-    (add-watch editors/font-size
-               :set-repl-font-size
-               (fn [_ _ _ x]
-                 (editors/set-font-sizes! x console-map)))
-    (add-watch editors/paredit-enabled?
-               :set-repl-paredit
-               (fn [_ _ _ enable?]
-                 (editors/set-paredit! enable? console-map)))
+               (run-repl! process (ui/get-io! console)))]
     ; start the repl
     (run!)
     ; create a shortcut to restart the repl

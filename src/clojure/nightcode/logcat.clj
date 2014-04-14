@@ -62,7 +62,7 @@
 (defmethod editors/create-editor :logcat [_ path]
   (when (= (.getName (io/file path)) logcat-name)
     (let [; create the console and the pane that holds it
-          console (editors/create-console nil)
+          console (editors/create-console path "log")
           logcat-pane (s/border-panel :center console)
           ; create atoms to hold important values
           process (atom nil)
