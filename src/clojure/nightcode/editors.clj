@@ -264,35 +264,36 @@
     (when enable-advanced? toggle-paredit-fn!)))
 
 (defn add-watchers!
-  ([path text-area completer]
-    (let [extension (utils/get-extension path)
-          clojure? (contains? clojure-exts extension)]
-      (add-watch font-size
+  [path extension text-area completer]
+  (let [exists? (.exists (io/file path))
+        clojure? (contains? clojure-exts extension)]
+    (add-watch font-size
+               (utils/hashed-keyword path)
+               (fn [_ _ _ x]
+                 (set-font-size! text-area x)))
+    (when-let [toggle-paredit-fn! (init-paredit! text-area exists? clojure?)]
+      (add-watch paredit-enabled?
                  (utils/hashed-keyword path)
-                 (fn [_ _ _ x]
-                   (set-font-size! text-area x)))
-      (when-let [toggle-paredit-fn! (init-paredit! text-area clojure? clojure?)]
-        (add-watch paredit-enabled?
-                   (utils/hashed-keyword path)
-                   (fn [_ _ _ enable?]
-                     (toggle-paredit-fn! enable?))))
-      (when completer
-        (add-watch doc-enabled?
-                   (utils/hashed-keyword path)
-                   (fn [_ _ _ enable?]
-                     (.setAutoActivationEnabled completer enable?))))))
-  ([path text-area completer pane]
-    (add-watchers! path text-area completer)
-    (add-watch paredit-enabled?
-               (utils/hashed-keyword (str "button:" path))
-               (fn [_ _ _ enable?]
-                 (some-> (s/select pane [:#paredit])
-                         (s/config! :selected? enable?))))
-    (add-watch doc-enabled?
-               (utils/hashed-keyword (str "button:" path))
-               (fn [_ _ _ enable?]
-                 (some-> (s/select pane [:#doc])
-                         (s/config! :selected? enable?))))))
+                 (fn [_ _ _ enable?]
+                   (toggle-paredit-fn! enable?))))
+    (when completer
+      (add-watch doc-enabled?
+                 (utils/hashed-keyword path)
+                 (fn [_ _ _ enable?]
+                   (.setAutoActivationEnabled completer enable?))))))
+
+(defn add-button-watchers!
+  [path pane]
+  (add-watch paredit-enabled?
+             (utils/hashed-keyword (str "button:" path))
+             (fn [_ _ _ enable?]
+               (some-> (s/select pane [:#paredit])
+                       (s/config! :selected? enable?))))
+  (add-watch doc-enabled?
+             (utils/hashed-keyword (str "button:" path))
+             (fn [_ _ _ enable?]
+               (some-> (s/select pane [:#doc])
+                         (s/config! :selected? enable?)))))
 
 (defn remove-watchers!
   [path]
@@ -407,7 +408,7 @@
   ([path extension]
     (let [text-area (create-text-area)
           completer (create-completer text-area extension)]
-      (add-watchers! path text-area completer)
+      (add-watchers! path extension text-area completer)
       (doto text-area
         (.setSyntaxEditingStyle (get utils/styles extension))
         (.setLineWrap true)
@@ -558,7 +559,8 @@
                 :key-released
                 (fn [e] (update-buttons! editor-pane text-area)))
       ; add watchers
-      (add-watchers! path text-area completer editor-pane)
+      (add-watchers! path extension text-area completer)
+      (add-button-watchers! path editor-pane)
       ; install completer if it exists
       (some->> completer (install-completer! text-area))
       ; enable/disable buttons while typing
