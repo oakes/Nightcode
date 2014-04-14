@@ -271,29 +271,29 @@
                (utils/hashed-keyword path)
                (fn [_ _ _ x]
                  (set-font-size! text-area x)))
-    (when-let [toggle-paredit-fn! (init-paredit! text-area exists? clojure?)]
-      (add-watch paredit-enabled?
-                 (utils/hashed-keyword path)
-                 (fn [_ _ _ enable?]
-                   (toggle-paredit-fn! enable?))))
     (when completer
       (add-watch doc-enabled?
                  (utils/hashed-keyword path)
                  (fn [_ _ _ enable?]
-                   (.setAutoActivationEnabled completer enable?))))))
+                   (.setAutoActivationEnabled completer enable?))))
+    (when-let [toggle-paredit-fn! (init-paredit! text-area exists? clojure?)]
+      (add-watch paredit-enabled?
+                 (utils/hashed-keyword path)
+                 (fn [_ _ _ enable?]
+                   (toggle-paredit-fn! enable?))))))
 
 (defn add-button-watchers!
   [path pane]
-  (add-watch paredit-enabled?
-             (utils/hashed-keyword (str "button:" path))
-             (fn [_ _ _ enable?]
-               (some-> (s/select pane [:#paredit])
-                       (s/config! :selected? enable?))))
   (add-watch doc-enabled?
              (utils/hashed-keyword (str "button:" path))
              (fn [_ _ _ enable?]
                (some-> (s/select pane [:#doc])
-                         (s/config! :selected? enable?)))))
+                       (s/config! :selected? enable?))))
+  (add-watch paredit-enabled?
+             (utils/hashed-keyword (str "button:" path))
+             (fn [_ _ _ enable?]
+               (some-> (s/select pane [:#paredit])
+                       (s/config! :selected? enable?)))))
 
 (defn remove-watchers!
   [path]
@@ -395,11 +395,11 @@
       (keyReleased [this e] nil)
       (keyTyped [this e] nil)
       (keyPressed [this e]
-        (when (some #(.isVisible %) (.getOwnedWindows @ui/root))
-          (when (contains? completer-keys (.getKeyCode e))
-            (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
-                  condition JComponent/WHEN_FOCUSED]
-              (.processKeyBinding text-area ks e condition true)))
+        (when (and (.isPopupVisible completer)
+                   (contains? completer-keys (.getKeyCode e)))
+          (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
+                condition JComponent/WHEN_FOCUSED]
+            (.processKeyBinding text-area ks e condition true))
           (.consume e))))))
 
 (defn create-console
@@ -558,11 +558,11 @@
       (s/listen text-area
                 :key-released
                 (fn [e] (update-buttons! editor-pane text-area)))
+      ; install completer if it exists
+      (some->> completer (install-completer! text-area))
       ; add watchers
       (add-watchers! path extension text-area completer)
       (add-button-watchers! path editor-pane)
-      ; install completer if it exists
-      (some->> completer (install-completer! text-area))
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
