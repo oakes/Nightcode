@@ -360,7 +360,8 @@
       (getCompletions [comp]
         (let [prefix (.getAlreadyEnteredText this comp)
               context (get-completion-context text-area prefix)]
-          (for [symbol-str (compliment/completions prefix context)]
+          (for [symbol-str (compliment/completions prefix context)
+                :when (some? symbol-str)]
             (->> (str "<html><body><pre><span style='font-size: 11px;'>"
                       (compliment/documentation symbol-str)
                       "</span></pre></body></html>")
