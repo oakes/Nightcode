@@ -85,16 +85,18 @@
     (shortcuts/create-mappings! (create-actions))))
 
 (defn update-card!
-  [path]
-  (when-let [file-browser (s/select @ui/root [:#file-browser])]
-    (s/config! (s/select file-browser [:#file-grid])
-               :items (->> (io/file path)
-                           .listFiles
-                           sort
-                           (map create-tile)
-                           (remove nil?)))
-    (s/config! (s/select file-browser [:#up])
-               :visible? (not (contains? @ui/tree-projects path)))))
+  ([path]
+    (when-let [file-browser (s/select @ui/root [:#file-browser])]
+      (s/config! (s/select file-browser [:#file-grid])
+                 :items (->> (io/file path)
+                             .listFiles
+                             sort
+                             (map create-tile)
+                             (remove nil?)))
+      (s/config! (s/select file-browser [:#up])
+                 :visible? (not (contains? @ui/tree-projects path)))))
+  ([]
+    (update-card! @ui/tree-selection)))
 
 (add-watch ui/tree-selection
            :show-file-browser

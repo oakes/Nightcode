@@ -395,12 +395,13 @@
       (keyReleased [this e] nil)
       (keyTyped [this e] nil)
       (keyPressed [this e]
-        (when (and (.isPopupVisible completer)
-                   (contains? completer-keys (.getKeyCode e)))
-          (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
-                condition JComponent/WHEN_FOCUSED]
-            (.processKeyBinding text-area ks e condition true))
-          (.consume e))))))
+        (if (contains? completer-keys (.getKeyCode e))
+          (when (.isPopupVisible completer)
+            (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
+                  condition JComponent/WHEN_FOCUSED]
+              (.processKeyBinding text-area ks e condition true))
+            (.consume e))
+          (.hideChildWindows completer))))))
 
 (defn create-console
   ([path]
