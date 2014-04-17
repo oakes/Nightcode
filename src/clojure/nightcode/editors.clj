@@ -362,12 +362,14 @@
         (let [prefix (.getAlreadyEnteredText this comp)
               context (get-completion-context text-area prefix)]
           (when (and prefix context)
-            (for [symbol-str (compliment/completions prefix context)
-                  :when (some? symbol-str)]
-              (->> (str "<html><body><pre><span style='font-size: 11px;'>"
-                        (compliment/documentation symbol-str)
-                        "</span></pre></body></html>")
-                   (BasicCompletion. this symbol-str nil))))))
+            (try
+              (for [symbol-str (compliment/completions prefix context)
+                    :when (some? symbol-str)]
+                (->> (str "<html><body><pre><span style='font-size: 11px;'>"
+                          (compliment/documentation symbol-str)
+                          "</span></pre></body></html>")
+                     (BasicCompletion. this symbol-str nil)))
+              (catch Exception _)))))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
             (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch)))
