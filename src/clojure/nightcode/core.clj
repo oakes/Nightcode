@@ -36,11 +36,10 @@
 (defn create-window
   "Creates the main window."
   []
-  (doto (s/frame :title (str (utils/get-string :app_name)
-                             " "
-                             (if-let [p (utils/get-project "nightcode.core")]
-                               (nth p 2)
-                               "beta"))
+  (doto (s/frame :title (str "Nightcode " (or (some-> "nightcode.core"
+                                                      utils/get-project
+                                                      (nth 2))
+                                              "beta"))
                  :content (create-window-content)
                  :width 1242
                  :height 768
