@@ -338,19 +338,18 @@
 
 (defn get-completion-context
   [text-area prefix]
-  (when prefix
-    (let [caretpos (.getCaretPosition text-area)
-          all-text (.getText text-area)
-          first-str (subs all-text 0 (- caretpos (count prefix)))
-          second-str (subs all-text caretpos)]
-      (-> (str first-str "__prefix__" second-str)
-          parser/parse
-          loc-utils/parsed-root-loc
-          (static-analysis/top-level-code-form caretpos)
-          first
-          loc-utils/node-text
-          read-string
-          (try (catch Exception _))))))
+  (let [caretpos (.getCaretPosition text-area)
+        all-text (.getText text-area)
+        first-str (subs all-text 0 (- caretpos (count prefix)))
+        second-str (subs all-text caretpos)]
+    (-> (str first-str "__prefix__" second-str)
+        parser/parse
+        loc-utils/parsed-root-loc
+        (static-analysis/top-level-code-form caretpos)
+        first
+        loc-utils/node-text
+        read-string
+        (try (catch Exception _)))))
 
 (defn create-completion-provider
   [text-area extension]
@@ -359,17 +358,16 @@
     (contains? clojure-exts extension)
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
-        (let [prefix (.getAlreadyEnteredText this comp)
-              context (get-completion-context text-area prefix)]
-          (when (and prefix context)
-            (try
+        (try
+          (let [prefix (.getAlreadyEnteredText this comp)
+                context (get-completion-context text-area prefix)]
               (for [symbol-str (compliment/completions prefix context)
                     :when (some? symbol-str)]
                 (->> (str "<html><body><pre><span style='font-size: 11px;'>"
                           (compliment/documentation symbol-str)
                           "</span></pre></body></html>")
-                     (BasicCompletion. this symbol-str nil)))
-              (catch Exception _)))))
+                     (BasicCompletion. this symbol-str nil))))
+          (catch Exception _ '())))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
             (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch)))
