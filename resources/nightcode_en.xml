@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="new_project">New Project</string>
-  <string name="new_file">New File</string>
   <string name="rename">Rename</string>
   <string name="import">Import</string>
   <string name="remove">Remove</string>
@@ -65,6 +64,10 @@
   <string name="doc">Doc</string>
   <string name="find">Find</string>
   <string name="replace">Replace</string>
+  
+  <string name="new_file">New File</string>
+  <string name="edit">Edit</string>
+  <string name="delete">Delete</string>
 
   <string name="ctrl">Ctrl</string>
   <string name="alt">Alt</string>

@@ -12,7 +12,6 @@
 
 (def down? (atom false))
 (def ^:const mappings {:new-project "P"
-                       :new-file "N"
                        :rename "M"
                        :import "O"
                        :remove "G"
@@ -39,7 +38,10 @@
                        :close "W"
                        :repl-console "shift E"
                        :project-pane "&uarr; &darr; &crarr;"
-                       :toggle-logcat "S"})
+                       :toggle-logcat "S"
+                       :new-file "N"
+                       :edit "shift M"
+                       :cancel "shift C"})
 
 (defn create-mapping!
   "Maps `func` to the key combo associated with `id`."
