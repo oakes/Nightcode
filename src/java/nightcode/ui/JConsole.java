@@ -86,7 +86,6 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	private TextEditorPane text;
 	private DefaultStyledDocument doc;
 
-	NameCompletion nameCompletion;
 	private final int SHOW_AMBIG_MAX = 10;
 
 	// hack to prevent key repeat for some reason?
@@ -291,14 +290,6 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 				}
 				break;
 
-			case (KeyEvent.VK_TAB):
-				if (e.getID() == KeyEvent.KEY_RELEASED) {
-					String part = text.getText().substring(cmdStart);
-					doCommandCompletion(part);
-				}
-				e.consume();
-				break;
-
 			default:
 				if (
 					(e.getModifiers() &
@@ -321,69 +312,6 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 
 				break;
 		}
-	}
-
-	private void doCommandCompletion(String part) {
-		if (nameCompletion == null) {
-			return;
-		}
-
-		int i = part.length() - 1;
-
-		// Character.isJavaIdentifierPart()  How convenient for us!! 
-		while (
-			i >= 0 &&
-				(Character.isJavaIdentifierPart(part.charAt(i))
-					|| part.charAt(i) == '.')
-			) {
-			i--;
-		}
-
-		part = part.substring(i + 1);
-
-		if (part.length() < 2)  // reasonable completion length
-		{
-			return;
-		}
-
-		//System.out.println("completing part: "+part);
-
-		// no completion
-		String[] complete = nameCompletion.completeName(part);
-		if (complete.length == 0) {
-			java.awt.Toolkit.getDefaultToolkit().beep();
-			return;
-		}
-
-		// Found one completion (possibly what we already have)
-		if (complete.length == 1 && !complete.equals(part)) {
-			String append = complete[0].substring(part.length());
-			append(append);
-			return;
-		}
-
-		// Found ambiguous, show (some of) them
-
-		String line = text.getText();
-		String command = line.substring(cmdStart);
-		// Find prompt
-		for (i = cmdStart; line.charAt(i) != '\n' && i > 0; i--) {
-			;
-		}
-		String prompt = line.substring(i + 1, cmdStart);
-
-		// Show ambiguous
-		StringBuffer sb = new StringBuffer("\n");
-		for (i = 0; i < complete.length && i < SHOW_AMBIG_MAX; i++) {
-			sb.append(complete[i] + "\n");
-		}
-		if (i == SHOW_AMBIG_MAX) {
-			sb.append("...\n");
-		}
-
-		print(sb, Color.gray);
-		print(prompt); // print resets command start
-		append(command); // append does not reset command start
 	}
 
 	private void resetCommandStart() {
@@ -628,10 +556,6 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 		} else {
 			run.run();
 		}
-	}
-
-	public void setNameCompletion(NameCompletion nc) {
-		this.nameCompletion = nc;
 	}
 
 	public void setWaitFeedback(boolean on) {
