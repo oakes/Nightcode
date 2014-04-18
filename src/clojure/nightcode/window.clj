@@ -92,7 +92,7 @@
         (reset! shortcuts/down? false)
         (shortcuts/toggle-hint! @editors/tabs false)
         (shortcuts/toggle-hints! @ui/root false)
-        ; update the tree to reflect any changes in the filesystem
+        ; update the project tree and file browser
         (ui/update-project-tree!)
         (file-browser/update-card!))
       (windowClosing [e]

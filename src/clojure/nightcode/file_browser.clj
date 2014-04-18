@@ -96,7 +96,7 @@
       (s/config! (s/select file-browser [:#up])
                  :visible? (not (contains? @ui/tree-projects path)))))
   ([]
-    (update-card! @ui/tree-selection)))
+    (some-> @ui/tree-selection update-card!)))
 
 (add-watch ui/tree-selection
            :show-file-browser
