@@ -68,17 +68,39 @@
                 (lein-droid-render "ic_launcher_ldpi.png")]
                ["android/res/values/strings.xml"
                 (lein-droid-render "strings.xml" data)]
+               ; android libgdx.so
                ["android/libs/armeabi/libgdx.so"
-                (-> "armeabi-libgdx.so" io/resource io/input-stream)]
+                (-> (io/resource "armeabi/libgdx.so") io/input-stream)]
                ["android/libs/armeabi-v7a/libgdx.so"
-                (-> "armeabi-v7a-libgdx.so" io/resource io/input-stream)]
+                (-> (io/resource "armeabi-v7a/libgdx.so") io/input-stream)]
                ["android/libs/x86/libgdx.so"
-                (-> (io/resource "x86-libgdx.so") io/input-stream)]
+                (-> (io/resource "x86/libgdx.so") io/input-stream)]
+               ; android libgdx-box2d.so
+               ["android/libs/armeabi/libgdx-box2d.so"
+                (-> (io/resource "armeabi/libgdx-box2d.so") io/input-stream)]
+               ["android/libs/armeabi-v7a/libgdx-box2d.so"
+                (-> (io/resource "armeabi-v7a/libgdx-box2d.so") io/input-stream)]
+               ["android/libs/x86/libgdx-box2d.so"
+                (-> (io/resource "x86/libgdx-box2d.so") io/input-stream)]
+               ; android libgdx-bullet.so
+               ["android/libs/armeabi/libgdx-bullet.so"
+                (-> (io/resource "armeabi/libgdx-bullet.so") io/input-stream)]
+               ["android/libs/armeabi-v7a/libgdx-bullet.so"
+                (-> (io/resource "armeabi-v7a/libgdx-bullet.so") io/input-stream)]
+               ["android/libs/x86/libgdx-bullet.so"
+                (-> (io/resource "x86/libgdx-bullet.so") io/input-stream)]
                ; ios
                ["ios/project.clj" (render "ios-project.clj" data)]
                ["ios/Info.plist.xml" (render "Info.plist.xml" data)]
                ["ios/src/{{ios-path}}.java" (render "IOSLauncher.java" data)]
+               ; ios libObjectAL.a and libgdx.a
                ["ios/libs/libObjectAL.a"
-                (-> (io/resource "libObjectAL.a") io/input-stream)]
+                (-> (io/resource "ios/libObjectAL.a") io/input-stream)]
                ["ios/libs/libgdx.a"
-                (-> (io/resource "libgdx.a") io/input-stream)])))
+                (-> (io/resource "ios/libgdx.a") io/input-stream)]
+               ; ios libgdx-box2d.a
+               ["ios/libs/libgdx-box2d.a"
+                (-> (io/resource "ios/libgdx-box2d.a") io/input-stream)]
+               ; ios libgdx-bullet.a
+               ["ios/libs/libgdx-bullet.a"
+                (-> (io/resource "ios/libgdx-bullet.a") io/input-stream)])))
