@@ -405,7 +405,8 @@
                   condition JComponent/WHEN_FOCUSED]
               (.processKeyBinding text-area ks e condition true))
             (.consume e))
-          (.hideChildWindows completer))))))
+          (doseq [w (.getOwnedWindows @ui/root)]
+            (.setVisible w false)))))))
 
 (defn create-console
   ([path]
