@@ -14,6 +14,4 @@
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
-               ["src/{{path}}.clj" (render "core.clj" data)]
-               ["test/{{path}}_test.clj"
-                (render "core_test.clj" data)])))
+               ["src/{{path}}.clj" (render "core.clj" data)])))
