@@ -368,7 +368,7 @@
                             (compliment/documentation symbol-str)
                             "</span></pre></body></html>")
                        (BasicCompletion. this symbol-str nil)))))
-          (catch Exception _)))
+          (catch Exception _ '())))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
             (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch)))
