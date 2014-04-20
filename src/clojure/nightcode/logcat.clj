@@ -18,8 +18,6 @@
   (->> (lein/start-process! process
                             nil
                             (-> (lein/read-project-clj path)
-                                :android
-                                :sdk-path
                                 (leiningen.droid.utils/sdk-binary :adb))
                             "logcat"
                             "*:I")
