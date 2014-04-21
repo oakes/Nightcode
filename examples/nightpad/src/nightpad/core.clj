@@ -1,6 +1,7 @@
 (ns nightpad.core
   (:require [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
+            [nightcode.utils :as utils]
             [nightcode.ui :as ui]
             [nightcode.window :as window]
             [seesaw.core :as s])
@@ -14,7 +15,7 @@
 (defn create-window-content
   [extension]
   (doto (editors/create-text-area)
-    (.setSyntaxEditingStyle (get editors/styles extension))
+    (.setSyntaxEditingStyle (get utils/styles extension))
     (.setTabSize 2)
     (init-completer! extension)
     (editors/init-paredit! true true)
