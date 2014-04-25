@@ -1,4 +1,4 @@
-(defproject nightcode "0.3.3"
+(defproject nightcode "0.3.4-SNAPSHOT"
   :description "An IDE for Clojure and Java"
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
@@ -20,7 +20,7 @@
                  [org.clojure/tools.namespace "0.2.4"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"]
-                 [play-clj/lein-template "0.3.0"]
+                 [play-clj/lein-template "0.3.1"]
                  [seesaw "1.4.4"]]
   :resource-paths ["resources" "tools"]
   :source-paths ["src/clojure"]
