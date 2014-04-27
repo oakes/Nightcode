@@ -1,6 +1,7 @@
 (ns nightcode.utils
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.string :as string]
             [clojure.tools.namespace.file :as file]
             [clojure.tools.namespace.parse :as parse]
             [clojure.xml :as xml])
@@ -45,15 +46,13 @@
 (defn get-string
   "Returns the localized string for the given keyword."
   [res-name]
-  (if (keyword? res-name)
-    (-> (filter #(= (get-in % [:attrs :name]) (name res-name))
-                lang-strings)
-        first
-        :content
-        first
-        (or "")
-        (clojure.string/replace "\\" ""))
-    res-name))
+  (-> #(= (get-in % [:attrs :name]) (-> res-name name (string/replace "-" "_")))
+      (filter lang-strings)
+      first
+      :content
+      first
+      (or "")
+      (clojure.string/replace "\\" "")))
 
 ; paths and encodings
 
@@ -131,7 +130,7 @@
   "Returns a message indicating which paths are currently unsaved."
   [unsaved-paths]
   (when (seq unsaved-paths)
-    (str (get-string :unsaved_confirm)
+    (str (get-string :unsaved-confirm)
          \newline \newline
          (->> unsaved-paths
               (map #(.getName (io/file %)))

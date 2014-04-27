@@ -29,7 +29,7 @@
 (defn set-android-sdk!
   [& _]
   (if (sandbox/get-dir)
-    (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
+    (dialogs/show-simple-dialog! (utils/get-string :sandbox-apology))
     (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
       (utils/write-pref! :android-sdk (.getCanonicalPath d))
       (show-builder! (ui/get-project-path @ui/tree-selection)))))
@@ -37,7 +37,7 @@
 (defn set-robovm!
   [& _]
   (if (sandbox/get-dir)
-    (dialogs/show-simple-dialog! (utils/get-string :sandbox_apology))
+    (dialogs/show-simple-dialog! (utils/get-string :sandbox-apology))
     (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
       (utils/write-pref! :robovm (.getCanonicalPath d))
       (show-builder! (ui/get-project-path @ui/tree-selection)))))
@@ -153,7 +153,7 @@
                    :listen [:action (:run actions)]
                    :focusable? false)
    :run-repl (ui/button :id :run-repl
-                        :text (utils/get-string :run_with_repl)
+                        :text (utils/get-string :run-with-repl)
                         :listen [:action (:run-repl actions)]
                         :focusable? false)
    :reload (ui/button :id :reload
@@ -173,7 +173,7 @@
                      :listen [:action (:clean actions)]
                      :focusable? false)
    :check-versions (ui/button :id :check-versions
-                              :text (utils/get-string :check_versions)
+                              :text (utils/get-string :check-versions)
                               :listen [:action (:check-versions actions)]
                               :focusable? false)
    :stop (ui/button :id :stop
@@ -181,7 +181,7 @@
                     :listen [:action (:stop actions)]
                     :focusable? false)
    :sdk (ui/button :id :sdk
-                   :text (utils/get-string :android_sdk)
+                   :text (utils/get-string :android-sdk)
                    :listen [:action (:sdk actions)]
                    :focusable? false)
    :robovm (ui/button :id :robovm
@@ -189,7 +189,7 @@
                       :listen [:action (:robovm actions)]
                       :focusable? false)
    :auto (ui/toggle :id :auto
-                    :text (utils/get-string :auto_build)
+                    :text (utils/get-string :auto-build)
                     :listen [:action (:auto actions)]
                     :focusable? false)})
 

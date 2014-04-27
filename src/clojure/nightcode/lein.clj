@@ -81,7 +81,7 @@
   (when path
     (let [project-clj-path (get-project-clj-path path)]
       (if-not (.exists (io/file project-clj-path))
-        (println (utils/get-string :no_project_clj))
+        (println (utils/get-string :no-project-clj))
         (-> (leiningen.core.project/read project-clj-path)
             add-sdk-path
             add-robovm-path
@@ -303,7 +303,7 @@
 (defn run-repl-project!
   [process in-out path]
   (stop-process! process)
-  (->> (do (println (utils/get-string :running_with_repl))
+  (->> (do (println (utils/get-string :running-with-repl))
          (start-process-indirectly! process path class-name "repl"))
        (start-thread! in-out)))
 
@@ -336,7 +336,7 @@
 (defn check-versions-in-project!
   [process in-out path]
   (stop-process! process)
-  (->> (do (println (utils/get-string :checking_versions))
+  (->> (do (println (utils/get-string :checking-versions))
          (start-process-indirectly! process path class-name "check-versions"))
        (start-thread! in-out)))
 

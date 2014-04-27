@@ -52,12 +52,12 @@
 (defn show-remove-dialog!
   [project?]
   (-> (s/dialog :content (utils/get-string (if project?
-                                             :remove_project_warning
-                                             :remove_file_warning))
+                                             :remove-project-warning
+                                             :remove-file-warning))
                 :options
                 [(s/button :text (utils/get-string (if project?
-                                                     :remove_project
-                                                     :remove_file))
+                                                     :remove-project
+                                                     :remove-file))
                            :listen [:action #(s/return-from-dialog % true)])
                  (s/button :text (utils/get-string :cancel)
                            :listen [:action #(s/return-from-dialog % false)])])
@@ -81,8 +81,8 @@
 
 (defn show-project-clj-dialog!
   []
-  (-> (s/dialog :content (utils/get-string :project_clj_required)
-                :options [(s/button :text (utils/get-string :create_project_clj)
+  (-> (s/dialog :content (utils/get-string :project-clj-required)
+                :options [(s/button :text (utils/get-string :create-project-clj)
                                     :listen [:action
                                              #(s/return-from-dialog % true)])
                           (s/button :text (utils/get-string :continue)
@@ -138,13 +138,13 @@
                         (.setVerticalTextPosition JRadioButton/BOTTOM)
                         (.setHorizontalTextPosition JRadioButton/CENTER)))]
     (-> (s/dialog
-          :title (utils/get-string :specify_project_type)
+          :title (utils/get-string :specify-project-type)
           :content (s/vertical-panel
                      :items [(s/grid-panel :columns 4
                                            :rows 2
                                            :items buttons)
                              (s/flow-panel :items [package-name-text])])
-          :options [(s/button :text (utils/get-string :create_project)
+          :options [(s/button :text (utils/get-string :create-project)
                               :listen [:action #(s/return-from-dialog
                                                   % (finish))])])
         s/pack!
@@ -154,7 +154,7 @@
 (defn show-shut-down-dialog!
   [unsaved-paths]
   (-> (s/dialog :content (str (utils/get-unsaved-paths-message unsaved-paths)
-                              (utils/get-string :quit_confirm))
+                              (utils/get-string :quit-confirm))
                 :options [(s/button :text (utils/get-string :quit)
                                     :listen [:action
                                              #(s/return-from-dialog % true)])

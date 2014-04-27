@@ -73,4 +73,11 @@
   <string name="alt">Alt</string>
 
   <string name="sandbox_apology">Sorry, this feature can't be used due to sandbox limitations.</string>
+
+  <string name="arcade">Arcade</string>
+  <string name="platformer">Platformer</string>
+  <string name="orthogonal_rpg">Orthogonal RPG</string>
+  <string name="isometric_rpg">Isometric RPG</string>
+  <string name="barebones_2d">Barebones 2D</string>
+  <string name="barebones_3d">Barebones 3D</string>
 </resources>

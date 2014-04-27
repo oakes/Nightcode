@@ -38,7 +38,7 @@
   [& _]
   (when-let [new-file (enter-filename! "example.clj")]
     (if (.exists new-file)
-      (s/alert (utils/get-string :file_exists))
+      (s/alert (utils/get-string :file-exists))
       (do
         (io!
           (.mkdirs (.getParentFile new-file))
@@ -83,7 +83,7 @@
   []
   [(create-up-button)
    (ui/button :id :new-file
-              :text (utils/get-string :new_file)
+              :text (utils/get-string :new-file)
               :listen [:action new-file!]
               :focusable? false)
    (ui/button :id :edit

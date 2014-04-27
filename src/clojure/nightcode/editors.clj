@@ -490,11 +490,11 @@
                     :focusable? false
                     :listen [:action (:redo actions)])
    :font-dec (ui/button :id :font-dec
-                        :text (utils/get-string :font_dec)
+                        :text (utils/get-string :font-dec)
                         :focusable? false
                         :listen [:action (:font-dec actions)])
    :font-inc (ui/button :id :font-inc
-                        :text (utils/get-string :font_inc)
+                        :text (utils/get-string :font-inc)
                         :focusable? false
                         :listen [:action (:font-inc actions)])
    :doc (ui/toggle :id :doc
@@ -508,7 +508,7 @@
                        :selected? @paredit-enabled?
                        :listen [:action (:paredit actions)])
    :paredit-help (ui/button :id :paredit-help
-                            :text (utils/get-string :paredit_help)
+                            :text (utils/get-string :paredit-help)
                             :focusable? false
                             :listen [:action (:paredit-help actions)])
    :find (doto (s/text :id :find
