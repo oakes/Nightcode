@@ -214,7 +214,6 @@
            :update-project-buttons
            (fn [_ _ _ path]
              (s/config! (s/select @ui/root [:#remove])
-                        :visible? (not (nil? path))
                         :enabled? (and (not (nil? path))
                                        (or (contains? @ui/tree-projects path)
                                            (.isFile (io/file path)))))
