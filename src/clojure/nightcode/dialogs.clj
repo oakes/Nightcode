@@ -105,6 +105,7 @@
                [:android-clojure :android "Clojure"]
                [:ios-clojure :ios "Clojure"]
                [:desktop-clojure :desktop "Clojure"]
+               [:quil-clojure :quil "Clojure"]
                [:console-java :console "Java"]
                [:game-java :game "Java"]
                [:android-java :android "Java"]
@@ -140,7 +141,7 @@
     (-> (s/dialog
           :title (utils/get-string :specify_project_type)
           :content (s/vertical-panel
-                     :items [(s/grid-panel :columns 4
+                     :items [(s/grid-panel :columns 5
                                            :rows 2
                                            :items buttons)
                              (s/flow-panel :items [package-name-text])])
