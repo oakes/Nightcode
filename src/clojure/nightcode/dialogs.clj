@@ -101,16 +101,16 @@
                                utils/format-project-name
                                (s/text :columns 20 :text))
         types [[:console-clojure :console "Clojure"]
-               [:game-clojure :game "Clojure"]
-               [:android-clojure :android "Clojure"]
-               [:ios-clojure :ios "Clojure"]
-               [:desktop-clojure :desktop "Clojure"]
-               [:graphics-clojure :graphics "Clojure"]
                [:console-java :console "Java"]
+               [:game-clojure :game "Clojure"]
                [:game-java :game "Java"]
+               [:android-clojure :android "Clojure"]
                [:android-java :android "Java"]
+               [:ios-clojure :ios "Clojure"]
                [:ios-java :ios "Java"]
+               [:desktop-clojure :desktop "Clojure"]
                [:web-clojure :web "ClojureScript"]
+               [:graphics-clojure :graphics "Clojure"]
                [:sounds-clojure :sounds "Clojure"]]
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (second %)) types)
@@ -142,8 +142,7 @@
     (-> (s/dialog
           :title (utils/get-string :specify-project-type)
           :content (s/vertical-panel
-                     :items [(s/grid-panel :columns 5
-                                           :rows 2
+                     :items [(s/grid-panel :rows (/ (count types) 4)
                                            :items buttons)
                              (s/flow-panel :items [package-name-text])])
           :options [(s/button :text (utils/get-string :create-project)
