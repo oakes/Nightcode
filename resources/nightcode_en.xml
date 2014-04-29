@@ -42,7 +42,7 @@
   <string name="android">Android</string>
   <string name="ios">iOS</string>
   <string name="game">Game</string>
-  <string name="quil">Quil</string>
+  <string name="graphics">Graphics</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
 
