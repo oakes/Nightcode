@@ -105,7 +105,7 @@
                [:android-clojure :android "Clojure"]
                [:ios-clojure :ios "Clojure"]
                [:desktop-clojure :desktop "Clojure"]
-               [:quil-clojure :quil "Clojure"]
+               [:graphics-clojure :graphics "Clojure"]
                [:console-java :console "Java"]
                [:game-java :game "Java"]
                [:android-java :android "Java"]

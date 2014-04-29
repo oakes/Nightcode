@@ -1,5 +1,6 @@
 (ns {{namespace}}
-  (:require [quil.core :refer :all]))
+  (:require [quil.core :refer :all])
+  (:gen-class))
 
 (defn setup []
   (smooth))
@@ -15,3 +16,4 @@
   :draw draw
   :size [200 200])
 
+(defn -main [& args])
