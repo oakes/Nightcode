@@ -110,7 +110,8 @@
                [:game-java :game "Java"]
                [:android-java :android "Java"]
                [:ios-java :ios "Java"]
-               [:web-clojure :web "ClojureScript"]]
+               [:web-clojure :web "ClojureScript"]
+               [:sounds-clojure :sounds "Clojure"]]
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (second %)) types)
                 types)
