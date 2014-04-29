@@ -1,6 +1,5 @@
 (ns {{namespace}}
-  (:require [quil.core :refer :all])
-  (:gen-class))
+  (:require [quil.core :refer :all]))
 
 (defn setup []
   (smooth))
