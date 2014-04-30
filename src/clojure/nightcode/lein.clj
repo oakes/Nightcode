@@ -17,6 +17,7 @@
             [leiningen.repl]
             [leiningen.run]
             [leiningen.test]
+            [leiningen.typed]
             [leiningen.uberjar]
             [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
@@ -260,6 +261,13 @@
 
 (defn test-project-task
   [path project]
+  (when (:core.typed project)
+    (try
+      (leiningen.typed/typed project
+                             (if (clojurescript-project? path)
+                               "check-cljs"
+                               "check"))
+      (catch Exception _)))
   (leiningen.test/test project))
 
 (defn clean-project-task
