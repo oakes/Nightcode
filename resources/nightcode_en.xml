@@ -70,6 +70,7 @@
   <string name="new_file">New File</string>
   <string name="edit">Edit</string>
   <string name="delete">Delete</string>
+  <string name="toggle_window">Toggle Window</string>
 
   <string name="ctrl">Ctrl</string>
   <string name="alt">Alt</string>

@@ -11,6 +11,7 @@
            [net.java.balloontip.styles ToolTipBalloonStyle]))
 
 (def down? (atom false))
+(def ^:dynamic *hint-container* nil)
 (def ^:const mappings {:new-project "P"
                        :rename "M"
                        :import "O"
@@ -111,11 +112,7 @@
         (doto positioner
           (.enableFixedAttachLocation true)
           (.setAttachLocation 0.5 y))
-        (when-let [container (some-> @ui/root
-                                     .getGlassPane
-                                     (s/select [:JLayeredPane])
-                                     first)]
-          (.setTopLevelContainer tip container))
+        (some->> *hint-container* (.setTopLevelContainer tip))
         (doto tip
           (.setPositioner positioner)
           (.setVisible false))))))
@@ -156,12 +153,12 @@
 
 (defn listen-for-shortcuts!
   "Creates a global listener for shortcuts."
-  [target func]
+  [func]
   (.addKeyEventDispatcher
     (KeyboardFocusManager/getCurrentKeyboardFocusManager)
     (proxy [KeyEventDispatcher] []
       (dispatchKeyEvent [^KeyEvent e]
-        (update-hints! target e)
-        (if (focused-window? target)
-          (run-shortcut! target func e)
+        (update-hints! @ui/root e)
+        (if (focused-window? @ui/root)
+          (run-shortcut! @ui/root func e)
           false)))))

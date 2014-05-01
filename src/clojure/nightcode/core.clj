@@ -45,6 +45,19 @@
                  :height 768
                  :icon "logo_launcher.png"
                  :on-close :nothing)
+    ; set various window properties
+    window/enable-full-screen!
+    window/add-listener!))
+
+(defn -main
+  "Launches the main window."
+  [& args]
+  (window/set-icon! "logo_launcher.png")
+  (window/set-theme! args)
+  (sandbox/set-home!)
+  (sandbox/create-profiles-clj!)
+  (sandbox/read-file-permissions!)
+  (s/invoke-later
     ; listen for keys while modifier is down
     (shortcuts/listen-for-shortcuts!
       (fn [key-code]
@@ -65,19 +78,6 @@
           87 (editors/close-selected-editor!)
           ; else
           false)))
-    ; set various window properties
-    window/enable-full-screen!
-    window/add-listener!))
-
-(defn -main
-  "Launches the main window."
-  [& args]
-  (window/set-icon! "logo_launcher.png")
-  (window/set-theme! args)
-  (sandbox/set-home!)
-  (sandbox/create-profiles-clj!)
-  (sandbox/read-file-permissions!)
-  (s/invoke-later
     ; create and show the frame
     (s/show! (reset! ui/root (create-window)))
     ; initialize the project pane
