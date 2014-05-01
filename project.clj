@@ -8,6 +8,7 @@
                  [leiningen "2.3.4"]
                  [lein-ancient "0.5.4" :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.3"]
+                 [lein-clr "0.2.1"]
                  [lein-droid "0.2.3"]
                  [lein-fruit "0.2.0"]
                  [lein-typed "0.3.4"]

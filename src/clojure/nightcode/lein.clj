@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.main]
             [leiningen.ancient]
+            [leiningen.clr]
             [leiningen.core.eval]
             [leiningen.core.main]
             [leiningen.core.project]
@@ -232,6 +233,8 @@
         (leiningen.droid/execute-subtask project cmd [])))
     (ios-project? path)
     (leiningen.fruit/fruit project "doall")
+    (:clr project)
+    (leiningen.clr/clr project "run")
     :else
     (leiningen.run/run project)))
 
@@ -243,6 +246,8 @@
       (doseq [cmd ["deploy" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
         (Thread/sleep 10000)))
+    (:clr project)
+    (leiningen.clr/clr project "repl")
     :else
     (leiningen.repl/repl project)))
 
@@ -256,6 +261,8 @@
             leiningen.droid/execute-release-routine)
     (ios-project? path)
     (leiningen.fruit/fruit project "release")
+    (:clr project)
+    (leiningen.clr/clr project "compile")
     :else
     (leiningen.uberjar/uberjar project)))
 
@@ -264,15 +271,21 @@
   (when (:core.typed project)
     (try
       (leiningen.typed/typed project
-                             (if (clojurescript-project? path)
-                               "check-cljs"
-                               "check"))
+                             (if (:cljsbuild project) "check-cljs" "check"))
       (catch Exception _)))
-  (leiningen.test/test project))
+  (cond
+    (:clr project)
+    (leiningen.clr/clr project "test")
+    :else
+    (leiningen.test/test project)))
 
 (defn clean-project-task
   [path project]
-  (leiningen.clean/clean project))
+  (cond
+    (:clr project)
+    (leiningen.clr/clr project "clean")
+    :else
+    (leiningen.clean/clean project)))
 
 (defn cljsbuild-project-task
   [path project]

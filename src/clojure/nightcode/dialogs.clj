@@ -109,7 +109,8 @@
                [:desktop [:clojure]]
                [:web [:clojure]]
                [:graphics [:clojure]]
-               [:sounds [:clojure]]]
+               [:sounds [:clojure]]
+               [:dotnet [:clojure]]]
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (first %)) types)
                 types)
