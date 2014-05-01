@@ -71,6 +71,8 @@
   (ui/update-project-tree!)
   (finish-edits!))
 
+(def ^:dynamic *widgets* [:up :new-file :edit :save :cancel])
+
 (defn create-actions
   []
   {:up go-up!
@@ -80,24 +82,24 @@
    :cancel finish-edits!})
 
 (defn create-widgets
-  []
-  [(create-up-button)
-   (ui/button :id :new-file
-              :text (utils/get-string :new-file)
-              :listen [:action new-file!]
-              :focusable? false)
-   (ui/button :id :edit
-              :text (utils/get-string :edit)
-              :listen [:action edit-files!]
-              :focusable? false)
-   (ui/button :id :save
-              :text (utils/get-string :save)
-              :listen [:action save-edits!]
-              :focusable? false)
-   (ui/button :id :cancel
-              :text (utils/get-string :cancel)
-              :listen [:action finish-edits!]
-              :focusable? false)])
+  [actions]
+  {:up (create-up-button)
+   :new-file (ui/button :id :new-file
+                        :text (utils/get-string :new-file)
+                        :listen [:action (:new-file actions)]
+                        :focusable? false)
+   :edit (ui/button :id :edit
+                    :text (utils/get-string :edit)
+                    :listen [:action (:edit actions)]
+                    :focusable? false)
+   :save (ui/button :id :save
+                    :text (utils/get-string :save)
+                    :listen [:action (:save actions)]
+                    :focusable? false)
+   :cancel (ui/button :id :cancel
+                      :text (utils/get-string :cancel)
+                      :listen [:action (:cancel actions)]
+                      :focusable? false)})
 
 (defn toggle-visible!
   [view path]
@@ -107,9 +109,9 @@
                  :#new-file (not edit?)
                  :#edit (and (not edit?)
                              (->> (io/file path)
-                               .listFiles
-                               (filter #(.isFile %))
-                               seq))
+                                  .listFiles
+                                  (filter #(.isFile %))
+                                  seq))
                  :#save edit?
                  :#cancel edit?}]
     (doseq [[id should-show?] buttons]
@@ -160,11 +162,14 @@
 
 (defn create-card
   []
-  (doto (s/border-panel :id :file-browser
-                        :north (ui/wrap-panel :items (create-widgets))
-                        :center (s/scrollable (ui/wrap-panel :id :file-grid)))
-    shortcuts/create-hints!
-    (shortcuts/create-mappings! (create-actions))))
+  (let [actions (create-actions)
+        widgets (create-widgets actions)
+        widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
+    (doto (s/border-panel :id :file-browser
+                          :north widget-bar
+                          :center (s/scrollable (ui/wrap-panel :id :file-grid)))
+      shortcuts/create-hints!
+      (shortcuts/create-mappings! actions))))
 
 (defn update-card!
   ([path]
