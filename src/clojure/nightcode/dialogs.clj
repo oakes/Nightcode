@@ -1,5 +1,6 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
+            [clojure.string :as string]
             [nightcode.sandbox :as sandbox]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -97,26 +98,37 @@
   (let [raw-project-name (.getName dir)
         parent-dir (.getParent dir)
         group (s/button-group)
+        lang-group (s/button-group)
         package-name-text (->> (str raw-project-name ".core")
                                utils/format-project-name
                                (s/text :columns 20 :text))
-        types [[:console-clojure :console "Clojure"]
-               [:console-java :console "Java"]
-               [:game-clojure :game "Clojure"]
-               [:game-java :game "Java"]
-               [:android-clojure :android "Clojure"]
-               [:android-java :android "Java"]
-               [:ios-clojure :ios "Clojure"]
-               [:ios-java :ios "Java"]
-               [:desktop-clojure :desktop "Clojure"]
-               [:web-clojure :web "ClojureScript"]
-               [:graphics-clojure :graphics "Clojure"]
-               [:sounds-clojure :sounds "Clojure"]]
+        types [[:console [:clojure :java]]
+               [:game [:clojure :java]]
+               [:android [:clojure :java]]
+               [:ios [:clojure :java]]
+               [:desktop [:clojure]]
+               [:web [:clojure]]
+               [:graphics [:clojure]]
+               [:sounds [:clojure]]]
         types (if (sandbox/get-dir)
-                (remove #(contains? #{:ios :android} (second %)) types)
+                (remove #(contains? #{:ios :android} (first %)) types)
                 types)
+        update-lang! (fn [e]
+                       ; select the clojure option
+                       (-> (s/select (s/to-root e) [:#clojure])
+                           (s/config! :selected? true))
+                       ; hide the language choices if there is only one
+                       (let [type (some #(if (= (first %) (s/id-of e)) %) types)
+                             lang (s/select (s/to-root e) [:#lang])]
+                         (if (= 1 (count (second type)))
+                           (s/hide! lang)
+                           (s/show! lang))))
         finish (fn []
-                 (let [project-type (s/id-of (s/selection group))
+                 (let [project-type (->> [(s/selection group)
+                                          (s/selection lang-group)]
+                                         (map #(name (s/id-of %)))
+                                         (string/join "-")
+                                         keyword)
                        project-name (-> raw-project-name
                                         utils/format-project-name)
                        package-name (-> (s/text package-name-text)
@@ -124,27 +136,36 @@
                        project-dir (-> (io/file parent-dir project-name)
                                        .getCanonicalPath)]
                    [project-type project-name package-name project-dir]))
-        buttons (for [[id name-key lang-str] types]
+        buttons (for [[id template-ids] types]
                   (doto (s/radio :id id
                                  :text (str "<html>"
                                             "<center>"
-                                            (utils/get-string name-key) "<br>"
-                                            "<i>" lang-str "</i>"
+                                            (utils/get-string id) "<br>"
                                             "</center>")
                                  :group group
-                                 :selected? (= id :console-clojure)
+                                 :selected? (= id :console)
+                                 :listen [:action update-lang!]
                                  :valign :center
                                  :halign :center)
                         (.setSelectedIcon (icon/icon (str (name id) "2.png")))
                         (.setIcon (icon/icon (str (name id) ".png")))
                         (.setVerticalTextPosition JRadioButton/BOTTOM)
-                        (.setHorizontalTextPosition JRadioButton/CENTER)))]
+                        (.setHorizontalTextPosition JRadioButton/CENTER)))
+        lang-buttons (for [k [:clojure :java]]
+                       (s/radio :id k
+                                :text (utils/get-string k)
+                                :group lang-group
+                                :selected? (= k :clojure)
+                                :valign :center
+                                :halign :center))]
     (-> (s/dialog
           :title (utils/get-string :specify-project-type)
           :content (s/vertical-panel
-                     :items [(s/grid-panel :rows (/ (count types) 4)
+                     :items [(s/grid-panel :columns (/ (count types) 2)
                                            :items buttons)
-                             (s/flow-panel :items [package-name-text])])
+                             (s/flow-panel :items [package-name-text])
+                             (s/horizontal-panel :id :lang
+                                                 :items lang-buttons)])
           :options [(s/button :text (utils/get-string :create-project)
                               :listen [:action #(s/return-from-dialog
                                                   % (finish))])])
