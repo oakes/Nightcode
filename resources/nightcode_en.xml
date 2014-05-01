@@ -47,6 +47,7 @@
   <string name="graphics">Graphics</string>
   <string name="sounds">Sounds</string>
   <string name="dotnet">.NET</string>
+  <string name="database">Database</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
 

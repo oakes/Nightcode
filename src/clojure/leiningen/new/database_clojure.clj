@@ -1,9 +1,9 @@
-(ns leiningen.new.console-clojure
+(ns leiningen.new.database-clojure
   (:require [leiningen.new.templates :as t]))
 
-(defn console-clojure
+(defn database-clojure
   [name package-name]
-  (let [render (t/renderer "console-clojure")
+  (let [render (t/renderer "database-clojure")
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (t/sanitize-ns package-name)
         data {:app-name name
