@@ -36,8 +36,6 @@
   <string name="quit_confirm">Are you sure you want to quit?</string>
   <string name="quit">Quit</string>
 
-  <string name="clojure">Clojure</string>
-  <string name="java">Java</string>
   <string name="console">Console</string>
   <string name="desktop">Desktop</string>
   <string name="web">Web</string>
@@ -48,6 +46,11 @@
   <string name="sounds">Sounds</string>
   <string name="dotnet">.NET</string>
   <string name="database">Database</string>
+
+  <string name="clojure">Clojure</string>
+  <string name="java">Java</string>
+  <string name="osx_required">OS X Required</string>
+  <string name="windows_required">Windows Required</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
 

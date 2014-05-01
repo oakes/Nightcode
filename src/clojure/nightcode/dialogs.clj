@@ -105,12 +105,12 @@
         types [[:console [:clojure :java]]
                [:game [:clojure :java]]
                [:android [:clojure :java]]
-               [:ios [:clojure :java]]
+               [:ios [:clojure :java] :osx-required]
                [:desktop [:clojure]]
                [:web [:clojure]]
                [:graphics [:clojure]]
                [:sounds [:clojure]]
-               [:dotnet [:clojure]]
+               [:dotnet [:clojure] :windows-required]
                [:database [:clojure]]]
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (first %)) types)
@@ -121,10 +121,9 @@
                            (s/config! :selected? true))
                        ; hide the language choices if there is only one
                        (let [type (some #(if (= (first %) (s/id-of e)) %) types)
-                             lang (s/select (s/to-root e) [:#lang])]
-                         (if (= 1 (count (second type)))
-                           (s/hide! lang)
-                           (s/show! lang))))
+                             lang (s/select (s/to-root e) [:.lang-button])
+                             multi-lang? (= 2 (count (second type)))]
+                         (s/config! lang :enabled? multi-lang?)))
         finish (fn []
                  (let [project-type (->> [(s/selection group)
                                           (s/selection lang-group)]
@@ -138,11 +137,14 @@
                        project-dir (-> (io/file parent-dir project-name)
                                        .getCanonicalPath)]
                    [project-type project-name package-name project-dir]))
-        buttons (for [[id template-ids] types]
+        buttons (for [[id template-ids subtitle] types]
                   (doto (s/radio :id id
                                  :text (str "<html>"
                                             "<center>"
                                             (utils/get-string id) "<br>"
+                                            (some->> subtitle
+                                                     utils/get-string
+                                                     (format "<i>%s</i>"))
                                             "</center>")
                                  :group group
                                  :selected? (= id :console)
@@ -155,6 +157,7 @@
                         (.setHorizontalTextPosition JRadioButton/CENTER)))
         lang-buttons (for [k [:clojure :java]]
                        (s/radio :id k
+                                :class :lang-button
                                 :text (utils/get-string k)
                                 :group lang-group
                                 :selected? (= k :clojure)
