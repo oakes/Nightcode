@@ -106,11 +106,11 @@
                [:game [:clojure :java]]
                [:android [:clojure :java]]
                [:ios [:clojure :java] :osx-required]
+               [:dotnet [:clojure] :windows-required]
                [:desktop [:clojure]]
                [:web [:clojure]]
                [:graphics [:clojure]]
                [:sounds [:clojure]]
-               [:dotnet [:clojure] :windows-required]
                [:database [:clojure]]]
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (first %)) types)
