@@ -1,5 +1,6 @@
 target
-lib
+libs
+bin
 classes
 checkouts
 pom.xml
