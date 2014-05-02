@@ -70,8 +70,9 @@
                          (= "project.clj"))
         buttons {:#run-repl (and (not ios-project?)
                                  (not java-project?))
-                 :#reload (and (not ios-project?)
-                               (not (and java-project? android-project?)))
+                 :#reload (and (not java-project?)
+                               (not ios-project?)
+                               (not android-project?))
                  :#test (not java-project?)
                  :#sdk android-project?
                  :#robovm ios-project?
@@ -122,9 +123,7 @@
                (when (not (lein/java-project? path))
                  (reset! last-reload (System/currentTimeMillis))))
    :reload (fn [& _]
-             (if (lein/java-project? path)
-               (lein/run-hot-swap! (ui/get-io! console) path)
-               (eval-in-repl! console path @last-reload))
+             (eval-in-repl! console path @last-reload)
              (reset! last-reload (System/currentTimeMillis)))
    :build (fn [& _]
             (lein/build-project! process (ui/get-io! console) path))

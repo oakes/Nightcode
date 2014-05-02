@@ -22,12 +22,9 @@
             [leiningen.uberjar]
             [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
-  (:import [com.hypirion.io ClosingPipe Pipe]
-           [com.sun.jdi Bootstrap]
-           [org.apache.bcel.classfile ClassParser])
+  (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
 
-(def ^:const debug-port "7896")
 (defonce class-name (str *ns*))
 
 ; utilities
@@ -65,19 +62,6 @@
             (or (get-in project [:ios :robovm-path])
                 (utils/read-pref :robovm))))
 
-(defn add-hot-swap-args
-  [project]
-  (if (java-project-map? project)
-    (->> (conj (:jvm-opts project)
-               (str "-agentlib:jdwp="
-                    "transport=dt_socket,"
-                    "server=y,"
-                    "suspend=n,"
-                    "address="
-                    debug-port))
-         (assoc project :jvm-opts))
-    project))
-
 (defn read-project-clj
   [path]
   (when path
@@ -87,7 +71,6 @@
         (-> (leiningen.core.project/read project-clj-path)
             add-sdk-path
             add-robovm-path
-            add-hot-swap-args
             (try (catch Exception e {})))))))
 
 (defn read-android-project
@@ -106,17 +89,6 @@
            (leiningen.new.templates/->files data)
            io!))))
 
-(defn stale-java-classes
-  [project]
-  (for [dir (:java-source-paths project)
-        source (filter #(-> % (.getName) (.endsWith ".java"))
-                       (file-seq (io/file dir)))
-        :let [rel-source (.substring (.getPath source) (inc (count dir)))
-              rel-compiled (.replaceFirst rel-source "\\.java$" ".class")
-              compiled (io/file (:compile-path project) rel-compiled)]
-        :when (>= (.lastModified source) (.lastModified compiled))]
-    (.getCanonicalPath compiled)))
-
 (defn stale-clojure-sources
   [project timestamp]
   (for [dir (:source-paths project)
@@ -124,21 +96,6 @@
                        (file-seq (io/file dir)))
         :when (>= (.lastModified source) timestamp)]
     (.getCanonicalPath source)))
-
-(defn create-class-map
-  [classes paths]
-  (reduce (fn [class-map path]
-            (if-let [parsed (try (.parse (ClassParser. path))
-                              (catch Exception _))]
-              (if-let [class-ref (-> #(= (.getClassName parsed) (.name %))
-                                     (filter classes)
-                                     first)]
-                (doto class-map
-                  (.put class-ref (read-file path)))
-                class-map)
-              class-map))
-          (java.util.HashMap.)
-          paths))
 
 ; check project types
 
@@ -295,23 +252,6 @@
   [path project]
   (leiningen.ancient/ancient project ":all" ":no-colors"))
 
-(defn hot-swap-project-task
-  [path project]
-  (when-let [conn (->> (Bootstrap/virtualMachineManager)
-                       .attachingConnectors
-                       (filter #(= (.name (.transport %)) "dt_socket"))
-                       first)]
-     (let [prm (.defaultArguments conn)
-           stale-classes (doall (stale-java-classes project))]
-       (.setValue (.get prm "port") debug-port)
-       (.setValue (.get prm "hostname") "127.0.0.1")
-       (when-let [vm (try (.attach conn prm) (catch Exception _))]
-         (leiningen.javac/javac project)
-         (->> stale-classes
-              (create-class-map (.allClasses vm))
-              (.redefineClasses vm))
-         (.dispose vm)))))
-
 ; high-level commands
 
 (defn run-project!
@@ -377,11 +317,6 @@
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
        (redirect-io in-out)))
-
-(defn run-hot-swap!
-  [in-out path]
-  (->> (hot-swap-project-task path (read-project-clj path))
-       (start-thread! in-out)))
 
 ; main function for "indirect" processes
 
