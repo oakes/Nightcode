@@ -216,7 +216,6 @@
                              (not= (.getKeyCode e) KeyEvent/VK_SHIFT))
           context (SearchContext. find-text)]
       (when valid-search?
-        (.setRegularExpression context true)
         (when-not enter-key?
           (.setCaretPosition text-area 0))
         (when (.isShiftDown e)
