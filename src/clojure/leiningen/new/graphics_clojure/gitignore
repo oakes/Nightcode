@@ -1,9 +1,10 @@
-/target
-/classes
-/checkouts
+target
+libs
+bin
+classes
+checkouts
 pom.xml
 pom.xml.asc
 *.jar
 *.class
-/.lein-*
-/.nrepl-port
+.*

@@ -14,4 +14,5 @@
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
+               [".gitignore" (render "gitignore" data)]
                ["src/{{path}}.clj" (render "core.clj" data)])))
