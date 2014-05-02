@@ -31,20 +31,20 @@
                  :on-close :exit
                  :size [800 :by 600]
                  :menubar (create-menubar))
-    ; listen for keys while modifier is down
-    ; you can remove this to get rid of the modifier hints
-    (shortcuts/listen-for-shortcuts!
-      (fn [key-code]
-        (case key-code
-          ; Q
-          81 (window/confirm-exit-app!)
-          ; else
-          false)))
     ; set various window properties
     window/enable-full-screen!
     window/add-listener!))
 
 (defn -main [& args]
+  ; listen for keys while modifier is down
+  ; you can remove this to get rid of the modifier hints
+  (shortcuts/listen-for-shortcuts!
+    (fn [key-code]
+      (case key-code
+        ; Q
+        81 (window/confirm-exit-app!)
+        ; else
+        false)))
   ; this will give us a nice dark theme by default, or allow a lighter theme
   ; by adding "-s light" to the command line invocation
   (window/set-theme! args)
