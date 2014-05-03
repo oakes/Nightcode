@@ -3,7 +3,7 @@
   :dependencies []
   :warn-on-reflection true
   :plugins [[lein-clr "0.2.1"]]
-  :clr {:cmd-templates {:clj-exe [["target" "clr" "lib" "{{internal-dir}}" %1]]
+  :clr {:cmd-templates {:clj-exe [[?PATH "mono"] ["target" "clr" "lib" "{{internal-dir}}" %1]]
                         :clj-zip [".." ".." ".." "{{zip-path}}"]
                         :unzip ["jar" "xf" %2]}
         :deps-cmds [[:unzip "" :clj-zip]]
