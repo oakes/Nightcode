@@ -49,8 +49,6 @@
 
   <string name="clojure">Clojure</string>
   <string name="java">Java</string>
-  <string name="osx_required">OS X Required</string>
-  <string name="windows_required">Windows Required</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
 

@@ -105,8 +105,8 @@
         types [[:console [:clojure :java]]
                [:game [:clojure :java]]
                [:android [:clojure :java]]
-               [:ios [:clojure :java] :osx-required]
-               [:dotnet [:clojure] :windows-required]
+               [:ios [:clojure :java]]
+               [:dotnet [:clojure]]
                [:desktop [:clojure]]
                [:web [:clojure]]
                [:graphics [:clojure]]
@@ -137,14 +137,11 @@
                        project-dir (-> (io/file parent-dir project-name)
                                        .getCanonicalPath)]
                    [project-type project-name package-name project-dir]))
-        buttons (for [[id template-ids subtitle] types]
+        buttons (for [[id template-ids] types]
                   (doto (s/radio :id id
                                  :text (str "<html>"
                                             "<center>"
                                             (utils/get-string id) "<br>"
-                                            (some->> subtitle
-                                                     utils/get-string
-                                                     (format "<i>%s</i>"))
                                             "</center>")
                                  :group group
                                  :selected? (= id :console)
