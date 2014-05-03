@@ -76,7 +76,7 @@
   <string name="edit">Edit</string>
   <string name="open_in_file_browser">Open in File Browser</string>
   <string name="delete">Delete</string>
-  <string name="window">Window</string>
+  <string name="toggle_window">Toggle Window</string>
 
   <string name="ctrl">Ctrl</string>
   <string name="alt">Alt</string>
