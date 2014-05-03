@@ -1,6 +1,6 @@
 (defproject nightpad "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
-  :dependencies [[nightcode "0.3.4-SNAPSHOT"
+  :dependencies [[nightcode "0.3.4"
                   :exclusions [leiningen
                                lein-ancient
                                lein-cljsbuild
