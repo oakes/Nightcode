@@ -56,6 +56,8 @@
 
 ; paths and encodings
 
+(def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})
+(def ^:const wrap-exts #{"md" "txt"})
 (def ^:const styles {"as"         SyntaxConstants/SYNTAX_STYLE_ACTIONSCRIPT
                      "asm"        SyntaxConstants/SYNTAX_STYLE_ASSEMBLER_X86
                      "bat"        SyntaxConstants/SYNTAX_STYLE_WINDOWS_BATCH
@@ -233,7 +235,8 @@
   [uri]
   (-> uri Paths/get .normalize .toString))
 
-(defn ^:private ns-info
+(defn get-ns-from-path
+  "Returns the namespace and dependencies in the given file."
   [path]
   (let [form (-> path io/file file/read-file-ns-decl)]
     {:ns (second form)
@@ -243,7 +246,7 @@
   "Sorts the paths from least to most dependent."
   [paths]
   (let [deps (->> paths
-                  (map #(vector % (ns-info %)))
+                  (map #(vector % (get-ns-from-path %)))
                   (into {}))]
     (sort #(cond
              (contains? (get-in deps [%1 :deps]) (get-in deps [%2 :ns])) 1
