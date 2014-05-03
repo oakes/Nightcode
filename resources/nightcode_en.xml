@@ -74,6 +74,7 @@
   
   <string name="new_file">New File</string>
   <string name="edit">Edit</string>
+  <string name="open_in_file_browser">Open in File Browser</string>
   <string name="delete">Delete</string>
   <string name="window">Window</string>
 

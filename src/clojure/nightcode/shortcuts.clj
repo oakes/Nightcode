@@ -42,6 +42,7 @@
                        :toggle-logcat "S"
                        :new-file "N"
                        :edit "shift M"
+                       :open-in-browser "shift F"
                        :cancel "shift C"})
 
 (defn create-mapping!

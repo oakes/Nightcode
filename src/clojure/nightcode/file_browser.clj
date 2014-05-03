@@ -6,7 +6,8 @@
             [nightcode.utils :as utils]
             [seesaw.core :as s]
             [seesaw.icon :as icon])
-  (:import [javax.swing JLabel SwingConstants]))
+  (:import [java.awt Desktop]
+           [javax.swing JLabel SwingConstants]))
 
 (declare update-card!)
 
@@ -50,6 +51,10 @@
   (reset! edit-mode? true)
   (update-card!))
 
+(defn open-in-file-browser!
+  [& _]
+  (.open (Desktop/getDesktop) (io/file @ui/tree-selection)))
+
 (defn finish-edits!
   [& _]
   (reset! edit-mode? false)
@@ -71,13 +76,14 @@
   (ui/update-project-tree!)
   (finish-edits!))
 
-(def ^:dynamic *widgets* [:up :new-file :edit :save :cancel])
+(def ^:dynamic *widgets* [:up :new-file :edit :open-in-browser :save :cancel])
 
 (defn create-actions
   []
   {:up go-up!
    :new-file new-file!
    :edit edit-files!
+   :open-in-browser open-in-file-browser!
    :save save-edits!
    :cancel finish-edits!})
 
@@ -92,6 +98,10 @@
                     :text (utils/get-string :edit)
                     :listen [:action (:edit actions)]
                     :focusable? false)
+   :open-in-browser (ui/button :id :open-in-browser
+                               :text (utils/get-string :open-in-file-browser)
+                               :listen [:action (:open-in-browser actions)]
+                               :focusable? false)
    :save (ui/button :id :save
                     :text (utils/get-string :save)
                     :listen [:action (:save actions)]
@@ -112,6 +122,8 @@
                                   .listFiles
                                   (filter #(.isFile %))
                                   seq))
+                 :#open (and (not edit?)
+                             (Desktop/isDesktopSupported))
                  :#save edit?
                  :#cancel edit?}]
     (doseq [[id should-show?] buttons]
