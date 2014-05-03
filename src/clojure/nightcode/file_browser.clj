@@ -114,20 +114,20 @@
 (defn toggle-visible!
   [view path]
   (let [edit? @edit-mode?
-        buttons {:#up (and (not edit?)
-                           (not (contains? @ui/tree-projects path)))
-                 :#new-file (not edit?)
-                 :#edit (and (not edit?)
-                             (->> (io/file path)
-                                  .listFiles
-                                  (filter #(.isFile %))
-                                  seq))
-                 :#open (and (not edit?)
-                             (Desktop/isDesktopSupported))
-                 :#save edit?
-                 :#cancel edit?}]
-    (doseq [[id should-show?] buttons]
-      (ui/config! view id :visible? should-show?))))
+        buttons {:up (and (not edit?)
+                          (not (contains? @ui/tree-projects path)))
+                 :new-file (not edit?)
+                 :edit (and (not edit?)
+                            (->> (io/file path)
+                                 .listFiles
+                                 (filter #(.isFile %))
+                                 seq))
+                 :open-in-browser (and (not edit?)
+                                       (Desktop/isDesktopSupported))
+                 :save edit?
+                 :cancel edit?}]
+    (doseq [btn (s/select view [:#widgets :<javax.swing.JComponent>])]
+      (s/config! btn :visible? (get buttons (s/id-of btn) (not edit?))))))
 
 (defn get-icon-path
   [f]
@@ -176,7 +176,8 @@
   []
   (let [actions (create-actions)
         widgets (create-widgets actions)
-        widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
+        widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*)
+                                  :id :widgets)]
     (doto (s/border-panel :id :file-browser
                           :north widget-bar
                           :center (s/scrollable (ui/wrap-panel :id :file-grid)))
