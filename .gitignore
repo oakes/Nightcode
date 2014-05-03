@@ -1,10 +1,6 @@
-target
-libs
-bin
-classes
-checkouts
+**/target
 pom.xml
 pom.xml.asc
-*.jar
-*.class
+/hs_err_pid*.log
+*~
 .*
