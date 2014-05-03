@@ -1,6 +1,6 @@
 **/target
 pom.xml
 pom.xml.asc
-/hs_err_pid*.log
+hs_err_pid*.log
 *~
 .*
