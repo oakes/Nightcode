@@ -1,5 +1,6 @@
 (ns nightpad.core
-  (:require [nightcode.editors :as editors]
+  (:require [nightcode.completions :as completions]
+            [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as utils]
             [nightcode.ui :as ui]
@@ -9,8 +10,9 @@
 
 (defn init-completer!
   [text-area extension]
-  (some->> (editors/create-completer text-area extension)
-           (editors/install-completer! text-area)))
+  (reset! completions/doc-enabled? true)
+  (some->> (completions/create-completer text-area extension)
+           (completions/install-completer! text-area)))
 
 (defn create-window-content
   [extension]
