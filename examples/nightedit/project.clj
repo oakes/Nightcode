@@ -4,8 +4,10 @@
                   :exclusions [leiningen
                                lein-ancient
                                lein-cljsbuild
+                               lein-clr
                                lein-droid
                                lein-fruit
+                               lein-typed
                                play-clj/lein-template]]
                  [org.clojure/clojure "1.6.0"]
                  [seesaw "1.4.4"]]
