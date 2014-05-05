@@ -144,7 +144,7 @@
 
 (defn create-tile
   [f]
-  (when-not (.isHidden f)
+  (when-not (or (.isHidden f) (.startsWith (.getName f) "."))
     (if (and @edit-mode?
              (.isFile f)
              (not (protect-file? (.getCanonicalPath f))))
