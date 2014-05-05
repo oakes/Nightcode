@@ -2,8 +2,8 @@
   (:require [nightcode.completions :as completions]
             [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
-            [nightcode.utils :as utils]
             [nightcode.ui :as ui]
+            [nightcode.utils :as utils]
             [nightcode.window :as window]
             [seesaw.core :as s])
   (:gen-class))
