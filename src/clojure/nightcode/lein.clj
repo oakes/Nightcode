@@ -52,15 +52,15 @@
   [project]
   (assoc-in project
             [:android :sdk-path]
-            (or (get-in project [:android :sdk-path])
-                (utils/read-pref :android-sdk))))
+            (or (utils/read-pref :android-sdk)
+                (get-in project [:android :sdk-path]))))
 
 (defn add-robovm-path
   [project]
   (assoc-in project
             [:ios :robovm-path]
-            (or (get-in project [:ios :robovm-path])
-                (utils/read-pref :robovm))))
+            (or (utils/read-pref :robovm)
+                (get-in project [:ios :robovm-path]))))
 
 (defn read-project-clj
   [path]
