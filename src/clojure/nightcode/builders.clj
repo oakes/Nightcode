@@ -38,7 +38,7 @@
   [& _]
   (if (sandbox/get-dir)
     (dialogs/show-simple-dialog! (utils/get-string :sandbox-apology))
-    (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
+    (when-let [d (dialogs/show-open-dialog! (utils/read-pref :robovm))]
       (utils/write-pref! :robovm (.getCanonicalPath d))
       (show-builder! (ui/get-project-path @ui/tree-selection)))))
 
