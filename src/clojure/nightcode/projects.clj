@@ -83,7 +83,8 @@
         default-path (str (utils/get-relative-dir project-path selected-path)
                           (or default-file-name
                               (.getName (io/file selected-path))))]
-    (dialogs/show-file-path-dialog! default-path)))
+    (dialogs/show-text-field-dialog! (utils/get-string :enter-relative-path)
+                                     default-path)))
 
 ; actions for project tree buttons
 

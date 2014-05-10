@@ -20,7 +20,8 @@
   (-> (s/dialog :content text)
       s/pack!
       center!
-      s/show!))
+      s/show!)
+  nil)
 
 (defn show-native-dialog!
   [dir mode]
@@ -66,10 +67,10 @@
       center!
       s/show!))
 
-(defn show-file-path-dialog!
-  [default-path]
-  (let [text-field (s/text :id :new-file-path :text default-path)]
-    (-> (s/dialog :content text-field
+(defn show-text-field-dialog!
+  [q-text default-text]
+  (let [text-field (s/text :id :new-file-path :text default-text)]
+    (-> (s/dialog :content (s/vertical-panel :items [q-text text-field])
                   :options
                   [(s/button :text (utils/get-string :ok)
                              :listen [:action #(s/return-from-dialog

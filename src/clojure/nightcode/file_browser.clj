@@ -32,7 +32,8 @@
 
 (defn enter-filename!
   [default-filename]
-  (some->> (dialogs/show-file-path-dialog! default-filename)
+  (some->> (dialogs/show-text-field-dialog! (utils/get-string :enter-file-name)
+                                            default-filename)
            (io/file @ui/tree-selection)))
 
 (defn new-file!
