@@ -85,7 +85,7 @@
 
   <string name="enter_file_name">Enter a file name.</string>
   <string name="enter_relative_path">Enter a path relative to the project root.</string>
-  <string name="enter_game_name">Enter a name for your game.</string>
+  <string name="enter_project_name">Enter a name for your project.</string>
   <string name="invalid_name">Invalid name.</string>
 
   <string name="arcade">Arcade</string>
