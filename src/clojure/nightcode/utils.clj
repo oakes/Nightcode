@@ -54,6 +54,12 @@
       (or "")
       (clojure.string/replace "\\" "")))
 
+(defn set-accessible-name!
+  [widget name]
+  (-> widget
+      .getAccessibleContext
+      (.setAccessibleName (if (keyword? name) (get-string name) name))))
+
 ; paths and encodings
 
 (def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="project_tree">Project Tree</string>
+  <string name="repl_console">REPL Console</string>
+  <string name="build_console">Build Console</string>
+  <string name="parent_directory">Parent Directory</string>
+  <string name="close_file">Close File</string>
+  <string name="paredit_help">Paredit Help</string>
+
   <string name="new_project">New Project</string>
   <string name="rename">Rename</string>
   <string name="import">Import</string>
@@ -67,7 +74,6 @@
   <string name="font_dec">Font -</string>
   <string name="font_inc">Font +</string>
   <string name="paredit">Paredit</string>
-  <string name="paredit_help">?</string>
   <string name="doc">Doc</string>
   <string name="find">Find</string>
   <string name="replace">Replace</string>

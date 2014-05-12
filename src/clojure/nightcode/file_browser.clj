@@ -26,9 +26,9 @@
   []
   (doto (ui/button :id :up
                    :text "^^"
-                   :focusable? false
                    :listen [:action go-up!])
-    (s/text! (shortcuts/wrap-hint-text "&uarr;"))))
+    (s/text! (shortcuts/wrap-hint-text "&uarr;"))
+    (utils/set-accessible-name! :parent-directory)))
 
 (defn enter-filename!
   [default-filename]
@@ -93,24 +93,19 @@
   {:up (create-up-button)
    :new-file (ui/button :id :new-file
                         :text (utils/get-string :new-file)
-                        :listen [:action (:new-file actions)]
-                        :focusable? false)
+                        :listen [:action (:new-file actions)])
    :edit (ui/button :id :edit
                     :text (utils/get-string :edit)
-                    :listen [:action (:edit actions)]
-                    :focusable? false)
+                    :listen [:action (:edit actions)])
    :open-in-browser (ui/button :id :open-in-browser
                                :text (utils/get-string :open-in-file-browser)
-                               :listen [:action (:open-in-browser actions)]
-                               :focusable? false)
+                               :listen [:action (:open-in-browser actions)])
    :save (ui/button :id :save
                     :text (utils/get-string :save)
-                    :listen [:action (:save actions)]
-                    :focusable? false)
+                    :listen [:action (:save actions)])
    :cancel (ui/button :id :cancel
                       :text (utils/get-string :cancel)
-                      :listen [:action (:cancel actions)]
-                      :focusable? false)})
+                      :listen [:action (:cancel actions)])})
 
 (defn toggle-visible!
   [view path]
@@ -152,8 +147,7 @@
       (doto (s/border-panel :class :edit
                             :north (s/checkbox :class :delete
                                                :text (utils/get-string :delete)
-                                               :halign :center
-                                               :focusable? false)
+                                               :halign :center)
                             :center (some-> (get-icon-path f) icon/icon JLabel.)
                             :south (s/text :class :name
                                            :text (.getName f)
@@ -166,7 +160,6 @@
                       :listen [:action (->> (.getCanonicalPath f)
                                             ui/update-project-tree!
                                             (fn [_]))]
-                      :focusable? false
                       :enabled? (and (or (.isDirectory f)
                                          (utils/valid-file? f))
                                      (not @edit-mode?)))

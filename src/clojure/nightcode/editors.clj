@@ -396,50 +396,45 @@
   {:up (file-browser/create-up-button)
    :save (ui/button :id :save
                     :text (utils/get-string :save)
-                    :focusable? false
                     :listen [:action (:save actions)])
    :undo (ui/button :id :undo
                     :text (utils/get-string :undo)
-                    :focusable? false
                     :listen [:action (:undo actions)])
    :redo (ui/button :id :redo
                     :text (utils/get-string :redo)
-                    :focusable? false
                     :listen [:action (:redo actions)])
    :font-dec (ui/button :id :font-dec
                         :text (utils/get-string :font-dec)
-                        :focusable? false
                         :listen [:action (:font-dec actions)])
    :font-inc (ui/button :id :font-inc
                         :text (utils/get-string :font-inc)
-                        :focusable? false
                         :listen [:action (:font-inc actions)])
    :doc (ui/toggle :id :doc
                    :text (utils/get-string :doc)
-                   :focusable? false
                    :selected? @completions/doc-enabled?
                    :listen [:action (:doc actions)])
    :paredit (ui/toggle :id :paredit
                        :text (utils/get-string :paredit)
-                       :focusable? false
                        :selected? @paredit-enabled?
                        :listen [:action (:paredit actions)])
-   :paredit-help (ui/button :id :paredit-help
-                            :text (utils/get-string :paredit-help)
-                            :focusable? false
-                            :listen [:action (:paredit-help actions)])
+   :paredit-help (doto (ui/button :id :paredit-help
+                                  :text "?"
+                                  :listen [:action (:paredit-help actions)])
+                   (utils/set-accessible-name! :paredit-help))
    :find (doto (s/text :id :find
                        :columns 8
                        :listen [:key-released find-text!])
+           (utils/set-accessible-name! :find)
            (text-prompt! (utils/get-string :find)))
    :replace (doto (s/text :id :replace
                           :columns 8
                           :listen [:key-released replace-text!])
+              (utils/set-accessible-name! :replace)
               (text-prompt! (utils/get-string :replace)))
-   :close (ui/button :id :close
-                     :text "X"
-                     :focusable? false
-                     :listen [:action (:close actions)])})
+   :close (doto (ui/button :id :close
+                           :text "X"
+                           :listen [:action (:close actions)])
+            (utils/set-accessible-name! :close-file))})
 
 (defmulti create-editor (fn [type _] type) :default nil)
 
@@ -468,6 +463,7 @@
                             *widgets*)
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
+      (utils/set-accessible-name! text-area (.getName (io/file path)))
       ; add the widget bar if necessary
       (when (> (count *widgets*) 0)
         (doto editor-pane

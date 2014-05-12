@@ -4,6 +4,7 @@
             [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
+            [nightcode.utils :as utils]
             [seesaw.core :as s]))
 
 (defn run-repl!
@@ -23,6 +24,7 @@
                (s/request-focus! (-> console .getViewport .getView))
                (run-repl! process (ui/get-io! console)))
         pane (s/config! console :id :repl-console)]
+    (utils/set-accessible-name! (.getTextArea pane) :repl-console)
     ; start the repl
     (run!)
     ; create a shortcut to restart the repl

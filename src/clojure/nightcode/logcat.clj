@@ -54,7 +54,6 @@
                             :listen [:action (:toggle-logcat actions)])
    :close (ui/button :id :close
                      :text "X"
-                     :focusable? false
                      :listen [:action (:close actions)])})
 
 (defmethod editors/create-editor :logcat [_ path]

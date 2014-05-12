@@ -149,48 +149,37 @@
   [actions]
   {:run (ui/button :id :run
                    :text (utils/get-string :run)
-                   :listen [:action (:run actions)]
-                   :focusable? false)
+                   :listen [:action (:run actions)])
    :run-repl (ui/button :id :run-repl
                         :text (utils/get-string :run-with-repl)
-                        :listen [:action (:run-repl actions)]
-                        :focusable? false)
+                        :listen [:action (:run-repl actions)])
    :reload (ui/button :id :reload
                       :text (utils/get-string :reload)
-                      :listen [:action (:reload actions)]
-                      :focusable? false)
+                      :listen [:action (:reload actions)])
    :build (ui/button :id :build
                      :text (utils/get-string :build)
-                     :listen [:action (:build actions)]
-                     :focusable? false)
+                     :listen [:action (:build actions)])
    :test (ui/button :id :test
                     :text (utils/get-string :test)
-                    :listen [:action (:test actions)]
-                    :focusable? false)
+                    :listen [:action (:test actions)])
    :clean (ui/button :id :clean
                      :text (utils/get-string :clean)
-                     :listen [:action (:clean actions)]
-                     :focusable? false)
+                     :listen [:action (:clean actions)])
    :check-versions (ui/button :id :check-versions
                               :text (utils/get-string :check-versions)
-                              :listen [:action (:check-versions actions)]
-                              :focusable? false)
+                              :listen [:action (:check-versions actions)])
    :stop (ui/button :id :stop
                     :text (utils/get-string :stop)
-                    :listen [:action (:stop actions)]
-                    :focusable? false)
+                    :listen [:action (:stop actions)])
    :sdk (ui/button :id :sdk
                    :text (utils/get-string :android-sdk)
-                   :listen [:action (:sdk actions)]
-                   :focusable? false)
+                   :listen [:action (:sdk actions)])
    :robovm (ui/button :id :robovm
                       :text (utils/get-string :robovm)
-                      :listen [:action (:robovm actions)]
-                      :focusable? false)
+                      :listen [:action (:robovm actions)])
    :auto (ui/toggle :id :auto
                     :text (utils/get-string :auto-build)
-                    :listen [:action (:auto actions)]
-                    :focusable? false)})
+                    :listen [:action (:auto actions)])})
 
 (defn create-builder
   [path]
@@ -208,6 +197,7 @@
         widgets (create-widgets actions)
         ; create the bar that holds the widgets
         widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
+    (utils/set-accessible-name! (.getTextArea console) :build-console)
     ; add the widget bar if necessary
     (when (> (count *widgets*) 0)
       (doto build-pane

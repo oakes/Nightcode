@@ -159,26 +159,22 @@
   [actions]
   {:new-project (ui/button :id :new-project
                            :text (utils/get-string :new-project)
-                           :listen [:action (:new-project actions)]
-                           :focusable? false)
+                           :listen [:action (:new-project actions)])
    :rename (ui/button :id :rename
                       :text (utils/get-string :rename)
-                      :listen [:action (:rename actions)]
-                      :focusable? false)
+                      :listen [:action (:rename actions)])
    :import (ui/button :id :import
                       :text (utils/get-string :import)
-                      :listen [:action (:import actions)]
-                      :focusable? false)
+                      :listen [:action (:import actions)])
    :remove (ui/button :id :remove
                       :text (utils/get-string :remove)
-                      :listen [:action (:remove actions)]
-                      :focusable? false)})
+                      :listen [:action (:remove actions)])})
 
 (defn create-pane
   "Returns the pane with the project tree."
   [console]
   (let [; create the project tree and the pane that will hold it
-        project-tree (s/tree :id :project-tree :focusable? true)
+        project-tree (s/tree :id :project-tree)
         project-pane (s/border-panel
                        :id :project-pane
                        :center (s/scrollable project-tree))
@@ -187,6 +183,7 @@
         widgets (create-widgets actions)
         ; create the bar that holds the widgets
         widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
+    (utils/set-accessible-name! project-tree :project-tree)
     ; add the widget bar if necessary
     (when (> (count *widgets*) 0)
       (doto project-pane
