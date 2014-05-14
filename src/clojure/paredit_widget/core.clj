@@ -66,10 +66,6 @@
    ; ["C" "K"] :paredit-kill
    ["M" "("] :paredit-wrap-round
    ; ["M" ")"] :paredit-close-round-and-newline
-   ["M" "["] :paredit-open-square
-   ["M" "]"] :paredit-close-square
-   ["M" "{"] :paredit-open-curly
-   ["M" "}"] :paredit-close-curly
    ["M" "s"] :paredit-splice-sexp
    ["M" "r"] :paredit-raise-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
@@ -81,10 +77,19 @@
    ["M" "Right"] :paredit-expand-right
    ["M" "Left"] :paredit-expand-left})
 
+(def ^:const foreign-keymap
+  {["M" "["] :paredit-open-square
+   ["M" "]"] :paredit-close-square
+   ["M" "{"] :paredit-open-curly
+   ["M" "}"] :paredit-close-curly})
+
 (defn exec-paredit
   [k w buffer enable-default? enable-advanced?]
-  (when-let [cmd (or (and enable-default? (default-keymap k))
-                     (and @enable-advanced? (advanced-keymap k)))]
+  (when-let [cmd (or (and enable-default?
+                          (default-keymap k))
+                     (and @enable-advanced?
+                          (or (advanced-keymap k)
+                              (foreign-keymap k))))]
     (let [result (exec-command cmd w buffer)]
       (insert-result w result))
     cmd))
