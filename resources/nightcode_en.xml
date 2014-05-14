@@ -100,4 +100,7 @@
   <string name="isometric_rpg">Isometric RPG</string>
   <string name="barebones_2d">Barebones 2D</string>
   <string name="barebones_3d">Barebones 3D</string>
+
+  <string name="new">New</string>
+  <string name="load">Load</string>
 </resources>
