@@ -66,6 +66,10 @@
    ; ["C" "K"] :paredit-kill
    ["M" "("] :paredit-wrap-round
    ; ["M" ")"] :paredit-close-round-and-newline
+   ["M" "["] :paredit-open-square
+   ["M" "]"] :paredit-close-square
+   ["M" "{"] :paredit-open-curly
+   ["M" "}"] :paredit-close-curly
    ["M" "s"] :paredit-splice-sexp
    ["M" "r"] :paredit-raise-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
