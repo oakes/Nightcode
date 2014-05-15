@@ -127,17 +127,20 @@
   [& _]
   (when-let [text-area (get-selected-text-area)]
     (.undoLastAction text-area)
+    (s/request-focus! text-area)
     (update-buttons! (get-selected-editor) text-area)))
 
 (defn redo-file!
   [& _]
   (when-let [text-area (get-selected-text-area)]
     (.redoLastAction text-area)
+    (s/request-focus! text-area)
     (update-buttons! (get-selected-editor) text-area)))
 
 (defn set-font-size!
   [text-area size]
-  (.setFont text-area (-> text-area .getFont (.deriveFont (float size)))))
+  (.setFont text-area (-> text-area .getFont (.deriveFont (float size))))
+  (s/request-focus! text-area))
 
 (defn save-font-size!
   [size]
@@ -161,14 +164,17 @@
 
 (defn toggle-paredit!
   [& _]
-  (reset! paredit-enabled? (not @paredit-enabled?)))
+  (reset! paredit-enabled? (not @paredit-enabled?))
+  (some-> (get-selected-text-area) s/request-focus!))
 
 (defn toggle-doc!
   [& _]
-  (reset! completions/doc-enabled? (not @completions/doc-enabled?)))
+  (reset! completions/doc-enabled? (not @completions/doc-enabled?))
+  (some-> (get-selected-text-area) s/request-focus!))
 
 (defn show-paredit-help!
   [& _]
+  (some-> (get-selected-text-area) s/request-focus!)
   (let [commands (->> pw/advanced-keymap
                       (apply concat)
                       (apply sorted-map-by #(compare %1 %2)))
