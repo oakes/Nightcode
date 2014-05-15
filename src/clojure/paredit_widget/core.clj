@@ -3,7 +3,6 @@
             [paredit.loc-utils]
             [paredit.parser]
             [paredit.text-utils]
-            [paredit-widget.format :as format]
             [seesaw.core :as s])
   (:import [java.awt.event InputMethodListener KeyEvent KeyListener]))
 
@@ -124,7 +123,7 @@
       (when-not (.isConsumed e)
         (let [k (convert-key-event e)
               p (exec-paredit k w buffer enable-default? enable-advanced?)]
-          (if p (.consume e) (format/exec-format k w)))))))
+          (when p (.consume e)))))))
 
 (defn input-method-event-handler
   [w buffer enable-default? enable-advanced?]
