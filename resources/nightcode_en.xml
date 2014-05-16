@@ -103,4 +103,9 @@
 
   <string name="new">New</string>
   <string name="load">Load</string>
+  <string name="home">Home</string>
+  <string name="restart">Restart</string>
+  <string name="files">Files</string>
+  <string name="docs">Docs</string>
+  <string name="repl">REPL</string>
 </resources>
