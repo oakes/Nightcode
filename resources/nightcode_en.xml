@@ -108,4 +108,6 @@
   <string name="files">Files</string>
   <string name="docs">Docs</string>
   <string name="repl">REPL</string>
+  <string name="stack_trace">Stack Trace</string>
+  <string name="copy">Copy</string>
 </resources>
