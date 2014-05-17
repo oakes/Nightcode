@@ -4,7 +4,7 @@
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.github.insubstantial/substance "7.2.1"]
-                 [compliment "0.0.4"]
+                 [compliment "0.1.0"]
                  [leiningen "2.3.4"
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
