@@ -20,18 +20,13 @@
 (defn get-builder
   [path]
   (when (contains? @builders path)
-    (->> [:#build-console]
-         (s/select (get-in @builders [path :view]))
-         first)))
+    (s/select (get-in @builders [path :view]) [:#build-console])))
+
+(defn get-selected-builder
+  []
+  (get-builder (ui/get-project-path @ui/tree-selection)))
 
 ; actions for builder buttons
-
-(defn toggle-builder-focus!
-  [& _]
-  (let [text-area (editors/get-selected-text-area)
-        console (some-> (s/select @ui/root [:#build-console]) .getTextArea)]
-    (some-> (if (= text-area (.getFocusOwner @ui/root)) console text-area)
-            s/request-focus!)))
 
 (defn set-android-sdk!
   [& _]
@@ -63,7 +58,14 @@
          (.enterLine console)
          (binding [*read-eval* false]))))
 
-; button toggling functions
+; toggling functions
+
+(defn toggle-builder-focus!
+  [& _]
+  (let [text-area (editors/get-selected-text-area)
+        builder (some-> (get-selected-builder) .getTextArea)]
+    (some-> (if (= text-area (.getFocusOwner @ui/root)) builder text-area)
+            s/request-focus!)))
 
 (defn toggle-visible!
   [{:keys [view]} path]
