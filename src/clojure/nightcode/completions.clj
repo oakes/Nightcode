@@ -34,7 +34,6 @@
         (static-analysis/top-level-code-form caretpos)
         first
         loc-utils/node-text
-        read-string
         (try (catch Exception _)))))
 
 (defn get-clojure-completions
