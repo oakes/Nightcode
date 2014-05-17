@@ -2,6 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [compliment.core :as compliment]
+            [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [paredit.loc-utils :as loc-utils]
             [paredit.static-analysis :as static-analysis]
@@ -100,7 +101,7 @@
       (keyTyped [this e] nil)
       (keyPressed [this e]
         (when (and (contains? completer-keys (.getKeyCode e))
-                   (.isPopupVisible completer))
+                   (some #(.isVisible %) (.getOwnedWindows @ui/root)))
           (let [ks (KeyStroke/getKeyStroke (.getKeyCode e) 0)
                 condition JComponent/WHEN_FOCUSED]
             (.processKeyBinding text-area ks e condition true))
