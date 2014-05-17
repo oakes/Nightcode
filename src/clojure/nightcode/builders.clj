@@ -26,6 +26,13 @@
 
 ; actions for builder buttons
 
+(defn toggle-builder-focus!
+  [& _]
+  (let [text-area (editors/get-selected-text-area)
+        console (some-> (s/select @ui/root [:#build-console]) .getTextArea)]
+    (some-> (if (= text-area (.getFocusOwner @ui/root)) console text-area)
+            s/request-focus!)))
+
 (defn set-android-sdk!
   [& _]
   (if (sandbox/get-dir)
@@ -204,6 +211,8 @@
         (s/config! :north widget-bar)
         shortcuts/create-hints!
         (shortcuts/create-mappings! actions)))
+    ; add console toggle mapping
+    (shortcuts/create-mapping! @ui/root :build-console toggle-builder-focus!)
     ; refresh the builder when the process state changes
     (add-watch process
                :refresh-builder

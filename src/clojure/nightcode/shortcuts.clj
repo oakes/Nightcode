@@ -25,7 +25,7 @@
                        :check-versions "shift V"
                        :stop "I"
                        :sdk "shift K"
-                       :auto "shift A"
+                       :auto "shift O"
                        :up "U"
                        :save "S"
                        :undo "Z"
@@ -43,7 +43,8 @@
                        :new-file "N"
                        :edit "shift M"
                        :open-in-browser "shift F"
-                       :cancel "shift C"})
+                       :cancel "shift C"
+                       :build-console "shift A"})
 
 (defn create-mapping!
   "Maps `func` to the key combo associated with `id`."
