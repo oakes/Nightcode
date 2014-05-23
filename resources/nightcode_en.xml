@@ -94,6 +94,9 @@
   <string name="enter_project_name">Enter a name for your project.</string>
   <string name="invalid_name">Invalid name.</string>
 
+  <string name="error_load">Error during load</string>
+  <string name="error_in">Error in %s</string>
+
   <string name="arcade">Arcade</string>
   <string name="platformer">Platformer</string>
   <string name="orthogonal_rpg">Orthogonal RPG</string>
