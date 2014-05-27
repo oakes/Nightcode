@@ -1,6 +1,5 @@
 (ns nightcode.window
-  (:require [nightcode.cli-args :as cli-args]
-            [nightcode.dialogs :as dialogs]
+  (:require [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.file-browser :as file-browser]
             [nightcode.shortcuts :as shortcuts]
@@ -17,7 +16,7 @@
   "Sets the theme based on the command line arguments."
   [args]
   (s/native!)
-  (let [{:keys [shade skin-object theme-resource]} (cli-args/parse-args args)]
+  (let [{:keys [shade skin-object theme-resource]} args]
     (when theme-resource (reset! editors/theme-resource theme-resource))
     (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.)))))
 
