@@ -70,7 +70,6 @@ Light skin names: %s
   (let [[opts tokens help-str] (cli/cli args
                                         ["-h" "--help" :flag true]
                                         ["-s" "--skin-name" :default "dark"]
-                                        ["-f" "--fullscreen" :default false :flag true]
                                         ["-p" "--panel" :default "vertical"]
                                         ["-t" "--theme-resource"])
         skin-map (make-skin-map)]
