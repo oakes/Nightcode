@@ -20,19 +20,9 @@
   [symbol-str ns]
   true)
 
-(defn get-completion-context
-  [text-area prefix]
-  (let [caretpos (.getCaretPosition text-area)
-        all-text (.getText text-area)
-        first-str (subs all-text 0 (- caretpos (count prefix)))
-        second-str (subs all-text caretpos)]
-    (str first-str "__prefix__" second-str)))
-
 (defn get-clojure-completions
-  [prefix ns context]
-  (for [symbol-str (try
-                     (compliment/completions prefix ns context)
-                     (catch Exception _))
+  [prefix ns]
+  (for [symbol-str (compliment/completions prefix ns nil)
         :when (and (some? symbol-str) (allow-symbol? symbol-str ns))]
     {:symbol-str symbol-str
      :doc-str (compliment/documentation symbol-str ns)}))
@@ -52,10 +42,9 @@
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
         (try
-          (let [prefix (.getAlreadyEnteredText this comp)
-                context (get-completion-context text-area prefix)]
+          (let [prefix (.getAlreadyEnteredText this comp)]
             (->> *namespaces*
-                 (map #(get-clojure-completions prefix % context))
+                 (map #(get-clojure-completions prefix %))
                  flatten
                  set
                  (map #(create-completion this (:symbol-str %) (:doc-str %)))
