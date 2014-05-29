@@ -209,10 +209,11 @@
           enter-key? (= key-code 10)
           find-text (s/text e)
           printable-char? (-> text-area .getFont (.canDisplay key-code))
+          meta-keys #{KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL KeyEvent/VK_META}
           valid-search? (and (> (count find-text) 0)
                              printable-char?
                              (not @shortcuts/down?)
-                             (not= (.getKeyCode e) KeyEvent/VK_SHIFT))
+                             (not (contains? meta-keys (.getKeyCode e))))
           context (doto (SearchContext. find-text)
                     (.setMatchCase true))]
       (when valid-search?
