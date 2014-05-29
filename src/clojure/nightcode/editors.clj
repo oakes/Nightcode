@@ -213,7 +213,8 @@
                              printable-char?
                              (not @shortcuts/down?)
                              (not= (.getKeyCode e) KeyEvent/VK_SHIFT))
-          context (SearchContext. find-text)]
+          context (doto (SearchContext. find-text)
+                    (.setMatchCase true))]
       (when valid-search?
         (when-not enter-key?
           (.setCaretPosition text-area 0))
@@ -233,7 +234,8 @@
           editor (get-selected-editor)
           find-text (s/text (s/select editor [:#find]))
           replace-text (s/text e)
-          context (SearchContext. find-text)]
+          context (doto (SearchContext. find-text)
+                    (.setMatchCase true))]
       (.setReplaceWith context replace-text)
       (if (and enter-key?
                (or (= (count find-text) 0)
