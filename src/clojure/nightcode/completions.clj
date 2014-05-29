@@ -3,10 +3,7 @@
             [clojure.java.io :as io]
             [compliment.core :as compliment]
             [nightcode.ui :as ui]
-            [nightcode.utils :as utils]
-            [paredit.loc-utils :as loc-utils]
-            [paredit.static-analysis :as static-analysis]
-            [paredit.parser :as parser])
+            [nightcode.utils :as utils])
   (:import [java.awt.event KeyEvent KeyListener]
            [javax.swing JComponent KeyStroke]
            [org.fife.ui.autocomplete
@@ -29,13 +26,7 @@
         all-text (.getText text-area)
         first-str (subs all-text 0 (- caretpos (count prefix)))
         second-str (subs all-text caretpos)]
-    (-> (str first-str "__prefix__" second-str)
-        parser/parse
-        loc-utils/parsed-root-loc
-        (static-analysis/top-level-code-form caretpos)
-        first
-        loc-utils/node-text
-        (try (catch Exception _)))))
+    (str first-str "__prefix__" second-str)))
 
 (defn get-clojure-completions
   [prefix ns context]
