@@ -94,9 +94,6 @@
   <string name="enter_project_name">Enter a name for your project.</string>
   <string name="invalid_name">Invalid name.</string>
 
-  <string name="error_load">Error during load</string>
-  <string name="error_in">Error in %s</string>
-
   <string name="arcade">Arcade</string>
   <string name="platformer">Platformer</string>
   <string name="orthogonal_rpg">Orthogonal RPG</string>
@@ -104,14 +101,20 @@
   <string name="barebones_2d">Barebones 2D</string>
   <string name="barebones_3d">Barebones 3D</string>
 
+  <string name="error_load">Error during load</string>
+  <string name="error_in">Error in %s</string>
+  <string name="stack_trace">Stack Trace</string>
+  <string name="copy">Copy</string>
+
   <string name="new">New</string>
   <string name="load">Load</string>
+
   <string name="home">Home</string>
   <string name="restart">Restart</string>
+  <string name="screenshot">Screenshot</string>
   <string name="files">Files</string>
   <string name="docs">Docs</string>
   <string name="repl">REPL</string>
-  <string name="stack_trace">Stack Trace</string>
-  <string name="copy">Copy</string>
+
   <string name="search">Search</string>
 </resources>
