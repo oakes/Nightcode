@@ -1,5 +1,6 @@
 (ns nightedit.core
-  (:require [nightcode.editors :as editors]
+  (:require [nightcode.cli-args :as cli-args]
+            [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.window :as window]
@@ -51,7 +52,7 @@
         false)))
   ; this will give us a nice dark theme by default, or allow a lighter theme
   ; by adding "-s light" to the command line invocation
-  (window/set-theme! args)
+  (window/set-theme! (cli-args/parse-args args))
   ; create and display the window
   ; it's important to save the window in the ui/root atom
   (s/invoke-later
