@@ -4,7 +4,7 @@
             [seesaw.keymap :as keymap])
   (:import [java.awt Color Component KeyboardFocusManager KeyEventDispatcher
             Toolkit]
-           [java.awt.event ActionEvent KeyEvent]
+           [java.awt.event ActionEvent InputEvent KeyEvent]
            [javax.swing JComponent]
            [net.java.balloontip BalloonTip]
            [net.java.balloontip.positioners CenteredPositioner]
@@ -131,9 +131,11 @@
   [target e]
   (let [modifier (.getMenuShortcutKeyMask (Toolkit/getDefaultToolkit))
         current-modifier (.getModifiers e)]
-    (reset! down? (= (bit-and modifier current-modifier) modifier))
-    (when (or (= (.getKeyCode e) KeyEvent/VK_CONTROL)
-              (= (.getKeyCode e) KeyEvent/VK_META)
+    (reset! down? (and (= (bit-and modifier current-modifier) modifier)
+                       (contains? #{InputEvent/CTRL_MASK InputEvent/META_MASK}
+                                  current-modifier)))
+    (when (or (contains? #{KeyEvent/VK_CONTROL KeyEvent/VK_META}
+                         (.getKeyCode e))
               @down?)
       (toggle-hints! target @down?))))
 
@@ -147,9 +149,7 @@
 (defn run-shortcut!
   "Runs shortcut command if applicable, returning a boolean indicating success."
   [target func e]
-  (if (and @down?
-           (not (.isShiftDown e))
-           (= (.getID e) KeyEvent/KEY_PRESSED))
+  (if (and @down? (= (.getID e) KeyEvent/KEY_PRESSED))
     (func (.getKeyCode e))
     false))
 
