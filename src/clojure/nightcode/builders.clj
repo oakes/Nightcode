@@ -44,10 +44,17 @@
       (utils/write-pref! :robovm (.getCanonicalPath d))
       (show-builder! (ui/get-project-path @ui/tree-selection)))))
 
+(defn add-path
+  [paths path]
+  (if (and path (.endsWith path ".clj") (not (contains? (set paths) path)))
+    (conj paths path)
+    paths))
+
 (defn eval-in-repl!
   [console path timestamp]
   (let [source-paths (-> (lein/read-project-clj path)
                          (lein/stale-clojure-sources timestamp)
+                         (add-path @ui/tree-selection)
                          utils/sort-by-dependency)
         commands (map #(read-string (str \( 'do (slurp %) \newline \)))
                       source-paths)
