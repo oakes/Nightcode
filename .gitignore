@@ -6,3 +6,6 @@ pom.xml.asc
 **/target
 *~
 .*
+/TAGS
+/target
+
