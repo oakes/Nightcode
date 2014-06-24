@@ -1,6 +1,6 @@
 (defproject nightbuild "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
-  :dependencies [[nightcode "0.3.6"]
+  :dependencies [[nightcode "0.3.7.1"]
                  [org.clojure/clojure "1.6.0"]
                  [seesaw "1.4.4"]]
   :uberjar-exclusions [#"clojure-clr.*\.zip"]
