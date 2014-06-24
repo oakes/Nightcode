@@ -61,7 +61,6 @@
   (let [parsed-args (cli-args/parse-args args)]
     (window/set-icon! "logo_launcher.png")
     (window/set-theme! parsed-args)
-    (sandbox/set-home!)
     (sandbox/create-profiles-clj!)
     (sandbox/read-file-permissions!)
     (s/invoke-later
