@@ -56,7 +56,7 @@ public class Nightcode {
         // set properties only if the user has not overidden them
         if (props.getProperty("awt.useSystemAAFontSettings") == null
                 && props.getProperty("sun.java2d.xrender") == null) {
-            props.setProperty("awt.useSystemAAFontSettings", "lcd");
+            props.setProperty("awt.useSystemAAFontSettings", "on");
             props.setProperty("sun.java2d.xrender", "true");
         }
         // initialize and launch Nightcode
