@@ -3,7 +3,6 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
-            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -30,19 +29,15 @@
 
 (defn set-android-sdk!
   [& _]
-  (if (sandbox/get-dir)
-    (dialogs/show-simple-dialog! (utils/get-string :sandbox-apology))
-    (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
-      (utils/write-pref! :android-sdk (.getCanonicalPath d))
-      (show-builder! (ui/get-project-path @ui/tree-selection)))))
+  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
+    (utils/write-pref! :android-sdk (.getCanonicalPath d))
+    (show-builder! (ui/get-project-path @ui/tree-selection))))
 
 (defn set-robovm!
   [& _]
-  (if (sandbox/get-dir)
-    (dialogs/show-simple-dialog! (utils/get-string :sandbox-apology))
-    (when-let [d (dialogs/show-open-dialog! (utils/read-pref :robovm))]
-      (utils/write-pref! :robovm (.getCanonicalPath d))
-      (show-builder! (ui/get-project-path @ui/tree-selection)))))
+  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :robovm))]
+    (utils/write-pref! :robovm (.getCanonicalPath d))
+    (show-builder! (ui/get-project-path @ui/tree-selection))))
 
 (defn add-path
   [paths path]
@@ -244,7 +239,8 @@
     ; create new builder if necessary
     (when (and path
                (utils/project-path? path)
-               (not (contains? @builders path)))
+               (not (contains? @builders path))
+               (lein/valid-project? path))
       (when-let [builder (create-builder path)]
         (swap! builders assoc path builder)
         (.add pane (:view builder) path)))

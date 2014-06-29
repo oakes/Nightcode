@@ -115,6 +115,12 @@
   [path]
   (-> (read-project-clj path) :cljsbuild nil? not))
 
+(defn valid-project?
+  [path]
+  (or (not (sandbox/get-dir))
+      (and (not (android-project? path))
+           (not (ios-project? path)))))
+
 ; start/stop thread/processes
 
 (defn redirect-io

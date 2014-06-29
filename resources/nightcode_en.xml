@@ -87,8 +87,6 @@
   <string name="ctrl">Ctrl</string>
   <string name="alt">Alt</string>
 
-  <string name="sandbox_apology">Sorry, this feature can't be used due to sandbox limitations.</string>
-
   <string name="enter_file_name">Enter a file name.</string>
   <string name="enter_relative_path">Enter a path relative to the project root.</string>
   <string name="enter_project_name">Enter a name for your project.</string>
