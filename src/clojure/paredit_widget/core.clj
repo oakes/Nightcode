@@ -24,7 +24,7 @@
                            :length (- (.getSelectionEnd widget)
                                       (.getSelectionStart widget))})))
 
-(defn insert-result
+(defn insert-result!
   [w pe]
   (dorun
     (map #(if (= 0 (:length %))
@@ -60,8 +60,8 @@
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
    [nil "\b"] :paredit-backward-delete
-   [nil "\""] :paredit-doublequote
    [nil "DEL"] :paredit-forward-delete
+   [nil "\""] :paredit-doublequote ;; \"
    ; ["C" "K"] :paredit-kill
    ["M" "("] :paredit-wrap-round
    ; ["M" ")"] :paredit-close-round-and-newline
@@ -69,12 +69,20 @@
    ["M" "r"] :paredit-raise-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
    ["C" "9"] :paredit-backward-slurp-sexp
-   ["C" "Close Bracket"] :paredit-forward-barf-sexp
    ["C" "Open Bracket"] :paredit-backward-barf-sexp
+   ["C" "Close Bracket"] :paredit-forward-barf-sexp
    ["M" "S"] :paredit-split-sexp
    ["M" "J"] :paredit-join-sexps
-   ["M" "Right"] :paredit-expand-right
-   ["M" "Left"] :paredit-expand-left})
+   ["M" "Left"] :paredit-expand-left
+   ["M" "Right"] :paredit-expand-right})
+
+(def ^:const advanced-alternate-keymap
+  {[nil "⌫"] :paredit-backward-delete
+   [nil "⌦"] :paredit-forward-delete
+   ["C" "["] :paredit-backward-barf-sexp
+   ["C" "]"] :paredit-forward-barf-sexp
+   ["M" "←"] :paredit-expand-left
+   ["M" "→"] :paredit-expand-right})
 
 (def ^:const foreign-keymap
   {["M" "["] :paredit-open-square
@@ -82,20 +90,29 @@
    ["M" "{"] :paredit-open-curly
    ["M" "}"] :paredit-close-curly})
 
-(defn exec-paredit
+(def ^:const special-codes
+  #{KeyEvent/VK_LEFT_PARENTHESIS
+    KeyEvent/VK_RIGHT_PARENTHESIS
+    KeyEvent/VK_OPEN_BRACKET
+    KeyEvent/VK_CLOSE_BRACKET
+    KeyEvent/VK_BRACELEFT
+    KeyEvent/VK_BRACERIGHT
+    KeyEvent/VK_BACK_SPACE
+    KeyEvent/VK_DELETE
+    KeyEvent/VK_QUOTEDBL
+    KeyEvent/VK_LEFT
+    KeyEvent/VK_RIGHT})
+
+(defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
   (when-let [cmd (or (and enable-default?
                           (default-keymap k))
                      (and @enable-advanced?
                           (or (advanced-keymap k)
+                              (advanced-alternate-keymap k)
                               (foreign-keymap k))))]
-    (let [result (exec-command cmd w buffer)]
-      (insert-result w result))
+    (insert-result! w (exec-command cmd w buffer))
     cmd))
-
-(defn convert-input-method-event
-  [event]
-  ["M" (os-x-charmap (str (.first (.getText event))))])
 
 (defn convert-key-event
   [event]
@@ -106,7 +123,7 @@
        (.isAltDown event) "M"
        (.isControlDown event) "C"
        :else nil)
-     (if (= KeyEvent/CHAR_UNDEFINED key-char)
+     (if (special-codes key-code)
        (KeyEvent/getKeyText key-code)
        (str key-char))]))
 
@@ -115,22 +132,24 @@
   (reify KeyListener
     (keyReleased [this e] nil)
     (keyTyped [this e]
-      (when (and @enable-advanced?
-                 (get #{"(" ")" "[" "]" "{" "}" "\""}
-                      (str (.getKeyChar e))))
+      (when (and @enable-advanced? (special-codes (.getKeyCode e)))
         (.consume e)))
     (keyPressed [this e]
       (when-not (.isConsumed e)
         (let [k (convert-key-event e)
-              p (exec-paredit k w buffer enable-default? enable-advanced?)]
+              p (exec-paredit! k w buffer enable-default? enable-advanced?)]
           (when p (.consume e)))))))
+
+(defn convert-input-method-event
+  [event]
+  ["M" (os-x-charmap (str (.first (.getText event))))])
 
 (defn input-method-event-handler
   [w buffer enable-default? enable-advanced?]
   (reify InputMethodListener
     (inputMethodTextChanged [this e]
       (let [k (convert-input-method-event e)
-            p (exec-paredit k w buffer enable-default? enable-advanced?)]
+            p (exec-paredit! k w buffer enable-default? enable-advanced?)]
         (when p (.consume e))))))
 
 (defn init-paredit!
