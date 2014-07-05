@@ -62,13 +62,13 @@
    [nil "\b"] :paredit-backward-delete
    [nil "DEL"] :paredit-forward-delete
    [nil "\""] :paredit-doublequote ;; \"
-   ["M" "("] :paredit-wrap-round
-   ["M" "s"] :paredit-splice-sexp
-   ["M" "r"] :paredit-raise-sexp
    ["C" "9"] :paredit-backward-slurp-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
    ["C" "["] :paredit-backward-barf-sexp
    ["C" "]"] :paredit-forward-barf-sexp
+   ["M" "("] :paredit-wrap-round
+   ["M" "s"] :paredit-splice-sexp
+   ["M" "r"] :paredit-raise-sexp
    ["M" "S"] :paredit-split-sexp
    ["M" "J"] :paredit-join-sexps
    ["M" "Left"] :paredit-expand-left
@@ -77,6 +77,8 @@
 (def ^:const advanced-alternative-keymap
   {[nil "⌫"] :paredit-backward-delete
    [nil "⌦"] :paredit-forward-delete
+   ["C" "Open Bracket"] :paredit-backward-barf-sexp
+   ["C" "Close Bracket"] :paredit-forward-barf-sexp
    ["M" "←"] :paredit-expand-left
    ["M" "→"] :paredit-expand-right})
 
