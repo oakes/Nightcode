@@ -62,19 +62,23 @@
    [nil "\b"] :paredit-backward-delete
    [nil "DEL"] :paredit-forward-delete
    [nil "\""] :paredit-doublequote ;; \"
-   ; ["C" "K"] :paredit-kill
    ["M" "("] :paredit-wrap-round
-   ; ["M" ")"] :paredit-close-round-and-newline
    ["M" "s"] :paredit-splice-sexp
    ["M" "r"] :paredit-raise-sexp
-   ["C" "0"] :paredit-forward-slurp-sexp
    ["C" "9"] :paredit-backward-slurp-sexp
-   ["C" "Close Bracket"] :paredit-forward-barf-sexp
-   ["C" "Open Bracket"] :paredit-backward-barf-sexp
+   ["C" "0"] :paredit-forward-slurp-sexp
+   ["C" "["] :paredit-backward-barf-sexp
+   ["C" "]"] :paredit-forward-barf-sexp
    ["M" "S"] :paredit-split-sexp
    ["M" "J"] :paredit-join-sexps
-   ["M" "Right"] :paredit-expand-right
-   ["M" "Left"] :paredit-expand-left})
+   ["M" "Left"] :paredit-expand-left
+   ["M" "Right"] :paredit-expand-right})
+
+(def ^:const advanced-alternative-keymap
+  {[nil "⌫"] :paredit-backward-delete
+   [nil "⌦"] :paredit-forward-delete
+   ["M" "←"] :paredit-expand-left
+   ["M" "→"] :paredit-expand-right})
 
 (def ^:const foreign-keymap
   {["M" "["] :paredit-open-square
@@ -91,6 +95,7 @@
                           (default-keymap k))
                      (and @enable-advanced?
                           (or (advanced-keymap k)
+                              (advanced-alternative-keymap k)
                               (foreign-keymap k))))]
     (insert-result! w (exec-command! cmd w buffer))
     cmd))
@@ -104,9 +109,10 @@
        (.isAltDown event) "M"
        (.isControlDown event) "C"
        :else nil)
-     (if (= KeyEvent/CHAR_UNDEFINED key-char)
-       (KeyEvent/getKeyText key-code)
-       (str key-char))]))
+     (if (or (Character/isLetterOrDigit key-char)
+             (special-chars (str key-char)))
+       (str key-char)
+       (KeyEvent/getKeyText key-code))]))
 
 (defn key-event-handler
   [w buffer enable-default? enable-advanced?]
