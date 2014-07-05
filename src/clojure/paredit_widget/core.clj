@@ -6,7 +6,7 @@
             [seesaw.core :as s])
   (:import [java.awt.event InputMethodListener KeyEvent KeyListener]))
 
-(defn exec-command
+(defn exec-command!
   [cmd widget buffer]
   (let [old-parse-tree (paredit.parser/buffer-parse-tree @buffer nil)
         old-text (paredit.loc-utils/node-text old-parse-tree)
@@ -24,7 +24,7 @@
                            :length (- (.getSelectionEnd widget)
                                       (.getSelectionStart widget))})))
 
-(defn insert-result
+(defn insert-result!
   [w pe]
   (dorun
     (map #(if (= 0 (:length %))
@@ -60,8 +60,8 @@
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
    [nil "\b"] :paredit-backward-delete
-   [nil "\""] :paredit-doublequote
    [nil "DEL"] :paredit-forward-delete
+   [nil "\""] :paredit-doublequote ;; \"
    ; ["C" "K"] :paredit-kill
    ["M" "("] :paredit-wrap-round
    ; ["M" ")"] :paredit-close-round-and-newline
@@ -82,20 +82,18 @@
    ["M" "{"] :paredit-open-curly
    ["M" "}"] :paredit-close-curly})
 
-(defn exec-paredit
+(def ^:const special-chars
+  #{"(" ")" "[" "]" "{" "}" "\""}) ;; \"
+
+(defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
   (when-let [cmd (or (and enable-default?
                           (default-keymap k))
                      (and @enable-advanced?
                           (or (advanced-keymap k)
                               (foreign-keymap k))))]
-    (let [result (exec-command cmd w buffer)]
-      (insert-result w result))
+    (insert-result! w (exec-command! cmd w buffer))
     cmd))
-
-(defn convert-input-method-event
-  [event]
-  ["M" (os-x-charmap (str (.first (.getText event))))])
 
 (defn convert-key-event
   [event]
@@ -115,22 +113,24 @@
   (reify KeyListener
     (keyReleased [this e] nil)
     (keyTyped [this e]
-      (when (and @enable-advanced?
-                 (get #{"(" ")" "[" "]" "{" "}" "\""}
-                      (str (.getKeyChar e))))
+      (when (and @enable-advanced? (special-chars (str (.getKeyChar e))))
         (.consume e)))
     (keyPressed [this e]
       (when-not (.isConsumed e)
         (let [k (convert-key-event e)
-              p (exec-paredit k w buffer enable-default? enable-advanced?)]
+              p (exec-paredit! k w buffer enable-default? enable-advanced?)]
           (when p (.consume e)))))))
+
+(defn convert-input-method-event
+  [event]
+  ["M" (os-x-charmap (str (.first (.getText event))))])
 
 (defn input-method-event-handler
   [w buffer enable-default? enable-advanced?]
   (reify InputMethodListener
     (inputMethodTextChanged [this e]
       (let [k (convert-input-method-event e)
-            p (exec-paredit k w buffer enable-default? enable-advanced?)]
+            p (exec-paredit! k w buffer enable-default? enable-advanced?)]
         (when p (.consume e))))))
 
 (defn init-paredit!
