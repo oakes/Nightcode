@@ -49,8 +49,10 @@
    })
 
 (def ^:const default-keymap
-  {[nil "\t"] :paredit-indent-line
-   [nil "\n"] :paredit-newline})
+  {[nil "Tab"] :paredit-indent-line
+   [nil "⇥"] :paredit-indent-line
+   [nil "Enter"] :paredit-newline
+   [nil "⏎"] :paredit-newline})
 
 (def ^:const advanced-keymap
   {[nil "("] :paredit-open-round
@@ -93,6 +95,7 @@
 
 (defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
+  (println k)
   (when-let [cmd (or (and enable-default?
                           (default-keymap k))
                      (and @enable-advanced?
