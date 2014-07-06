@@ -59,8 +59,8 @@
    [nil "]"] :paredit-close-square
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
-   [nil "\b"] :paredit-backward-delete
-   [nil "DEL"] :paredit-forward-delete
+   [nil "Backspace"] :paredit-backward-delete
+   [nil "Delete"] :paredit-forward-delete
    [nil "\""] :paredit-doublequote ;; \"
    ["C" "9"] :paredit-backward-slurp-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
