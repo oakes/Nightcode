@@ -95,7 +95,6 @@
 
 (defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
-  (println k)
   (when-let [cmd (or (and enable-default?
                           (default-keymap k))
                      (and @enable-advanced?
