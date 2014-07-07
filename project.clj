@@ -7,7 +7,7 @@
                  [com.fifesoft/rsyntaxtextarea "2.5.0"]
                  [com.github.insubstantial/substance "7.2.1"]
                  [compliment "0.1.1"]
-                 [leiningen "2.4.0"
+                 [leiningen "2.4.2"
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
                   :exclusions [clj-aws-s3]]
