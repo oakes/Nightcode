@@ -272,4 +272,7 @@
 (defn string->form
   "Converts expressions in the given string to a do form."
   [s]
-  (read-string (str \( 'do \newline s \newline \))))
+  (try
+    (binding [*read-eval* false]
+      (read-string (str \( 'do \newline s \newline \))))
+    (catch Exception _)))

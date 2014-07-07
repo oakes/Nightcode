@@ -56,17 +56,14 @@
     (->> (conj (vec commands) (vec names))
          (cons 'do)
          pr-str
-         (.enterLine console)
-         (binding [*read-eval* false]))))
+         (.enterLine console))))
 
 (defn eval-selection!
   [console]
-  (when-let [text (editors/get-editor-selected-text)]
-    (->> text
-         utils/string->form
-         pr-str
-         (.enterLine console)
-         (binding [*read-eval* false]))))
+  (some->> (editors/get-editor-selected-text)
+           utils/string->form
+           pr-str
+           (.enterLine console)))
 
 ; toggling functions
 
