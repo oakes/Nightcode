@@ -1,5 +1,7 @@
 (ns nightcode.shortcuts
-  (:require [nightcode.ui :as ui]
+  (:require [clojure.edn :as edn]
+            [nightcode.sandbox :as sandbox]
+            [nightcode.ui :as ui]
             [seesaw.core :as s]
             [seesaw.keymap :as keymap])
   (:import [java.awt Color Component KeyboardFocusManager KeyEventDispatcher
@@ -12,40 +14,45 @@
 
 (def down? (atom false))
 (def ^:dynamic *hint-container* nil)
-(def ^:const mappings {:new-project "P"
-                       :rename "M"
-                       :import "O"
-                       :remove "G"
-                       :run "R"
-                       :run-repl "E"
-                       :reload "shift S"
-                       :eval "shift X"
-                       :build "B"
-                       :test "T"
-                       :clean "L"
-                       :check-versions "shift V"
-                       :stop "I"
-                       :sdk "shift K"
-                       :auto "shift O"
-                       :up "U"
-                       :save "S"
-                       :undo "Z"
-                       :redo "Y"
-                       :font-dec "MINUS"
-                       :font-inc "EQUALS"
-                       :doc "shift D"
-                       :paredit "shift P"
-                       :find "F"
-                       :replace "shift R"
-                       :close "W"
-                       :repl-console "shift E"
-                       :project-pane "&uarr; &darr; &crarr;"
-                       :toggle-logcat "S"
-                       :new-file "N"
-                       :edit "shift M"
-                       :open-in-browser "shift F"
-                       :cancel "shift C"
-                       :build-console "shift A"})
+
+(def mappings (merge {:new-project "P"
+                      :rename "M"
+                      :import "O"
+                      :remove "G"
+                      :run "R"
+                      :run-repl "E"
+                      :reload "shift S"
+                      :eval "shift X"
+                      :build "B"
+                      :test "T"
+                      :clean "L"
+                      :check-versions "shift V"
+                      :stop "I"
+                      :sdk "shift K"
+                      :auto "shift O"
+                      :up "U"
+                      :save "S"
+                      :undo "Z"
+                      :redo "Y"
+                      :font-dec "MINUS"
+                      :font-inc "EQUALS"
+                      :doc "shift D"
+                      :paredit "shift P"
+                      :find "F"
+                      :replace "shift R"
+                      :close "W"
+                      :repl-console "shift E"
+                      :project-pane "&uarr; &darr; &crarr;"
+                      :toggle-logcat "S"
+                      :new-file "N"
+                      :edit "shift M"
+                      :open-in-browser "shift F"
+                      :cancel "shift C"
+                      :build-console "shift A"}
+                     (when-not (sandbox/get-dir)
+                       (try
+                         (edn/read-string (slurp "keys.edn"))
+                         (catch Exception _)))))
 
 (defn create-mapping!
   "Maps `func` to the key combo associated with `id`."
