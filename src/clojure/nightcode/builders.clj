@@ -45,17 +45,25 @@
     (conj paths path)
     paths))
 
-(defn eval-in-repl!
+(defn reload!
   [console path timestamp]
   (let [source-paths (-> (lein/read-project-clj path)
                          (lein/stale-clojure-sources timestamp)
                          (add-path @ui/tree-selection)
                          utils/sort-by-dependency)
-        commands (map #(read-string (str \( 'do (slurp %) \newline \)))
-                      source-paths)
+        commands (map #(utils/string->form (slurp %)) source-paths)
         names (map #(-> % io/file .getName) source-paths)]
     (->> (conj (vec commands) (vec names))
          (cons 'do)
+         pr-str
+         (.enterLine console)
+         (binding [*read-eval* false]))))
+
+(defn eval-selection!
+  [console]
+  (when-let [text (editors/get-editor-selected-text)]
+    (->> text
+         utils/string->form
          pr-str
          (.enterLine console)
          (binding [*read-eval* false]))))
@@ -79,11 +87,13 @@
                          io/file
                          .getName
                          (= "project.clj"))
-        buttons {:#run-repl (and (not ios-project?)
-                                 (not java-project?))
+        buttons {:#run-repl (and (not java-project?)
+                                 (not ios-project?))
                  :#reload (and (not java-project?)
                                (not ios-project?)
                                (not android-project?))
+                 :#eval (and (not java-project?)
+                             (not ios-project?))
                  :#test (not java-project?)
                  :#sdk android-project?
                  :#robovm ios-project?
@@ -109,6 +119,7 @@
         buttons {:#run (not running?)
                  :#run-repl (not running?)
                  :#reload (not (nil? @last-reload))
+                 :#eval (not (nil? @last-reload))
                  :#build (not running?)
                  :#test (not running?)
                  :#clean (not running?)
@@ -119,7 +130,7 @@
 
 ; create and show/hide builders for each project
 
-(def ^:dynamic *widgets* [:run :run-repl :reload :build :test
+(def ^:dynamic *widgets* [:run :run-repl :reload :eval :build :test
                           :clean :check-versions :stop
                           :sdk :robovm :auto])
 
@@ -134,8 +145,10 @@
                (when (not (lein/java-project? path))
                  (reset! last-reload (System/currentTimeMillis))))
    :reload (fn [& _]
-             (eval-in-repl! console path @last-reload)
+             (reload! console path @last-reload)
              (reset! last-reload (System/currentTimeMillis)))
+   :eval (fn [& _]
+           (eval-selection! console))
    :build (fn [& _]
             (lein/build-project! process (ui/get-io! console) path))
    :test (fn [& _]
@@ -167,6 +180,9 @@
    :reload (ui/button :id :reload
                       :text (utils/get-string :reload)
                       :listen [:action (:reload actions)])
+   :eval (ui/button :id :eval
+                    :text (utils/get-string :eval)
+                    :listen [:action (:eval actions)])
    :build (ui/button :id :build
                      :text (utils/get-string :build)
                      :listen [:action (:build actions)])

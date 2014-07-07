@@ -19,6 +19,7 @@
                        :run "R"
                        :run-repl "E"
                        :reload "shift S"
+                       :eval "shift X"
                        :build "B"
                        :test "T"
                        :clean "L"

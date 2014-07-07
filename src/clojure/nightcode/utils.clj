@@ -268,3 +268,8 @@
   "Returns the SHA1 hash of the given string as a keyword."
   [s]
   (->> (.getBytes s "UTF-8") create-hash BigInteger. (format "%x") keyword))
+
+(defn string->form
+  "Converts expressions in the given string to a do form."
+  [s]
+  (read-string (str \( 'do \newline s \newline \))))
