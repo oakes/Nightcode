@@ -12,7 +12,8 @@
 
 (def down? (atom false))
 (def ^:dynamic *hint-container* nil)
-(def ^:const mappings {:new-project "P"
+
+(def ^:const mappings (merge {:new-project "P"
                        :rename "M"
                        :import "O"
                        :remove "G"
@@ -45,7 +46,8 @@
                        :edit "shift M"
                        :open-in-browser "shift F"
                        :cancel "shift C"
-                       :build-console "shift A"})
+                       :build-console "shift A"}
+                      (try (read-string (slurp "keys.clj")) (catch Exception e {}))))
 
 (defn create-mapping!
   "Maps `func` to the key combo associated with `id`."
