@@ -15,11 +15,17 @@
   (.setLocationRelativeTo dialog nil)
   dialog)
 
+(defn stay-on-top!
+  [dialog]
+  (.setAlwaysOnTop dialog true)
+  dialog)
+
 (defn show-simple-dialog!
   [text]
   (-> (s/dialog :content text)
       s/pack!
       center!
+      stay-on-top!
       s/show!)
   nil)
 
@@ -65,6 +71,7 @@
                            :listen [:action #(s/return-from-dialog % false)])])
       s/pack!
       center!
+      stay-on-top!
       s/show!))
 
 (defn show-text-field-dialog!
@@ -79,6 +86,7 @@
                              :listen [:action #(s/return-from-dialog % nil)])])
         s/pack!
         center!
+        stay-on-top!
         s/show!)))
 
 (defn show-project-clj-dialog!
@@ -92,6 +100,7 @@
                                              #(s/return-from-dialog % false)])])
       s/pack!
       center!
+      stay-on-top!
       s/show!))
 
 (defn show-project-type-dialog!
@@ -174,6 +183,7 @@
                                                   % (finish))])])
         s/pack!
         center!
+        stay-on-top!
         s/show!)))
 
 (defn show-shut-down-dialog!
@@ -188,4 +198,5 @@
                                              #(s/return-from-dialog % false)])])
       s/pack!
       center!
+      stay-on-top!
       s/show!))

@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [flatland.ordered.map :as flatland]
             [nightcode.completions :as completions]
+            [nightcode.dialogs :as dialogs]
             [nightcode.file-browser :as file-browser]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
@@ -184,7 +185,7 @@
            (when-let [modifier (get modifiers (first k))]
              (println modifier "+" (second k) " " (name v))))
          with-out-str
-         s/alert)))
+         dialogs/show-simple-dialog!)))
 
 (defn focus-on-field!
   [id]
