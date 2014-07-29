@@ -61,7 +61,7 @@
    [nil "]"] :paredit-close-square
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
-   [nil "\""] :paredit-doublequote ;; \"
+   [nil "\""] :paredit-doublequote
    ["C" "9"] :paredit-backward-slurp-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
    ["C" "["] :paredit-backward-barf-sexp
@@ -87,7 +87,7 @@
    ["M" "}"] :paredit-close-curly})
 
 (def ^:const special-chars
-  #{"(" ")" "[" "]" "{" "}" "\""}) ;; \"
+  #{"(" ")" "[" "]" "{" "}" "\""})
 
 (defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
