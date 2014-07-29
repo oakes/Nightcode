@@ -84,7 +84,8 @@
 (defn create-file-from-template!
   [dir file-name template-namespace data]
   (let [render (leiningen.new.templates/renderer template-namespace)]
-    (binding [leiningen.new.templates/*dir* dir]
+    (binding [leiningen.new.templates/*dir* dir
+              leiningen.new.templates/*force?* true]
       (->> [file-name (render file-name data)]
            (leiningen.new.templates/->files data)
            io!))))
