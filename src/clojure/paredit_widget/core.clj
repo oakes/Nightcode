@@ -61,7 +61,6 @@
    [nil "]"] :paredit-close-square
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
-   [nil "Backspace"] :paredit-backward-delete
    [nil "\""] :paredit-doublequote ;; \"
    ["C" "9"] :paredit-backward-slurp-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
@@ -76,8 +75,7 @@
    ["M" "Right"] :paredit-expand-right})
 
 (def ^:const advanced-alternative-keymap
-  {[nil "⌫"] :paredit-backward-delete
-   ["C" "Open Bracket"] :paredit-backward-barf-sexp
+  {["C" "Open Bracket"] :paredit-backward-barf-sexp
    ["C" "Close Bracket"] :paredit-forward-barf-sexp
    ["M" "←"] :paredit-expand-left
    ["M" "→"] :paredit-expand-right})
