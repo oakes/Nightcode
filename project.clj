@@ -4,9 +4,9 @@
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.fifesoft/autocomplete "2.5.0"]
-                 [com.fifesoft/rsyntaxtextarea "2.5.0"]
+                 [com.fifesoft/rsyntaxtextarea "2.5.3"]
                  [com.github.insubstantial/substance "7.2.1"]
-                 [compliment "0.1.1"]
+                 [compliment "0.1.2"]
                  [leiningen "2.4.2"
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
@@ -15,12 +15,12 @@
                  [lein-clr "0.2.1"]
                  [lein-droid "0.2.3"]
                  [lein-fruit "0.2.0"]
-                 [lein-typed "0.3.4"]
+                 [lein-typed "0.3.5"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [org.clojure/clojure "1.6.0"]
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
-                 [org.clojure/tools.namespace "0.2.4"]
+                 [org.clojure/tools.namespace "0.2.5"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [org.clojure/clojure]]
