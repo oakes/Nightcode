@@ -49,8 +49,8 @@
    })
 
 (def ^:const default-keymap
-  {[nil "Tab"] :paredit-indent-line
-   [nil "⇥"] :paredit-indent-line
+  {[nil "Tab"] :paredit-indent
+   [nil "⇥"] :paredit-indent
    [nil "Enter"] :paredit-newline
    [nil "⏎"] :paredit-newline})
 
@@ -74,7 +74,8 @@
    ["M" "S"] :paredit-split-sexp
    ["M" "J"] :paredit-join-sexps
    ["M" "Left"] :paredit-expand-left
-   ["M" "Right"] :paredit-expand-right})
+   ["M" "Right"] :paredit-expand-right
+   ["M" "Up"] :paredit-expand-up})
 
 (def ^:const advanced-alternative-keymap
   {[nil "⌫"] :paredit-backward-delete
@@ -82,7 +83,8 @@
    ["C" "Open Bracket"] :paredit-backward-barf-sexp
    ["C" "Close Bracket"] :paredit-forward-barf-sexp
    ["M" "←"] :paredit-expand-left
-   ["M" "→"] :paredit-expand-right})
+   ["M" "→"] :paredit-expand-right
+   ["M" "↑"] :paredit-expand-up})
 
 (def ^:const foreign-keymap
   {["M" "["] :paredit-open-square
@@ -105,8 +107,7 @@
                           (or (advanced-keymap k)
                               (advanced-alternative-keymap k)
                               (foreign-keymap k))))]
-    (when-not (and (.getSelectedText w)
-                   (contains? ignore-during-selection cmd))
+    (when-not (and (.getSelectedText w) (ignore-during-selection cmd))
       (insert-result! w (exec-command! cmd w buffer))
       cmd)))
 
