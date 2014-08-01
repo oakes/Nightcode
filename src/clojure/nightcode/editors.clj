@@ -224,10 +224,11 @@
         (when (.isShiftDown e)
           (.setSearchForward context false)))
       (if (and valid-search?
-               (not (try (SearchEngine/find text-area context)
-                      (catch Exception e false))))
+               (-> (SearchEngine/find text-area context) .getCount (= 0)))
         (s/config! e :background (color/color :red))
-        (s/config! e :background nil)))))
+        (s/config! e :background nil))
+      (when (= (count find-text) 0)
+        (SearchEngine/find text-area context)))))
 
 (defn replace-text!
   [e]
