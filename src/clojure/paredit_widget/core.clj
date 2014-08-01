@@ -37,15 +37,15 @@
     (.setSelectionEnd w (+ (:offset pe) (:length pe)))))
 
 (def ^:const os-x-charmap
-  {"‚" ")" ;;close and round newline
+  {"‚" ")" ;; close and round newline
    "Æ" "\"" ;; meta double quote
    "…" ";"  ;; paredit-commit-dwim
-   "∂" "d"  ;;paredit-forward-kill-word
+   "∂" "d"  ;; paredit-forward-kill-word
    "·" "(" ;; paredit-wrap-round
-   "ß" "s" ;;paredit splice
+   "ß" "s" ;; paredit splice
    "®" "r" ;; raise expr
    "Í" "S" ;; split
-   "Ô" "J" ;;join
+   "Ô" "J" ;; join
    })
 
 (def ^:const default-keymap
@@ -61,6 +61,8 @@
    [nil "]"] :paredit-close-square
    [nil "{"] :paredit-open-curly
    [nil "}"] :paredit-close-curly
+   [nil "Backspace"] :paredit-backward-delete
+   [nil "Delete"] :paredit-forward-delete
    [nil "\""] :paredit-doublequote
    ["C" "9"] :paredit-backward-slurp-sexp
    ["C" "0"] :paredit-forward-slurp-sexp
@@ -75,7 +77,9 @@
    ["M" "Right"] :paredit-expand-right})
 
 (def ^:const advanced-alternative-keymap
-  {["C" "Open Bracket"] :paredit-backward-barf-sexp
+  {[nil "⌫"] :paredit-backward-delete
+   [nil "⌦"] :paredit-forward-delete
+   ["C" "Open Bracket"] :paredit-backward-barf-sexp
    ["C" "Close Bracket"] :paredit-forward-barf-sexp
    ["M" "←"] :paredit-expand-left
    ["M" "→"] :paredit-expand-right})
@@ -89,6 +93,10 @@
 (def ^:const special-chars
   #{"(" ")" "[" "]" "{" "}" "\""})
 
+(def ^:const ignore-during-selection
+  #{:paredit-backward-delete
+    :paredit-forward-delete})
+
 (defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
   (when-let [cmd (or (and enable-default?
@@ -97,8 +105,10 @@
                           (or (advanced-keymap k)
                               (advanced-alternative-keymap k)
                               (foreign-keymap k))))]
-    (insert-result! w (exec-command! cmd w buffer))
-    cmd))
+    (when-not (and (.getSelectedText w)
+                   (contains? ignore-during-selection cmd))
+      (insert-result! w (exec-command! cmd w buffer))
+      cmd)))
 
 (defn convert-key-event
   [event]
