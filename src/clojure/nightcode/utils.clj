@@ -138,7 +138,7 @@
   "Returns a message indicating which paths are currently unsaved."
   [unsaved-paths]
   (when (seq unsaved-paths)
-    (str (get-string :unsaved-confirm)
+    (str (get-string :unsaved-changes)
          \newline \newline
          (->> unsaved-paths
               (map #(.getName (io/file %)))

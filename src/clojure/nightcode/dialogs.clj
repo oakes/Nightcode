@@ -186,6 +186,20 @@
         stay-on-top!
         s/show!)))
 
+(defn show-close-file-dialog!
+  [unsaved-paths]
+  (-> (s/dialog :content (utils/get-unsaved-paths-message unsaved-paths)
+                :options [(s/button :text (utils/get-string :close)
+                                    :listen [:action
+                                             #(s/return-from-dialog % true)])
+                          (s/button :text (utils/get-string :cancel)
+                                    :listen [:action
+                                             #(s/return-from-dialog % false)])])
+      s/pack!
+      center!
+      stay-on-top!
+      s/show!))
+
 (defn show-shut-down-dialog!
   [unsaved-paths]
   (-> (s/dialog :content (str (utils/get-unsaved-paths-message unsaved-paths)

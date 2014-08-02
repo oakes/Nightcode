@@ -23,10 +23,7 @@
 (defn show-shut-down-dialog!
   "Displays a dialog confirming whether the program should shut down."
   []
-  (let [unsaved-paths (->> (keys @editors/editors)
-                           (filter editors/unsaved?)
-                           doall)]
-    (dialogs/show-shut-down-dialog! unsaved-paths)))
+  (dialogs/show-shut-down-dialog! (editors/unsaved-paths)))
 
 (defn confirm-exit-app!
   "Shuts down unless a quit handler exists or the user cancels it."

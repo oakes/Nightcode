@@ -4,7 +4,7 @@
   <string name="repl_console">REPL Console</string>
   <string name="build_console">Build Console</string>
   <string name="parent_directory">Parent Directory</string>
-  <string name="close_file">Close File</string>
+  <string name="close">Close</string>
   <string name="paredit_help">Paredit Help</string>
 
   <string name="new_project">New Project</string>
@@ -40,7 +40,7 @@
   <string name="project_clj_required">You need a project.clj file to build this project.</string>
   <string name="create_project_clj">Create project.clj</string>
   <string name="continue">Continue</string>
-  <string name="unsaved_confirm">You have unsaved files!</string>
+  <string name="unsaved_changes">You will lose your unsaved changes.</string>
   <string name="quit_confirm">Are you sure you want to quit?</string>
   <string name="quit">Quit</string>
 

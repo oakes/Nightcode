@@ -50,6 +50,12 @@
   (when-let [text-area (get-text-area-from-path path)]
     (.isDirty text-area)))
 
+(defn unsaved-paths
+  ([]
+    (filter unsaved? (keys @editors)))
+  ([path]
+    (filter #(.startsWith % path) (unsaved-paths))))
+
 (defn get-editor-text
   []
   (when-let [text-area (get-selected-text-area)]
@@ -379,10 +385,13 @@
         file (io/file path)
         new-path (if (.isDirectory file)
                    path
-                   (.getCanonicalPath (.getParentFile file)))]
-    (remove-editors! path)
-    (update-tabs! new-path)
-    (ui/update-project-tree! new-path))
+                   (.getCanonicalPath (.getParentFile file)))
+        unsaved-paths (unsaved-paths path)]
+    (when (or (= 0 (count unsaved-paths))
+              (dialogs/show-close-file-dialog! unsaved-paths))
+      (remove-editors! path)
+      (update-tabs! new-path)
+      (ui/update-project-tree! new-path)))
   true)
 
 (def ^:dynamic *widgets* [:up :save :undo :redo :font-dec :font-inc
@@ -446,7 +455,7 @@
    :close (doto (ui/button :id :close
                            :text "X"
                            :listen [:action (:close actions)])
-            (utils/set-accessible-name! :close-file))})
+            (utils/set-accessible-name! :close))})
 
 (defmulti create-editor (fn [type _] type) :default nil)
 
@@ -504,8 +513,7 @@
       ; return a map describing the editor
       {:view editor-pane
        :text-area text-area
-       :close-fn! #(when (.isDirty text-area)
-                     (save-file!))
+       :close-fn! (fn [])
        :italicize-fn #(.isDirty text-area)
        :should-remove-fn #(not (.exists (io/file path)))})))
 
