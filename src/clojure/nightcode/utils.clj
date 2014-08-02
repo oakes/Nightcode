@@ -29,9 +29,10 @@
 
 (defn read-pref
   "Reads value from the given key in the preference file."
-  [k]
-  (when-let [string (.get prefs (name k) nil)]
-    (edn/read-string string)))
+  [k & [default-val]]
+  (if-let [string (.get prefs (name k) nil)]
+    (edn/read-string string)
+    default-val))
 
 ; language
 

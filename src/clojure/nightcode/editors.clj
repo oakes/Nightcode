@@ -19,8 +19,7 @@
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size)))
-(def paredit-enabled? ; default to true if not set
-  (->> [(utils/read-pref :enable-paredit) true] (remove nil?) first atom))
+(def paredit-enabled? (atom (utils/read-pref :enable-paredit true)))
 (def tabs (atom nil))
 (def theme-resource (atom (io/resource "dark.xml")))
 
