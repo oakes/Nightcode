@@ -1,7 +1,7 @@
 (ns nightcode.core
   (:require [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
-            [nightcode.cli-args :as cli-args]
+            [nightcode.customizations :as custom]
             [nightcode.editors :as editors]
             [nightcode.logcat :as logcat]
             [nightcode.projects :as projects]
@@ -58,7 +58,7 @@
 (defn -main
   "Launches the main window."
   [& args]
-  (let [parsed-args (cli-args/parse-args args)]
+  (let [parsed-args (custom/parse-args args)]
     (window/set-icon! "logo_launcher.png")
     (window/set-theme! parsed-args)
     (sandbox/create-profiles-clj!)

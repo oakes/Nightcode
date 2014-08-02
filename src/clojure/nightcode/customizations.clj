@@ -1,5 +1,6 @@
-(ns nightcode.cli-args
-  (:require [clojure.java.io :as jio]
+(ns nightcode.customizations
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.cli :as cli])
   (:import [org.pushingpixels.substance.api.skin
@@ -12,6 +13,19 @@
             ChallengerDeepSkin EmeraldDuskSkin
             GraphiteSkin GraphiteGlassSkin GraphiteAquaSkin MagellanSkin 
             RavenSkin TwilightSkin]))
+
+(def edn-prefs (or (try
+                     (-> (System/getProperty "user.home")
+                         (io/file "nightcode.edn")
+                         slurp
+                         edn/read-string)
+                     (catch Exception _))
+                   (try
+                     (-> (System/getProperty "user.home")
+                         (io/file ".config" "nightcode.edn")
+                         slurp
+                         edn/read-string)
+                     (catch Exception _))))
 
 (defn make-skin-map []
   {;; light skins
@@ -69,27 +83,39 @@ Light skin names: %s
   [args]
   (let [[opts tokens help-str] (cli/cli args
                                         ["-h" "--help" :flag true]
-                                        ["-s" "--skin-name" :default "dark"]
-                                        ["-p" "--panel" :default "vertical"]
+                                        ["-s" "--skin"]
+                                        ["-p" "--panel"]
                                         ["-t" "--theme-resource"])
+        opts (assoc opts
+                    :skin (name (or (:skin opts)
+                                    (:skin edn-prefs)
+                                    :dark))
+                    :panel (name (or (:panel opts)
+                                     (:panel edn-prefs)
+                                     :vertical)))
         skin-map (make-skin-map)]
     (cond
-      (or (not (:skin-name opts))
-          (:help opts))             (show-help help-str)
+      (:help opts)
+      (show-help help-str)
+      
       (and (:theme-resource opts)
-           (not (:skin-name opts))) (abort "ERROR: Must specify skin with theme")
-      (when-let [skin-name (:skin-name opts)]
-        (not (contains? skin-map skin-name))) (abort "ERROR: Invalid skin-name")
+           (not (:skin opts)))
+      (abort "ERROR: Must specify skin with theme")
+      
+      (when-let [skin (:skin opts)]
+        (not (contains? skin-map skin)))
+      (abort "ERROR: Invalid skin")
+      
       (when-let [th-res (:theme-resource opts)]
-        (not (.isFile (jio/file th-res)))) (abort "ERROR: Not such file found:"
-                                                  (:theme-resource opts))
-      :otherwise (let [skin-name (:skin-name opts)
-                       [skin-obj shade] (get skin-map skin-name)]
-                   (assoc opts
-                          :shade shade
-                          :skin-object skin-obj
-                          :theme-resource (or (when-let [filename (:theme-resource opts)]
-                                                (jio/file filename))
-                                              (-> (= :light shade)
-                                                (if "light.xml" "dark.xml")
-                                                jio/resource)))))))
+        (not (.isFile (io/file th-res))))
+      (abort "ERROR: Not such file found:" (:theme-resource opts))
+      
+      :else (let [skin (:skin opts)
+                  [skin-obj shade] (get skin-map skin)]
+              (assoc opts
+                     :shade shade
+                     :skin-object skin-obj
+                     :theme-resource (or (some-> (:theme-resource opts) io/file)
+                                         (io/resource
+                                           (if (= :light shade)
+                                             "light.xml" "dark.xml"))))))))

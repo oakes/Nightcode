@@ -1,6 +1,6 @@
 (ns nightcode.shortcuts
   (:require [clojure.edn :as edn]
-            [nightcode.sandbox :as sandbox]
+            [nightcode.customizations :as custom]
             [nightcode.ui :as ui]
             [seesaw.core :as s]
             [seesaw.keymap :as keymap])
@@ -49,10 +49,7 @@
                       :open-in-browser "shift F"
                       :cancel "shift C"
                       :build-console "shift A"}
-                     (when-not (sandbox/get-dir)
-                       (try
-                         (edn/read-string (slurp "keys.edn"))
-                         (catch Exception _)))))
+                     (:keys custom/edn-prefs)))
 
 (defn create-mapping!
   "Maps `func` to the key combo associated with `id`."
