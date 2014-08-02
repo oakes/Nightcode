@@ -9,7 +9,7 @@
            [org.fife.ui.autocomplete
             AutoCompletion BasicCompletion DefaultCompletionProvider]))
 
-(def doc-enabled? (atom (or (utils/read-pref :enable-doc) false)))
+(def doc-enabled? (atom (utils/read-pref :enable-doc false)))
 (def ^:dynamic *namespaces* ['clojure.core])
 (def ^:const completer-keys #{KeyEvent/VK_ENTER
                               KeyEvent/VK_UP
