@@ -21,7 +21,6 @@
 (def font-size (atom (utils/read-pref :font-size)))
 (def paredit-enabled? (atom (utils/read-pref :enable-paredit true)))
 (def tabs (atom nil))
-(def theme-resource (atom (io/resource "dark.xml")))
 
 ; basic getters
 
@@ -310,7 +309,7 @@
 (defn apply-settings!
   [text-area]
   ; set theme
-  (-> @theme-resource
+  (-> @ui/theme-resource
       io/input-stream
       Theme/load
       (.apply text-area))

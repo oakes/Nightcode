@@ -17,7 +17,7 @@
   [args]
   (s/native!)
   (let [{:keys [shade skin-object theme-resource]} args]
-    (when theme-resource (reset! editors/theme-resource theme-resource))
+    (when theme-resource (reset! ui/theme-resource theme-resource))
     (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.)))))
 
 (defn show-shut-down-dialog!

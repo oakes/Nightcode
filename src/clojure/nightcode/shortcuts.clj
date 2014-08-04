@@ -98,7 +98,8 @@
 
 (defn wrap-hint-text
   [^String text]
-  (str "<html><font face='Lucida Sans' color='#d3d3d3'>" text "</font></html>"))
+  (format "<html><font face='Lucida Sans' color='%s'>%s</font></html>"
+          (if (ui/dark-theme?) "#d3d3d3" "#404040") text))
 
 (defn create-hint!
   "Creates a new hint on the given view with the given text."
@@ -106,7 +107,8 @@
     (create-hint! false view (wrap-hint-text contents)))
   ([vertically-centered? view contents]
     (when contents
-      (let [style (ToolTipBalloonStyle. Color/DARK_GRAY Color/DARK_GRAY)
+      (let [color (if (ui/dark-theme?) Color/DARK_GRAY Color/LIGHT_GRAY)
+            style (ToolTipBalloonStyle. color color)
             ^CenteredPositioner positioner (CenteredPositioner. 0)
             ^BalloonTip tip (BalloonTip. view contents style false)
             view-height (.getHeight view)

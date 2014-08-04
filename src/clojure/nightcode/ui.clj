@@ -9,6 +9,14 @@
            [javax.swing JComponent JTree]
            [javax.swing.tree DefaultTreeModel]))
 
+; theme
+
+(def theme-resource (atom (io/resource "dark.xml")))
+
+(defn dark-theme?
+  []
+  (= -1 (.indexOf (str @theme-resource) "light")))
+
 ; create and retrieve widgets
 
 (def root (atom nil))
