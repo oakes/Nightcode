@@ -92,7 +92,9 @@ Light skin names: %s
                                     :dark))
                     :panel (name (or (:panel opts)
                                      (:panel edn-prefs)
-                                     :vertical)))
+                                     :vertical))
+                    :theme-resource (or (:theme-resource opts)
+                                        (:theme-resource edn-prefs)))
         skin-map (make-skin-map)]
     (cond
       (:help opts)
