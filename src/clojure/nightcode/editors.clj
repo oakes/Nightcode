@@ -18,7 +18,7 @@
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
 
 (def editors (atom (flatland/ordered-map)))
-(def font-size (atom (utils/read-pref :font-size)))
+(def font-size (atom (utils/read-pref :font-size 14)))
 (def paredit-enabled? (atom (utils/read-pref :enable-paredit true)))
 (def tabs (atom nil))
 
