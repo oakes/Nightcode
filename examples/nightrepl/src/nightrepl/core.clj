@@ -1,5 +1,5 @@
 (ns nightrepl.core
-  (:require [nightcode.cli-args :as cli-args]
+  (:require [nightcode.customizations :as custom]
             [nightcode.editors :as editors]
             [nightcode.repl :as repl]
             [nightcode.shortcuts :as shortcuts]
@@ -29,7 +29,7 @@
         false)))
   ; this will give us a nice dark theme by default, or allow a lighter theme
   ; by adding "-s light" to the command line invocation
-  (window/set-theme! (cli-args/parse-args args))
+  (window/set-theme! (custom/parse-args args))
   ; create and display the window
   ; it's important to save the window in the ui/root atom
   (s/invoke-later
