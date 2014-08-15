@@ -241,9 +241,7 @@
      :close-fn! (:stop actions)
      :should-remove-fn #(not (utils/project-path? path))
      :process process
-     :last-reload last-reload
-     :toggle-paredit-fn! (editors/init-paredit!
-                           (.getTextArea console) false true)}))
+     :last-reload last-reload}))
 
 (defn show-builder!
   [path]
