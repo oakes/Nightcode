@@ -64,6 +64,18 @@
   (when-let [text-area (get-selected-text-area)]
     (.getSelectedText text-area)))
 
+(defn get-tle-under-caret
+  "finds the top-level-expression on caret and returns its code" 
+  []
+  (when-let [text-area (get-selected-text-area)]
+    (when-let [point (.getCaretPosition text-area)]
+      (->> 
+        (.getText text-area)
+        paredit.parser/parse 
+        paredit.loc-utils/parsed-root-loc 
+        (#(paredit.static-analysis/top-level-code-form % point)) 
+        paredit.loc-utils/loc-text
+        (#(clojure.string/replace % "\n" ""))))))
 ; tabs
 
 (def ^:dynamic *reorder-tabs?* true)

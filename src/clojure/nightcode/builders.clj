@@ -59,11 +59,16 @@
          (.enterLine console))))
 
 (defn eval-selection!
+  "either the selected text wrapped in a do block or if no selection then the corresponding top level expression" 
   [console]
-  (some->> (editors/get-editor-selected-text)
-           utils/string->form
-           pr-str
-           (.enterLine console)))
+  (some->>
+    (or 
+      (some->>
+        (editors/get-editor-selected-text)
+        utils/string->form
+        pr-str)
+      (editors/get-tle-under-caret))
+    (.enterLine console)))
 
 ; toggling functions
 
