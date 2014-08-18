@@ -12,12 +12,14 @@
         screen-class-name "MainScreen"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
+        html-class-name "HtmlLauncher"
         ios-class-name "IOSLauncher"
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
         screen-ns (str package-name "." screen-class-name)
         desktop-ns (str package-name "." desktop-class-name)
         android-ns (str package-name "." android-class-name)
+        html-ns (str package-name "." html-class-name)
         ios-ns (str package-name "." ios-class-name)
         data {:app-name name
               :name (t/project-name name)
@@ -27,16 +29,20 @@
               :screen-class-name screen-class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
+              :html-class-name html-class-name
               :ios-class-name ios-class-name
               :namespace main-ns
               :screen-namespace screen-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
+              :html-namespace html-ns
               :ios-namespace ios-ns
-              :path (t/name-to-path main-ns)
+              :path (t/name-to-path package-name)
+              :main-path (t/name-to-path main-ns)
               :screen-path (t/name-to-path screen-ns)
               :desktop-path (t/name-to-path desktop-ns)
               :android-path (t/name-to-path android-ns)
+              :html-path (t/name-to-path html-ns)
               :ios-path (t/name-to-path ios-ns)
               :year (t/year)
               :target-sdk "15"}]
@@ -46,7 +52,7 @@
                [".gitignore" (render "gitignore" data)]
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
-               ["desktop/src-common/{{path}}.java"
+               ["desktop/src-common/{{main-path}}.java"
                 (render "Main.java" data)]
                ["desktop/src-common/{{screen-path}}.java"
                 (render "MainScreen.java" data)]
@@ -70,37 +76,43 @@
                 (lein-droid-render "strings.xml" data)]
                ; android libgdx.so
                ["android/libs/armeabi/libgdx.so"
-                (-> (io/resource "armeabi/libgdx.so") io/input-stream)]
+                (io/input-stream (io/resource "armeabi/libgdx.so"))]
                ["android/libs/armeabi-v7a/libgdx.so"
-                (-> (io/resource "armeabi-v7a/libgdx.so") io/input-stream)]
+                (io/input-stream (io/resource "armeabi-v7a/libgdx.so"))]
                ["android/libs/x86/libgdx.so"
-                (-> (io/resource "x86/libgdx.so") io/input-stream)]
+                (io/input-stream (io/resource "x86/libgdx.so"))]
                ; android libgdx-box2d.so
                ["android/libs/armeabi/libgdx-box2d.so"
-                (-> (io/resource "armeabi/libgdx-box2d.so") io/input-stream)]
+                (io/input-stream (io/resource "armeabi/libgdx-box2d.so"))]
                ["android/libs/armeabi-v7a/libgdx-box2d.so"
-                (-> (io/resource "armeabi-v7a/libgdx-box2d.so") io/input-stream)]
+                (io/input-stream (io/resource "armeabi-v7a/libgdx-box2d.so"))]
                ["android/libs/x86/libgdx-box2d.so"
-                (-> (io/resource "x86/libgdx-box2d.so") io/input-stream)]
+                (io/input-stream (io/resource "x86/libgdx-box2d.so"))]
                ; android libgdx-bullet.so
                ["android/libs/armeabi/libgdx-bullet.so"
-                (-> (io/resource "armeabi/libgdx-bullet.so") io/input-stream)]
+                (io/input-stream (io/resource "armeabi/libgdx-bullet.so"))]
                ["android/libs/armeabi-v7a/libgdx-bullet.so"
-                (-> (io/resource "armeabi-v7a/libgdx-bullet.so") io/input-stream)]
+                (io/input-stream (io/resource "armeabi-v7a/libgdx-bullet.so"))]
                ["android/libs/x86/libgdx-bullet.so"
-                (-> (io/resource "x86/libgdx-bullet.so") io/input-stream)]
+                (io/input-stream (io/resource "x86/libgdx-bullet.so"))]
+               ; html
+               ["html/project.clj" (render "html-project.clj" data)]
+               ["html/src/GdxDefinition.gwt.xml"
+                (render "GdxDefinition.gwt.xml" data)]
+               ["html/src/{{html-path}}.java" (render "HtmlLauncher.java" data)]
+               ["html/webapp/index.html" (render "index.html" data)]
                ; ios
                ["ios/project.clj" (render "ios-project.clj" data)]
                ["ios/Info.plist.xml" (render "Info.plist.xml" data)]
                ["ios/src/{{ios-path}}.java" (render "IOSLauncher.java" data)]
                ; ios libObjectAL.a and libgdx.a
                ["ios/libs/libObjectAL.a"
-                (-> (io/resource "ios/libObjectAL.a") io/input-stream)]
+                (io/input-stream (io/resource "ios/libObjectAL.a"))]
                ["ios/libs/libgdx.a"
-                (-> (io/resource "ios/libgdx.a") io/input-stream)]
+                (io/input-stream (io/resource "ios/libgdx.a"))]
                ; ios libgdx-box2d.a
                ["ios/libs/libgdx-box2d.a"
-                (-> (io/resource "ios/libgdx-box2d.a") io/input-stream)]
+                (io/input-stream (io/resource "ios/libgdx-box2d.a"))]
                ; ios libgdx-bullet.a
                ["ios/libs/libgdx-bullet.a"
-                (-> (io/resource "ios/libgdx-bullet.a") io/input-stream)])))
+                (io/input-stream (io/resource "ios/libgdx-bullet.a"))])))
