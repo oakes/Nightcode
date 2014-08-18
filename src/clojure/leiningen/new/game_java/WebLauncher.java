@@ -6,13 +6,11 @@ import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
 
 public class {{web-class-name}} extends GwtApplication {
 
-        @Override
-        public GwtApplicationConfiguration getConfig () {
-                return new GwtApplicationConfiguration(800, 600);
-        }
+	public GwtApplicationConfiguration getConfig () {
+		return new GwtApplicationConfiguration(800, 600);
+	}
 
-        @Override
-        public ApplicationListener getApplicationListener () {
-                return new {{class-name}}();
-        }
+	public ApplicationListener getApplicationListener () {
+		return new {{class-name}}();
+	}
 }
