@@ -12,8 +12,8 @@
         screen-class-name "MainScreen"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
-        web-class-name "WebLauncher"
         ios-class-name "IOSLauncher"
+        web-class-name "WebLauncher"
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
         screen-ns (str package-name "." screen-class-name)
@@ -37,13 +37,13 @@
               :android-namespace android-ns
               :ios-namespace ios-ns
               :web-namespace web-ns
-              :path (t/name-to-path package-name)
-              :main-path (t/name-to-path main-ns)
+              :path (t/name-to-path main-ns)
               :screen-path (t/name-to-path screen-ns)
               :desktop-path (t/name-to-path desktop-ns)
               :android-path (t/name-to-path android-ns)
               :ios-path (t/name-to-path ios-ns)
               :web-path (t/name-to-path web-ns)
+              :common-path (t/name-to-path package-name)
               :year (t/year)
               :target-sdk "15"}]
     (t/->files data
@@ -52,7 +52,7 @@
                [".gitignore" (render "gitignore" data)]
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
-               ["desktop/src-common/{{main-path}}.java"
+               ["desktop/src-common/{{path}}.java"
                 (render "Main.java" data)]
                ["desktop/src-common/{{screen-path}}.java"
                 (render "MainScreen.java" data)]
