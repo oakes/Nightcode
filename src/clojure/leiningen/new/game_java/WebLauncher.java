@@ -4,7 +4,7 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
 
-public class {{html-class-name}} extends GwtApplication {
+public class {{web-class-name}} extends GwtApplication {
 
         @Override
         public GwtApplicationConfiguration getConfig () {

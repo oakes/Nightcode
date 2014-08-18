@@ -5,7 +5,7 @@
 	<inherits name='com.badlogic.gdx.physics.box2d.box2d-gwt' />
 
 	<source path="{{path}}"/>
-	<entry-point class='{{html-namespace}}' />
+	<entry-point class='{{web-namespace}}' />
 
 	<set-configuration-property name="gdx.assetpath" value="../desktop/resources" />
 	<set-configuration-property name="gdx.assetoutputpath" value="webapp" />
