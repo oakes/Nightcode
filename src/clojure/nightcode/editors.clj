@@ -7,6 +7,9 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
+            [paredit.loc-utils]
+            [paredit.parser]
+            [paredit.static-analysis]
             [paredit-widget.core :as pw]
             [seesaw.color :as color]
             [seesaw.core :as s])
@@ -65,17 +68,16 @@
     (.getSelectedText text-area)))
 
 (defn get-tle-under-caret
-  "finds the top-level-expression on caret and returns its code" 
+  "Finds the top-level-expression under the caret and returns it as a string."
   []
   (when-let [text-area (get-selected-text-area)]
     (when-let [point (.getCaretPosition text-area)]
-      (->> 
-        (.getText text-area)
-        paredit.parser/parse 
-        paredit.loc-utils/parsed-root-loc 
-        (#(paredit.static-analysis/top-level-code-form % point)) 
-        paredit.loc-utils/loc-text
-        (#(clojure.string/replace % "\n" ""))))))
+      (-> (.getText text-area)
+          paredit.parser/parse
+          paredit.loc-utils/parsed-root-loc
+          (paredit.static-analysis/top-level-code-form point)
+          paredit.loc-utils/loc-text))))
+
 ; tabs
 
 (def ^:dynamic *reorder-tabs?* true)

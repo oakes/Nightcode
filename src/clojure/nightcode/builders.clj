@@ -58,17 +58,15 @@
          pr-str
          (.enterLine console))))
 
-(defn eval-selection!
-  "either the selected text wrapped in a do block or if no selection then the corresponding top level expression" 
+(defn eval!
+  "Evals either the selected text or, if no selection, then the corresponding
+top level expression."
   [console]
-  (some->>
-    (or 
-      (some->>
-        (editors/get-editor-selected-text)
-        utils/string->form
-        pr-str)
-      (editors/get-tle-under-caret))
-    (.enterLine console)))
+  (some->> (or (editors/get-editor-selected-text)
+               (editors/get-tle-under-caret))
+           utils/string->form
+           pr-str
+           (.enterLine console)))
 
 ; toggling functions
 
@@ -151,7 +149,7 @@
              (reload! console path @last-reload)
              (reset! last-reload (System/currentTimeMillis)))
    :eval (fn [& _]
-           (eval-selection! console))
+           (eval! console))
    :build (fn [& _]
             (lein/build-project! process (ui/get-io! console) path))
    :test (fn [& _]
