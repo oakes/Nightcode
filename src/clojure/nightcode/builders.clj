@@ -79,12 +79,14 @@
   (let [android-project? (lein/android-project? path)
         ios-project? (lein/ios-project? path)
         java-project? (lein/java-project? path)
+        gwt-project? (lein/gwt-project? path)
         clojurescript-project? (lein/clojurescript-project? path)
         project-clj? (-> @ui/tree-selection
                          io/file
                          .getName
                          (= "project.clj"))
-        buttons {:#run-repl (and (not java-project?)
+        buttons {:#run (not gwt-project?)
+                 :#run-repl (and (not java-project?)
                                  (not ios-project?))
                  :#reload (and (not java-project?)
                                (not ios-project?))

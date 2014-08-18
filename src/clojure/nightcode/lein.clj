@@ -10,6 +10,7 @@
             [leiningen.cljsbuild]
             [leiningen.droid]
             [leiningen.fruit]
+            [leiningen.gwt]
             [leiningen.javac]
             [leiningen.new]
             [leiningen.new.play-clj]
@@ -110,11 +111,15 @@
 
 (defn java-project?
   [path]
-  (some-> (read-project-clj path) java-project-map?))
+  (some-> path read-project-clj java-project-map?))
 
 (defn clojurescript-project?
   [path]
-  (-> (read-project-clj path) :cljsbuild nil? not))
+  (-> path read-project-clj :cljsbuild some?))
+
+(defn gwt-project?
+  [path]
+  (-> path read-project-clj :gwt some?))
 
 (defn valid-project?
   [path]
@@ -227,6 +232,8 @@
     (leiningen.fruit/fruit project "release")
     (:clr project)
     (leiningen.clr/clr project "compile")
+    (:gwt project)
+    (leiningen.gwt/gwt project "compile")
     :else
     (leiningen.uberjar/uberjar project)))
 
