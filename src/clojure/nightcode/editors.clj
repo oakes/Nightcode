@@ -22,7 +22,7 @@
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size 14)))
-(def paredit-enabled? (atom (utils/read-pref :enable-paredit true)))
+(def paredit-enabled? (atom (utils/read-pref :enable-paredit false)))
 (def tabs (atom nil))
 
 ; basic getters
