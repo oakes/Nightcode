@@ -3,8 +3,7 @@
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
-  :dependencies [[clojure-complete "0.2.3"]
-                 [com.fifesoft/autocomplete "2.5.0"]
+  :dependencies [[com.fifesoft/autocomplete "2.5.0"]
                  [com.fifesoft/rsyntaxtextarea "2.5.3"]
                  [com.github.insubstantial/substance "7.3"]
                  [compliment "0.1.3"]
