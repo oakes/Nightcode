@@ -8,5 +8,5 @@
 	<entry-point class='{{web-namespace}}' />
 
 	<set-configuration-property name="gdx.assetpath" value="../desktop/resources" />
-	<set-configuration-property name="gdx.assetoutputpath" value="webapp" />
+	<set-configuration-property name="gdx.assetoutputpath" value="{{web-app-dir}}" />
 </module>

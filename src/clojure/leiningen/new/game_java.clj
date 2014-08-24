@@ -45,7 +45,8 @@
               :web-path (t/name-to-path web-ns)
               :common-path (t/name-to-path package-name)
               :year (t/year)
-              :target-sdk "15"}]
+              :target-sdk "15"
+              :web-app-dir "app"}]
     (t/->files data
                ; main
                ["README.md" (render "README.md" data)]
@@ -115,4 +116,4 @@
                ["web/src/GdxDefinition.gwt.xml"
                 (render "GdxDefinition.gwt.xml" data)]
                ["web/src/{{web-path}}.java" (render "WebLauncher.java" data)]
-               ["web/webapp/index.html" (render "index.html" data)])))
+               ["web/{{web-app-dir}}/index.html" (render "index.html" data)])))
