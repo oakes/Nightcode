@@ -18,7 +18,8 @@
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [nightcode.ui JConsole]
            [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
-           [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine]))
+           [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine
+            SearchResult]))
 
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (utils/read-pref :font-size 14)))
@@ -241,10 +242,13 @@
           (.setCaretPosition text-area 0))
         (when (.isShiftDown e)
           (.setSearchForward context false)))
-      (if (and valid-search?
-               (-> (SearchEngine/find text-area context) .getCount (= 0)))
-        (s/config! e :background (color/color :red))
-        (s/config! e :background nil))
+      (if (or (not valid-search?)
+              (let [result (SearchEngine/find text-area context)]
+                (if (isa? (type result) SearchResult)
+                  (-> result .getCount (> 0))
+                  result)))
+        (s/config! e :background nil)
+        (s/config! e :background (color/color :red)))
       (when (= (count find-text) 0)
         (SearchEngine/find text-area context)))))
 
@@ -262,7 +266,7 @@
       (if (and enter-key?
                (or (= (count find-text) 0)
                    (not (try (SearchEngine/replaceAll text-area context)
-                          (catch Exception e false)))))
+                          (catch Exception _ false)))))
         (s/config! e :background (color/color :red))
         (s/config! e :background nil))
       (when enter-key?
