@@ -1,14 +1,14 @@
 package nightcode;
 
+import java.awt.*;
 import java.lang.reflect.Method;
 import java.util.Properties;
-import javax.swing.*;
 
 /**
  * This class handles loading of Nightcode namespaces while the splash image
  * is displayed on the screen. See entry point main() method in this class. How
  * it works:
- * 0. Opens splash screen
+ * 0. Assumes the splash screen is loaded (see project.clj - :manifest entry)
  * 1. Loads nightcode.core/-main using reflection (it takes time)
  * 2. Closes splash screen
  * 3. Invokes nightcode.core/-main
@@ -33,18 +33,13 @@ public class Nightcode {
     }
 
     private void init(String[] args) throws Exception {
-    	JWindow window = new JWindow();
-    	ClassLoader cl = this.getClass().getClassLoader();
-    	Icon icon  = new ImageIcon(cl.getResource("logo_splash.png"));
-        window.add(new JLabel(icon));
-        window.setSize(icon.getIconWidth(), icon.getIconHeight());
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
+        final SplashScreen splash = SplashScreen.getSplashScreen();
 
         Method m = loadNightcodeMain();
 
-        window.setVisible(false);
-        window.dispose();
+        if (splash != null) {
+            splash.close();
+        }
 
         invokeNightcodeMain(m, args);
     }
