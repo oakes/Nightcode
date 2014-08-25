@@ -214,17 +214,3 @@
       center!
       stay-on-top!
       s/show!))
-
-(defn show-restart-dialog!
-  []
-  (-> (s/dialog :content (utils/get-string :not-responding)
-                :options [(s/button :text (utils/get-string :restart)
-                                    :listen [:action
-                                             #(s/return-from-dialog % true)])
-                          (s/button :text (utils/get-string :continue)
-                                    :listen [:action
-                                             #(s/return-from-dialog % false)])])
-      s/pack!
-      center!
-      stay-on-top!
-      s/show!))
