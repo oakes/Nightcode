@@ -22,7 +22,7 @@
             SearchResult]))
 
 (def editors (atom (flatland/ordered-map)))
-(def font-size (atom (utils/read-pref :font-size 14)))
+(def font-size (atom (utils/above-zero (utils/read-pref :font-size 14))))
 (def paredit-enabled? (atom (utils/read-pref :enable-paredit false)))
 (def tabs (atom nil))
 
@@ -169,7 +169,7 @@
 
 (defn decrease-font-size!
   [& _]
-  (swap! font-size #(if (> % 1) (dec %) 1)))
+  (swap! font-size (comp utils/above-zero dec)))
 
 (defn increase-font-size!
   [& _]
@@ -326,14 +326,11 @@
 
 (defn apply-settings!
   [text-area]
-  ; set theme
   (-> @ui/theme-resource
       io/input-stream
       Theme/load
       (.apply text-area))
-  ; set font size
-  (->> (or @font-size (reset! font-size (-> text-area .getFont .getSize)))
-       (set-font-size! text-area)))
+  (set-font-size! text-area @font-size))
 
 (defn create-text-area
   ([]
