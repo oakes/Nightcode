@@ -169,7 +169,7 @@
 
 (defn decrease-font-size!
   [& _]
-  (swap! font-size dec))
+  (swap! font-size #(if (> % 1) (dec %) 1)))
 
 (defn increase-font-size!
   [& _]
