@@ -52,7 +52,7 @@
                  :icon "logo_launcher.png"
                  :on-close :nothing)
     ; set various window properties
-    window/enable-full-screen!
+    ;window/enable-full-screen!
     window/add-listener!))
 
 (defn -main
