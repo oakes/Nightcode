@@ -21,8 +21,9 @@
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine
             SearchResult]))
 
+(def ^:const min-font-size 8)
 (def editors (atom (flatland/ordered-map)))
-(def font-size (atom (utils/above-zero (utils/read-pref :font-size 14))))
+(def font-size (atom (max min-font-size (utils/read-pref :font-size 14))))
 (def paredit-enabled? (atom (utils/read-pref :enable-paredit false)))
 (def tabs (atom nil))
 
@@ -169,7 +170,7 @@
 
 (defn decrease-font-size!
   [& _]
-  (swap! font-size (comp utils/above-zero dec)))
+  (swap! font-size (comp #(max min-font-size %) dec)))
 
 (defn increase-font-size!
   [& _]

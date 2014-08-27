@@ -277,8 +277,3 @@
     (binding [*read-eval* false]
       (read-string (str \( 'do \newline s \newline \))))
     (catch Exception _)))
-
-(defn above-zero
-  "Returns the given number, or 1 if it isn't above zero."
-  [n]
-  (if (> n 0) n 1))
