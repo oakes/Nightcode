@@ -1,4 +1,4 @@
-(defproject nightcode "0.3.11-SNAPSHOT"
+(defproject nightcode "0.3.11"
   :description "An IDE for Clojure and Java"
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
@@ -25,7 +25,7 @@
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [org.clojure/clojure]]
-                 [play-clj/lein-template "0.3.9"]
+                 [play-clj/lein-template "0.3.10"]
                  [seesaw "1.4.4"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
