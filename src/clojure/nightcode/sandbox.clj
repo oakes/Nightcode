@@ -20,8 +20,8 @@
 
 (defn get-env
   []
-  (let [path (get-path ".lein")]
-    (when (get-dir)
+  (when (get-dir)
+    (let [path (get-path ".lein")]
       (into-array String [(str "LEIN_HOME=" path)]))))
 
 (defn set-home!
@@ -30,21 +30,21 @@
 
 (defn set-temp-dir!
   []
-  (let [dir (get-path ".temp")]
-    (when (get-dir)
+  (when (get-dir)
+    (let [dir (get-path ".temp")]
       (-> dir io/file .mkdir)
       (System/setProperty "java.io.tmpdir" dir))))
 
 (defn create-profiles-clj!
   []
-  (let [profiles-clj (get-path ".lein" "profiles.clj")
-        m2 (get-path ".m2")
-        tmp (get-path ".temp")
-        jvm-opts (str "-Djava.io.tmpdir=" tmp)
-        content {:user {:local-repo m2
-                        :jvm-opts [jvm-opts]
-                        :gwt {:extraJvmArgs jvm-opts}}}]
-    (when (get-dir)
+  (when (get-dir)
+    (let [profiles-clj (get-path ".lein" "profiles.clj")
+          m2 (get-path ".m2")
+          tmp (get-path ".temp")
+          jvm-opts (str "-Djava.io.tmpdir=" tmp)
+          content {:user {:local-repo m2
+                          :jvm-opts [jvm-opts]
+                          :gwt {:extraJvmArgs jvm-opts}}}]
       (doto (io/file profiles-clj)
         (-> .getParentFile .mkdir)
         (spit (pr-str content))))))
