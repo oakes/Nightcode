@@ -39,12 +39,15 @@
   []
   (let [profiles-clj (get-path ".lein" "profiles.clj")
         m2 (get-path ".m2")
-        tmp (get-path ".temp")]
-    (when (and (get-dir) (not (.exists (io/file profiles-clj))))
+        tmp (get-path ".temp")
+        jvm-opts (str "-Djava.io.tmpdir=" tmp)
+        content {:user {:local-repo m2
+                        :jvm-opts [jvm-opts]
+                        :gwt {:extraJvmArgs jvm-opts}}}]
+    (when (get-dir)
       (doto (io/file profiles-clj)
         (-> .getParentFile .mkdir)
-        (spit (pr-str {:user {:local-repo m2
-                              :jvm-opts [(str "-Djava.io.tmpdir=" tmp)]}}))))))
+        (spit (pr-str content))))))
 
 ; objc
 

@@ -16,5 +16,4 @@
   :plugins [[gwt-plugin "0.1.6"]]
   :gwt {:module "GdxDefinition"
         :war "{{web-app-dir}}"
-        :extraJvmArgs "-XX:MaxPermSize=512m"
         :src "src"})
