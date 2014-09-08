@@ -4,6 +4,7 @@
 (defn console-java
   [name package-name]
   (let [render (t/renderer "console-java")
+        console-render (t/renderer "console-clojure")
         class-name "Main"
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
@@ -17,6 +18,6 @@
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
-               [".gitignore" (render "gitignore" data)]
+               [".gitignore" (console-render "gitignore" data)]
                ["src/{{path}}.java" (render "Main.java" data)]
                "resources")))

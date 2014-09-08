@@ -6,6 +6,7 @@
 (defn game-java
   [name package-name]
   (let [render (t/renderer "game-java")
+        console-render (t/renderer "console-clojure")
         android-render (t/renderer "android-java")
         lein-droid-render (droid-new/renderer "templates")
         class-name "Main"
@@ -50,7 +51,7 @@
     (t/->files data
                ; main
                ["README.md" (render "README.md" data)]
-               [".gitignore" (render "gitignore" data)]
+               [".gitignore" (console-render "gitignore" data)]
                ; desktop
                ["desktop/project.clj" (render "desktop-project.clj" data)]
                ["desktop/src-common/{{path}}.java"
