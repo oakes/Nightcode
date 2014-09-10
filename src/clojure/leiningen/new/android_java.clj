@@ -5,7 +5,6 @@
 (defn android-java
   [name package-name]
   (let [render (t/renderer "android-java")
-        console-render (t/renderer "console-clojure")
         class-name "MainActivity"
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
@@ -23,7 +22,7 @@
                ["project.clj" (render "project.clj" data)]
                ["res/layout/main.xml" (render "main.xml" data)]
                ["README.md" (render "README.md" data)]
-               [".gitignore" (console-render "gitignore" data)]
+               [".gitignore" (render "gitignore" data)]
                ["src/{{path}}.java" (render "MainActivity.java" data)]
                ["AndroidManifest.xml" (render "AndroidManifest.xml" data)]
                ["res/drawable-hdpi/ic_launcher.png"

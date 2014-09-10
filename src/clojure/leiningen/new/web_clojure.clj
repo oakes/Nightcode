@@ -4,7 +4,6 @@
 (defn web-clojure
   [name package-name]
   (let [render (t/renderer "web-clojure")
-        console-render (t/renderer "console-clojure")
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (t/sanitize-ns package-name)
         data {:name name
@@ -13,7 +12,7 @@
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
-               [".gitignore" (console-render "gitignore" data)]
+               [".gitignore" (render "gitignore" data)]
                ["src/clj/{{path}}.clj" (render "server.clj" data)]
                ["src/cljs/{{path}}.cljs" (render "client.cljs" data)]
                ["resources/public/css/page.css" (render "page.css" data)]

@@ -5,7 +5,6 @@
 (defn dotnet-clojure
   [name package-name]
   (let [render (t/renderer "dotnet-clojure")
-        console-render (t/renderer "console-clojure")
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (t/sanitize-ns package-name)
         zip-path "clojure-clr-1.5.0-Release-4.0.zip"
@@ -20,7 +19,7 @@
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
-               [".gitignore" (console-render "gitignore" data)]
+               [".gitignore" (render "gitignore" data)]
                ["src/{{path}}.clj" (render "core.clj" data)]
                "resources"
-               ["{{zip-path}}" (io/input-stream (io/resource zip-path))])))
+               ["{{zip-path}}" (-> (io/resource zip-path) io/input-stream)])))

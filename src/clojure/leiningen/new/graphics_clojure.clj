@@ -4,7 +4,6 @@
 (defn graphics-clojure
   [name package-name]
   (let [render (t/renderer "graphics-clojure")
-        console-render (t/renderer "console-clojure")
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (t/sanitize-ns package-name)
         data {:app-name name
@@ -15,6 +14,6 @@
     (t/->files data
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
-               [".gitignore" (console-render "gitignore" data)]
+               [".gitignore" (render "gitignore" data)]
                ["src/{{path}}.clj" (render "core.clj" data)]
                "resources")))
