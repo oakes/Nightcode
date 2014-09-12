@@ -1,4 +1,4 @@
-(defproject nightcode "0.3.12-SNAPSHOT"
+(defproject nightcode "0.4.0-SNAPSHOT"
   :description "An IDE for Clojure and Java"
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
@@ -22,6 +22,7 @@
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/tools.namespace "0.2.5"]
+                 [org.eclipse.jgit "3.2.0.201312181205-r"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [org.clojure/clojure]]

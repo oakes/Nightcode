@@ -48,7 +48,10 @@
                       :edit "shift M"
                       :open-in-browser "shift F"
                       :cancel "shift C"
-                      :build-console "shift A"}
+                      :build-console "shift A"
+                      :pull "shift L"
+                      :push "shift H"
+                      :configure "shift C"}
                      (:keys custom/edn-prefs)))
 
 (defn create-mapping!

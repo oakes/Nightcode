@@ -3,6 +3,7 @@
             [nightcode.dialogs :as dialogs]
             [nightcode.customizations :as custom]
             [nightcode.editors :as editors]
+            [nightcode.git :as git]
             [nightcode.logcat :as logcat]
             [nightcode.projects :as projects]
             [nightcode.repl :as repl]

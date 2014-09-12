@@ -531,7 +531,7 @@
        :italicize-fn #(.isDirty text-area)
        :should-remove-fn #(not (.exists (io/file path)))})))
 
-(def ^:dynamic *types* [:text :logcat])
+(def ^:dynamic *types* [:text :logcat :git])
 
 (defn show-editor!
   [path]

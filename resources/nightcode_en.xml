@@ -116,4 +116,8 @@
   <string name="repl">REPL</string>
 
   <string name="search">Search</string>
+
+  <string name="pull">Pull</string>
+  <string name="push">Push</string>
+  <string name="configure">Configure</string>
 </resources>
