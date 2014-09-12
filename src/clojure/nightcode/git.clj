@@ -21,16 +21,16 @@
     (.setText "")
     (.setCaretPosition 0)))
 
-(defn var-node
-  [{:keys [name] :as node}]
-  (proxy [DefaultMutableTreeNode] [node]
+(defn file-node
+  [{:keys [name] :as file}]
+  (proxy [DefaultMutableTreeNode] [file]
     (isLeaf [] true)
     (toString [] name)))
 
 (defn commit-node
   [[{:keys [name] :as commit} files]]
   (proxy [DefaultMutableTreeNode] []
-    (getChildAt [i] (var-node (nth files i)))
+    (getChildAt [i] (file-node (nth files i)))
     (getChildCount [] (count files))
     (toString [] name)))
 
