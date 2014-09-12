@@ -4,7 +4,65 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
-            [seesaw.core :as s]))
+            [seesaw.core :as s])
+  (:import [javax.swing.event HyperlinkEvent$EventType TreeSelectionListener]
+           [javax.swing.text.html HTMLEditorKit StyleSheet]
+           [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
+            TreeSelectionModel]))
+
+(def commit-list [[{:name "Commit 1"}
+                   [{:name "file1"} 
+                    {:name "file2"}
+                    {:name "file3"}]]])
+
+(defn update-content!
+  [content node]
+  (doto content
+    (.setText "")
+    (.setCaretPosition 0)))
+
+(defn var-node
+  [{:keys [name] :as node}]
+  (proxy [DefaultMutableTreeNode] [node]
+    (isLeaf [] true)
+    (toString [] name)))
+
+(defn commit-node
+  [[{:keys [name] :as commit} files]]
+  (proxy [DefaultMutableTreeNode] []
+    (getChildAt [i] (var-node (nth files i)))
+    (getChildCount [] (count files))
+    (toString [] name)))
+
+(defn root-node
+  []
+  (proxy [DefaultMutableTreeNode] []
+    (getChildAt [i] (commit-node (nth commit-list i)))
+    (getChildCount [] (count commit-list))))
+
+(defn create-sidebar
+  [content]
+  (doto (s/tree :id :git-sidebar)
+    (.setRootVisible false)
+    (.setShowsRootHandles true)
+    (.setModel (DefaultTreeModel. (root-node)))
+    (.addTreeSelectionListener
+      (reify TreeSelectionListener
+        (valueChanged [this e]
+          (->> (some-> e .getPath .getLastPathComponent .getUserObject)
+               (update-content! content)))))
+    (-> .getSelectionModel
+        (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))
+    (.setSelectionRow 0)))
+
+(defn create-content
+  []
+  (let [css (doto (StyleSheet.) (.importStyleSheet (io/resource "git.css")))
+        kit (doto (HTMLEditorKit.) (.setStyleSheet css))]
+    (doto (s/editor-pane :id :git-content
+                         :editable? false
+                         :content-type "text/html")
+      (.setEditorKit kit))))
 
 (def ^:const git-name "*Git*")
 
@@ -35,7 +93,11 @@
 (defmethod editors/create-editor :git [_ path]
   (when (= (.getName (io/file path)) git-name)
     (let [; create the pane
-          git-pane (s/border-panel)
+          content (create-content)
+          sidebar (create-sidebar content)
+          git-pane (s/border-panel
+                     :west (s/scrollable sidebar :size [200 :by 0])
+                     :center (s/scrollable content))
           ; get the path of the parent directory
           path (-> path io/file .getParentFile .getCanonicalPath)
           ; create the actions and widgets
