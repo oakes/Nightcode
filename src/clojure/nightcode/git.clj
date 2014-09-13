@@ -8,44 +8,40 @@
   (:import [javax.swing.event HyperlinkEvent$EventType TreeSelectionListener]
            [javax.swing.text.html HTMLEditorKit StyleSheet]
            [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
-            TreeSelectionModel]))
+            TreeSelectionModel]
+           [org.eclipse.jgit.api Git]
+           [org.eclipse.jgit.internal.storage.file FileRepository]))
 
-(def commit-list [[{:name "Commit 1"}
-                   [{:name "file1"} 
-                    {:name "file2"}
-                    {:name "file3"}]]])
+(def ^:const git-name "*Git*")
+(def ^:const max-commits 50)
 
 (defn update-content!
-  [content node]
+  [content commit]
   (doto content
     (.setText "")
     (.setCaretPosition 0)))
 
-(defn file-node
-  [{:keys [name] :as file}]
-  (proxy [DefaultMutableTreeNode] [file]
-    (isLeaf [] true)
-    (toString [] name)))
-
 (defn commit-node
-  [[{:keys [name] :as commit} files]]
-  (proxy [DefaultMutableTreeNode] []
-    (getChildAt [i] (file-node (nth files i)))
-    (getChildCount [] (count files))
-    (toString [] name)))
+  [commit]
+  (proxy [DefaultMutableTreeNode] [commit]
+    (toString [] (.getShortMessage commit))))
 
 (defn root-node
-  []
-  (proxy [DefaultMutableTreeNode] []
-    (getChildAt [i] (commit-node (nth commit-list i)))
-    (getChildCount [] (count commit-list))))
+  [f]
+  (let [repo (FileRepository. f)
+        git (Git. repo)
+        commit-objects (-> git .log (.setMaxCount max-commits) .call .iterator)
+        commits (iterator-seq commit-objects)]
+    (proxy [DefaultMutableTreeNode] []
+      (getChildAt [i] (commit-node (nth commits i)))
+      (getChildCount [] (count commits)))))
 
 (defn create-sidebar
-  [content]
+  [content f]
   (doto (s/tree :id :git-sidebar)
     (.setRootVisible false)
-    (.setShowsRootHandles true)
-    (.setModel (DefaultTreeModel. (root-node)))
+    (.setShowsRootHandles false)
+    (.setModel (DefaultTreeModel. (root-node f)))
     (.addTreeSelectionListener
       (reify TreeSelectionListener
         (valueChanged [this e]
@@ -64,11 +60,13 @@
                          :content-type "text/html")
       (.setEditorKit kit))))
 
-(def ^:const git-name "*Git*")
+(defn git-file
+  [path]
+  (io/file path ".git"))
 
 (defn git-project?
   [path]
-  (.exists (io/file path ".git")))
+  (.exists (git-file path)))
 
 (def ^:dynamic *widgets* [:pull :push :configure])
 
@@ -92,14 +90,16 @@
 
 (defmethod editors/create-editor :git [_ path]
   (when (= (.getName (io/file path)) git-name)
-    (let [; create the pane
-          content (create-content)
-          sidebar (create-sidebar content)
-          git-pane (s/border-panel
-                     :west (s/scrollable sidebar :size [200 :by 0])
-                     :center (s/scrollable content))
-          ; get the path of the parent directory
+    (let [; get the path of the parent directory
           path (-> path io/file .getParentFile .getCanonicalPath)
+          ; create the pane
+          content (create-content)
+          sidebar (create-sidebar content (git-file path))
+          git-pane (s/border-panel
+                     :west (s/scrollable sidebar
+                                         :size [200 :by 0]
+                                         :hscroll :never)
+                     :center (s/scrollable content))
           ; create the actions and widgets
           actions (create-actions)
           widgets (create-widgets actions)
