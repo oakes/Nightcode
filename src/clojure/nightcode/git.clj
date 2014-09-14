@@ -9,6 +9,7 @@
             [nightcode.utils :as utils]
             [seesaw.core :as s])
   (:import [java.io ByteArrayOutputStream]
+           [javax.swing JTree]
            [javax.swing.event HyperlinkEvent$EventType TreeSelectionListener]
            [javax.swing.text.html HTMLEditorKit StyleSheet]
            [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
@@ -17,11 +18,20 @@
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
+           [org.eclipse.jgit.lib Repository]
            [org.eclipse.jgit.revwalk RevCommit]
            [org.eclipse.jgit.treewalk EmptyTreeIterator FileTreeIterator]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
+
+(defn git-file
+  [path]
+  (io/file path ".git"))
+
+(defn git-project?
+  [path]
+  (.exists (git-file path)))
 
 (defn format-diff!
   [^ByteArrayOutputStream out ^DiffFormatter df ^DiffEntry diff]
@@ -52,9 +62,21 @@
     :else
     [:pre {:style "font-family: monospace"} s]))
 
-(defn add-line-breaks
-  [lines]
-  (conj lines [:br] [:br]))
+(defn diff-trees
+  [^Repository repo ^RevCommit commit]
+  (cond
+    ; a non-first commit
+    (some-> commit .getParentCount (> 0))
+    [(some-> commit (.getParent 0) .getTree)
+     (some-> commit .getTree)]
+    ; the first commit
+    commit
+    [(EmptyTreeIterator.)
+     (FileTreeIterator. repo)]
+    ; uncommitted changes
+    :else
+    [(-> repo .readDirCache DirCacheIterator.)
+     (FileTreeIterator. repo)]))
 
 (defn create-html
   [^Git git ^RevCommit commit]
@@ -67,44 +89,21 @@
             repo (.getRepository git)
             df (doto (DiffFormatter. out)
                  (.setRepository repo))
-            [old-tree new-tree] (cond
-                                  ; a non-first commit
-                                  (some-> commit .getParentCount (> 0))
-                                  [(some-> commit (.getParent 0) .getTree)
-                                   (some-> commit .getTree)]
-                                  
-                                  ; the first commit
-                                  commit
-                                  [(EmptyTreeIterator.)
-                                   (FileTreeIterator. repo)]
-                                  
-                                  ; uncommitted changes
-                                  :else
-                                  [(-> repo .readDirCache DirCacheIterator.)
-                                   (FileTreeIterator. repo)])]
+            [old-tree new-tree] (diff-trees repo commit)]
         (for [diff (.scan df old-tree new-tree)]
           (->> (format-diff! out df diff)
                string/split-lines
                (map h-util/escape-html)
                (map add-formatting)
-               add-line-breaks)))]]))
-
-(defn update-content!
-  [content ^Git git ^RevCommit commit]
-  (doto content
-    (.setText (create-html git commit))
-    (.setCaretPosition 0)))
-
-(defn changes-list-item
-  []
-  (h/html [:html [:div {:style "color: orange; font-weight: bold;"}
-                  (utils/get-string :uncommitted-changes)]]))
+               (#(conj % [:br] [:br])))))]]))
 
 (defn commit-node
   [^RevCommit commit]
   (proxy [DefaultMutableTreeNode] [commit]
     (toString [] (or (some-> commit .getShortMessage)
-                     (changes-list-item)))))
+                     (h/html [:html
+                              [:div {:style "color: orange; font-weight: bold;"}
+                               (utils/get-string :uncommitted-changes)]])))))
 
 (defn root-node
   [commits]
@@ -112,26 +111,18 @@
     (getChildAt [i] (commit-node (nth commits i)))
     (getChildCount [] (count commits))))
 
-(defn create-sidebar
-  [content f]
-  (let [repo (FileRepository. f)
-        git (Git. repo)
-        commits (try
-                  (-> git .log (.setMaxCount max-commits) .call .iterator
-                    iterator-seq)
-                  (catch Exception _))]
-    (doto (s/tree :id :git-sidebar)
-      (.setRootVisible false)
-      (.setShowsRootHandles false)
-      (.setModel (DefaultTreeModel. (root-node (cons nil commits))))
-      (.addTreeSelectionListener
-        (reify TreeSelectionListener
-          (valueChanged [this e]
-            (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-                 (update-content! content git)))))
-      (-> .getSelectionModel
-          (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))
-      (.setSelectionRow 0))))
+(defn selected-row
+  [^JTree sidebar commits]
+  (when-let [^RevCommit selected-commit (some-> sidebar
+                                                .getSelectionPath
+                                                .getLastPathComponent
+                                                .getUserObject)]
+    (->> (map-indexed vector commits)
+         (filter (fn [[index ^RevCommit commit]]
+                   (= (some-> commit .getId)
+                      (some-> selected-commit .getId))))
+         first
+         first)))
 
 (defn create-content
   []
@@ -143,13 +134,48 @@
       (.setEditorKit kit)
       (.setBackground (ui/background-color)))))
 
-(defn git-file
-  [path]
-  (io/file path ".git"))
+(defn create-sidebar
+  []
+  (doto (s/tree :id :git-sidebar)
+    (.setRootVisible false)
+    (.setShowsRootHandles false)
+    (-> .getSelectionModel
+        (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))))
 
-(defn git-project?
-  [path]
-  (.exists (git-file path)))
+(defn update-content!
+  [content ^Git git ^RevCommit commit]
+  (doto content
+    (.setText (create-html git commit))
+    (.setCaretPosition 0)))
+
+(defn update-sidebar!
+  ([]
+    (let [sidebar (s/select @ui/root [:#git-sidebar])
+          content (s/select @ui/root [:#git-content])
+          path (ui/get-project-root-path)]
+      (when (and sidebar content path)
+        (update-sidebar! sidebar content path))))
+  ([^JTree sidebar content path]
+    ; remove existing listener
+    (doseq [l (.getTreeSelectionListeners sidebar)]
+      (.removeTreeSelectionListener sidebar l))
+    ; add model and listener
+    (let [repo (FileRepository. (git-file path))
+          git (Git. repo)
+          commits (cons nil ; represents uncommitted changes
+                        (try
+                          (-> git .log (.setMaxCount max-commits) .call
+                            .iterator iterator-seq)
+                          (catch Exception _ [])))
+          selected-row (selected-row sidebar commits)]
+      (.setModel sidebar
+        (DefaultTreeModel. (root-node commits)))
+      (.addTreeSelectionListener sidebar
+        (reify TreeSelectionListener
+          (valueChanged [this e]
+            (->> (some-> e .getPath .getLastPathComponent .getUserObject)
+                 (update-content! content git)))))
+      (.setSelectionRow sidebar (or selected-row 0)))))
 
 (def ^:dynamic *widgets* [:pull :push :reset :revert :configure])
 
@@ -185,7 +211,8 @@
           path (-> path io/file .getParentFile .getCanonicalPath)
           ; create the pane
           content (create-content)
-          sidebar (create-sidebar content (git-file path))
+          sidebar (doto (create-sidebar)
+                    (update-sidebar! content path))
           git-pane (s/border-panel
                      :west (s/scrollable sidebar
                                          :size [200 :by 0]
@@ -215,3 +242,8 @@
            :file (io/file (:file parent) git-name)}
           children)
     children))
+
+(add-watch ui/tree-selection
+           :update-git
+           (fn [_ _ _ path]
+             (update-sidebar!)))

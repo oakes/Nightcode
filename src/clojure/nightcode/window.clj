@@ -2,6 +2,7 @@
   (:require [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.file-browser :as file-browser]
+            [nightcode.git :as git]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [seesaw.core :as s]
@@ -88,9 +89,10 @@
         (reset! shortcuts/down? false)
         (shortcuts/toggle-hint! @editors/tabs false)
         (shortcuts/toggle-hints! @ui/root false)
-        ; update the project tree and file browser
+        ; update the project tree and various panes
         (ui/update-project-tree!)
-        (file-browser/update-card!))
+        (file-browser/update-card!)
+        (git/update-sidebar!))
       (windowClosing [e]
         (when (show-shut-down-dialog!)
           (System/exit 0))))))

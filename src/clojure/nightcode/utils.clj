@@ -169,8 +169,7 @@
   [^TreePath tree-path]
   (try
     (some-> tree-path
-            .getPath
-            last
+            .getLastPathComponent
             .getUserObject
             :file
             .getCanonicalPath)
