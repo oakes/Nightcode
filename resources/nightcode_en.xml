@@ -122,5 +122,5 @@
   <string name="reset">Reset</string>
   <string name="revert">Revert</string>
   <string name="configure">Configure</string>
-  <string name="current_changes">Current Changes</string>
+  <string name="uncommitted_changes">Uncommitted Changes</string>
 </resources>

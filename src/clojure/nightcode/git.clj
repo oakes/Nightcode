@@ -18,7 +18,7 @@
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.revwalk RevCommit]
-           [org.eclipse.jgit.treewalk FileTreeIterator]))
+           [org.eclipse.jgit.treewalk EmptyTreeIterator FileTreeIterator]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
@@ -62,15 +62,26 @@
     [:html
      [:body {:style (format "color: %s" (ui/html-color))}
       [:div {:class "head"} (or (some-> commit .getFullMessage)
-                                (utils/get-string :current-changes))]
+                                (utils/get-string :uncommitted-changes))]
       (let [out (ByteArrayOutputStream.)
             repo (.getRepository git)
             df (doto (DiffFormatter. out)
                  (.setRepository repo))
-            old-tree (or (some-> commit (.getParent 0) .getTree)
-                         (-> repo .readDirCache DirCacheIterator.))
-            new-tree (or (some-> commit .getTree)
-                         (FileTreeIterator. repo))]
+            [old-tree new-tree] (cond
+                                  ; a non-first commit
+                                  (some-> commit .getParentCount (> 0))
+                                  [(some-> commit (.getParent 0) .getTree)
+                                   (some-> commit .getTree)]
+                                  
+                                  ; the first commit
+                                  commit
+                                  [(EmptyTreeIterator.)
+                                   (FileTreeIterator. repo)]
+                                  
+                                  ; uncommitted changes
+                                  :else
+                                  [(-> repo .readDirCache DirCacheIterator.)
+                                   (FileTreeIterator. repo)])]
         (for [diff (.scan df old-tree new-tree)]
           (->> (format-diff! out df diff)
                string/split-lines
@@ -87,7 +98,7 @@
 (defn changes-list-item
   []
   (h/html [:html [:div {:style "color: orange; font-weight: bold;"}
-                  (utils/get-string :current-changes)]]))
+                  (utils/get-string :uncommitted-changes)]]))
 
 (defn commit-node
   [^RevCommit commit]
@@ -105,12 +116,14 @@
   [content f]
   (let [repo (FileRepository. f)
         git (Git. repo)
-        commit-objects (-> git .log (.setMaxCount max-commits) .call .iterator)
-        commits (cons nil (iterator-seq commit-objects))]
+        commits (try
+                  (-> git .log (.setMaxCount max-commits) .call .iterator
+                    iterator-seq)
+                  (catch Exception _))]
     (doto (s/tree :id :git-sidebar)
       (.setRootVisible false)
       (.setShowsRootHandles false)
-      (.setModel (DefaultTreeModel. (root-node commits)))
+      (.setModel (DefaultTreeModel. (root-node (cons nil commits))))
       (.addTreeSelectionListener
         (reify TreeSelectionListener
           (valueChanged [this e]
