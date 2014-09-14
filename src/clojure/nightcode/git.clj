@@ -159,7 +159,7 @@
     ; remove existing listener
     (doseq [l (.getTreeSelectionListeners sidebar)]
       (.removeTreeSelectionListener sidebar l))
-    ; add model and listener
+    ; add model and listener, then re-select the row
     (let [repo (FileRepository. (git-file path))
           git (Git. repo)
           commits (cons nil ; represents uncommitted changes
@@ -245,5 +245,5 @@
 
 (add-watch ui/tree-selection
            :update-git
-           (fn [_ _ _ path]
+           (fn [_ _ _ _]
              (update-sidebar!)))
