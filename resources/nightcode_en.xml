@@ -119,5 +119,8 @@
 
   <string name="pull">Pull</string>
   <string name="push">Push</string>
+  <string name="reset">Reset</string>
+  <string name="revert">Revert</string>
   <string name="configure">Configure</string>
+  <string name="current_changes">Current Changes</string>
 </resources>

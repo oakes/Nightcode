@@ -15,8 +15,10 @@
             TreeSelectionModel]
            [org.eclipse.jgit.api Git]
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
+           [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
-           [org.eclipse.jgit.revwalk RevCommit]))
+           [org.eclipse.jgit.revwalk RevCommit]
+           [org.eclipse.jgit.treewalk FileTreeIterator]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
@@ -32,9 +34,13 @@
   [s]
   [:pre {:style "font-family: monospace; font-weight: bold;"} s])
 
-(defn add-color
+(defn add-formatting
   [s]
   (cond
+    (or (.startsWith s "+++")
+        (.startsWith s "---"))
+    [:pre {:style "font-family: monospace; font-weight: bold;"} s]
+    
     (.startsWith s "+")
     [:pre {:style (format "font-family: monospace; color: %s;"
                           (ui/green-html-color))} s]
@@ -46,29 +52,31 @@
     :else
     [:pre {:style "font-family: monospace"} s]))
 
-(defn add-formatting
+(defn add-line-breaks
   [lines]
-  (let [[headers code] (split-at 4 lines)]
-    (concat (map add-bold headers)
-            (map add-color code)
-            [[:br] [:br]])))
+  (conj lines [:br] [:br]))
 
 (defn create-html
   [^Git git ^RevCommit commit]
   (h/html
     [:html
      [:body {:style (format "color: %s" (ui/html-color))}
-      [:div {:class "head"} (.getFullMessage commit)]
+      [:div {:class "head"} (or (some-> commit .getFullMessage)
+                                (utils/get-string :current-changes))]
       (let [out (ByteArrayOutputStream.)
+            repo (.getRepository git)
             df (doto (DiffFormatter. out)
-                 (.setRepository (.getRepository git)))
-            old-tree (.getTree (.getParent commit 0))
-            new-tree (.getTree commit)]
+                 (.setRepository repo))
+            old-tree (or (some-> commit (.getParent 0) .getTree)
+                         (-> repo .readDirCache DirCacheIterator.))
+            new-tree (or (some-> commit .getTree)
+                         (FileTreeIterator. repo))]
         (for [diff (.scan df old-tree new-tree)]
           (->> (format-diff! out df diff)
                string/split-lines
                (map h-util/escape-html)
-               (add-formatting))))]]))
+               (map add-formatting)
+               add-line-breaks)))]]))
 
 (defn update-content!
   [content ^Git git ^RevCommit commit]
@@ -76,10 +84,16 @@
     (.setText (create-html git commit))
     (.setCaretPosition 0)))
 
+(defn changes-list-item
+  []
+  (h/html [:html [:div {:style "color: orange; font-weight: bold;"}
+                  (utils/get-string :current-changes)]]))
+
 (defn commit-node
   [^RevCommit commit]
   (proxy [DefaultMutableTreeNode] [commit]
-    (toString [] (.getShortMessage commit))))
+    (toString [] (or (some-> commit .getShortMessage)
+                     (changes-list-item)))))
 
 (defn root-node
   [commits]
@@ -92,7 +106,7 @@
   (let [repo (FileRepository. f)
         git (Git. repo)
         commit-objects (-> git .log (.setMaxCount max-commits) .call .iterator)
-        commits (iterator-seq commit-objects)]
+        commits (cons nil (iterator-seq commit-objects))]
     (doto (s/tree :id :git-sidebar)
       (.setRootVisible false)
       (.setShowsRootHandles false)
@@ -124,12 +138,14 @@
   [path]
   (.exists (git-file path)))
 
-(def ^:dynamic *widgets* [:pull :push :configure])
+(def ^:dynamic *widgets* [:pull :push :reset :revert :configure])
 
 (defn create-actions
   []
   {:pull (fn [& _])
    :push (fn [& _])
+   :reset (fn [& _])
+   :revert (fn [& _])
    :configure (fn [& _])})
 
 (defn create-widgets
@@ -140,6 +156,12 @@
    :push (ui/button :id :push
                     :text (utils/get-string :push)
                     :listen [:action (:push actions)])
+   :reset (ui/button :id :reset
+                     :text (utils/get-string :reset)
+                     :listen [:action (:reset actions)])
+   :revert (ui/button :id :revert
+                      :text (utils/get-string :revert)
+                      :listen [:action (:revert actions)])
    :configure (ui/button :id :configure
                          :text (utils/get-string :configure)
                          :listen [:action (:configure actions)])})
