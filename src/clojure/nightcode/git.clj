@@ -177,7 +177,7 @@
                  (update-content! content git)))))
       (.setSelectionRow sidebar (or selected-row 0)))))
 
-(def ^:dynamic *widgets* [:pull :push :reset :revert :configure])
+(def ^:dynamic *widgets* [])
 
 (defn create-actions
   []
