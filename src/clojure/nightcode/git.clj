@@ -1,55 +1,110 @@
 (ns nightcode.git
   (:require [clojure.java.io :as io]
+            [clojure.string :as string]
+            [hiccup.core :as h]
+            [hiccup.util :as h-util]
             [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.core :as s])
-  (:import [javax.swing.event HyperlinkEvent$EventType TreeSelectionListener]
+  (:import [java.io ByteArrayOutputStream]
+           [javax.swing.event HyperlinkEvent$EventType TreeSelectionListener]
            [javax.swing.text.html HTMLEditorKit StyleSheet]
            [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
             TreeSelectionModel]
            [org.eclipse.jgit.api Git]
-           [org.eclipse.jgit.internal.storage.file FileRepository]))
+           [org.eclipse.jgit.diff DiffEntry DiffFormatter]
+           [org.eclipse.jgit.internal.storage.file FileRepository]
+           [org.eclipse.jgit.revwalk RevCommit]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
 
+(defn format-diff!
+  [^ByteArrayOutputStream out ^DiffFormatter df ^DiffEntry diff]
+  (.format df diff)
+  (let [s (.toString out "UTF-8")]
+    (.reset out)
+    s))
+
+(defn add-bold
+  [s]
+  [:pre {:style "font-family: monospace; font-weight: bold;"} s])
+
+(defn add-color
+  [s]
+  (cond
+    (.startsWith s "+")
+    [:pre {:style (format "font-family: monospace; color: %s;"
+                          (ui/green-html-color))} s]
+    
+    (.startsWith s "-")
+    [:pre {:style (format "font-family: monospace; color: %s;"
+                          (ui/red-html-color))} s]
+    
+    :else
+    [:pre {:style "font-family: monospace"} s]))
+
+(defn add-formatting
+  [lines]
+  (let [[headers code] (split-at 4 lines)]
+    (concat (map add-bold headers)
+            (map add-color code)
+            [[:br] [:br]])))
+
+(defn create-html
+  [^Git git ^RevCommit commit]
+  (h/html
+    [:html
+     [:body {:style (format "color: %s" (ui/html-color))}
+      [:div {:class "head"} (.getFullMessage commit)]
+      (let [out (ByteArrayOutputStream.)
+            df (doto (DiffFormatter. out)
+                 (.setRepository (.getRepository git)))
+            old-tree (.getTree (.getParent commit 0))
+            new-tree (.getTree commit)]
+        (for [diff (.scan df old-tree new-tree)]
+          (->> (format-diff! out df diff)
+               string/split-lines
+               (map h-util/escape-html)
+               (add-formatting))))]]))
+
 (defn update-content!
-  [content commit]
+  [content ^Git git ^RevCommit commit]
   (doto content
-    (.setText "")
+    (.setText (create-html git commit))
     (.setCaretPosition 0)))
 
 (defn commit-node
-  [commit]
+  [^RevCommit commit]
   (proxy [DefaultMutableTreeNode] [commit]
     (toString [] (.getShortMessage commit))))
 
 (defn root-node
-  [f]
+  [commits]
+  (proxy [DefaultMutableTreeNode] []
+    (getChildAt [i] (commit-node (nth commits i)))
+    (getChildCount [] (count commits))))
+
+(defn create-sidebar
+  [content f]
   (let [repo (FileRepository. f)
         git (Git. repo)
         commit-objects (-> git .log (.setMaxCount max-commits) .call .iterator)
         commits (iterator-seq commit-objects)]
-    (proxy [DefaultMutableTreeNode] []
-      (getChildAt [i] (commit-node (nth commits i)))
-      (getChildCount [] (count commits)))))
-
-(defn create-sidebar
-  [content f]
-  (doto (s/tree :id :git-sidebar)
-    (.setRootVisible false)
-    (.setShowsRootHandles false)
-    (.setModel (DefaultTreeModel. (root-node f)))
-    (.addTreeSelectionListener
-      (reify TreeSelectionListener
-        (valueChanged [this e]
-          (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-               (update-content! content)))))
-    (-> .getSelectionModel
-        (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))
-    (.setSelectionRow 0)))
+    (doto (s/tree :id :git-sidebar)
+      (.setRootVisible false)
+      (.setShowsRootHandles false)
+      (.setModel (DefaultTreeModel. (root-node commits)))
+      (.addTreeSelectionListener
+        (reify TreeSelectionListener
+          (valueChanged [this e]
+            (->> (some-> e .getPath .getLastPathComponent .getUserObject)
+                 (update-content! content git)))))
+      (-> .getSelectionModel
+          (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))
+      (.setSelectionRow 0))))
 
 (defn create-content
   []
@@ -58,7 +113,8 @@
     (doto (s/editor-pane :id :git-content
                          :editable? false
                          :content-type "text/html")
-      (.setEditorKit kit))))
+      (.setEditorKit kit)
+      (.setBackground (ui/background-color)))))
 
 (defn git-file
   [path]

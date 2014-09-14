@@ -4,8 +4,7 @@
             [nightcode.ui :as ui]
             [seesaw.core :as s]
             [seesaw.keymap :as keymap])
-  (:import [java.awt Color Component KeyboardFocusManager KeyEventDispatcher
-            Toolkit]
+  (:import [java.awt Component KeyboardFocusManager KeyEventDispatcher Toolkit]
            [java.awt.event ActionEvent InputEvent KeyEvent]
            [javax.swing JComponent]
            [net.java.balloontip BalloonTip]
@@ -102,7 +101,7 @@
 (defn wrap-hint-text
   [^String text]
   (format "<html><font face='Lucida Sans' color='%s'>%s</font></html>"
-          (if (ui/dark-theme?) "#d3d3d3" "#404040") text))
+          (ui/html-color) text))
 
 (defn create-hint!
   "Creates a new hint on the given view with the given text."
@@ -110,7 +109,7 @@
     (create-hint! false view (wrap-hint-text contents)))
   ([vertically-centered? view contents]
     (when contents
-      (let [color (if (ui/dark-theme?) Color/DARK_GRAY Color/LIGHT_GRAY)
+      (let [color (ui/background-color)
             style (ToolTipBalloonStyle. color color)
             ^CenteredPositioner positioner (CenteredPositioner. 0)
             ^BalloonTip tip (BalloonTip. view contents style false)

@@ -4,7 +4,7 @@
             [seesaw.core :as s])
   (:import [clojure.lang LineNumberingPushbackReader]
            [com.camick WrapLayout]
-           [java.awt Dimension FontMetrics]
+           [java.awt Color Dimension FontMetrics]
            [java.io File FilenameFilter]
            [javax.swing JComponent JTree]
            [javax.swing.tree DefaultTreeModel]))
@@ -16,6 +16,22 @@
 (defn dark-theme?
   []
   (= -1 (.indexOf (str @theme-resource) "light")))
+
+(defn html-color
+  []
+  (if (dark-theme?) "#d3d3d3" "#404040"))
+
+(defn red-html-color
+  []
+  (if (dark-theme?) "#EC7600" "#8B0000"))
+
+(defn green-html-color
+  []
+  (if (dark-theme?) "#93C763" "#006400"))
+
+(defn background-color
+  []
+  (if (dark-theme?) Color/DARK_GRAY Color/LIGHT_GRAY))
 
 ; create and retrieve widgets
 
