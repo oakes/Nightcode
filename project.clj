@@ -22,7 +22,7 @@
                  [org.clojure/clojure "1.6.0"]
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
-                 [org.clojure/tools.namespace "0.2.5"]
+                 [org.clojure/tools.namespace "0.2.6"]
                  [org.eclipse.jgit "3.2.0.201312181205-r"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
