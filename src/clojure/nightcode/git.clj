@@ -207,7 +207,8 @@
    :push (fn [& _])
    :reset (fn [& _])
    :revert (fn [& _])
-   :configure (fn [& _])})
+   :configure (fn [& _])
+   :close editors/close-selected-editor!})
 
 (defn create-widgets
   [actions]
@@ -225,7 +226,10 @@
                       :listen [:action (:revert actions)])
    :configure (ui/button :id :configure
                          :text (utils/get-string :configure)
-                         :listen [:action (:configure actions)])})
+                         :listen [:action (:configure actions)])
+   :close (ui/button :id :close
+                     :text "X"
+                     :listen [:action (:close actions)])})
 
 (defn update-paging-buttons!
   ([offset-atom]
