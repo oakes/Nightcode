@@ -2,7 +2,6 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [hiccup.core :as h]
-            [hiccup.util :as hu]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
@@ -16,7 +15,7 @@
            [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
             TreeSelectionModel]
            [org.eclipse.jgit.api Git]
-           [org.eclipse.jgit.diff DiffEntry DiffFormatter]
+           [org.eclipse.jgit.diff DiffEntry DiffEntry$ChangeType DiffFormatter]
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent ProgressMonitor Repository]
@@ -35,6 +34,13 @@
 (defn git-project?
   [path]
   (.exists (git-file path)))
+
+(defn escape-html
+  [text]
+  (-> text
+      (string/replace "&" "&amp;")
+      (string/replace "<" "&lt;")
+      (string/replace ">" "&gt;")))
 
 (defn format-diff!
   [^ByteArrayOutputStream out ^DiffFormatter df ^DiffEntry diff]
@@ -80,7 +86,7 @@
 
 (defn ident->str
   [^PersonIdent ident]
-  (hu/escape-html (str (.getName ident) " <" (.getEmailAddress ident) ">")))
+  (escape-html (str (.getName ident) " <" (.getEmailAddress ident) ">")))
 
 (defn clj->html
   [& forms]
@@ -91,7 +97,7 @@
 (defn create-html
   [^Git git ^RevCommit commit]
   (clj->html
-    [:div {:class "head"} (or (some-> commit .getFullMessage)
+    [:div {:class "head"} (or (some-> commit .getFullMessage escape-html)
                               (utils/get-string :uncommitted-changes))]
     (when commit
       (list [:div (format (utils/get-string :author)
@@ -105,10 +111,12 @@
           df (doto (DiffFormatter. out)
                (.setRepository repo))
           [old-tree new-tree] (diff-trees repo commit)]
-      (for [diff (.scan df old-tree new-tree)]
+      (for [^DiffEntry diff (.scan df old-tree new-tree)
+            :when (or (some? commit)
+                      (not= DiffEntry$ChangeType/ADD (.getChangeType diff)))]
         (->> (format-diff! out df diff)
              string/split-lines
-             (map hu/escape-html)
+             (map escape-html)
              (map add-formatting)
              (#(conj % [:br] [:br])))))))
 
