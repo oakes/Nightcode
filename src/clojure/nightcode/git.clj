@@ -40,10 +40,6 @@
     (.reset out)
     s))
 
-(defn add-bold
-  [s]
-  [:pre {:style "font-family: monospace; font-weight: bold;"} s])
-
 (defn add-formatting
   [s]
   (cond
