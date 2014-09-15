@@ -9,7 +9,7 @@
                  [compliment "0.1.3"]
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
-                 [leiningen "2.4.2"
+                 [leiningen "2.5.0"
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
                   :exclusions [clj-aws-s3]]

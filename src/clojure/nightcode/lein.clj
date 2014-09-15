@@ -69,7 +69,7 @@
     (let [project-clj-path (get-project-clj-path path)]
       (if-not (.exists (io/file project-clj-path))
         (println (utils/get-string :no-project-clj))
-        (-> (leiningen.core.project/read project-clj-path)
+        (-> (leiningen.core.project/read-raw project-clj-path)
             add-sdk-path
             add-robovm-path
             (try (catch Exception e {})))))))
