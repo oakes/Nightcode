@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [hiccup.core :as h]
-            [hiccup.util :as h-util]
+            [hiccup.util :as hu]
             [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
@@ -18,7 +18,7 @@
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
-           [org.eclipse.jgit.lib Repository]
+           [org.eclipse.jgit.lib PersonIdent Repository]
            [org.eclipse.jgit.revwalk RevCommit]
            [org.eclipse.jgit.treewalk EmptyTreeIterator FileTreeIterator]))
 
@@ -78,18 +78,22 @@
     [(-> repo .readDirCache DirCacheIterator.)
      (FileTreeIterator. repo)]))
 
+(defn ident->str
+  [^PersonIdent ident]
+  (hu/escape-html (str (.getName ident) " <" (.getEmailAddress ident) ">")))
+
 (defn create-html
   [^Git git ^RevCommit commit]
   (h/html
     [:html
      [:body {:style (format "color: %s" (ui/html-color))}
-      [:div {:class "head"} (or (some-> commit .getFullMessage)
+      [:div {:class "head"} (or (some-> commit .getFullMessage hu/escape-html)
                                 (utils/get-string :uncommitted-changes))]
       (when commit
         (list [:div (format (utils/get-string :author)
-                            (-> commit .getAuthorIdent .getEmailAddress))]
+                            (-> commit .getAuthorIdent ident->str))]
               [:div (format (utils/get-string :committer)
-                            (-> commit .getCommitterIdent .getEmailAddress))]
+                            (-> commit .getCommitterIdent ident->str))]
               [:div (format (utils/get-string :commit-time)
                             (-> commit .getCommitTime utils/format-date))]))
       (let [out (ByteArrayOutputStream.)
@@ -100,7 +104,7 @@
         (for [diff (.scan df old-tree new-tree)]
           (->> (format-diff! out df diff)
                string/split-lines
-               (map h-util/escape-html)
+               (map hu/escape-html)
                (map add-formatting)
                (#(conj % [:br] [:br])))))]]))
 
