@@ -16,11 +16,11 @@
             TreeSelectionModel]
            [org.eclipse.jgit.api Git]
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
+           [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent Repository]
            [org.eclipse.jgit.revwalk RevCommit]
-           [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
-            FileTreeIterator]))
+           [org.eclipse.jgit.treewalk EmptyTreeIterator FileTreeIterator]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
@@ -75,8 +75,7 @@
      (FileTreeIterator. repo)]
     ; uncommitted changes
     :else
-    [(doto (CanonicalTreeParser.)
-       (.reset (.newObjectReader repo) (.resolve repo "HEAD^{tree}")))
+    [(-> repo .readDirCache DirCacheIterator.)
      (FileTreeIterator. repo)]))
 
 (defn ident->str
