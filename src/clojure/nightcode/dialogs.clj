@@ -214,3 +214,19 @@
       center!
       stay-on-top!
       s/show!))
+
+(defn git-clone-dialog
+  [uri f]
+  (-> (s/dialog :content (str (utils/get-string :cloning-project)
+                              \newline
+                              \newline
+                              (format (utils/get-string :from) uri)
+                              \newline
+                              (format (utils/get-string :to)
+                                      (.getCanonicalPath f)))
+                :options [(s/button :text (utils/get-string :cancel)
+                                    :listen [:action
+                                             #(s/return-from-dialog % true)])])
+      s/pack!
+      center!
+      stay-on-top!))

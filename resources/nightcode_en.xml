@@ -128,4 +128,8 @@
   <string name="author">Author: %s</string>
   <string name="committer">Committer: %s</string>
   <string name="commit_time">Commit Time: %s</string>
+
+  <string name="cloning_project">Cloning project...</string>
+  <string name="from">From: %s</string>
+  <string name="to">To: %s</string>
 </resources>

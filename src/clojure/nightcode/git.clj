@@ -3,6 +3,7 @@
             [clojure.string :as string]
             [hiccup.core :as h]
             [hiccup.util :as hu]
+            [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
@@ -18,7 +19,7 @@
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
-           [org.eclipse.jgit.lib PersonIdent Repository]
+           [org.eclipse.jgit.lib PersonIdent ProgressMonitor Repository]
            [org.eclipse.jgit.revwalk RevCommit]
            [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
             FileTreeIterator]))
@@ -196,6 +197,31 @@
               (->> (some-> e .getPath .getLastPathComponent .getUserObject)
                    (update-content! sidebar content git)))))
         (.setSelectionRow (or selected-row 0))))))
+
+(defn clone!
+  [^String uri f progress]
+  (-> (Git/cloneRepository)
+      (.setURI uri)
+      (.setDirectory f)
+      (.setProgressMonitor progress)
+      .call
+      .close))
+
+(defn clone-with-dialog!
+  [^String uri f]
+  (let [cancelled? (atom false)
+        d (dialogs/git-clone-dialog uri f)
+        progress (reify ProgressMonitor
+                   (beginTask [this title total-work])
+                   (endTask [this]
+                     (s/invoke-later
+                       (s/dispose! d)))
+                   (isCancelled [this]
+                     @cancelled?)
+                   (start [this total-tasks])
+                   (update [this completed]))]
+    (future (clone! uri f progress))
+    (reset! cancelled? (some? (s/show! d)))))
 
 (def ^:dynamic *widgets* [])
 
