@@ -91,7 +91,7 @@
 (defn create-html
   [^Git git ^RevCommit commit]
   (clj->html
-    [:div {:class "head"} (or (some-> commit .getFullMessage hu/escape-html)
+    [:div {:class "head"} (or (some-> commit .getFullMessage)
                               (utils/get-string :uncommitted-changes))]
     (when commit
       (list [:div (format (utils/get-string :author)
