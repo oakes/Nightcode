@@ -16,11 +16,11 @@
             TreeSelectionModel]
            [org.eclipse.jgit.api Git]
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
-           [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent Repository]
            [org.eclipse.jgit.revwalk RevCommit]
-           [org.eclipse.jgit.treewalk EmptyTreeIterator FileTreeIterator]))
+           [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
+            FileTreeIterator]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
@@ -75,38 +75,43 @@
      (FileTreeIterator. repo)]
     ; uncommitted changes
     :else
-    [(-> repo .readDirCache DirCacheIterator.)
+    [(doto (CanonicalTreeParser.)
+       (.reset (.newObjectReader repo) (.resolve repo "HEAD^{tree}")))
      (FileTreeIterator. repo)]))
 
 (defn ident->str
   [^PersonIdent ident]
   (hu/escape-html (str (.getName ident) " <" (.getEmailAddress ident) ">")))
 
+(defn clj->html
+  [& forms]
+  (h/html [:html
+           [:body {:style (format "color: %s" (ui/html-color))}
+            forms]]))
+
 (defn create-html
   [^Git git ^RevCommit commit]
-  (h/html
-    [:html
-     [:body {:style (format "color: %s" (ui/html-color))}
-      [:div {:class "head"} (or (some-> commit .getFullMessage hu/escape-html)
-                                (utils/get-string :uncommitted-changes))]
-      (when commit
-        (list [:div (format (utils/get-string :author)
-                            (-> commit .getAuthorIdent ident->str))]
-              [:div (format (utils/get-string :committer)
-                            (-> commit .getCommitterIdent ident->str))]
-              [:div (format (utils/get-string :commit-time)
-                            (-> commit .getCommitTime utils/format-date))]))
-      (let [out (ByteArrayOutputStream.)
-            repo (.getRepository git)
-            df (doto (DiffFormatter. out)
-                 (.setRepository repo))
-            [old-tree new-tree] (diff-trees repo commit)]
-        (for [diff (.scan df old-tree new-tree)]
-          (->> (format-diff! out df diff)
-               string/split-lines
-               (map hu/escape-html)
-               (map add-formatting)
-               (#(conj % [:br] [:br])))))]]))
+  (clj->html
+    [:div {:class "head"} (or (some-> commit .getFullMessage hu/escape-html)
+                              (utils/get-string :uncommitted-changes))]
+    (when commit
+      (list [:div (format (utils/get-string :author)
+                          (-> commit .getAuthorIdent ident->str))]
+            [:div (format (utils/get-string :committer)
+                          (-> commit .getCommitterIdent ident->str))]
+            [:div (format (utils/get-string :commit-time)
+                          (-> commit .getCommitTime utils/format-date))]))
+    (let [out (ByteArrayOutputStream.)
+          repo (.getRepository git)
+          df (doto (DiffFormatter. out)
+               (.setRepository repo))
+          [old-tree new-tree] (diff-trees repo commit)]
+      (for [diff (.scan df old-tree new-tree)]
+        (->> (format-diff! out df diff)
+             string/split-lines
+             (map hu/escape-html)
+             (map add-formatting)
+             (#(conj % [:br] [:br])))))))
 
 (defn commit-node
   [^RevCommit commit]
@@ -157,7 +162,7 @@
 (defn update-content!
   [^JTree sidebar content ^Git git ^RevCommit commit]
   (future
-    (.setText content "")
+    (.setText content (clj->html (utils/get-string :loading)))
     (let [s (create-html git commit)]
       (s/invoke-later
         (when (= commit (selected-commit sidebar))
