@@ -218,22 +218,21 @@
                    (endTask [this]
                      (s/invoke-later
                        (s/dispose! d)))
-                   (isCancelled [this]
-                     @cancelled?)
+                   (isCancelled [this] @cancelled?)
                    (start [this total-tasks])
                    (update [this completed]))]
     (future (try (clone! uri f progress)
               (catch Exception e
-                (s/invoke-later
+                (when-not @cancelled?
                   (reset! exception e)
-                  (s/dispose! d)))))
-    (if (or (reset! cancelled? (some? (s/show! d)))
-            @exception)
-      (try
-        (some-> @exception .getMessage dialogs/show-simple-dialog!)
-        (utils/delete-children-recursively! f)
-        nil
-        (catch Exception _))
+                  (s/invoke-later
+                    (s/dispose! d)
+                    (dialogs/show-simple-dialog! (.getMessage e)))))
+              (finally
+                (when (or @cancelled? @exception)
+                  (utils/delete-children-recursively! f)))))
+    (reset! cancelled? (some? (s/show! d)))
+    (when-not (or @cancelled? @exception)
       (.getCanonicalPath f))))
 
 (defn address->name

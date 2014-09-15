@@ -204,17 +204,18 @@ project-set."
       (->> f
            .getParentFile
            .getCanonicalPath
-           (delete-parents-recursively! project-set)))))
+           (delete-parents-recursively! project-set))))
+  nil)
 
 (defn delete-children-recursively!
   "Deletes the children of the given dir along with the dir itself."
   [path]
-  (let [func (fn [func f]
-               (when (.isDirectory f)
-                 (doseq [f2 (.listFiles f)]
-                   (func func f2)))
-               (io/delete-file f))]
-    (func func (io/file path))))
+  (let [f (io/file path)]
+    (when (.isDirectory f)
+      (doseq [f2 (.listFiles f)]
+        (delete-children-recursively! f2)))
+    (io/delete-file f))
+  nil)
 
 (defn format-project-name
   "Formats the given string as a valid project name."
