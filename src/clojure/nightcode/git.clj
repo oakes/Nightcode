@@ -122,12 +122,13 @@
     (getChildAt [i] (commit-node (nth commits i)))
     (getChildCount [] (count commits))))
 
+(defn selected-commit
+  [^JTree sidebar]
+  (some-> sidebar .getSelectionPath .getLastPathComponent .getUserObject))
+
 (defn selected-row
   [^JTree sidebar commits]
-  (when-let [^RevCommit selected-commit (some-> sidebar
-                                                .getSelectionPath
-                                                .getLastPathComponent
-                                                .getUserObject)]
+  (when-let [^RevCommit selected-commit (selected-commit sidebar)]
     (->> (map-indexed vector commits)
          (filter (fn [[index ^RevCommit commit]]
                    (= (some-> commit .getId)
@@ -154,10 +155,15 @@
         (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))))
 
 (defn update-content!
-  [content ^Git git ^RevCommit commit]
-  (doto content
-    (.setText (create-html git commit))
-    (.setCaretPosition 0)))
+  [^JTree sidebar content ^Git git ^RevCommit commit]
+  (future
+    (.setText content "")
+    (let [s (create-html git commit)]
+      (s/invoke-later
+        (when (= commit (selected-commit sidebar))
+          (doto content
+            (.setText s)
+            (.setCaretPosition 0)))))))
 
 (defn update-sidebar!
   ([]
@@ -186,7 +192,7 @@
           (reify TreeSelectionListener
             (valueChanged [this e]
               (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-                   (update-content! content git)))))
+                   (update-content! sidebar content git)))))
         (.setSelectionRow (or selected-row 0))))))
 
 (def ^:dynamic *widgets* [])
