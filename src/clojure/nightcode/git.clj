@@ -158,8 +158,8 @@
 
 (defn update-content!
   [^JTree sidebar content ^Git git ^RevCommit commit]
+  (.setText content (clj->html (utils/get-string :loading)))
   (future
-    (.setText content (clj->html (utils/get-string :loading)))
     (let [s (create-html git commit)]
       (s/invoke-later
         (when (= commit (selected-commit sidebar))
