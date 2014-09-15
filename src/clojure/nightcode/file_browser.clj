@@ -70,7 +70,7 @@
       (cond
         ; delete
         (some-> (s/select tile [:.delete]) first (s/config :selected?))
-        (utils/delete-file-recursively! @ui/tree-projects path)
+        (utils/delete-parents-recursively! @ui/tree-projects path)
         ; rename
         (not= (.getName f) fname)
         (io! (.renameTo f (io/file (.getParentFile f) fname))))))

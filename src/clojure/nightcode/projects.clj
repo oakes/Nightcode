@@ -73,7 +73,7 @@
                (utils/write-pref! :project-set))
           (sandbox/remove-from-permission-map! path)
           (builders/remove-builders! path))
-        (utils/delete-file-recursively! @ui/tree-projects path))
+        (utils/delete-parents-recursively! @ui/tree-projects path))
       true)))
 
 (defn enter-relative-file-path!
@@ -114,7 +114,7 @@
         (io!
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file))
-        (utils/delete-file-recursively! @ui/tree-projects selected-path)
+        (utils/delete-parents-recursively! @ui/tree-projects selected-path)
         (ui/update-project-tree! new-path)))))
 
 (defn import-project!

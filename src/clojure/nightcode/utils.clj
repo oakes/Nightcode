@@ -53,7 +53,7 @@
       first
       :content
       first
-      (or "")
+      (or (name res-name))
       (clojure.string/replace "\\" "")))
 
 (defn set-accessible-name!
@@ -193,17 +193,28 @@
                            .getCanonicalPath))]
     (get-relative-path project-path selected-dir)))
 
-(defn delete-file-recursively!
-  "Deletes the given path and all empty parents unless they are in project-set."
+(defn delete-parents-recursively!
+  "Deletes the given file along with all empty parents unless they are in
+project-set."
   [project-set path]
-  (let [file (io/file path)]
-    (when (and (= 0 (count (.listFiles file)))
+  (let [f (io/file path)]
+    (when (and (= 0 (count (.listFiles f)))
                (not (contains? project-set path)))
-      (io! (.delete file))
-      (->> file
+      (io/delete-file f)
+      (->> f
            .getParentFile
            .getCanonicalPath
-           (delete-file-recursively! project-set)))))
+           (delete-parents-recursively! project-set)))))
+
+(defn delete-children-recursively!
+  "Deletes the children of the given dir along with the dir itself."
+  [path]
+  (let [func (fn [func f]
+               (when (.isDirectory f)
+                 (doseq [f2 (.listFiles f)]
+                   (func func f2)))
+               (io/delete-file f))]
+    (func func (io/file path))))
 
 (defn format-project-name
   "Formats the given string as a valid project name."

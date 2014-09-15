@@ -107,6 +107,7 @@
 
   <string name="new">New</string>
   <string name="load">Load</string>
+  <string name="download">Download</string>
 
   <string name="home">Home</string>
   <string name="restart">Restart</string>
@@ -132,4 +133,7 @@
   <string name="cloning_project">Cloning project...</string>
   <string name="from">From: %s</string>
   <string name="to">To: %s</string>
+
+  <string name="clone_git_project">Clone Git Project from Clipboard</string>
+  <string name="invalid_git_address">Invalid Git Address: %s</string>
 </resources>

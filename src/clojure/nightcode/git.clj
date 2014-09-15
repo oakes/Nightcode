@@ -21,6 +21,7 @@
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent ProgressMonitor Repository]
            [org.eclipse.jgit.revwalk RevCommit]
+           [org.eclipse.jgit.transport URIish]
            [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
             FileTreeIterator]))
 
@@ -210,6 +211,7 @@
 (defn clone-with-dialog!
   [^String uri f]
   (let [cancelled? (atom false)
+        exception (atom nil)
         d (dialogs/git-clone-dialog uri f)
         progress (reify ProgressMonitor
                    (beginTask [this title total-work])
@@ -220,8 +222,24 @@
                      @cancelled?)
                    (start [this total-tasks])
                    (update [this completed]))]
-    (future (clone! uri f progress))
-    (reset! cancelled? (some? (s/show! d)))))
+    (future (try (clone! uri f progress)
+              (catch Exception e
+                (s/invoke-later
+                  (reset! exception e)
+                  (s/dispose! d)))))
+    (if (or (reset! cancelled? (some? (s/show! d)))
+            @exception)
+      (try
+        (some-> @exception .getMessage dialogs/show-simple-dialog!)
+        (utils/delete-children-recursively! f)
+        nil
+        (catch Exception _))
+      (.getCanonicalPath f))))
+
+(defn address->name
+  [s]
+  (when (.endsWith s ".git")
+    (-> s URIish. .getHumanishName)))
 
 (def ^:dynamic *widgets* [])
 
