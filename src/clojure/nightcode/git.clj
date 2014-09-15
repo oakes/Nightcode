@@ -20,7 +20,8 @@
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent Repository]
            [org.eclipse.jgit.revwalk RevCommit]
-           [org.eclipse.jgit.treewalk EmptyTreeIterator FileTreeIterator]))
+           [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
+            FileTreeIterator]))
 
 (def ^:const git-name "*Git*")
 (def ^:const max-commits 50)
@@ -63,12 +64,13 @@
   (cond
     ; a non-first commit
     (some-> commit .getParentCount (> 0))
-    [(some-> commit (.getParent 0) .getTree)
-     (some-> commit .getTree)]
+    [(.getParent commit 0)
+     commit]
     ; the first commit
     commit
     [(EmptyTreeIterator.)
-     (FileTreeIterator. repo)]
+     (doto (CanonicalTreeParser.)
+       (.reset (.newObjectReader repo) (.getTree commit)))]
     ; uncommitted changes
     :else
     [(-> repo .readDirCache DirCacheIterator.)
