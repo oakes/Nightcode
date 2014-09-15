@@ -49,7 +49,7 @@
   (cond
     (or (.startsWith s "+++")
         (.startsWith s "---"))
-    [:pre {:style "font-family: monospace; font-weight: bold;"} s]
+    [:pre {:style "font-family: monospace"} s]
     
     (.startsWith s "+")
     [:pre {:style (format "font-family: monospace; color: %s;"
@@ -85,6 +85,13 @@
      [:body {:style (format "color: %s" (ui/html-color))}
       [:div {:class "head"} (or (some-> commit .getFullMessage)
                                 (utils/get-string :uncommitted-changes))]
+      (when commit
+        (list [:div (format (utils/get-string :author)
+                            (-> commit .getAuthorIdent .getEmailAddress))]
+              [:div (format (utils/get-string :committer)
+                            (-> commit .getCommitterIdent .getEmailAddress))]
+              [:div (format (utils/get-string :commit-time)
+                            (-> commit .getCommitTime utils/format-date))]))
       (let [out (ByteArrayOutputStream.)
             repo (.getRepository git)
             df (doto (DiffFormatter. out)
@@ -150,12 +157,13 @@
 
 (defn update-sidebar!
   ([]
-    (let [sidebar (s/select @ui/root [:#git-sidebar])
-          content (s/select @ui/root [:#git-content])
+    (let [{:keys [sidebar
+                  content
+                  offset]} (get @editors/editors @ui/tree-selection)
           path (ui/get-project-root-path)]
-      (when (and sidebar content path)
-        (update-sidebar! sidebar content path))))
-  ([^JTree sidebar content path]
+      (when (and sidebar content offset path)
+        (update-sidebar! sidebar content offset path))))
+  ([^JTree sidebar content offset path]
     ; remove existing listener
     (doseq [l (.getTreeSelectionListeners sidebar)]
       (.removeTreeSelectionListener sidebar l))
@@ -164,18 +172,18 @@
           git (Git. repo)
           commits (cons nil ; represents uncommitted changes
                         (try
-                          (-> git .log (.setMaxCount max-commits) .call
-                            .iterator iterator-seq)
+                          (-> git .log (.setMaxCount max-commits)
+                            (.setSkip @offset) .call .iterator iterator-seq)
                           (catch Exception _ [])))
           selected-row (selected-row sidebar commits)]
-      (.setModel sidebar
-        (DefaultTreeModel. (root-node commits)))
-      (.addTreeSelectionListener sidebar
-        (reify TreeSelectionListener
-          (valueChanged [this e]
-            (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-                 (update-content! content git)))))
-      (.setSelectionRow sidebar (or selected-row 0)))))
+      (doto sidebar
+        (.setModel (DefaultTreeModel. (root-node commits)))
+        (.addTreeSelectionListener
+          (reify TreeSelectionListener
+            (valueChanged [this e]
+              (->> (some-> e .getPath .getLastPathComponent .getUserObject)
+                   (update-content! content git)))))
+        (.setSelectionRow (or selected-row 0))))))
 
 (def ^:dynamic *widgets* [])
 
@@ -205,18 +213,48 @@
                          :text (utils/get-string :configure)
                          :listen [:action (:configure actions)])})
 
+(defn update-paging-buttons!
+  ([offset-atom]
+    (some-> @ui/root (update-paging-buttons! offset-atom)))
+  ([panel offset-atom]
+    (let [back (s/select panel [:#git-back])
+          forward (s/select panel [:#git-forward])]
+      (s/config! back :enabled? (> @offset-atom 0)))))
+
+(defn create-paging-buttons
+  [offset-atom]
+  [(doto (s/button :id :git-back
+                   :listen [:action (fn [& _]
+                                      (swap! offset-atom - max-commits)
+                                      (update-paging-buttons! offset-atom)
+                                      (some-> (update-sidebar!)
+                                              (s/scroll! :to :top)))])
+     (s/text! (shortcuts/wrap-hint-text "&larr;")))
+   (doto (s/button :id :git-forward
+                   :listen [:action (fn [& _]
+                                      (swap! offset-atom + max-commits)
+                                      (update-paging-buttons! offset-atom)
+                                      (some-> (update-sidebar!)
+                                              (s/scroll! :to :top)))])
+     (s/text! (shortcuts/wrap-hint-text "&rarr;")))])
+
 (defmethod editors/create-editor :git [_ path]
   (when (= (.getName (io/file path)) git-name)
     (let [; get the path of the parent directory
           path (-> path io/file .getParentFile .getCanonicalPath)
           ; create the pane
+          offset-atom (atom 0)
           content (create-content)
           sidebar (doto (create-sidebar)
-                    (update-sidebar! content path))
+                    (update-sidebar! content offset-atom path))
+          paging-panel (doto (s/horizontal-panel
+                               :items (create-paging-buttons offset-atom))
+                         (update-paging-buttons! offset-atom))
           git-pane (s/border-panel
-                     :west (s/scrollable sidebar
-                                         :size [200 :by 0]
-                                         :hscroll :never)
+                     :west (s/border-panel :center (s/scrollable
+                                                     sidebar :hscroll :never)
+                                           :south paging-panel
+                                           :size [200 :by 0])
                      :center (s/scrollable content))
           ; create the actions and widgets
           actions (create-actions)
@@ -231,6 +269,9 @@
           (shortcuts/create-mappings! actions)))
       ; return a map describing the view
       {:view git-pane
+       :sidebar sidebar
+       :content content
+       :offset offset-atom
        :close-fn! (fn [])
        :should-remove-fn #(not (git-project? path))
        :italicize-fn (fn [] false)})))

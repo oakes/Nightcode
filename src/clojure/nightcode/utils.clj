@@ -14,6 +14,7 @@
            [java.util.prefs Preferences]
            [java.security MessageDigest]
            [javax.swing.tree TreePath]
+           [java.text SimpleDateFormat]
            [org.fife.ui.rsyntaxtextarea SyntaxConstants]))
 
 ; preferences
@@ -276,3 +277,8 @@
     (binding [*read-eval* false]
       (read-string (str \( 'do \newline s \newline \))))
     (catch Exception _)))
+
+(defn format-date
+  "Formats unix time (in seconds) into a readable date."
+  [unix-time]
+  (.format (SimpleDateFormat. "yyyy.MM.dd HH:mm:ss") (* 1000 unix-time)))

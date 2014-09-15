@@ -123,4 +123,8 @@
   <string name="revert">Revert</string>
   <string name="configure">Configure</string>
   <string name="uncommitted_changes">Uncommitted Changes</string>
+
+  <string name="author">Author: %s</string>
+  <string name="committer">Committer: %s</string>
+  <string name="commit_time">Commit Time: %s</string>
 </resources>
