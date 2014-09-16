@@ -112,8 +112,10 @@
                (.setRepository repo))
           [old-tree new-tree] (diff-trees repo commit)]
       (for [^DiffEntry diff (.scan df old-tree new-tree)
+            ; exclude add diffs from uncommitted changes
             :when (or (some? commit)
-                      (not= DiffEntry$ChangeType/ADD (.getChangeType diff)))]
+                      (not= DiffEntry$ChangeType/ADD
+                            (.getChangeType diff)))]
         (->> (format-diff! out df diff)
              string/split-lines
              (map escape-html)
