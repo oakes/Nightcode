@@ -105,13 +105,34 @@
 
 (defn show-project-type-dialog!
   [dir]
-  (let [raw-project-name (.getName dir)
+  (let [; paths
+        raw-project-name (.getName dir)
         parent-dir (.getParent dir)
-        group (s/button-group)
+        ; execute button
+        exec-btn (s/button :text (utils/get-string :create-project))
+        ; package name
+        package-text (doto (s/text :columns 20
+                                   :text (utils/format-project-name
+                                           (str raw-project-name ".core")))
+                       (ui/text-prompt! (utils/get-string :package-prompt)))
+        package-panel (s/flow-panel :items [package-text])
+        ; download address
+        download-text (doto (s/text :columns 20)
+                        (ui/text-prompt! (utils/get-string :download-prompt)))
+        download-panel (s/flow-panel :items [download-text] :visible? false)
+        ; language buttons
         lang-group (s/button-group)
-        package-name-text (->> (str raw-project-name ".core")
-                               utils/format-project-name
-                               (s/text :columns 20 :text))
+        lang-buttons (for [k [:clojure :java]]
+                       (s/radio :id k
+                                :class :lang-button
+                                :text (utils/get-string k)
+                                :group lang-group
+                                :selected? (= k :clojure)
+                                :valign :center
+                                :halign :center))
+        lang-panel (s/horizontal-panel :items lang-buttons)
+        ; project type buttons
+        group (s/button-group)
         types [[:console [:clojure :java]]
                [:game [:clojure :java]]
                [:android [:clojure :java]]
@@ -121,32 +142,40 @@
                [:web [:clojure]]
                [:graphics [:clojure]]
                [:sounds [:clojure]]
-               [:database [:clojure]]]
+               [:download []]]
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (first %)) types)
                 types)
-        update-lang! (fn [e]
-                       ; select the clojure option
-                       (-> (s/select (s/to-root e) [:#clojure])
-                           (s/config! :selected? true))
-                       ; hide the language choices if there is only one
-                       (let [type (some #(if (= (first %) (s/id-of e)) %) types)
-                             lang (s/select (s/to-root e) [:.lang-button])
-                             multi-lang? (= 2 (count (second type)))]
-                         (s/config! lang :enabled? multi-lang?)))
+        refresh! (fn [e]
+                   (let [[name langs] (some (fn [type]
+                                              (if (= (first type)
+                                                     (s/id-of e)) type))
+                                            types)
+                         lang-buttons (s/select (s/to-root e) [:.lang-button])
+                         clojure-button (s/select (s/to-root e) [:#clojure])]
+                     (s/config! exec-btn
+                                :text (if (= :download name)
+                                        (utils/get-string :clone-project)
+                                        (utils/get-string :create-project)))
+                     (s/config! package-panel :visible? (not= :download name))
+                     (s/config! download-panel :visible? (= :download name))
+                     (s/config! clojure-button :selected? true)
+                     (s/config! lang-buttons :enabled? (> (count langs) 1))))
         finish (fn []
                  (let [project-type (->> [(s/selection group)
                                           (s/selection lang-group)]
                                          (map #(name (s/id-of %)))
                                          (string/join "-")
                                          keyword)
-                       project-name (-> raw-project-name
-                                        utils/format-project-name)
-                       package-name (-> (s/text package-name-text)
-                                        utils/format-package-name)
-                       project-dir (-> (io/file parent-dir project-name)
-                                       .getCanonicalPath)]
-                   [project-type project-name package-name project-dir]))
+                       project-name (utils/format-project-name raw-project-name)
+                       package-name (when (s/config package-panel :visible?)
+                                      (utils/format-package-name
+                                        (s/text package-text)))
+                       addr (when (s/config download-panel :visible?)
+                              (s/text download-text))
+                       project-dir (.getCanonicalPath
+                                     (io/file parent-dir project-name))]
+                   [project-type project-name package-name addr project-dir]))
         buttons (for [[id template-ids] types]
                   (doto (s/radio :id id
                                  :text (str "<html>"
@@ -155,32 +184,23 @@
                                             "</center>")
                                  :group group
                                  :selected? (= id :console)
-                                 :listen [:action update-lang!]
+                                 :listen [:action refresh!]
                                  :valign :center
                                  :halign :center)
                         (.setSelectedIcon (icon/icon (str (name id) "2.png")))
                         (.setIcon (icon/icon (str (name id) ".png")))
                         (.setVerticalTextPosition JRadioButton/BOTTOM)
-                        (.setHorizontalTextPosition JRadioButton/CENTER)))
-        lang-buttons (for [k [:clojure :java]]
-                       (s/radio :id k
-                                :class :lang-button
-                                :text (utils/get-string k)
-                                :group lang-group
-                                :selected? (= k :clojure)
-                                :valign :center
-                                :halign :center))]
+                        (.setHorizontalTextPosition JRadioButton/CENTER)))]
+    (s/config! exec-btn :listen [:action #(s/return-from-dialog % (finish))])
     (-> (s/dialog
           :title (utils/get-string :specify-project-type)
           :content (s/vertical-panel
                      :items [(s/grid-panel :columns (/ (count types) 2)
                                            :items buttons)
-                             (s/flow-panel :items [package-name-text])
-                             (s/horizontal-panel :id :lang
-                                                 :items lang-buttons)])
-          :options [(s/button :text (utils/get-string :create-project)
-                              :listen [:action #(s/return-from-dialog
-                                                  % (finish))])])
+                             package-panel
+                             download-panel
+                             lang-panel])
+          :options [exec-btn])
         s/pack!
         center!
         stay-on-top!

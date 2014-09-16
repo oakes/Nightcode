@@ -3,7 +3,7 @@
             [nightcode.utils :as utils]
             [seesaw.core :as s])
   (:import [clojure.lang LineNumberingPushbackReader]
-           [com.camick WrapLayout]
+           [com.camick TextPrompt WrapLayout]
            [java.awt Color Dimension FontMetrics]
            [java.io File FilenameFilter]
            [javax.swing JComponent JTree]
@@ -83,6 +83,12 @@
   "Creates an adjusted toggle."
   [& body]
   `(adjust-button! (s/toggle ~@body)))
+
+(defn text-prompt!
+  "Adds a prompt to a text field."
+  [widget text]
+  (doto (TextPrompt. text widget)
+    (.changeAlpha 0.5)))
 
 (defn get-io
   "Returns the Reader and Writer for the given console object."

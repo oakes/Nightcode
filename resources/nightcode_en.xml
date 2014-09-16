@@ -45,20 +45,24 @@
   <string name="quit">Quit</string>
 
   <string name="console">Console</string>
-  <string name="desktop">Desktop</string>
-  <string name="web">Web</string>
+  <string name="game">Game</string>
   <string name="android">Android</string>
   <string name="ios">iOS</string>
-  <string name="game">Game</string>
+  <string name="dotnet">.NET</string>
+  <string name="desktop">Desktop</string>
+  <string name="web">Web</string>
   <string name="graphics">Graphics</string>
   <string name="sounds">Sounds</string>
-  <string name="dotnet">.NET</string>
-  <string name="database">Database</string>
+  <string name="download">Download</string>
+  
+  <string name="package_prompt">Package name</string>
+  <string name="download_prompt">Git address</string>
 
   <string name="clojure">Clojure</string>
   <string name="java">Java</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
+  <string name="clone_project">Clone Project</string>
 
   <string name="no_project_clj">Can\'t find project.clj</string>
   <string name="finished">Finished</string>
@@ -107,7 +111,6 @@
 
   <string name="new">New</string>
   <string name="load">Load</string>
-  <string name="download">Download</string>
 
   <string name="home">Home</string>
   <string name="restart">Restart</string>

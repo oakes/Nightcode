@@ -13,8 +13,7 @@
             [paredit-widget.core :as pw]
             [seesaw.color :as color]
             [seesaw.core :as s])
-  (:import [com.camick TextPrompt]
-           [java.awt.event KeyEvent KeyListener]
+  (:import [java.awt.event KeyEvent KeyListener]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [nightcode.ui JConsole]
            [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
@@ -377,11 +376,6 @@
       (some->> completer (completions/install-completer! text-area))
       (JConsole. text-area))))
 
-(defn text-prompt!
-  [widget text]
-  (doto (TextPrompt. text widget)
-    (.changeAlpha 0.5)))
-
 (defn remove-editors!
   [path]
   (let [editor-pane (ui/get-editor-pane)]
@@ -460,12 +454,12 @@
                        :columns 8
                        :listen [:key-released find-text!])
            (utils/set-accessible-name! :find)
-           (text-prompt! (utils/get-string :find)))
+           (ui/text-prompt! (utils/get-string :find)))
    :replace (doto (s/text :id :replace
                           :columns 8
                           :listen [:key-released replace-text!])
               (utils/set-accessible-name! :replace)
-              (text-prompt! (utils/get-string :replace)))
+              (ui/text-prompt! (utils/get-string :replace)))
    :close (doto (ui/button :id :close
                            :text "X"
                            :listen [:action (:close actions)])

@@ -3,6 +3,7 @@
             [nightcode.builders :as builders]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
+            [nightcode.git :as git]
             [nightcode.lein :as lein]
             [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
@@ -91,14 +92,23 @@
 (defn new-project!
   [console]
   (when-let [dir (dialogs/show-save-dialog!)]
-    (when-let [[project-type project-name package-name project-dir]
-               (dialogs/show-project-type-dialog! dir)]
-      (lein/new-project! (ui/get-io console)
-                         (.getParent dir)
-                         project-type
-                         project-name
-                         package-name)
-      (when (.exists (io/file project-dir))
+    (let [; show the dialog
+          [project-type
+           project-name
+           package-name
+           address
+           project-dir] (dialogs/show-project-type-dialog! dir)
+          ; run the appropriate command
+          success? (cond
+                     ; we're making a project from a template
+                     package-name
+                     (lein/new-project! (ui/get-io console) (.getParent dir)
+                                        project-type project-name package-name)
+                     ; we're cloning a project from the internet
+                     address
+                     (git/clone-with-dialog! address (io/file project-dir)))]
+      ; if successful, add to project tree
+      (when (and success? (.exists (io/file project-dir)))
         (add-to-project-tree! project-dir)
         (ui/update-project-tree! project-dir)))))
 

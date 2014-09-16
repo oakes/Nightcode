@@ -330,7 +330,8 @@
          (leiningen.new/new {} (name project-type) project-name package-name))
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
-       (redirect-io in-out)))
+       (redirect-io in-out))
+  true)
 
 ; main function for "indirect" processes
 
