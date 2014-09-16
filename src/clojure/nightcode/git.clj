@@ -195,7 +195,7 @@
           commits (cons nil ; represents uncommitted changes
                         (try
                           (-> git .log (.setMaxCount max-commits)
-                            (.setSkip @offset) .call .iterator iterator-seq)
+                              (.setSkip @offset) .call .iterator iterator-seq)
                           (catch Exception _ [])))
           selected-row (selected-row sidebar commits)]
       (doto sidebar
@@ -284,26 +284,25 @@
   ([offset-atom]
     (some-> @ui/root (update-paging-buttons! offset-atom)))
   ([panel offset-atom]
-    (let [back (s/select panel [:#git-back])
-          forward (s/select panel [:#git-forward])]
+    (let [back (s/select panel [:#git-back])]
       (s/config! back :enabled? (> @offset-atom 0)))))
 
 (defn create-paging-buttons
   [offset-atom]
-  [(doto (s/button :id :git-back
-                   :listen [:action (fn [& _]
-                                      (swap! offset-atom - max-commits)
-                                      (update-paging-buttons! offset-atom)
-                                      (some-> (update-sidebar!)
-                                              (s/scroll! :to :top)))])
-     (s/text! (shortcuts/wrap-hint-text "&larr;")))
-   (doto (s/button :id :git-forward
-                   :listen [:action (fn [& _]
-                                      (swap! offset-atom + max-commits)
-                                      (update-paging-buttons! offset-atom)
-                                      (some-> (update-sidebar!)
-                                              (s/scroll! :to :top)))])
-     (s/text! (shortcuts/wrap-hint-text "&rarr;")))])
+  [(s/button :id :git-back
+             :text (shortcuts/wrap-hint-text "&larr;")
+             :listen [:action (fn [& _]
+                                (swap! offset-atom - max-commits)
+                                (update-paging-buttons! offset-atom)
+                                (some-> (update-sidebar!)
+                                        (s/scroll! :to :top)))])
+   (s/button :id :git-forward
+             :text (shortcuts/wrap-hint-text "&rarr;")
+             :listen [:action (fn [& _]
+                                (swap! offset-atom + max-commits)
+                                (update-paging-buttons! offset-atom)
+                                (some-> (update-sidebar!)
+                                        (s/scroll! :to :top)))])])
 
 (defmethod editors/create-editor :git [_ path]
   (when (= (.getName (io/file path)) git-name)
