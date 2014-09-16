@@ -24,7 +24,7 @@
            [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
             FileTreeIterator]))
 
-(def ^:const git-name "*Git*")
+(def ^:const git-name "Git")
 (def ^:const max-commits 50)
 
 (defn git-file
@@ -346,7 +346,7 @@
 (defmethod ui/adjust-nodes :git [_ parent children]
   (if (some-> (:file parent) .getCanonicalPath git-project?)
     (cons {:html "<html><b><font color='orange'>Git</font></b></html>"
-           :name "Git"
+           :name git-name
            :file (io/file (:file parent) git-name)}
           children)
     children))

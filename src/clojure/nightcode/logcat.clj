@@ -9,7 +9,7 @@
             [nightcode.utils :as utils]
             [seesaw.core :as s]))
 
-(def ^:const logcat-name "*LogCat*")
+(def ^:const logcat-name "LogCat")
 
 (defn run-logcat!
   "Starts a LogCat process."
@@ -86,7 +86,7 @@
 (defmethod ui/adjust-nodes :logcat [_ parent children]
   (if (some-> (:file parent) .getCanonicalPath lein/android-project?)
     (cons {:html "<html><b><font color='green'>LogCat</font></b></html>"
-           :name "LogCat"
+           :name logcat-name
            :file (io/file (:file parent) logcat-name)}
           children)
     children))
