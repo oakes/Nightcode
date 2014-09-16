@@ -48,9 +48,9 @@
   <string name="game">Game</string>
   <string name="android">Android</string>
   <string name="ios">iOS</string>
-  <string name="dotnet">.NET</string>
   <string name="desktop">Desktop</string>
   <string name="web">Web</string>
+  <string name="database">Database</string>
   <string name="graphics">Graphics</string>
   <string name="sounds">Sounds</string>
   <string name="download">Download</string>
