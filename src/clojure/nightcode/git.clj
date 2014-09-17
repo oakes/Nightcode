@@ -15,7 +15,7 @@
            [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
             TreeSelectionModel]
            [org.eclipse.jgit.api Git]
-           [org.eclipse.jgit.diff DiffEntry DiffEntry$ChangeType DiffFormatter]
+           [org.eclipse.jgit.diff DiffEntry DiffFormatter]
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent ProgressMonitor Repository]
@@ -81,7 +81,10 @@
        (.reset (.newObjectReader repo) (.getTree commit)))]
     ; uncommitted changes
     :else
-    [(-> repo .readDirCache DirCacheIterator.)
+    [(if-let [head (.resolve repo "HEAD^{tree}")]
+       (doto (CanonicalTreeParser.)
+         (.reset (.newObjectReader repo) head))
+       (-> repo .readDirCache DirCacheIterator.))
      (FileTreeIterator. repo)]))
 
 (defn ident->str
@@ -111,11 +114,7 @@
           df (doto (DiffFormatter. out)
                (.setRepository repo))
           [old-tree new-tree] (diff-trees repo commit)]
-      (for [^DiffEntry diff (.scan df old-tree new-tree)
-            ; exclude add diffs from uncommitted changes
-            :when (or (some? commit)
-                      (not= DiffEntry$ChangeType/ADD
-                            (.getChangeType diff)))]
+      (for [diff (.scan df old-tree new-tree)]
         (->> (format-diff! out df diff)
              string/split-lines
              (map escape-html)
