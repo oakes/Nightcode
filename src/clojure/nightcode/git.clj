@@ -124,10 +124,14 @@
 (defn commit-node
   [^RevCommit commit]
   (proxy [DefaultMutableTreeNode] [commit]
-    (toString [] (or (some-> commit .getShortMessage)
-                     (h/html [:html
-                              [:div {:style "color: orange; font-weight: bold;"}
-                               (utils/get-string :uncommitted-changes)]])))))
+    (toString [] (if-not commit
+                   (h/html [:html
+                            [:div {:style "color: orange; font-weight: bold;"}
+                             (utils/get-string :uncommitted-changes)]])
+                   (let [msg (.getShortMessage commit)]
+                     (if (seq msg)
+                       msg
+                       (-> commit .getCommitTime utils/format-date)))))))
 
 (defn root-node
   [commits]
