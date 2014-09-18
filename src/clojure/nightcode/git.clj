@@ -221,6 +221,7 @@
   [^String uri f]
   (let [cancelled? (atom false)
         exception (atom nil)
+        path (promise)
         d (dialogs/git-clone-dialog uri f)
         progress (reify ProgressMonitor
                    (beginTask [this title total-work])
@@ -238,11 +239,13 @@
                     (s/dispose! d)
                     (dialogs/show-simple-dialog! (.getMessage e)))))
               (finally
-                (when (or @cancelled? @exception)
-                  (utils/delete-children-recursively! f)))))
+                (if (or @cancelled? @exception)
+                  (do
+                    (utils/delete-children-recursively! f)
+                    (deliver path nil))
+                  (deliver path (.getCanonicalPath f))))))
     (reset! cancelled? (some? (s/show! d)))
-    (when-not (or @cancelled? @exception)
-      (.getCanonicalPath f))))
+    @path))
 
 (defn address->name
   [s]
