@@ -86,6 +86,7 @@
   <string name="new_file">New File</string>
   <string name="edit">Edit</string>
   <string name="open_in_file_browser">Open in File Browser</string>
+  <string name="init_git">Initialize Git</string>
   <string name="delete">Delete</string>
   <string name="toggle_window">Toggle Window</string>
 
@@ -120,7 +121,6 @@
 
   <string name="search">Search</string>
 
-  <string name="init_git">Initialize Git</string>
   <string name="pull">Pull</string>
   <string name="push">Push</string>
   <string name="configure">Configure</string>
@@ -135,10 +135,8 @@
   <string name="committer">Committer: %s</string>
   <string name="commit_time">Commit Time: %s</string>
 
+  <string name="invalid_git_address">Invalid Git address. You need to copy it before clicking here.</string>
   <string name="cloning_project">Cloning project...</string>
   <string name="from">From: %s</string>
   <string name="to">To: %s</string>
-
-  <string name="clone_project">Clone Project from Clipboard</string>
-  <string name="invalid_git_address">Invalid Git address. You need to copy it before clicking here.</string>
 </resources>
