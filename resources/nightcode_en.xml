@@ -101,8 +101,7 @@
   <string name="platformer">Platformer</string>
   <string name="orthogonal_rpg">Orthogonal RPG</string>
   <string name="isometric_rpg">Isometric RPG</string>
-  <string name="barebones_2d">Barebones 2D</string>
-  <string name="barebones_3d">Barebones 3D</string>
+  <string name="barebones">Barebones</string>
 
   <string name="error_load">Error during load</string>
   <string name="error_in">Error in %s</string>
@@ -126,7 +125,7 @@
   <string name="reset">Reset</string>
   <string name="revert">Revert</string>
   <string name="configure">Configure</string>
-  <string name="uncommitted_changes">Uncommitted Changes</string>
+  <string name="changes">Changes</string>
 
   <string name="loading">Loading...</string>
   <string name="author">Author: %s</string>
@@ -137,6 +136,6 @@
   <string name="from">From: %s</string>
   <string name="to">To: %s</string>
 
-  <string name="clone_git_project">Clone Git Project from Clipboard</string>
+  <string name="clone_project">Clone Project from Clipboard</string>
   <string name="invalid_git_address">Invalid Git Address: %s</string>
 </resources>

@@ -101,7 +101,7 @@
   [^Git git ^RevCommit commit]
   (clj->html
     [:div {:class "head"} (or (some-> commit .getFullMessage escape-html)
-                              (utils/get-string :uncommitted-changes))]
+                              (utils/get-string :changes))]
     (when commit
       (list [:div (format (utils/get-string :author)
                           (-> commit .getAuthorIdent ident->str))]
@@ -127,7 +127,7 @@
     (toString [] (if-not commit
                    (h/html [:html
                             [:div {:style "color: orange; font-weight: bold;"}
-                             (utils/get-string :uncommitted-changes)]])
+                             (utils/get-string :changes)]])
                    (let [msg (.getShortMessage commit)]
                      (if (seq msg)
                        msg
