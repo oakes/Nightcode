@@ -262,8 +262,6 @@
   []
   {:pull (fn [& _])
    :push (fn [& _])
-   :reset (fn [& _])
-   :revert (fn [& _])
    :configure (fn [& _])
    :close editors/close-selected-editor!})
 
@@ -275,12 +273,6 @@
    :push (ui/button :id :push
                     :text (utils/get-string :push)
                     :listen [:action (:push actions)])
-   :reset (ui/button :id :reset
-                     :text (utils/get-string :reset)
-                     :listen [:action (:reset actions)])
-   :revert (ui/button :id :revert
-                      :text (utils/get-string :revert)
-                      :listen [:action (:revert actions)])
    :configure (ui/button :id :configure
                          :text (utils/get-string :configure)
                          :listen [:action (:configure actions)])

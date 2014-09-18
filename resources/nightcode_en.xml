@@ -120,12 +120,15 @@
 
   <string name="search">Search</string>
 
+  <string name="init_git">Initialize Git</string>
   <string name="pull">Pull</string>
   <string name="push">Push</string>
-  <string name="reset">Reset</string>
-  <string name="revert">Revert</string>
   <string name="configure">Configure</string>
   <string name="changes">Changes</string>
+
+  <string name="commit">Commit"</string>
+  <string name="reset">Reset</string>
+  <string name="revert">Revert</string>
 
   <string name="loading">Loading...</string>
   <string name="author">Author: %s</string>
