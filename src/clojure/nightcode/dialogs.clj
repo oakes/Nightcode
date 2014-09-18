@@ -107,6 +107,7 @@
   [dir]
   (let [; paths
         raw-project-name (.getName dir)
+        project-name (utils/format-project-name raw-project-name)
         parent-dir (.getParent dir)
         ; execute button
         exec-btn (s/button :text (utils/get-string :create-project))
@@ -162,20 +163,19 @@
                      (s/config! clojure-button :selected? true)
                      (s/config! lang-buttons :enabled? (> (count langs) 1))))
         finish (fn []
-                 (let [project-type (->> [(s/selection group)
-                                          (s/selection lang-group)]
-                                         (map #(name (s/id-of %)))
-                                         (string/join "-")
-                                         keyword)
-                       project-name (utils/format-project-name raw-project-name)
-                       package-name (when (s/config package-panel :visible?)
-                                      (utils/format-package-name
-                                        (s/text package-text)))
-                       addr (when (s/config download-panel :visible?)
-                              (s/text download-text))
-                       project-dir (.getCanonicalPath
-                                     (io/file parent-dir project-name))]
-                   [project-type project-name package-name addr project-dir]))
+                 {:project-type (->> [(s/selection group)
+                                      (s/selection lang-group)]
+                                     (map #(name (s/id-of %)))
+                                     (string/join "-")
+                                     keyword)
+                  :project-name project-name
+                  :package-name (when (s/config package-panel :visible?)
+                                  (utils/format-package-name
+                                    (s/text package-text)))
+                  :address (when (s/config download-panel :visible?)
+                             (s/text download-text))
+                  :project-dir (.getCanonicalPath
+                                 (io/file parent-dir project-name))})
         buttons (for [[id template-ids] types]
                   (doto (s/radio :id id
                                  :text (str "<html>"

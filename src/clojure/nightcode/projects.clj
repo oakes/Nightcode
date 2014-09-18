@@ -93,11 +93,11 @@
   [console]
   (when-let [dir (dialogs/show-save-dialog!)]
     (let [; show the dialog
-          [project-type
-           project-name
-           package-name
-           address
-           project-dir] (dialogs/show-project-type-dialog! dir)
+          {:keys [project-type
+                  project-name
+                  package-name
+                  address
+                  project-dir]} (dialogs/show-project-type-dialog! dir)
           ; run the appropriate command
           success? (cond
                      ; we're making a project from a template
