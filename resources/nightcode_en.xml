@@ -140,5 +140,5 @@
   <string name="to">To: %s</string>
 
   <string name="clone_project">Clone Project from Clipboard</string>
-  <string name="invalid_git_address">Invalid Git Address: %s</string>
+  <string name="invalid_git_address">Invalid Git address. You need to copy it before clicking here.</string>
 </resources>
