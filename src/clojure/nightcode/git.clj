@@ -245,8 +245,8 @@
               (finally
                 (if (or @cancelled? @exception)
                   (do
-                    (utils/delete-children-recursively! f)
-                    (deliver path nil))
+                    (deliver path nil)
+                    (utils/delete-children-recursively! f))
                   (deliver path (.getCanonicalPath f))))))
     (reset! cancelled? (some? (s/show! d)))
     @path))
