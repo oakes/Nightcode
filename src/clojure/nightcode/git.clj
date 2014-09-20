@@ -14,7 +14,7 @@
            [javax.swing.text.html HTMLEditorKit StyleSheet]
            [javax.swing.tree DefaultMutableTreeNode DefaultTreeModel
             TreeSelectionModel]
-           [org.eclipse.jgit.api Git]
+           [org.eclipse.jgit.api Git ResetCommand$ResetType]
            [org.eclipse.jgit.diff DiffEntry DiffFormatter]
            [org.eclipse.jgit.dircache DirCacheIterator]
            [org.eclipse.jgit.internal.storage.file FileRepository]
@@ -140,6 +140,21 @@
       (.setProgressMonitor progress)
       .call))
 
+(defn add-all!
+  [^FileRepository repo]
+  (-> repo Git. .add (.addFilepattern ".") .call))
+
+(defn reset-all!
+  [^FileRepository repo]
+  (-> repo Git. .reset (.setMode ResetCommand$ResetType/MIXED) .call))
+
+(defn commit!
+  [^FileRepository repo]
+  (when-let [message (dialogs/show-input-dialog! (utils/get-string :message)
+                                                 false)]
+    (add-all! repo)
+    (-> repo Git. .commit (.setMessage message) .call)))
+
 ; ui
 
 (defn git-file
@@ -178,6 +193,11 @@
     :else
     [:pre {:style "font-family: monospace"} s]))
 
+(defn add-lines
+  [lines]
+  (concat [[:br] [:br]]
+          lines))
+
 (defn diff-trees
   [^Repository repo ^RevCommit commit]
   (cond
@@ -210,27 +230,31 @@
 
 (defn create-html
   [^Git git ^RevCommit commit]
-  (clj->html
-    [:div {:class "head"} (or (some-> commit .getFullMessage escape-html)
-                              (utils/get-string :changes))]
-    (when commit
-      (list [:div (format (utils/get-string :author)
-                          (-> commit .getAuthorIdent ident->str))]
-            [:div (format (utils/get-string :committer)
-                          (-> commit .getCommitterIdent ident->str))]
-            [:div (format (utils/get-string :commit-time)
-                          (-> commit .getCommitTime utils/format-date))]))
-    (let [out (ByteArrayOutputStream.)
-          repo (.getRepository git)
-          df (doto (DiffFormatter. out)
-               (.setRepository repo))
-          [old-tree new-tree] (diff-trees repo commit)]
-      (for [diff (.scan df old-tree new-tree)]
+  (let [out (ByteArrayOutputStream.)
+        repo (.getRepository git)
+        df (doto (DiffFormatter. out)
+             (.setRepository repo))
+        [old-tree new-tree] (diff-trees repo commit)
+        diffs (.scan df old-tree new-tree)]
+    (clj->html
+      (if commit
+        (list [:div {:class "head"} (-> commit .getFullMessage escape-html)]
+              [:div (format (utils/get-string :author)
+                            (-> commit .getAuthorIdent ident->str))]
+              [:div (format (utils/get-string :committer)
+                            (-> commit .getCommitterIdent ident->str))]
+              [:div (format (utils/get-string :commit-time)
+                            (-> commit .getCommitTime utils/format-date))])
+        (list [:div {:class "head"} (utils/get-string :changes)]
+              (when (seq diffs)
+                [:div {:class "link"}
+                 [:a {:href "commit"} (utils/get-string :commit)]])))
+      (for [diff diffs]
         (->> (format-diff! out df diff)
              string/split-lines
              (map escape-html)
              (map add-formatting)
-             (#(conj % [:br] [:br])))))))
+             add-lines)))))
 
 (defn commit-node
   [^RevCommit commit]
@@ -265,13 +289,24 @@
          first)))
 
 (defn create-content
-  []
+  [^FileRepository repo]
   (let [css (doto (StyleSheet.) (.importStyleSheet (io/resource "git.css")))
         kit (doto (HTMLEditorKit.) (.setStyleSheet css))]
     (doto (s/editor-pane :id :git-content
                          :editable? false
                          :content-type "text/html")
       (.setEditorKit kit)
+      (s/listen :hyperlink
+                (fn [e]
+                  (when (= (.getEventType e)
+                           HyperlinkEvent$EventType/ACTIVATED)
+                    (when-let [command (.getDescription e)]
+                      ; run the command
+                      (case command
+                        "commit" (commit! repo)
+                        nil)
+                      ; refresh the content
+                      (reset! ui/tree-selection @ui/tree-selection)))))
       (.setBackground (ui/background-color)))))
 
 (defn create-sidebar
@@ -375,11 +410,12 @@
 
 (defmethod editors/create-editor :git [_ path]
   (when (= (.getName (io/file path)) git-name)
-    (let [; get the file object of the .git directory
+    (let [; get the file object and repo
           f (-> path io/file .getParentFile git-file)
+          repo (FileRepository. f)
           ; create the pane
           offset-atom (atom 0)
-          content (create-content)
+          content (create-content repo)
           sidebar (doto (create-sidebar)
                     (update-sidebar! content offset-atom f))
           paging-panel (doto (s/horizontal-panel
@@ -392,7 +428,7 @@
                                            :size [200 :by 0])
                      :center (s/scrollable content))
           ; create the actions and widgets
-          actions (create-actions (FileRepository. f))
+          actions (create-actions repo)
           widgets (create-widgets actions)
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
