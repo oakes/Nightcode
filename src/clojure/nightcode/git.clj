@@ -29,7 +29,7 @@
 (def ^:const git-name "Git")
 (def ^:const max-commits 50)
 
-; commands
+; utils
 
 (defn address->name
   [s]
@@ -40,26 +40,26 @@
   [^FileRepository repo]
   (-> repo .getConfig (.getString "remote" "origin" "url")))
 
-(defn creds
-  []
-  (proxy [CredentialsProvider] []
-    (isInteractive [] false)
-    (supports [& items] true)
-    (get [uri items]
-      (let [success? (promise)]
-        (s/invoke-later
-          (doseq [item items]
-            (when-not (realized? success?)
-              (if-let [s (dialogs/show-input-dialog! (.getPromptText item)
-                                                     (.isValueSecure item))]
-                (cond
-                  (isa? (type item) CredentialItem$CharArrayType)
-                  (.setValue item (char-array s))
-                  (isa? (type item) CredentialItem$StringType)
-                  (.setValue item s))
-                (deliver success? false))))
-          (deliver success? true))
-        @success?))))
+(def creds
+  (delay
+    (proxy [CredentialsProvider] []
+      (isInteractive [] false)
+      (supports [& items] true)
+      (get [uri items]
+        (let [success? (promise)]
+          (s/invoke-later
+            (doseq [item items]
+              (when-not (realized? success?)
+                (if-let [s (dialogs/show-input-dialog! (.getPromptText item)
+                                                       (.isValueSecure item))]
+                  (cond
+                    (isa? (type item) CredentialItem$CharArrayType)
+                    (.setValue item (char-array s))
+                    (isa? (type item) CredentialItem$StringType)
+                    (.setValue item s))
+                  (deliver success? false))))
+            (deliver success? true))
+          @success?)))))
 
 (defn progress-monitor
   [dialog cancelled?]
@@ -72,12 +72,14 @@
     (start [this total-tasks])
     (update [this completed])))
 
+; commands
+
 (defn clone!
   [^String uri f progress]
   (-> (Git/cloneRepository)
       (.setURI uri)
       (.setDirectory f)
-      (.setCredentialsProvider (creds))
+      (.setCredentialsProvider @creds)
       (.setProgressMonitor progress)
       .call
       .close))
@@ -127,14 +129,14 @@
 (defn pull!
   [^FileRepository repo ^ProgressMonitor progress]
   (-> repo Git. .pull
-      (.setCredentialsProvider (creds))
+      (.setCredentialsProvider @creds)
       (.setProgressMonitor progress)
       .call))
 
 (defn push!
   [^FileRepository repo ^ProgressMonitor progress]
   (-> repo Git. .push
-      (.setCredentialsProvider (creds))
+      (.setCredentialsProvider @creds)
       (.setProgressMonitor progress)
       .call))
 
