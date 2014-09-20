@@ -235,6 +235,26 @@
       stay-on-top!
       s/show!))
 
+(defn show-input-dialog!
+  [text secure?]
+  (let [input (doto (if secure?
+                      (s/password :columns 20)
+                      (s/text :columns 20))
+                (ui/text-prompt! text)
+                (utils/set-accessible-name! text))]
+    (-> (s/dialog :content (s/vertical-panel :items [input])
+                  :options [(s/button :text (utils/get-string :continue)
+                                      :listen [:action
+                                               #(->> (s/text input)
+                                                     (s/return-from-dialog %))])
+                            (s/button :text (utils/get-string :cancel)
+                                      :listen [:action
+                                               #(s/return-from-dialog % nil)])])
+        s/pack!
+        center!
+        stay-on-top!
+        s/show!)))
+
 (defn cancel-dialog
   [content]
   (-> (s/dialog :content content

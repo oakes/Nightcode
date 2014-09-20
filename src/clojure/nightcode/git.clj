@@ -20,7 +20,9 @@
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent ProgressMonitor Repository]
            [org.eclipse.jgit.revwalk RevCommit]
-           [org.eclipse.jgit.transport URIish]
+           [org.eclipse.jgit.transport CredentialItem$CharArrayType
+            CredentialItem$StringType CredentialsProvider
+            CredentialsProviderUserInfo URIish]
            [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
             FileTreeIterator]))
 
@@ -33,6 +35,31 @@
   [s]
   (when (.endsWith s ".git")
     (-> s URIish. .getHumanishName)))
+
+(defn remote-url
+  [^FileRepository repo]
+  (-> repo .getConfig (.getString "remote" "origin" "url")))
+
+(defn creds
+  []
+  (proxy [CredentialsProvider] []
+    (isInteractive [] false)
+    (supports [& items] true)
+    (get [uri items]
+      (let [success? (promise)]
+        (s/invoke-later
+          (doseq [item items]
+            (when-not (realized? success?)
+              (if-let [s (dialogs/show-input-dialog! (.getPromptText item)
+                                                     (.isValueSecure item))]
+                (cond
+                  (isa? (type item) CredentialItem$CharArrayType)
+                  (.setValue item (char-array s))
+                  (isa? (type item) CredentialItem$StringType)
+                  (.setValue item s))
+                (deliver success? false))))
+          (deliver success? true))
+        @success?))))
 
 (defn progress-monitor
   [dialog cancelled?]
@@ -50,6 +77,7 @@
   (-> (Git/cloneRepository)
       (.setURI uri)
       (.setDirectory f)
+      (.setCredentialsProvider (creds))
       (.setProgressMonitor progress)
       .call
       .close))
@@ -83,11 +111,11 @@
     @path))
 
 (defn do-with-dialog!
-  [git-fn f dialog-text]
+  [git-fn! repo dialog-text]
   (let [cancelled? (atom false)
         exception (atom nil)
         d (dialogs/cancel-dialog dialog-text)]
-    (future (try (git-fn f (progress-monitor d cancelled?))
+    (future (try (git-fn! repo (progress-monitor d cancelled?))
               (catch Exception e
                 (when-not @cancelled?
                   (reset! exception e)
@@ -97,12 +125,18 @@
     (reset! cancelled? (some? (s/show! d)))))
 
 (defn pull!
-  [f progress]
-  (-> f FileRepository. Git. .pull (.setProgressMonitor progress) .call .close))
+  [^FileRepository repo ^ProgressMonitor progress]
+  (-> repo Git. .pull
+      (.setCredentialsProvider (creds))
+      (.setProgressMonitor progress)
+      .call))
 
 (defn push!
-  [f progress]
-  (-> f FileRepository. Git. .push (.setProgressMonitor progress) .call .close))
+  [^FileRepository repo ^ProgressMonitor progress]
+  (-> repo Git. .push
+      (.setCredentialsProvider (creds))
+      (.setProgressMonitor progress)
+      .call))
 
 ; ui
 
@@ -290,11 +324,11 @@
 (def ^:dynamic *widgets* [:pull :push :close])
 
 (defn create-actions
-  [f]
+  [^FileRepository repo]
   {:pull (fn [& _]
-           (do-with-dialog! pull! f (utils/get-string :pulling-changes)))
+           (do-with-dialog! pull! repo (utils/get-string :pulling-changes)))
    :push (fn [& _]
-           (do-with-dialog! push! f (utils/get-string :pushing-changes)))
+           (do-with-dialog! push! repo (utils/get-string :pushing-changes)))
    :configure (fn [& _])
    :close editors/close-selected-editor!})
 
@@ -356,7 +390,7 @@
                                            :size [200 :by 0])
                      :center (s/scrollable content))
           ; create the actions and widgets
-          actions (create-actions f)
+          actions (create-actions (FileRepository. f))
           widgets (create-widgets actions)
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
