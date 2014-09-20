@@ -27,13 +27,88 @@
 (def ^:const git-name "Git")
 (def ^:const max-commits 50)
 
-(defn git-file
-  [path]
-  (io/file path ".git"))
+; commands
 
-(defn git-project?
-  [path]
-  (.exists (git-file path)))
+(defn address->name
+  [s]
+  (when (.endsWith s ".git")
+    (-> s URIish. .getHumanishName)))
+
+(defn progress-monitor
+  [dialog cancelled?]
+  (reify ProgressMonitor
+    (beginTask [this title total-work])
+    (endTask [this]
+      (s/invoke-later
+        (s/dispose! dialog)))
+    (isCancelled [this] @cancelled?)
+    (start [this total-tasks])
+    (update [this completed])))
+
+(defn clone!
+  [^String uri f progress]
+  (-> (Git/cloneRepository)
+      (.setURI uri)
+      (.setDirectory f)
+      (.setProgressMonitor progress)
+      .call
+      .close))
+
+(defn clone-with-dialog!
+  [^String uri f]
+  (let [cancelled? (atom false)
+        exception (atom nil)
+        path (promise)
+        d (dialogs/cancel-dialog (str (utils/get-string :cloning-project)
+                                      \newline
+                                      \newline
+                                      (format (utils/get-string :from) uri)
+                                      \newline
+                                      (format (utils/get-string :to)
+                                              (.getCanonicalPath f))))]
+    (future (try (clone! uri f (progress-monitor d cancelled?))
+              (catch Exception e
+                (when-not @cancelled?
+                  (reset! exception e)
+                  (s/invoke-later
+                    (s/dispose! d)
+                    (dialogs/show-simple-dialog! (.getMessage e)))))
+              (finally
+                (if (or @cancelled? @exception)
+                  (do
+                    (deliver path nil)
+                    (utils/delete-children-recursively! f))
+                  (deliver path (.getCanonicalPath f))))))
+    (reset! cancelled? (some? (s/show! d)))
+    @path))
+
+(defn do-with-dialog!
+  [git-fn f dialog-text]
+  (let [cancelled? (atom false)
+        exception (atom nil)
+        d (dialogs/cancel-dialog dialog-text)]
+    (future (try (git-fn f (progress-monitor d cancelled?))
+              (catch Exception e
+                (when-not @cancelled?
+                  (reset! exception e)
+                  (s/invoke-later
+                    (s/dispose! d)
+                    (dialogs/show-simple-dialog! (.getMessage e)))))))
+    (reset! cancelled? (some? (s/show! d)))))
+
+(defn pull!
+  [f progress]
+  (-> f FileRepository. Git. .pull (.setProgressMonitor progress) .call .close))
+
+(defn push!
+  [f progress]
+  (-> f FileRepository. Git. .push (.setProgressMonitor progress) .call .close))
+
+; ui
+
+(defn git-file
+  [f]
+  (io/file f ".git"))
 
 (defn escape-html
   [text]
@@ -189,13 +264,13 @@
                   offset]} (get @editors/editors @ui/tree-selection)
           path (ui/get-project-root-path)]
       (when (and sidebar content offset path)
-        (update-sidebar! sidebar content offset path))))
-  ([^JTree sidebar content offset path]
+        (update-sidebar! sidebar content offset (git-file path)))))
+  ([^JTree sidebar content offset f]
     ; remove existing listener
     (doseq [l (.getTreeSelectionListeners sidebar)]
       (.removeTreeSelectionListener sidebar l))
     ; add model and listener, then re-select the row
-    (let [repo (FileRepository. (git-file path))
+    (let [repo (FileRepository. f)
           git (Git. repo)
           commits (cons nil ; represents uncommitted changes
                         (try
@@ -212,56 +287,14 @@
                    (update-content! sidebar content git)))))
         (.setSelectionRow (or selected-row 0))))))
 
-(defn clone!
-  [^String uri f progress]
-  (-> (Git/cloneRepository)
-      (.setURI uri)
-      (.setDirectory f)
-      (.setProgressMonitor progress)
-      .call
-      .close))
-
-(defn clone-with-dialog!
-  [^String uri f]
-  (let [cancelled? (atom false)
-        exception (atom nil)
-        path (promise)
-        d (dialogs/git-clone-dialog uri f)
-        progress (reify ProgressMonitor
-                   (beginTask [this title total-work])
-                   (endTask [this]
-                     (s/invoke-later
-                       (s/dispose! d)))
-                   (isCancelled [this] @cancelled?)
-                   (start [this total-tasks])
-                   (update [this completed]))]
-    (future (try (clone! uri f progress)
-              (catch Exception e
-                (when-not @cancelled?
-                  (reset! exception e)
-                  (s/invoke-later
-                    (s/dispose! d)
-                    (dialogs/show-simple-dialog! (.getMessage e)))))
-              (finally
-                (if (or @cancelled? @exception)
-                  (do
-                    (deliver path nil)
-                    (utils/delete-children-recursively! f))
-                  (deliver path (.getCanonicalPath f))))))
-    (reset! cancelled? (some? (s/show! d)))
-    @path))
-
-(defn address->name
-  [s]
-  (when (.endsWith s ".git")
-    (-> s URIish. .getHumanishName)))
-
-(def ^:dynamic *widgets* [])
+(def ^:dynamic *widgets* [:pull :push :close])
 
 (defn create-actions
-  []
-  {:pull (fn [& _])
-   :push (fn [& _])
+  [f]
+  {:pull (fn [& _]
+           (do-with-dialog! pull! f (utils/get-string :pulling-changes)))
+   :push (fn [& _]
+           (do-with-dialog! push! f (utils/get-string :pushing-changes)))
    :configure (fn [& _])
    :close editors/close-selected-editor!})
 
@@ -306,13 +339,13 @@
 
 (defmethod editors/create-editor :git [_ path]
   (when (= (.getName (io/file path)) git-name)
-    (let [; get the path of the parent directory
-          path (-> path io/file .getParentFile .getCanonicalPath)
+    (let [; get the file object of the .git directory
+          f (-> path io/file .getParentFile git-file)
           ; create the pane
           offset-atom (atom 0)
           content (create-content)
           sidebar (doto (create-sidebar)
-                    (update-sidebar! content offset-atom path))
+                    (update-sidebar! content offset-atom f))
           paging-panel (doto (s/horizontal-panel
                                :items (create-paging-buttons offset-atom))
                          (update-paging-buttons! offset-atom))
@@ -323,7 +356,7 @@
                                            :size [200 :by 0])
                      :center (s/scrollable content))
           ; create the actions and widgets
-          actions (create-actions)
+          actions (create-actions f)
           widgets (create-widgets actions)
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
@@ -339,11 +372,11 @@
        :content content
        :offset offset-atom
        :close-fn! (fn [])
-       :should-remove-fn #(not (git-project? path))
+       :should-remove-fn #(not (.exists f))
        :italicize-fn (fn [] false)})))
 
 (defmethod ui/adjust-nodes :git [_ parent children]
-  (if (some-> (:file parent) .getCanonicalPath git-project?)
+  (if (some-> (:file parent) git-file .exists)
     (cons {:html "<html><b><font color='orange'>Git</font></b></html>"
            :name git-name
            :file (io/file (:file parent) git-name)}

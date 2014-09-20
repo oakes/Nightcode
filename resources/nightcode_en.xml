@@ -136,7 +136,11 @@
   <string name="commit_time">Commit Time: %s</string>
 
   <string name="invalid_git_address">Invalid Git address. You need to copy it before clicking here.</string>
+  
   <string name="cloning_project">Cloning project...</string>
+  <string name="pulling_changes">Pulling changes...</string>
+  <string name="pushing_changes">Pushing changes...</string>
+  
   <string name="from">From: %s</string>
   <string name="to">To: %s</string>
 </resources>
