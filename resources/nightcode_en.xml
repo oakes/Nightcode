@@ -123,7 +123,6 @@
 
   <string name="pull">Pull</string>
   <string name="push">Push</string>
-  <string name="configure">Configure</string>
   <string name="changes">Changes</string>
 
   <string name="message">Message (optional)</string>
