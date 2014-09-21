@@ -63,14 +63,20 @@
 
 (defn progress-monitor
   [dialog cancelled?]
-  (reify ProgressMonitor
-    (beginTask [this title total-work])
-    (endTask [this]
-      (s/invoke-later
-        (s/dispose! dialog)))
-    (isCancelled [this] @cancelled?)
-    (start [this total-tasks])
-    (update [this completed])))
+  (let [description (s/select dialog [:#description])
+        bar (s/select dialog [:#progress-bar])]
+    (reify ProgressMonitor
+      (beginTask [this title total-work]
+        (s/invoke-later
+          (some-> description (s/config! :text title))
+          (some-> bar (s/config! :value 0 :max total-work))
+          (s/pack! dialog)))
+      (endTask [this])
+      (isCancelled [this] @cancelled?)
+      (start [this total-tasks])
+      (update [this unit]
+        (s/invoke-later
+          (some-> bar (s/config! :value (+ unit (s/config bar :value)))))))))
 
 ; commands
 
@@ -89,14 +95,10 @@
   (let [cancelled? (atom false)
         exception (atom nil)
         path (promise)
-        d (dialogs/cancel-dialog (str (utils/get-string :cloning-project)
-                                      \newline
-                                      \newline
-                                      (format (utils/get-string :from) uri)
-                                      \newline
-                                      (format (utils/get-string :to)
-                                              (.getCanonicalPath f))))]
-    (future (try (clone! uri f (progress-monitor d cancelled?))
+        d (dialogs/progress-dialog (utils/get-string :cloning-project))]
+    (future (try
+              (clone! uri f (progress-monitor d cancelled?))
+              (s/invoke-later (s/dispose! d))
               (catch Exception e
                 (when-not @cancelled?
                   (reset! exception e)
@@ -113,11 +115,13 @@
     @path))
 
 (defn do-with-dialog!
-  [git-fn! repo dialog-text]
+  [git-fn! repo]
   (let [cancelled? (atom false)
         exception (atom nil)
-        d (dialogs/cancel-dialog dialog-text)]
-    (future (try (git-fn! repo (progress-monitor d cancelled?))
+        d (dialogs/progress-dialog)]
+    (future (try
+              (git-fn! repo (progress-monitor d cancelled?))
+              (s/invoke-later (s/dispose! d))
               (catch Exception e
                 (when-not @cancelled?
                   (reset! exception e)
@@ -363,9 +367,9 @@
 (defn create-actions
   [^FileRepository repo]
   {:pull (fn [& _]
-           (do-with-dialog! pull! repo (utils/get-string :pulling-changes)))
+           (do-with-dialog! pull! repo))
    :push (fn [& _]
-           (do-with-dialog! push! repo (utils/get-string :pushing-changes)))
+           (do-with-dialog! push! repo))
    :close editors/close-selected-editor!})
 
 (defn create-widgets

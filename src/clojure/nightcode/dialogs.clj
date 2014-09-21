@@ -255,9 +255,12 @@
         stay-on-top!
         s/show!)))
 
-(defn cancel-dialog
-  [content]
-  (-> (s/dialog :content content
+(defn progress-dialog
+  []
+  (-> (s/dialog :content (s/vertical-panel
+                           :items [(s/label :id :description)
+                                   [:fill-v 5]
+                                   (s/progress-bar :id :progress-bar)])
                 :options [(s/button :text (utils/get-string :cancel)
                                     :listen [:action
                                              #(s/return-from-dialog % true)])])
