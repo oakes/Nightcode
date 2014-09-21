@@ -233,9 +233,8 @@
             forms]]))
 
 (defn create-html
-  [^Git git ^RevCommit commit]
+  [^FileRepository repo ^RevCommit commit]
   (let [out (ByteArrayOutputStream.)
-        repo (.getRepository git)
         df (doto (DiffFormatter. out)
              (.setRepository repo))
         [old-tree new-tree] (diff-trees repo commit)
@@ -322,10 +321,10 @@
         (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))))
 
 (defn update-content!
-  [^JTree sidebar content ^Git git ^RevCommit commit]
+  [^JTree sidebar content ^FileRepository repo ^RevCommit commit]
   (.setText content (clj->html (utils/get-string :loading)))
   (future
-    (let [s (create-html git commit)]
+    (let [s (create-html repo commit)]
       (s/invoke-later
         (when (= commit (selected-commit sidebar))
           (doto content
@@ -335,21 +334,19 @@
 (defn update-sidebar!
   ([]
     (let [{:keys [sidebar
+                  repo
                   content
-                  offset]} (get @editors/editors @ui/tree-selection)
-          path (ui/get-project-root-path)]
-      (when (and sidebar content offset path)
-        (update-sidebar! sidebar content offset (git-file path)))))
-  ([^JTree sidebar content offset f]
+                  offset]} (get @editors/editors @ui/tree-selection)]
+      (when (and sidebar repo content offset)
+        (update-sidebar! sidebar repo content offset))))
+  ([^JTree sidebar ^FileRepository repo content offset]
     ; remove existing listener
     (doseq [l (.getTreeSelectionListeners sidebar)]
       (.removeTreeSelectionListener sidebar l))
     ; add model and listener, then re-select the row
-    (let [repo (FileRepository. f)
-          git (Git. repo)
-          commits (cons nil ; represents uncommitted changes
+    (let [commits (cons nil ; represents uncommitted changes
                         (try
-                          (-> git .log (.setMaxCount max-commits)
+                          (-> repo Git. .log (.setMaxCount max-commits)
                               (.setSkip @offset) .call .iterator iterator-seq)
                           (catch Exception _ [])))
           selected-row (selected-row sidebar commits)]
@@ -359,7 +356,7 @@
           (reify TreeSelectionListener
             (valueChanged [this e]
               (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-                   (update-content! sidebar content git)))))
+                   (update-content! sidebar content repo)))))
         (.setSelectionRow (or selected-row 0))))))
 
 (def ^:dynamic *widgets* [:pull :push :close])
@@ -417,7 +414,7 @@
           offset-atom (atom 0)
           content (create-content repo)
           sidebar (doto (create-sidebar)
-                    (update-sidebar! content offset-atom f))
+                    (update-sidebar! repo content offset-atom))
           paging-panel (doto (s/horizontal-panel
                                :items (create-paging-buttons offset-atom))
                          (update-paging-buttons! offset-atom))
@@ -441,9 +438,11 @@
       ; return a map describing the view
       {:view git-pane
        :sidebar sidebar
+       :repo repo
        :content content
        :offset offset-atom
-       :close-fn! (fn [])
+       :close-fn! (fn []
+                    (.close repo))
        :should-remove-fn #(not (.exists f))
        :italicize-fn (fn [] false)})))
 
