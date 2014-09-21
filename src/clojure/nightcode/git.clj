@@ -366,7 +366,6 @@
            (do-with-dialog! pull! repo (utils/get-string :pulling-changes)))
    :push (fn [& _]
            (do-with-dialog! push! repo (utils/get-string :pushing-changes)))
-   :configure (fn [& _])
    :close editors/close-selected-editor!})
 
 (defn create-widgets
@@ -377,9 +376,6 @@
    :push (ui/button :id :push
                     :text (utils/get-string :push)
                     :listen [:action (:push actions)])
-   :configure (ui/button :id :configure
-                         :text (utils/get-string :configure)
-                         :listen [:action (:configure actions)])
    :close (ui/button :id :close
                      :text "X"
                      :listen [:action (:close actions)])})
