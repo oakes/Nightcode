@@ -321,7 +321,7 @@
         (.setSelectionMode TreeSelectionModel/SINGLE_TREE_SELECTION))))
 
 (defn update-content!
-  [^JTree sidebar content ^FileRepository repo ^RevCommit commit]
+  [^JTree sidebar ^FileRepository repo content ^RevCommit commit]
   (.setText content (clj->html (utils/get-string :loading)))
   (future
     (let [s (create-html repo commit)]
@@ -356,7 +356,7 @@
           (reify TreeSelectionListener
             (valueChanged [this e]
               (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-                   (update-content! sidebar content repo)))))
+                   (update-content! sidebar repo content)))))
         (.setSelectionRow (or selected-row 0))))))
 
 (def ^:dynamic *widgets* [:pull :push :close])
