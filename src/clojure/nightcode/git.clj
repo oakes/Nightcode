@@ -95,7 +95,7 @@
   (let [cancelled? (atom false)
         exception (atom nil)
         path (promise)
-        d (dialogs/progress-dialog (utils/get-string :cloning-project))]
+        d (dialogs/progress-dialog)]
     (future (try
               (clone! uri f (progress-monitor d cancelled?))
               (s/invoke-later (s/dispose! d))
