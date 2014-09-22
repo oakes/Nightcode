@@ -3,6 +3,7 @@
             [leiningen.core.main]
             [leiningen.droid.utils]
             [nightcode.editors :as editors]
+            [nightcode.file-browser :as file-browser]
             [nightcode.lein :as lein]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
@@ -24,7 +25,7 @@
        (binding [leiningen.core.main/*exit-process?* false])
        (lein/start-thread! in-out)))
 
-(def ^:dynamic *widgets* [:toggle-logcat :close])
+(def ^:dynamic *widgets* [:up :toggle-logcat :close])
 
 (defn create-actions
   [path console panel process running?]
@@ -40,7 +41,8 @@
                             :#toggle-logcat
                             :text (utils/get-string :start))
                 false)]
-    {:stop-logcat stop!
+    {:up file-browser/go-up!
+     :stop-logcat stop!
      :start-logcat start!
      :toggle-logcat (fn [& _]
                       (reset! running? (if @running? (stop!) (start!)))
@@ -49,7 +51,8 @@
 
 (defn create-widgets
   [actions]
-  {:toggle-logcat (s/button :id :toggle-logcat
+  {:up (file-browser/create-up-button)
+   :toggle-logcat (s/button :id :toggle-logcat
                             :text (utils/get-string :start)
                             :listen [:action (:toggle-logcat actions)])
    :close (ui/button :id :close

@@ -4,6 +4,7 @@
             [hiccup.core :as h]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
+            [nightcode.file-browser :as file-browser]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -359,11 +360,12 @@
                    (update-content! sidebar repo content)))))
         (.setSelectionRow (or selected-row 0))))))
 
-(def ^:dynamic *widgets* [:pull :push :close])
+(def ^:dynamic *widgets* [:up :pull :push :close])
 
 (defn create-actions
   [^FileRepository repo]
-  {:pull (fn [& _]
+  {:up file-browser/go-up!
+   :pull (fn [& _]
            (do-with-dialog! pull! repo))
    :push (fn [& _]
            (do-with-dialog! push! repo))
@@ -371,7 +373,8 @@
 
 (defn create-widgets
   [actions]
-  {:pull (ui/button :id :pull
+  {:up (file-browser/create-up-button)
+   :pull (ui/button :id :pull
                     :text (utils/get-string :pull)
                     :listen [:action (:pull actions)])
    :push (ui/button :id :push
