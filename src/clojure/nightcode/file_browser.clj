@@ -141,8 +141,8 @@
   false)
 
 (defn create-tile
-  [{:keys [file html enabled?]}]
-  (when-not (or (.isHidden file) (.startsWith (.getName file) "."))
+  [{:keys [html name file enabled?]}]
+  (when-not (or (.isHidden file) (.startsWith name "."))
     (if (and @edit-mode?
              (.isFile file)
              (not (protect-file? (.getCanonicalPath file))))
@@ -154,12 +154,12 @@
                                             icon/icon
                                             JLabel.)
                             :south (s/text :class :name
-                                           :text (.getName file)
+                                           :text name
                                            :editable? true)
                             :size [tile-size :by tile-size])
         (.setName (.getCanonicalPath file)))
       (doto (s/button :icon (some-> (get-icon-path file) icon/icon)
-                      :text (or html (.getName file))
+                      :text (or html name)
                       :size [tile-size :by tile-size]
                       :listen [:action (->> (.getCanonicalPath file)
                                             ui/update-project-tree!
