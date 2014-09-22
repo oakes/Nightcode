@@ -441,16 +441,16 @@
        :repo repo
        :content content
        :offset offset-atom
-       :close-fn! (fn []
-                    (.close repo))
+       :close-fn! #(.close repo)
        :should-remove-fn #(not (.exists f))
        :italicize-fn (fn [] false)})))
 
 (defmethod ui/adjust-nodes :git [_ parent children]
   (if (some-> (:file parent) git-file .exists)
-    (cons {:html "<html><b><font color='orange'>Git</font></b></html>"
+    (cons {:html "<html><b><font color='#f03c2e'>Git</font></b></html>"
            :name git-name
-           :file (io/file (:file parent) git-name)}
+           :file (io/file (:file parent) git-name)
+           :enabled? true}
           children)
     children))
 

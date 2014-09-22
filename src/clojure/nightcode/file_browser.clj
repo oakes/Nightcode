@@ -132,6 +132,8 @@
       "clj" "file-clojure.png"
       "cljs" "file-clojure.png"
       "java" "file-java.png"
+      "git" "git.png"
+      "logcat" "android2.png"
       "file.png")))
 
 (defn protect-file?
@@ -139,32 +141,42 @@
   false)
 
 (defn create-tile
-  [f]
-  (when-not (or (.isHidden f) (.startsWith (.getName f) "."))
+  [{:keys [file html enabled?]}]
+  (when-not (or (.isHidden file) (.startsWith (.getName file) "."))
     (if (and @edit-mode?
-             (.isFile f)
-             (not (protect-file? (.getCanonicalPath f))))
+             (.isFile file)
+             (not (protect-file? (.getCanonicalPath file))))
       (doto (s/border-panel :class :edit
                             :north (s/checkbox :class :delete
                                                :text (utils/get-string :delete)
                                                :halign :center)
-                            :center (some-> (get-icon-path f) icon/icon JLabel.)
+                            :center (some-> (get-icon-path file)
+                                            icon/icon
+                                            JLabel.)
                             :south (s/text :class :name
-                                           :text (.getName f)
+                                           :text (.getName file)
                                            :editable? true)
                             :size [tile-size :by tile-size])
-        (.setName (.getCanonicalPath f)))
-      (doto (s/button :icon (some-> (get-icon-path f) icon/icon)
-                      :text (.getName f)
+        (.setName (.getCanonicalPath file)))
+      (doto (s/button :icon (some-> (get-icon-path file) icon/icon)
+                      :text (or html (.getName file))
                       :size [tile-size :by tile-size]
-                      :listen [:action (->> (.getCanonicalPath f)
+                      :listen [:action (->> (.getCanonicalPath file)
                                             ui/update-project-tree!
                                             (fn [_]))]
-                      :enabled? (and (or (.isDirectory f)
-                                         (utils/valid-file? f))
+                      :enabled? (and (or enabled?
+                                         (.isDirectory file)
+                                         (utils/valid-file? file))
                                      (not @edit-mode?)))
         (.setVerticalTextPosition SwingConstants/BOTTOM)
         (.setHorizontalTextPosition SwingConstants/CENTER)))))
+
+(defn create-tiles
+  [f]
+  (->> (.listFiles f)
+       (ui/get-nodes (ui/get-node f))
+       (map create-tile)
+       (remove nil?)))
 
 (defn create-card
   []
@@ -183,11 +195,7 @@
     (when-let [file-browser (s/select @ui/root [:#file-browser])]
       (toggle-visible! file-browser path)
       (s/config! (s/select file-browser [:#file-grid])
-                 :items (->> (io/file path)
-                             .listFiles
-                             sort
-                             (map create-tile)
-                             (remove nil?)))))
+                 :items (create-tiles (io/file path)))))
   ([]
     (some-> @ui/tree-selection update-card!)))
 

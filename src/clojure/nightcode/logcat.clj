@@ -85,8 +85,9 @@
 
 (defmethod ui/adjust-nodes :logcat [_ parent children]
   (if (some-> (:file parent) .getCanonicalPath lein/android-project?)
-    (cons {:html "<html><b><font color='green'>LogCat</font></b></html>"
+    (cons {:html "<html><b><font color='#00ff00'>LogCat</font></b></html>"
            :name logcat-name
-           :file (io/file (:file parent) logcat-name)}
+           :file (io/file (:file parent) logcat-name)
+           :enabled? true}
           children)
     children))
