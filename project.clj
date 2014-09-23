@@ -14,7 +14,7 @@
                  [lein-ancient "0.5.4"
                   :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.3"]
-                 [lein-clr "0.2.1"]
+                 [lein-clr "0.2.2"]
                  [lein-droid "0.2.3"]
                  [lein-fruit "0.2.0"]
                  [lein-typed "0.3.5"]
@@ -22,7 +22,7 @@
                  [org.clojure/clojure "1.6.0"]
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
-                 [org.clojure/tools.namespace "0.2.6"]
+                 [org.clojure/tools.namespace "0.2.7"]
                  [org.eclipse.jgit "3.2.0.201312181205-r"]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
