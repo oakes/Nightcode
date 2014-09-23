@@ -304,13 +304,9 @@
                 (fn [e]
                   (when (= (.getEventType e)
                            HyperlinkEvent$EventType/ACTIVATED)
-                    (when-let [command (.getDescription e)]
-                      ; run the command
-                      (case command
-                        "commit" (commit! repo)
-                        nil)
-                      ; refresh the content
-                      (reset! ui/tree-selection @ui/tree-selection)))))
+                    (case (.getDescription e)
+                      "commit" (commit! repo)
+                      nil))))
       (.setBackground (ui/background-color)))))
 
 (defn create-sidebar
