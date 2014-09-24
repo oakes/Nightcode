@@ -175,7 +175,8 @@
 
 (defn format-diff!
   [^ByteArrayOutputStream out ^DiffFormatter df ^DiffEntry diff]
-  (.format df diff)
+  (try (.format df diff)
+    (catch Exception _))
   (let [s (.toString out "UTF-8")]
     (.reset out)
     s))
@@ -321,7 +322,8 @@
   [^JTree sidebar ^FileRepository repo content ^RevCommit commit]
   (.setText content (clj->html (utils/get-string :loading)))
   (future
-    (let [s (create-html repo commit)]
+    (let [s (try (create-html repo commit)
+              (catch Exception e (.getMessage e)))]
       (s/invoke-later
         (when (= commit (selected-commit sidebar))
           (doto content
