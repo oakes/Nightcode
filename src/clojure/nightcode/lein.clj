@@ -121,6 +121,10 @@
   [path]
   (-> path read-project-clj :gwt some?))
 
+(defn clr-project?
+  [path]
+  (-> path read-project-clj :clr some?))
+
 (defn valid-project?
   [path]
   (or (not (sandbox/get-dir))
@@ -202,7 +206,7 @@
         (leiningen.droid/execute-subtask project cmd [])))
     (ios-project? path)
     (leiningen.fruit/fruit project "doall")
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "run")
     :else
     (leiningen.run/run project)))
@@ -215,7 +219,7 @@
       (doseq [cmd ["deploy" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
         (Thread/sleep 10000)))
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "repl")
     :else
     (leiningen.repl/repl project)))
@@ -230,9 +234,9 @@
             leiningen.droid/execute-release-routine)
     (ios-project? path)
     (leiningen.fruit/fruit project "release")
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "compile")
-    (:gwt project)
+    (gwt-project? path)
     (leiningen.gwt/gwt project "compile")
     :else
     (leiningen.uberjar/uberjar project)))
@@ -245,7 +249,7 @@
                              (if (:cljsbuild project) "check-cljs" "check"))
       (catch Exception _)))
   (cond
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "test")
     :else
     (leiningen.test/test project)))
@@ -253,7 +257,7 @@
 (defn clean-project-task
   [path project]
   (cond
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "clean")
     :else
     (leiningen.clean/clean project)))
