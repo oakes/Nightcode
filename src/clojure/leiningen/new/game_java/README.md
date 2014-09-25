@@ -9,3 +9,4 @@ A libGDX game in which ... well, that part is up to you.
 * `desktop/src` Desktop-specific code
 * `desktop/src-common` Cross-platform game code
 * `ios/src` iOS-specific code
+* `web/src` Web-specific code
