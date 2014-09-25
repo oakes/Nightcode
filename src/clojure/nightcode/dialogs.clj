@@ -237,10 +237,12 @@
 
 (defn show-input-dialog!
   [text secure?]
-  (let [input (if secure?
-                (s/password :columns 20)
-                (s/text :columns 20))]
-    (-> (s/dialog :content (s/vertical-panel :items [text input])
+  (let [input (doto (if secure?
+                      (s/password :columns 20)
+                      (s/text :columns 20))
+                (ui/text-prompt! text)
+                (utils/set-accessible-name! text))]
+    (-> (s/dialog :content (s/vertical-panel :items [input])
                   :options [(s/button :text (utils/get-string :continue)
                                       :listen [:action
                                                #(->> (s/text input)
