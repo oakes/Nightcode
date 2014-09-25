@@ -255,6 +255,33 @@
         stay-on-top!
         s/show!)))
 
+(defn show-boolean-dialog!
+  [text]
+  (let [text-panel (s/flow-panel :items [text])
+        group (s/button-group)
+        input (s/horizontal-panel :items
+                                  [(s/radio :id :yes
+                                            :text (utils/get-string :yes)
+                                            :group group
+                                            :selected? true)
+                                   (s/radio :id :no
+                                            :text (utils/get-string :no)
+                                            :group group)])]
+    (-> (s/dialog :content (s/vertical-panel :items [text-panel input])
+                  :options [(s/button :text (utils/get-string :continue)
+                                      :listen [:action
+                                               #(->> (s/selection group)
+                                                     s/id-of
+                                                     (= :yes)
+                                                     (s/return-from-dialog %))])
+                            (s/button :text (utils/get-string :cancel)
+                                      :listen [:action
+                                               #(s/return-from-dialog % nil)])])
+        s/pack!
+        center!
+        stay-on-top!
+        s/show!)))
+
 (defn progress-dialog
   []
   (-> (s/dialog :content (s/vertical-panel

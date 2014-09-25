@@ -30,6 +30,8 @@
 
   <string name="ok">OK</string>
   <string name="cancel">Cancel</string>
+  <string name="yes">Yes</string>
+  <string name="no">No</string>
 
   <string name="remove_project_warning">Remove this project? It WILL NOT be deleted from the disk.</string>
   <string name="remove_file_warning">Remove this file? It WILL be deleted from the disk.</string>

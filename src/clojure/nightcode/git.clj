@@ -21,8 +21,12 @@
            [org.eclipse.jgit.internal.storage.file FileRepository]
            [org.eclipse.jgit.lib PersonIdent ProgressMonitor Repository]
            [org.eclipse.jgit.revwalk RevCommit]
-           [org.eclipse.jgit.transport CredentialItem$CharArrayType
-            CredentialItem$StringType CredentialsProvider
+           [org.eclipse.jgit.transport
+            CredentialItem
+            CredentialItem$CharArrayType
+            CredentialItem$StringType
+            CredentialItem$YesNoType
+            CredentialsProvider
             CredentialsProviderUserInfo URIish]
            [org.eclipse.jgit.treewalk CanonicalTreeParser EmptyTreeIterator
             FileTreeIterator]))
@@ -41,6 +45,12 @@
   [^FileRepository repo]
   (-> repo .getConfig (.getString "remote" "origin" "url")))
 
+(defn show-cred-dialog!
+  [^CredentialItem item]
+  (if (isa? (type item) CredentialItem$YesNoType)
+    (dialogs/show-boolean-dialog! (.getPromptText item))
+    (dialogs/show-input-dialog! (.getPromptText item) (.isValueSecure item))))
+
 (def creds
   (delay
     (proxy [CredentialsProvider] []
@@ -51,13 +61,13 @@
           (s/invoke-later
             (doseq [item items]
               (when-not (realized? success?)
-                (if-let [s (dialogs/show-input-dialog! (.getPromptText item)
-                                                       (.isValueSecure item))]
+                (if-let [ret (show-cred-dialog! item)]
                   (cond
                     (isa? (type item) CredentialItem$CharArrayType)
-                    (.setValue item (char-array s))
-                    (isa? (type item) CredentialItem$StringType)
-                    (.setValue item s))
+                    (.setValue item (char-array ret))
+                    (or (isa? (type item) CredentialItem$StringType)
+                        (isa? (type item) CredentialItem$YesNoType))
+                    (.setValue item ret))
                   (deliver success? false))))
             (deliver success? true))
           @success?)))))
