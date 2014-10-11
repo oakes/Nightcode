@@ -168,7 +168,7 @@
   (when-let [message (dialogs/show-input-dialog! (utils/get-string :message)
                                                  false)]
     (add-all! repo)
-    (-> repo Git. .commit (.setMessage message) .call)))
+    (-> repo Git. .commit (.setAll true) (.setMessage message) .call)))
 
 ; ui
 
