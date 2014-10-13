@@ -6,7 +6,7 @@
   :dependencies [[com.fifesoft/autocomplete "2.5.0"]
                  [com.fifesoft/rsyntaxtextarea "2.5.3"]
                  [com.github.insubstantial/substance "7.3"]
-                 [compliment "0.1.3"]
+                 [compliment "0.1.4"]
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
                  [leiningen "2.5.0"
@@ -23,7 +23,8 @@
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojure/tools.namespace "0.2.7"]
-                 [org.eclipse.jgit "3.2.0.201312181205-r"]
+                 [org.eclipse.jgit "3.5.0.201409260305-r"
+                  :exclusions [org.apache.httpcomponents/httpclient]]
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [org.clojure/clojure]]
