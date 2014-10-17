@@ -28,7 +28,7 @@
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [org.clojure/clojure]]
-                 [play-clj/lein-template "0.4.0"]
+                 [play-clj/lein-template "0.4.1"]
                  [seesaw "1.4.4"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
