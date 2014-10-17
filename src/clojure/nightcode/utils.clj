@@ -37,7 +37,7 @@
 
 ; language
 
-(def lang-files {"en" "nightcode_en.xml"})
+(def lang-files {"en" "values/strings.xml"})
 (def lang-strings (-> (get lang-files (.getLanguage (Locale/getDefault)))
                       (or (get lang-files "en"))
                       io/resource
