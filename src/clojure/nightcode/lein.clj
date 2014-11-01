@@ -229,9 +229,9 @@
   (cond
     (android-project? path)
     (some-> project
-            leiningen.droid/transform-into-release
             read-android-project
-            leiningen.droid/execute-release-routine)
+            (assoc-in [:android :build-type] :release)
+            leiningen.droid/doall)
     (ios-project? path)
     (leiningen.fruit/fruit project "release")
     (clr-project? path)
