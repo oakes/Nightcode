@@ -38,9 +38,9 @@
 
 (defn create-completion-provider
   [text-area extension]
-  (case extension
+  (cond
     ; clojure
-    "clj"
+    (contains? utils/clojure-exts extension)
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
         (or (try
@@ -60,7 +60,7 @@
       (isAutoActivateOkay [comp]
         true))
     ; anything else
-    nil))
+    :else nil))
 
 (defn create-completer
   [text-area extension]
