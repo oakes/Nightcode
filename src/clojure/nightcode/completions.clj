@@ -38,27 +38,29 @@
 
 (defn create-completion-provider
   [text-area extension]
-  (cond
+  (case extension
     ; clojure
-    (contains? utils/clojure-exts extension)
+    "clj"
     (proxy [DefaultCompletionProvider] []
       (getCompletions [comp]
-        (try
-          (let [prefix (.getAlreadyEnteredText this comp)]
-            (->> *namespaces*
-                 (map #(get-clojure-completions prefix %))
-                 flatten
-                 set
-                 (map #(create-completion this (:symbol-str %) (:doc-str %)))
-                 doall))
-          (catch Exception _ '())))
+        (or (try
+              (let [prefix (.getAlreadyEnteredText this comp)]
+                (when (> (count prefix) 1)
+                  (->> *namespaces*
+                       (map #(get-clojure-completions prefix %))
+                       flatten
+                       set
+                       (map #(create-completion this (:symbol-str %) (:doc-str %)))
+                       doall)))
+              (catch Exception _))
+            '()))
       (isValidChar [ch]
         (or (Character/isLetterOrDigit ch)
             (contains? #{\* \+ \! \- \_ \? \/ \. \: \< \>} ch)))
       (isAutoActivateOkay [comp]
         true))
     ; anything else
-    :else nil))
+    nil))
 
 (defn create-completer
   [text-area extension]
