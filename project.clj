@@ -15,7 +15,7 @@
                   :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.3"]
                  [lein-clr "0.2.2"]
-                 [lein-droid "0.2.4"]
+                 [lein-droid "0.3.0-beta3"]
                  [lein-fruit "0.2.1"]
                  [lein-typed "0.3.5"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
