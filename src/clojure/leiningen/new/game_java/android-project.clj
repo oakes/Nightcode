@@ -21,10 +21,10 @@
             ;; Uncomment this if dexer fails with OutOfMemoryException
             ;; :force-dex-optimize true
             
-            :assets-path "../desktop/resources"
+            :assets-paths ["../desktop/resources"]
             :native-libraries-paths ["libs"]
             :target-version "{{target-sdk}}"}
   
-  :java-source-paths ["src" "../desktop/src-common" "gen"]
+  :java-source-paths ["src" "../desktop/src-common"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :java-only true)

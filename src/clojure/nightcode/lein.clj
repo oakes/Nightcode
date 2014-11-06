@@ -103,7 +103,8 @@
 
 (defn android-project?
   [path]
-  (.exists (io/file path "AndroidManifest.xml")))
+  (or (.exists (io/file path "AndroidManifest.xml"))
+      (.exists (io/file path "AndroidManifest.template.xml"))))
 
 (defn ios-project?
   [path]
