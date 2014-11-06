@@ -202,9 +202,8 @@
   [path project]
   (cond
     (android-project? path)
-    (when-let [project (read-android-project project)]
-      (doseq [cmd ["build" "apk" "install" "run"]]
-        (leiningen.droid/execute-subtask project cmd [])))
+    (some-> (read-android-project project)
+            (leiningen.droid/doall []))
     (ios-project? path)
     (leiningen.fruit/fruit project "doall")
     (clr-project? path)
