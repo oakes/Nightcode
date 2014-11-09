@@ -332,6 +332,7 @@
          (leiningen.fruit/fruit {} "new-java" project-name package-name)
          :else
          (leiningen.new/new {} (name project-type) project-name package-name))
+       (binding [leiningen.core.main/*info* false])
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
        (redirect-io in-out))
