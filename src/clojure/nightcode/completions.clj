@@ -50,6 +50,7 @@
                        (map #(get-clojure-completions prefix %))
                        flatten
                        set
+                       (sort-by :symbol-str)
                        (map #(create-completion this (:symbol-str %) (:doc-str %)))
                        doall)))
               (catch Exception _))
