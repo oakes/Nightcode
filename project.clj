@@ -3,10 +3,10 @@
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
-  :dependencies [[com.fifesoft/autocomplete "2.5.0"]
-                 [com.fifesoft/rsyntaxtextarea "2.5.3"]
+  :dependencies [[com.fifesoft/autocomplete "2.5.4"]
+                 [com.fifesoft/rsyntaxtextarea "2.5.4"]
                  [com.github.insubstantial/substance "7.3"]
-                 [compliment "0.1.4"]
+                 [compliment "0.2.0"]
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
                  [leiningen "2.5.0"
