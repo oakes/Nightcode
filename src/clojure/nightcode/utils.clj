@@ -200,7 +200,7 @@ project-set."
   (let [f (io/file path)]
     (when (and (= 0 (count (.listFiles f)))
                (not (contains? project-set path)))
-      (io/delete-file f)
+      (io/delete-file f true)
       (->> f
            .getParentFile
            .getCanonicalPath
