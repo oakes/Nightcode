@@ -4,7 +4,7 @@
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :dependencies [[com.fifesoft/autocomplete "2.5.4"]
-                 [com.fifesoft/rsyntaxtextarea "2.5.4"]
+                 [com.fifesoft/rsyntaxtextarea "2.5.6"]
                  [com.github.insubstantial/substance "7.3"]
                  [compliment "0.2.0"]
                  [gwt-plugin "0.1.6"]
