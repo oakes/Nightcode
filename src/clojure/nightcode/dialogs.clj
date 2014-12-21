@@ -121,21 +121,9 @@
         download-text (doto (s/text :columns 20)
                         (ui/text-prompt! (utils/get-string :download-prompt)))
         download-panel (s/flow-panel :items [download-text] :visible? false)
-        ; language buttons
-        lang-group (s/button-group)
-        lang-buttons (for [k [:clojure :java]]
-                       (s/radio :id k
-                                :class :lang-button
-                                :text (utils/get-string k)
-                                :group lang-group
-                                :selected? (= k :clojure)
-                                :valign :center
-                                :halign :center))
-        lang-panel (s/horizontal-panel :items lang-buttons)
-        ; project type buttons
-        group (s/button-group)
+        ; project types
         types [[:console [:clojure :java]]
-               [:game [:clojure :java]]
+               [:game [:clojure :java :javascript]]
                [:android [:clojure :java]]
                [:ios [:clojure :java]]
                [:desktop [:clojure]]
@@ -147,6 +135,21 @@
         types (if (sandbox/get-dir)
                 (remove #(contains? #{:ios :android} (first %)) types)
                 types)
+        ; language buttons
+        lang-group (s/button-group)
+        lang-buttons (for [k [:clojure :java :javascript]]
+                       (s/radio :id k
+                                :class :lang-button
+                                :text (utils/get-string k)
+                                :group lang-group
+                                :selected? (= k :clojure)
+                                :visible? (let [[[_ langs]] types]
+                                            (contains? (set langs) k))
+                                :valign :center
+                                :halign :center))
+        lang-panel (s/horizontal-panel :items lang-buttons)
+        ; project type buttons
+        group (s/button-group)
         refresh! (fn [e]
                    (let [[name langs] (some (fn [type]
                                               (if (= (first type)
@@ -161,7 +164,10 @@
                      (s/config! package-panel :visible? (not= :download name))
                      (s/config! download-panel :visible? (= :download name))
                      (s/config! clojure-button :selected? true)
-                     (s/config! lang-buttons :enabled? (> (count langs) 1))))
+                     (s/config! lang-buttons :enabled? (> (count langs) 1))
+                     (doseq [btn lang-buttons]
+                       (s/config! btn :visible?
+                                  (contains? (set langs) (s/id-of btn))))))
         finish (fn []
                  {:project-type (->> [(s/selection group)
                                       (s/selection lang-group)]

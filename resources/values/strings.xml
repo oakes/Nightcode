@@ -62,6 +62,8 @@
 
   <string name="clojure">Clojure</string>
   <string name="java">Java</string>
+  <string name="clojurescript">ClojureScript</string>
+  <string name="javascript">JavaScript</string>
   <string name="specify_project_type">Specify Project Type</string>
   <string name="create_project">Create Project</string>
   <string name="clone_project">Clone Project</string>
