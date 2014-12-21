@@ -6,8 +6,8 @@
 
 (def ^:const port 3000)
 
-(defn open-in-browser!
-  [address]
+(defn open-in-browser! [address]
+  (println "Location:" address)
   (when (java.awt.Desktop/isDesktopSupported)
     (.browse (java.awt.Desktop/getDesktop) (java.net.URI. address))))
 
