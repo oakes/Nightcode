@@ -2,7 +2,7 @@ var state = {
 	init: function() {
 		// Create simple text display for current Phaser version
 		var text = "Phaser Version " + Phaser.VERSION + " works!";
-		var style = { font: "24px Arial", fill: "#fff", align: "center" };
+		var style = { font: "24px Arial", fill: "#fff" };
 		var t = game.add.text(this.world.centerX, this.world.centerY, text, style);
 		t.anchor.setTo(0.5, 0.5);
 	},
@@ -18,9 +18,13 @@ var state = {
 };
 
 var game = new Phaser.Game(
-	"100",
-	"100",
+	"100%",
+	"100%",
 	Phaser.AUTO,
 	'game',
 	state
 );
+
+window.addEventListener('resize', function() {
+	game.scale.setGameSize(window.innerWidth, window.innerHeight);
+});
