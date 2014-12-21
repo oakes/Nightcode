@@ -18,8 +18,8 @@ var state = {
 };
 
 var game = new Phaser.Game(
-	800,
-	480,
+	"100",
+	"100",
 	Phaser.AUTO,
 	'game',
 	state
