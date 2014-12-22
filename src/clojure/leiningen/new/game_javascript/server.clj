@@ -17,7 +17,5 @@
 (def app (resources/wrap-resource handler "public"))
 
 (defn -main [& args]
-  (future
-    (Thread/sleep 1000)
-    (open-in-browser! (str "http://localhost:" port)))
-  (jetty/run-jetty app {:port port}))
+  (jetty/run-jetty app {:port port :join? false})
+  (open-in-browser! (str "http://localhost:" port)))
