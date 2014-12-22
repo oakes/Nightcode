@@ -3,7 +3,6 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2505"]
                  [ring "1.3.2"]]
-  :plugins [[lein-cljsbuild "1.0.3"]]
   :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]

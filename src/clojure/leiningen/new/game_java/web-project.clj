@@ -13,7 +13,6 @@
                  [com.google.gwt/gwt-dev "2.6.1"]]
   :java-source-paths ["src" "../desktop/src-common"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
-  :plugins [[gwt-plugin "0.1.6"]]
   :gwt {:module "GdxDefinition"
         :war "{{web-app-dir}}"
         :src "src"})
