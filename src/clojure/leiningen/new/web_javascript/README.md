@@ -1,6 +1,6 @@
 # {{name}}
 
-A JavaScript game in which ... well, that part is up to you.
+A JavaScript app to ... well, that part is up to you.
 
 ## Contents
 

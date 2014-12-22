@@ -127,7 +127,7 @@
                [:android [:clojure :java]]
                [:ios [:clojure :java]]
                [:desktop [:clojure]]
-               [:web [:clojure]]
+               [:web [:clojurescript :javascript]]
                [:database [:clojure]]
                [:graphics [:clojure]]
                [:sounds [:clojure]]
@@ -137,14 +137,14 @@
                 types)
         ; language buttons
         lang-group (s/button-group)
-        lang-buttons (for [k [:clojure :java :javascript]]
+        lang-buttons (for [k [:clojure :java :clojurescript :javascript]]
                        (s/radio :id k
                                 :class :lang-button
                                 :text (utils/get-string k)
                                 :group lang-group
-                                :selected? (= k :clojure)
-                                :visible? (let [[[_ langs]] types]
-                                            (contains? (set langs) k))
+                                :selected? (-> types first second first (= k))
+                                :visible? (-> types first second set
+                                              (contains? k))
                                 :valign :center
                                 :halign :center))
         lang-panel (s/horizontal-panel :items lang-buttons)
@@ -163,11 +163,11 @@
                                         (utils/get-string :create-project)))
                      (s/config! package-panel :visible? (not= :download name))
                      (s/config! download-panel :visible? (= :download name))
-                     (s/config! clojure-button :selected? true)
                      (s/config! lang-buttons :enabled? (> (count langs) 1))
-                     (doseq [btn lang-buttons]
-                       (s/config! btn :visible?
-                                  (contains? (set langs) (s/id-of btn))))))
+                     (doseq [b lang-buttons]
+                       (s/config! b
+                                  :visible? (contains? (set langs) (s/id-of b))
+                                  :selected? (= (s/id-of b) (first langs))))))
         finish (fn []
                  {:project-type (->> [(s/selection group)
                                       (s/selection lang-group)]

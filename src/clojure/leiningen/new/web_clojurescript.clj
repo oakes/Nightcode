@@ -1,9 +1,9 @@
-(ns leiningen.new.web-clojure
+(ns leiningen.new.web-clojurescript
   (:require [leiningen.new.templates :as t]))
 
-(defn web-clojure
+(defn web-clojurescript
   [name package-name]
-  (let [render (t/renderer "web-clojure")
+  (let [render (t/renderer "web-clojurescript")
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (t/sanitize-ns package-name)
         data {:name name
