@@ -1,6 +1,6 @@
 (defproject nightedit "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
-  :dependencies [[nightcode "0.4.2.5"
+  :dependencies [[nightcode "0.4.3"
                   :exclusions [gwt-plugin
                                leiningen
                                lein-ancient
