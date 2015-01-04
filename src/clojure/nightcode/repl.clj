@@ -21,8 +21,9 @@
   [console]
   (let [process (atom nil)
         run! (fn [& _]
-               (s/request-focus! (-> console .getViewport .getView))
-               (run-repl! process (ui/get-io! console)))
+               (.setText (.getTextArea console) "")
+               (run-repl! process (ui/get-io! console))
+               (s/request-focus! (-> console .getViewport .getView)))
         pane (s/config! console :id :repl-console)]
     (utils/set-accessible-name! (.getTextArea pane) :repl-console)
     ; start the repl
