@@ -2,5 +2,5 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [quil "2.2.2"]]
+                 [quil "2.2.5"]]
   :main {{namespace}})
