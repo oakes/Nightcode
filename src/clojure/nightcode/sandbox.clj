@@ -42,12 +42,14 @@
           m2 (get-path ".m2")
           tmp (get-path ".temp")
           jvm-opts (str "-Djava.io.tmpdir=" tmp)
-          content {:user {:local-repo m2
-                          :jvm-opts [jvm-opts]
-                          :gwt {:extraJvmArgs jvm-opts}}}]
+          profile {:local-repo m2
+                   :jvm-opts [jvm-opts]
+                   :gwt {:extraJvmArgs jvm-opts}}
+          profiles {:user profile
+                    :uberjar profile}]
       (doto (io/file profiles-clj)
         (-> .getParentFile .mkdir)
-        (spit (pr-str content))))))
+        (spit (pr-str profiles))))))
 
 ; objc
 
