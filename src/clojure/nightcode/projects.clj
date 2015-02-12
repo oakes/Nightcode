@@ -68,9 +68,7 @@
       (editors/remove-editors! path)
       (if project?
         (do
-          (->> (utils/read-pref :project-set)
-               (remove #(= % path))
-               set
+          (->> (disj (utils/read-pref :project-set) path)
                (utils/write-pref! :project-set))
           (sandbox/remove-file-permission! path)
           (builders/remove-builders! path))
