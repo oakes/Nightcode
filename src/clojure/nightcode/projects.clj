@@ -70,7 +70,7 @@
         (do
           (->> (disj (utils/read-pref :project-set) path)
                (utils/write-pref! :project-set))
-          (sandbox/remove-file-permission! path)
+          (utils/remove-pref! path)
           (builders/remove-builders! path))
         (utils/delete-parents-recursively! @ui/tree-projects path))
       true)))

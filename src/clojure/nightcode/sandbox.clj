@@ -82,25 +82,20 @@
             (object-array [(base64->nsdata text) 1024 nil false nil]))
           (.send "startAccessingSecurityScopedResource" (object-array []))))
 
-; permissions used to be stored in a monolithic "permission map"
-; but now they are stored as individual key-value pairs.
-
 (defn read-file-permissions!
   []
-  (let [permission-map (delay (utils/read-pref :permission-map))]
-    (doseq [path (utils/read-pref :project-set)]
-      (some-> (or (utils/read-pref path)
-                  (get @permission-map path))
-              read-file-permission!))))
+  ; permissions used to be stored in a monolithic "permission map"
+  ; but now they are stored as individual key-value pairs.
+  (when-let [pm (utils/read-pref :permission-map)]
+    (doseq [[path text] pm]
+      (utils/write-pref! path text))
+    (utils/remove-pref! :permission-map))
+  ; read the permissions for each path in project set
+  (doseq [path (utils/read-pref :project-set)]
+    (some-> (utils/read-pref path)
+            read-file-permission!)))
 
 (defn save-file-permission!
   [path]
   (some->> (write-file-permission! path)
            (utils/write-pref! path)))
-
-(defn remove-file-permission!
-  [path]
-  (if (utils/read-pref path)
-    (utils/remove-pref! path)
-    (some->> (dissoc (utils/read-pref :permission-map) path)
-             (utils/write-pref! :permission-map))))
