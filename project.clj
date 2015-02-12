@@ -15,7 +15,7 @@
                   :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.0.4"]
                  [lein-clr "0.2.2"]
-                 [lein-droid "0.3.1"]
+                 [lein-droid "0.3.3"]
                  [lein-fruit "0.2.2"]
                  [lein-typed "0.3.5"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
@@ -28,7 +28,7 @@
                  [org.flatland/ordered "1.5.2"]
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [org.clojure/clojure]]
-                 [play-clj/lein-template "0.4.3"]
+                 [play-clj/lein-template "0.4.4"]
                  [seesaw "1.4.5"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
