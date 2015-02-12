@@ -25,7 +25,7 @@
                       :build "B"
                       :test "T"
                       :clean "L"
-                      :check-versions "shift V"
+                      :check-versions "shift I"
                       :stop "I"
                       :sdk "shift K"
                       :auto "shift O"
