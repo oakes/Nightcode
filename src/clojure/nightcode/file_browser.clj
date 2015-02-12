@@ -147,12 +147,12 @@
              (.isFile file)
              (not (protect-file? (.getCanonicalPath file))))
       (doto (s/border-panel :class :edit
-                            :north (s/checkbox :class :delete
-                                               :text (utils/get-string :delete)
-                                               :halign :center)
-                            :center (some-> (get-icon-path file)
-                                            icon/icon
-                                            JLabel.)
+                            :north (some-> (get-icon-path file)
+                                           icon/icon
+                                           JLabel.)
+                            :center (s/checkbox :class :delete
+                                                :text (utils/get-string :delete)
+                                                :halign :center)
                             :south (s/text :class :name
                                            :text name
                                            :editable? true)
