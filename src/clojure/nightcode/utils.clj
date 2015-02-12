@@ -28,6 +28,13 @@
          (.put (name k) (pr-str v))
          .flush)))
 
+(defn remove-pref!
+  "Removes a key-value pair from the preference file."
+  [k]
+  (io! (doto prefs
+         (.remove (name k))
+         .flush)))
+
 (defn read-pref
   "Reads value from the given key in the preference file."
   [k & [default-val]]

@@ -59,7 +59,7 @@
   (->> (conj (utils/read-pref :project-set) path)
        set
        (utils/write-pref! :project-set))
-  (sandbox/add-to-permission-map! path))
+  (sandbox/save-file-permission! path))
 
 (defn remove-from-project-tree!
   [path]
@@ -72,7 +72,7 @@
                (remove #(= % path))
                set
                (utils/write-pref! :project-set))
-          (sandbox/remove-from-permission-map! path)
+          (sandbox/remove-file-permission! path)
           (builders/remove-builders! path))
         (utils/delete-parents-recursively! @ui/tree-projects path))
       true)))

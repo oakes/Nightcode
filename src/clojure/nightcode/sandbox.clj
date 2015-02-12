@@ -41,10 +41,11 @@
     (let [profiles-clj (get-path ".lein" "profiles.clj")
           m2 (get-path ".m2")
           tmp (get-path ".temp")
-          jvm-opts (str "-Djava.io.tmpdir=" tmp)
+          jvm-opts [(str "-Djava.io.tmpdir=" tmp)
+                    (str "-Duser.home=" (get-path (get-dir)))]
           profile {:local-repo m2
-                   :jvm-opts [jvm-opts]
-                   :gwt {:extraJvmArgs jvm-opts}}
+                   :jvm-opts jvm-opts
+                   :gwt {:extraJvmArgs (clojure.string/join " " jvm-opts)}}
           profiles {:user profile
                     :uberjar profile}]
       (doto (io/file profiles-clj)
@@ -81,24 +82,25 @@
             (object-array [(base64->nsdata text) 1024 nil false nil]))
           (.send "startAccessingSecurityScopedResource" (object-array []))))
 
+; permissions used to be stored in a monolithic "permission map"
+; but now they are stored as individual key-value pairs.
+
 (defn read-file-permissions!
   []
-  (doseq [[path text] (utils/read-pref :permission-map)]
-    (read-file-permission! text)))
+  (let [permission-map (delay (utils/read-pref :permission-map))]
+    (doseq [path (utils/read-pref :project-set)]
+      (some-> (or (utils/read-pref path)
+                  (get @permission-map path))
+              read-file-permission!))))
 
-(defn add-to-permission-map!
+(defn save-file-permission!
   [path]
   (some->> (write-file-permission! path)
-           (assoc (utils/read-pref :permission-map) path)
-           (utils/write-pref! :permission-map)))
+           (utils/write-pref! path)))
 
-(defn remove-from-permission-map!
+(defn remove-file-permission!
   [path]
-  (some->> (dissoc (utils/read-pref :permission-map) path)
-           (utils/write-pref! :permission-map)))
-
-(defn update-permission-map!
-  [k path]
-  (some-> (utils/read-pref k)
-          remove-from-permission-map!)
-  (add-to-permission-map! path))
+  (if (utils/read-pref path)
+    (utils/remove-pref! path)
+    (some->> (dissoc (utils/read-pref :permission-map) path)
+             (utils/write-pref! :permission-map))))
