@@ -87,13 +87,13 @@
   [diff]
   (let [paths (reverse (keys @editors))
         index (.indexOf paths @ui/tree-selection)
-        max-index (- (count paths) 1)
+        max-index (dec (count paths))
         new-index (+ index diff)
         new-index (cond
-                    (< new-index 0) max-index
+                    (neg? new-index) max-index
                     (> new-index max-index) 0
                     :else new-index)]
-    (when (> (count paths) 0)
+    (when (pos? (count paths))
       (binding [*reorder-tabs?* false]
         (ui/update-project-tree! (nth paths new-index)))))
   true)
@@ -198,7 +198,7 @@
   (some-> (get-selected-text-area) s/request-focus!)
   (let [commands (->> pw/advanced-keymap
                       (apply concat)
-                      (apply sorted-map-by #(compare %1 %2)))
+                      (apply sorted-map-by compare))
         modifiers {"M" (utils/get-string :alt)
                    "C" (utils/get-string :ctrl)}]
     (->> (doseq [[k v] commands]
@@ -231,7 +231,7 @@
           find-text (s/text e)
           printable-char? (-> text-area .getFont (.canDisplay key-code))
           meta-keys #{KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL KeyEvent/VK_META}
-          valid-search? (and (> (count find-text) 0)
+          valid-search? (and (pos? (count find-text))
                              printable-char?
                              (not @shortcuts/down?)
                              (not (contains? meta-keys (.getKeyCode e))))
@@ -264,7 +264,7 @@
                     (.setMatchCase true))]
       (.setReplaceWith context replace-text)
       (if (and enter-key?
-               (or (= (count find-text) 0)
+               (or (zero? (count find-text))
                    (not (try (SearchEngine/replaceAll text-area context)
                           (catch Exception _ false)))))
         (s/config! e :background (color/color :red))
@@ -395,7 +395,7 @@
                    path
                    (.getCanonicalPath (.getParentFile file)))
         unsaved-paths (unsaved-paths path)]
-    (when (or (= 0 (count unsaved-paths))
+    (when (or (zero? (count unsaved-paths))
               (dialogs/show-close-file-dialog! unsaved-paths))
       (remove-editors! path)
       (update-tabs! new-path)
@@ -494,7 +494,7 @@
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       (utils/set-accessible-name! text-area (.getName (io/file path)))
       ; add the widget bar if necessary
-      (when (> (count *widgets*) 0)
+      (when (pos? (count *widgets*))
         (doto editor-pane
           (s/config! :north widget-bar)
           shortcuts/create-hints!

@@ -193,7 +193,7 @@
         widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
     (utils/set-accessible-name! project-tree :project-tree)
     ; add the widget bar if necessary
-    (when (> (count *widgets*) 0)
+    (when (pos? (count *widgets*))
       (doto project-pane
         (s/config! :north widget-bar)
         shortcuts/create-hints!

@@ -173,7 +173,7 @@
   [node children]
   (->> (for [child children]
          (get-node child))
-       (sort-by #(:name %))
+       (sort-by :name)
        (reduce-nodes node)
        vec))
 
@@ -246,5 +246,5 @@
     (when (nil? (.getSelectionPath tree))
       (.setSelectionRow tree 0))
     ; if the project tree is blank, reset atom so the buttons refresh
-    (when (= 0 (count @tree-projects))
+    (when (zero? (count @tree-projects))
       (reset! tree-selection nil))))
