@@ -37,5 +37,4 @@
   :java-source-paths ["src/java"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
   :aot [clojure.main nightcode.core nightcode.lein]
-  :main ^:skip-aot nightcode.Nightcode
-  :manifest {"SplashScreen-Image" "logo_splash.png"})
+  :main ^:skip-aot nightcode.Nightcode)
