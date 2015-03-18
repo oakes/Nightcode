@@ -88,6 +88,8 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 
 	private final int SHOW_AMBIG_MAX = 10;
 
+	private final String ESCAPE_SEQ_PATTERN = "\u001B\\[[0-9;]*m";
+
 	// hack to prevent key repeat for some reason?
 	private boolean gotUp = true;
 
@@ -318,13 +320,14 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 		cmdStart = textLength();
 	}
 
-	private void append(String string) {
+	private void append(final String string) {
+		final String cleaned = string.replaceAll(ESCAPE_SEQ_PATTERN,"");
 		int slen = textLength();
 		text.select(slen, slen);
-		text.replaceSelection(string);
+		text.replaceSelection(cleaned);
 
 		try {
-			int overLength = slen + string.length() - HIST_MAX;
+			int overLength = slen + cleaned.length() - HIST_MAX;
 			if (overLength > 0) {
 				text.getDocument().remove(0, overLength);
 			}
@@ -415,12 +418,12 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 		text.repaint();
 	}
 
-	private void acceptLine(String line) {
+	private void acceptLine(final String line) {
 		if (outPipe == null) {
 			print("Console internal	error: cannot output ...", Color.red);
 		} else {
 			try {
-				outPipe.write(line);
+				outPipe.write(line.replaceAll(ESCAPE_SEQ_PATTERN,""));
 				outPipe.flush();
 			} catch (IOException e) {
 				outPipe = null;
