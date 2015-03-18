@@ -75,7 +75,7 @@
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       ; add the widget bar if necessary
-      (when (> (count *widgets*) 0)
+      (when (pos? (count *widgets*))
         (doto logcat-pane
           (s/config! :north widget-bar)
           shortcuts/create-hints!

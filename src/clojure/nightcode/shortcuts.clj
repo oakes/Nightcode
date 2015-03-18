@@ -115,7 +115,7 @@
             ^BalloonTip tip (BalloonTip. view contents style false)
             view-height (.getHeight view)
             tip-height (.getHeight tip)
-            y (if (and (> view-height 0) vertically-centered?)
+            y (if (and (pos? view-height) vertically-centered?)
                 (-> (/ view-height 2)
                     (+ (/ tip-height 2))
                     (/ view-height))

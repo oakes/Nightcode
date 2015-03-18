@@ -205,7 +205,7 @@
 project-set."
   [project-set path]
   (let [f (io/file path)]
-    (when (and (= 0 (count (.listFiles f)))
+    (when (and (zero? (count (.listFiles f)))
                (not (contains? project-set path)))
       (io/delete-file f true)
       (->> f

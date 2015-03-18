@@ -397,7 +397,7 @@
     (some-> @ui/root (update-paging-buttons! offset-atom)))
   ([panel offset-atom]
     (let [forward (s/select panel [:#git-forward])]
-      (s/config! forward :enabled? (> @offset-atom 0)))))
+      (s/config! forward :enabled? (pos? @offset-atom)))))
 
 (defn create-paging-buttons
   [offset-atom]
@@ -441,7 +441,7 @@
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       ; add the widget bar if necessary
-      (when (> (count *widgets*) 0)
+      (when (pos? (count *widgets*))
         (doto git-pane
           (s/config! :north widget-bar)
           shortcuts/create-hints!
