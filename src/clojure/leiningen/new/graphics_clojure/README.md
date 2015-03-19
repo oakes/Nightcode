@@ -1,3 +1,3 @@
 # {{name}}
 
-A project using Quil to draw ... well, that part is up to you.
+A project using Quil in which ... well, that part is up to you.

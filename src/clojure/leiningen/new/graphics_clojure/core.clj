@@ -10,7 +10,7 @@
   (ellipse 100 100 30 30))
 
 (defsketch example
-  :title "Example" 
+  :title "Example"
   :setup setup
   :draw draw
   :size [200 200])

@@ -129,7 +129,7 @@
                [:desktop [:clojure]]
                [:web [:clojurescript :javascript]]
                [:database [:clojure]]
-               [:graphics [:clojure]]
+               [:graphics [:clojure :clojurescript]]
                [:sounds [:clojure]]
                [:download []]]
         types (if (sandbox/get-dir)
