@@ -1,10 +1,26 @@
 (ns {{namespace}}
-  (:require [overtone.live :refer :all]))
+  (:require [pink.oscillators :refer [sine]]
+            [pink.simple :refer :all]
+            [pink.space :refer [pan]]))
 
-(defn play
-  []
-  (demo 7 (lpf (mix (saw [50 (line 100 1600 5) 101 100.5]))
-               (lin-lin (lf-tri (line 2 20 5)) -1 1 400 4000))))
+(defn play []
+  ; start audio engine
+  (start-engine)
+  
+  ; create panned, sine audio function
+  (def audio-fn (pan (sine 340.0) 0.0))
+  
+  ; add audio function to engine
+  (add-afunc audio-fn)
+  
+  ; sleep for a bit
+  (Thread/sleep 2000)
+  
+  ; remove audio function from engine
+  (remove-afunc audio-fn)
+  
+  ; stop audio engine
+  (stop-engine))
 
 (defn -main [& args]
   (play))
