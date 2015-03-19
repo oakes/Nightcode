@@ -11,8 +11,8 @@
       :main {
         :source-paths ["src/cljs"]
         :compiler {:output-to "resources/public/cljs.js"
-                   :optimizations :simple
-                   :pretty-print true}
+                   :optimizations :advanced
+                   :pretty-print false}
         :jar true}}}
   :aot [{{namespace}}]
   :main {{namespace}}
