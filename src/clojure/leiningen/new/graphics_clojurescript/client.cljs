@@ -1,16 +1,33 @@
-(ns {{namespace}}
-  (:require [quil.core :as q :include-macros true]))
-
-(defn setup []
-  (q/smooth))
-
-(defn draw []
-  (q/background 255)
-  (q/fill 192)
-  (q/ellipse 100 100 30 30))
+(ns breakout.core
+  (:require [quil.core :as q :include-macros true]
+            [quil.middleware :as m]))
 
 (q/defsketch example
   :host "sketch"
-  :setup setup
-  :draw draw
-  :size [200 200])
+  
+  :size [(.-innerWidth js/window) (.-innerHeight js/window)]
+  
+  :middleware [m/fun-mode]
+  
+  ; create the initial state
+  :setup
+  (fn []
+    {:x 0 :y 0 :r 10})
+  
+  ; draw the state
+  :draw
+  (fn [state]
+    (q/background 255)
+    (q/ellipse (:x state) (:y state) (:r state) (:r state)))
+  
+  ; update the state on each frame
+  :update
+  (fn [state]
+    (update-in state [:r] inc))
+  
+  ; update the state when the mouse is moved
+  :mouse-moved
+  (fn [state event]
+    (-> state
+      (assoc :x (:x event) :y (:y event))
+      (update-in [:r] #(min 10 (dec %))))))
