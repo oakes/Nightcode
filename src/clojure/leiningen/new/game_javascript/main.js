@@ -21,10 +21,10 @@ var game = new Phaser.Game(
 	"100%",
 	"100%",
 	Phaser.AUTO,
-	'game',
+	"game",
 	state
 );
 
-window.addEventListener('resize', function() {
+window.addEventListener("resize", function() {
 	game.scale.setGameSize(window.innerWidth, window.innerHeight);
 });
