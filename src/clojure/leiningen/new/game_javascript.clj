@@ -16,5 +16,4 @@
                ["src/{{path}}.clj" (render "server.clj" data)]
                ["resources/public/index.html" "index.html"]
                ["resources/public/main.js" "main.js"]
-               ["resources/public/phaser.js" "phaser.js"]
                ["resources/public/phaser.min.js" "phaser.min.js"])))
