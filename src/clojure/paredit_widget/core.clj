@@ -95,9 +95,23 @@
 (def ^:const special-chars
   #{"(" ")" "[" "]" "{" "}" "\""})
 
-(def ^:const ignore-during-selection
-  #{:paredit-backward-delete
-    :paredit-forward-delete})
+(defn disable-paredit?
+  [cmd widget]
+  (let [text (s/value widget)
+        selected (.getSelectedText widget)
+        offset (.getCaretPosition widget)]
+    (case cmd
+      :paredit-backward-delete
+      (or selected
+          (= offset 0)
+          (= "#" (subs text (- offset 1) offset)))
+      
+      :paredit-forward-delete
+      (or selected
+          (= offset (count text))
+          (= "#" (subs text offset (+ offset 1))))
+      
+      false)))
 
 (defn exec-paredit!
   [k w buffer enable-default? enable-advanced?]
@@ -107,7 +121,7 @@
                           (or (advanced-keymap k)
                               (advanced-alternative-keymap k)
                               (foreign-keymap k))))]
-    (when-not (and (.getSelectedText w) (ignore-during-selection cmd))
+    (when-not (disable-paredit? cmd w)
       (insert-result! w (exec-command! cmd w buffer))
       cmd)))
 
