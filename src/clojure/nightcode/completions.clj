@@ -23,7 +23,7 @@
 (defn get-clojure-completions
   [prefix ns]
   (for [symbol-str (try
-                     (compliment/completions prefix ns nil)
+                     (compliment/completions prefix {:ns ns})
                      (catch Exception _))
         :when (and (some? symbol-str) (allow-symbol? symbol-str ns))]
     {:symbol-str symbol-str

@@ -6,14 +6,14 @@
   :dependencies [[com.fifesoft/autocomplete "2.5.4"]
                  [com.fifesoft/rsyntaxtextarea "2.5.6"]
                  [com.github.insubstantial/substance "7.3"]
-                 [compliment "0.2.1"]
+                 [compliment "0.2.2"]
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
                  [leiningen "2.5.1"
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
                   :exclusions [clj-aws-s3]]
-                 [lein-cljsbuild "1.0.5"]
+                 [lein-cljsbuild "1.0.6"]
                  [lein-clr "0.2.2"]
                  [lein-droid "0.3.5"]
                  [lein-fruit "0.2.2"]
