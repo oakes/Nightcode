@@ -25,6 +25,7 @@
 (def font-size (atom (max min-font-size (utils/read-pref :font-size 14))))
 (def paredit-enabled? (atom (utils/read-pref :enable-paredit false)))
 (def tabs (atom nil))
+(def paredit-help-frame (s/frame))
 
 ; basic getters
 
@@ -200,12 +201,17 @@
                       (apply concat)
                       (apply sorted-map-by compare))
         modifiers {"M" (utils/get-string :alt)
-                   "C" (utils/get-string :ctrl)}]
+                   "C" (utils/get-string :ctrl)}
+        frame-function (fn [text] 
+                         (dialogs/show-simple-table! text 
+                                   :container        paredit-help-frame
+                                   :column-delimiter " "
+                                   :title            "Paredit Keys"))]
     (->> (doseq [[k v] commands]
            (when-let [modifier (get modifiers (first k))]
-             (println modifier "+" (second k) " " (name v))))
+             (println modifier  "+" (second k) (name v))))
          with-out-str
-         dialogs/show-simple-dialog!)))
+         frame-function)))
 
 (defn focus-on-field!
   [id]
