@@ -29,6 +29,42 @@
       s/show!)
   nil)
 
+
+(defn show-simple-table!
+  [text & {:keys [column-delimiter row-delimiter container title]
+           :or   {column-delimiter \,
+                  row-delimiter    \newline
+                  container        (s/frame)
+                  title            ""}}]
+  (let [table-markup
+        (str 
+          "<html>"
+          "<head>"
+          "<style type='text/css'>"
+            "tr {margin: 0px;}"
+            "tr {padding: 1px;}"
+            "td {padding: 0px 1px;}"
+          "</style>"
+          "</head>"
+          "<body>"
+            "<table>"
+              "<tr>"
+                "<td>"
+                 (-> text
+                   (string/replace (re-pattern (str column-delimiter)) "</td><td>")
+                   (string/replace (re-pattern (str row-delimiter))    "</td></tr><tr>"))
+              "</tr>"
+            "</table>"
+          "</body>"
+          "</html>")]
+    (-> container 
+       (s/config! :content table-markup :title title)
+        s/pack!
+        center!
+        stay-on-top!
+        s/show!)
+    nil))
+
 (defn show-native-dialog!
   [dir mode]
   (do (System/setProperty "apple.awt.fileDialogForDirectories" "true")
