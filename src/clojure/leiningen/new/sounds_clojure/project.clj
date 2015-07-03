@@ -3,5 +3,5 @@
   :url "http://example.com/FIXME"
   :dependencies [[kunstmusik/pink "0.1.0"]
                  [kunstmusik/score "0.2.0"]
-                 [org.clojure/clojure "1.6.0"]]
+                 [org.clojure/clojure "1.7.0"]]
   :main {{namespace}})
