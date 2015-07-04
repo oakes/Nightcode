@@ -16,7 +16,7 @@
                  [lein-cljsbuild "1.0.6"]
                  [lein-clr "0.2.2"]
                  [lein-droid "0.3.5"]
-                 [lein-fruit "0.2.2"]
+                 [lein-fruit "0.2.3"]
                  [lein-typed "0.3.5"]
                  [net.cgrand/parsley "0.9.3"
                   :exclusions [org.clojure/clojure]]
@@ -31,7 +31,7 @@
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [net.cgrand/parsley
                                org.clojure/clojure]]
-                 [play-clj/lein-template "0.4.6"]
+                 [play-clj/lein-template "0.4.7"]
                  [seesaw "1.4.5"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
