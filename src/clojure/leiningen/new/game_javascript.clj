@@ -14,6 +14,6 @@
                ["README.md" (render "README.md" data)]
                [".gitignore" (render "gitignore" data)]
                ["src/{{path}}.clj" (render "server.clj" data)]
-               ["resources/public/index.html" "index.html"]
-               ["resources/public/main.js" "main.js"]
-               ["resources/public/phaser.min.js" "phaser.min.js"])))
+               ["resources/public/index.html" (render "index.html")]
+               ["resources/public/main.js" (render "main.js")]
+               ["resources/public/phaser.min.js" (render "phaser.min.js")])))
