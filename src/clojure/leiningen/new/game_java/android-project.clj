@@ -1,10 +1,10 @@
 (defproject {{app-name}} "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
   
-  :dependencies [[com.badlogicgames.gdx/gdx "1.5.5" :use-resources true]
-                 [com.badlogicgames.gdx/gdx-backend-android "1.5.5"]
-                 [com.badlogicgames.gdx/gdx-box2d "1.5.5"]
-                 [com.badlogicgames.gdx/gdx-bullet "1.5.5"]]
+  :dependencies [[com.badlogicgames.gdx/gdx "1.6.0" :use-resources true]
+                 [com.badlogicgames.gdx/gdx-backend-android "1.6.0"]
+                 [com.badlogicgames.gdx/gdx-box2d "1.6.0"]
+                 [com.badlogicgames.gdx/gdx-bullet "1.6.0"]]
   :profiles {:dev {:android {:aot :all-with-unused}}
              :release {:android
                        {;; Specify the path to your private
