@@ -71,7 +71,7 @@
 
 ; paths and encodings
 
-(def ^:const clojure-exts #{"clj" "cljs" "cljx" "edn"})
+(def ^:const clojure-exts #{"clj" "cljc" "cljs" "cljx" "edn"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def styles {"as"         SyntaxConstants/SYNTAX_STYLE_ACTIONSCRIPT
              "asm"        SyntaxConstants/SYNTAX_STYLE_ASSEMBLER_X86
@@ -82,6 +82,7 @@
              "cpp"        SyntaxConstants/SYNTAX_STYLE_CPLUSPLUS
              "css"        SyntaxConstants/SYNTAX_STYLE_CSS
              "clj"        SyntaxConstants/SYNTAX_STYLE_CLOJURE
+             "cljc"       SyntaxConstants/SYNTAX_STYLE_CLOJURE
              "cljs"       SyntaxConstants/SYNTAX_STYLE_CLOJURE
              "cljx"       SyntaxConstants/SYNTAX_STYLE_CLOJURE
              "cs"         SyntaxConstants/SYNTAX_STYLE_CSHARP
