@@ -21,6 +21,7 @@
             [leiningen.test]
             [leiningen.typed]
             [leiningen.uberjar]
+            [leiningen.ring]
             [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe])
@@ -126,6 +127,10 @@
   [path]
   (-> path read-project-clj :clr some?))
 
+(defn ring-project?
+  [path]
+  (-> path read-project-clj :ring some?))
+
 (defn valid-project?
   [path]
   (or (not (sandbox/get-dir))
@@ -208,6 +213,8 @@
     (leiningen.fruit/fruit project "doall")
     (clr-project? path)
     (leiningen.clr/clr project "run")
+    (ring-project? path)
+    (leiningen.ring/ring project "server")
     :else
     (leiningen.run/run project)))
 

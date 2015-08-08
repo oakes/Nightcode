@@ -18,6 +18,7 @@
                  [lein-droid "0.3.5"]
                  [lein-fruit "0.2.3"]
                  [lein-typed "0.3.5"]
+                 [lein-ring "0.9.6"]
                  [net.cgrand/parsley "0.9.3"
                   :exclusions [org.clojure/clojure]]
                  [net.java.balloontip/balloontip "1.2.4.1"]
