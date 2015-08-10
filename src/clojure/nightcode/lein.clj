@@ -129,7 +129,8 @@
 
 (defn ring-project?
   [path]
-  (-> path read-project-clj :ring some?))
+  (let [{:keys [ring main]} (read-project-clj path)]
+    (and (some? ring) (nil? main))))
 
 (defn valid-project?
   [path]
