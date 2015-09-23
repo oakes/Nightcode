@@ -3,13 +3,13 @@
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
-  :dependencies [[com.fifesoft/autocomplete "2.5.7"]
-                 [com.fifesoft/rsyntaxtextarea "2.5.7"]
+  :dependencies [[com.fifesoft/autocomplete "2.5.8"]
+                 [com.fifesoft/rsyntaxtextarea "2.5.8"]
                  [com.github.insubstantial/substance "7.3"]
-                 [compliment "0.2.4"]
+                 [compliment "0.2.5"]
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
-                 [leiningen "2.5.1"
+                 [leiningen "2.5.3"
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
                   :exclusions [clj-aws-s3]]
@@ -24,7 +24,7 @@
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [org.clojure/clojure "1.7.0"]
                  [org.clojure/core.incubator "0.1.3"]
-                 [org.clojure/tools.cli "0.3.1"]
+                 [org.clojure/tools.cli "0.3.3"]
                  [org.clojure/tools.namespace "0.2.10"]
                  [org.eclipse.jgit "3.5.3.201412180710-r"
                   :exclusions [org.apache.httpcomponents/httpclient]]
