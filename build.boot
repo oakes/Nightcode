@@ -4,9 +4,6 @@
   :dependencies '[[org.clojure/clojure "1.7.0"]
                   [prismatic/schema "0.4.3"]])
 
-(require
-  '[net.sekao.nightcode.core :as app])
-
 (task-options!
   pom {:project 'nightcode
        :version "1.0.0-SNAPSHOT"}
@@ -19,7 +16,8 @@
   (comp
     (aot)
     (with-pre-wrap fileset
-      (app/-main)
+      (require '[net.sekao.nightcode.core :refer [-main]])
+      ((resolve '-main))
       fileset)))
 
 (deftask build []
