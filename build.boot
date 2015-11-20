@@ -4,6 +4,14 @@
   :dependencies '[[org.clojure/clojure "1.7.0"]
                   [prismatic/schema "0.4.3"]])
 
+(require
+  '[net.sekao.nightcode.core :as app])
+
+(deftask run []
+  (with-pre-wrap fileset
+    (app/-main)
+    fileset))
+
 (deftask build []
   (comp
    (aot :namespace '#{net.sekao.nightcode.core})
