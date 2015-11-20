@@ -7,15 +7,20 @@
 (require
   '[net.sekao.nightcode.core :as app])
 
+(task-options!
+  pom {:project 'nightcode
+       :version "1.0.0-SNAPSHOT"}
+  aot {:namespace '#{net.sekao.nightcode.core}}
+  jar {:main 'net.sekao.nightcode.core
+       :manifest {"Description" "An IDE for Clojure and ClojureScript"
+                  "Url" "https://github.com/oakes/Nightcode"}})
+
 (deftask run []
-  (with-pre-wrap fileset
-    (app/-main)
-    fileset))
+  (comp
+    (aot)
+    (with-pre-wrap fileset
+      (app/-main)
+      fileset)))
 
 (deftask build []
-  (comp
-   (aot :namespace '#{net.sekao.nightcode.core})
-   (pom :project 'nightcode
-        :version "1.0.0-SNAPSHOT")
-   (uber)
-   (jar :main 'net.sekao.nightcode.core)))
+  (comp (aot) (pom) (uber) (jar)))
