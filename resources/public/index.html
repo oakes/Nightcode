@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+	<head>
+	<title>paren-soup</title>
+	<link rel="stylesheet" type="text/css" href="paren-soup-dark.css">
+		<script type="text/javascript">
+		function changeCSS(cssFile, cssLinkIndex) {
+			var oldlink = document.getElementsByTagName("link").item(cssLinkIndex);
+			var newlink = document.createElement("link");
+			newlink.setAttribute("rel", "stylesheet");
+			newlink.setAttribute("type", "text/css");
+			newlink.setAttribute("href", cssFile);
+			document.getElementsByTagName("head").item(0).replaceChild(newlink, oldlink);
+		}
+    </script>
+    <style>
+      html, body, .paren-soup, .content {
+        height: 100%;
+        margin: 0;
+      }
+    </style>
+	</head>
+	<body>
+	<div class="paren-soup">
+		<div class="numbers"></div>
+		<div class="content" contenteditable="true">(def s "Hello, world!")
+(subs s 0 5)
+
+(map inc [0 1 2 3 4])
+
+(def my-transducer (comp (map inc) (filter odd?)))
+(sequence my-transducer (range 10))</div>
+	</div>
+	<script type="text/javascript" src="paren-soup.js"></script>
+	</body>
+</html>

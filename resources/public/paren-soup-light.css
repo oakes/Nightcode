@@ -1,0 +1,122 @@
+.paren-soup {
+	font-size: 16px;
+	font-family: monospace;
+	color: gray;
+	outline: 1px solid;
+}
+
+.paren-soup .error-text {
+	position: fixed;
+	background-color: white;
+	padding-left: 10px;
+}
+
+.paren-soup .instarepl {
+	float: left;
+	padding-right: 5px;
+	text-align: right;
+	width: 200px;
+}
+
+.paren-soup .instarepl .result {
+	position: relative;
+	overflow: hidden;
+	background-color: lightgreen;
+	outline: 1px solid;
+}
+
+.paren-soup .instarepl .result:hover {
+	width: 500px;
+	text-align: left;
+}
+
+.paren-soup .instarepl .error {
+	background-color: pink;
+}
+
+.paren-soup .numbers {
+	float: left;
+	padding: 0px 5px;
+	text-align: right;
+}
+
+.paren-soup .content {
+	margin: 0px;
+	padding: 0px 5px;
+	outline: 0px solid transparent;
+	white-space: pre;
+	word-wrap: normal;
+	overflow: scroll;
+}
+
+.paren-soup .content .symbol {
+	color: black;
+}
+
+.paren-soup .content .number {
+	color: gold;
+}
+
+.paren-soup .content .string {
+	color: red;
+}
+
+.paren-soup .content .keyword {
+	color: blue;
+}
+
+.paren-soup .content .nil {
+	color: lightblue;
+}
+
+.paren-soup .content .boolean {
+	color: lightblue;
+}
+
+.paren-soup .content .error {
+	display: inline-block;
+	width: 0.9em;
+	height: 0.9em;
+	background-color: red;
+	border-radius: 0.3em;
+}
+
+.paren-soup .content .rainbow-0 {
+	color: aqua;
+}
+
+.paren-soup .content .rainbow-1 {
+	color: brown;
+}
+
+.paren-soup .content .rainbow-2 {
+	color: cornflowerblue;
+}
+
+.paren-soup .content .rainbow-3 {
+	color: fuchsia;
+}
+
+.paren-soup .content .rainbow-4 {
+	color: orange;
+}
+
+.paren-soup .content .rainbow-5 {
+	color: hotpink;
+}
+
+.paren-soup .content .rainbow-6 {
+	color: lime;
+}
+
+.paren-soup .content .rainbow-7 {
+	color: orange;
+}
+
+.paren-soup .content .rainbow-8 {
+	color: plum;
+}
+
+.paren-soup .content .rainbow-9 {
+	color: tomato;
+}
