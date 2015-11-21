@@ -16,8 +16,8 @@
   (comp
     (aot)
     (with-pre-wrap fileset
-      (require '[net.sekao.nightcode.core :refer [-main]])
-      ((resolve '-main))
+      (require '[net.sekao.nightcode.core :refer [main]])
+      ((resolve 'main))
       fileset)))
 
 (deftask build []

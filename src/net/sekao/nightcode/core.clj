@@ -15,5 +15,5 @@
 (defn -stop [app]
   (println "Exiting"))
 
-(defn -main [& args]
+(defn main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))
