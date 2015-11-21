@@ -12,8 +12,8 @@
       (.setScene (Scene. root 800 600))
       (.show))))
 
-(defn -stop [app]
-  (println "Exiting"))
+(defn -main [& args]
+  (Application/launch net.sekao.nightcode.core (into-array String args)))
 
 (defn main [& args]
-  (Application/launch net.sekao.nightcode.core (into-array String args)))
+  (apply -main args))
