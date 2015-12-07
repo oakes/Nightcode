@@ -71,11 +71,12 @@
 
 ; paths and encodings
 
-(def ^:const clojure-exts #{"clj" "cljc" "cljs" "cljx" "edn"})
+(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def styles {"as"         SyntaxConstants/SYNTAX_STYLE_ACTIONSCRIPT
              "asm"        SyntaxConstants/SYNTAX_STYLE_ASSEMBLER_X86
              "bat"        SyntaxConstants/SYNTAX_STYLE_WINDOWS_BATCH
+             "boot"       SyntaxConstants/SYNTAX_STYLE_CLOJURE
              "c"          SyntaxConstants/SYNTAX_STYLE_C
              "cc"         SyntaxConstants/SYNTAX_STYLE_C
              "cl"         SyntaxConstants/SYNTAX_STYLE_LISP
