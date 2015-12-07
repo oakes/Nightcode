@@ -33,12 +33,6 @@
     (utils/write-pref! :android-sdk (.getCanonicalPath d))
     (show-builder! (ui/get-project-path @ui/tree-selection))))
 
-(defn set-robovm!
-  [& _]
-  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :robovm))]
-    (utils/write-pref! :robovm (.getCanonicalPath d))
-    (show-builder! (ui/get-project-path @ui/tree-selection))))
-
 (defn add-path
   [paths path]
   (if (and path (.endsWith path ".clj") (not (contains? (set paths) path)))
@@ -80,7 +74,6 @@ top level expression."
 (defn toggle-visible!
   [{:keys [view]} path]
   (let [android-project? (lein/android-project? path)
-        ios-project? (lein/ios-project? path)
         java-project? (lein/java-project? path)
         gwt-project? (lein/gwt-project? path)
         clojurescript-project? (lein/clojurescript-project? path)
@@ -89,15 +82,11 @@ top level expression."
                          .getName
                          (= "project.clj"))
         buttons {:#run (not gwt-project?)
-                 :#run-repl (and (not java-project?)
-                                 (not ios-project?))
-                 :#reload (and (not java-project?)
-                               (not ios-project?))
-                 :#eval (and (not java-project?)
-                             (not ios-project?))
+                 :#run-repl (not java-project?)
+                 :#reload (not java-project?)
+                 :#eval (not java-project?)
                  :#test (not java-project?)
                  :#sdk android-project?
-                 :#robovm ios-project?
                  :#auto clojurescript-project?
                  :#check-versions project-clj?}]
     (doseq [[id should-show?] buttons]
@@ -107,11 +96,9 @@ top level expression."
   [{:keys [view]} path]
   (let [project-map (lein/read-project-clj path)
         sdk (get-in project-map [:android :sdk-path])
-        robovm (get-in project-map [:ios :robovm-path])
-        buttons {:#sdk (and sdk (.exists (io/file sdk)))
-                 :#robovm (and robovm (.exists (io/file robovm)))}]
-    (doseq [[id set?] buttons]
-      (ui/config! view id :background (when-not set? (color/color :red))))))
+        id :#sdk
+        set? (and sdk (.exists (io/file sdk)))]
+    (ui/config! view id :background (when-not set? (color/color :red)))))
 
 (defn toggle-enable!
   [{:keys [view process last-reload]} path]
@@ -133,7 +120,7 @@ top level expression."
 
 (def ^:dynamic *widgets* [:run :run-repl :reload :eval :build :test
                           :clean :check-versions :stop
-                          :sdk :robovm :auto])
+                          :sdk :auto])
 
 (defn create-actions
   [path console build-pane process auto-process last-reload]
@@ -162,7 +149,6 @@ top level expression."
    :stop (fn [& _]
            (lein/stop-process! process))
    :sdk set-android-sdk!
-   :robovm set-robovm!
    :auto (fn [& _]
            (ui/config! build-pane :#auto :selected? (nil? @auto-process))
            (if (nil? @auto-process)
@@ -202,9 +188,6 @@ top level expression."
    :sdk (ui/button :id :sdk
                    :text (utils/get-string :android-sdk)
                    :listen [:action (:sdk actions)])
-   :robovm (ui/button :id :robovm
-                      :text (utils/get-string :robovm)
-                      :listen [:action (:robovm actions)])
    :auto (ui/toggle :id :auto
                     :text (utils/get-string :auto-build)
                     :listen [:action (:auto actions)])})

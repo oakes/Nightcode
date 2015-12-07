@@ -125,9 +125,9 @@
 
 (defn valid-project?
   [path]
-  (or (not (sandbox/get-dir))
-      (and (not (android-project? path))
-           (not (ios-project? path)))))
+  (and (not (ios-project? path))
+       (or (not (android-project? path))
+           (not (sandbox/get-dir)))))
 
 ; start/stop thread/processes
 
