@@ -16,7 +16,6 @@
                  [lein-cljsbuild "1.0.6"]
                  [lein-clr "0.2.2"]
                  [lein-droid "0.3.5"]
-                 [lein-fruit "0.2.3"]
                  [lein-typed "0.3.5"]
                  [lein-ring "0.9.6"]
                  [net.cgrand/parsley "0.9.3"

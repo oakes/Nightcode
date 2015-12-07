@@ -160,17 +160,12 @@
         ; project types
         types [[:console [:clojure :java]]
                [:game [:clojure :java :javascript]]
-               [:android [:clojure :java]]
-               [:ios [:clojure :java]]
                [:desktop [:clojure]]
                [:web [:clojurescript :javascript]]
                [:database [:clojure]]
                [:graphics [:clojure :clojurescript]]
                [:sounds [:clojure]]
                [:download []]]
-        types (if (sandbox/get-dir)
-                (remove #(contains? #{:ios :android} (first %)) types)
-                types)
         ; language buttons
         lang-group (s/button-group)
         lang-buttons (for [k [:clojure :java :clojurescript :javascript]]

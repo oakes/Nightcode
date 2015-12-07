@@ -8,8 +8,6 @@
             [leiningen.core.project]
             [leiningen.clean]
             [leiningen.cljsbuild]
-            [leiningen.droid]
-            [leiningen.fruit]
             [leiningen.gwt]
             [leiningen.javac]
             [leiningen.new]
@@ -50,13 +48,6 @@
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
 
-(defn add-sdk-path
-  [project]
-  (assoc-in project
-            [:android :sdk-path]
-            (or (utils/read-pref :android-sdk)
-                (get-in project [:android :sdk-path]))))
-
 (defn add-robovm-path
   [project]
   (assoc-in project
@@ -70,18 +61,9 @@
     (let [project-clj-path (get-project-clj-path path)]
       (if-not (.exists (io/file project-clj-path))
         (println (utils/get-string :no-project-clj))
-        (-> (leiningen.core.project/read-raw project-clj-path)
-            add-sdk-path
-            add-robovm-path
-            (try (catch Exception e {})))))))
-
-(defn read-android-project
-  [project]
-  (leiningen.droid.classpath/init-hooks)
-  (some-> project
-          (leiningen.core.project/unmerge-profiles [:base])
-          leiningen.droid.utils/android-parameters
-          add-sdk-path))
+        (try
+          (leiningen.core.project/read-raw project-clj-path)
+          (catch Exception e {}))))))
 
 (defn create-file-from-template!
   [dir file-name template-namespace data]
@@ -208,10 +190,9 @@
   [path project]
   (cond
     (android-project? path)
-    (some-> (read-android-project project)
-            (leiningen.droid/doall []))
+    nil
     (ios-project? path)
-    (leiningen.fruit/fruit project "doall")
+    nil
     (clr-project? path)
     (leiningen.clr/clr project "run")
     (ring-project? path)
@@ -223,10 +204,7 @@
   [path project]
   (cond
     (android-project? path)
-    (when-let [project (read-android-project project)]
-      (doseq [cmd ["deploy" "repl"]]
-        (leiningen.droid/execute-subtask project cmd [])
-        (Thread/sleep 10000)))
+    nil
     (clr-project? path)
     (leiningen.clr/clr project "repl")
     :else
@@ -236,12 +214,9 @@
   [path project]
   (cond
     (android-project? path)
-    (some-> project
-            read-android-project
-            (assoc-in [:android :build-type] :release)
-            leiningen.droid/doall)
+    nil
     (ios-project? path)
-    (leiningen.fruit/fruit project "release")
+    nil
     (clr-project? path)
     (leiningen.clr/clr project "compile")
     (gwt-project? path)
@@ -334,10 +309,6 @@
          (leiningen.droid.new/new project-name package-name)
          (= project-type :game-clojure)
          (leiningen.new.play-clj/play-clj project-name package-name)
-         (= project-type :ios-clojure)
-         (leiningen.fruit/fruit {} "new" project-name package-name)
-         (= project-type :ios-java)
-         (leiningen.fruit/fruit {} "new-java" project-name package-name)
          :else
          (leiningen.new/new {} (name project-type) project-name package-name))
        (binding [leiningen.core.main/*info* false])
