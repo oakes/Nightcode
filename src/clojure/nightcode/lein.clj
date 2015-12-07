@@ -8,6 +8,7 @@
             [leiningen.core.project]
             [leiningen.clean]
             [leiningen.cljsbuild]
+            [leiningen.droid]
             [leiningen.gwt]
             [leiningen.javac]
             [leiningen.new]
@@ -48,12 +49,12 @@
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
 
-(defn add-robovm-path
+(defn add-sdk-path
   [project]
   (assoc-in project
-            [:ios :robovm-path]
-            (or (utils/read-pref :robovm)
-                (get-in project [:ios :robovm-path]))))
+            [:android :sdk-path]
+            (or (utils/read-pref :android-sdk)
+                (get-in project [:android :sdk-path]))))
 
 (defn read-project-clj
   [path]
@@ -61,9 +62,17 @@
     (let [project-clj-path (get-project-clj-path path)]
       (if-not (.exists (io/file project-clj-path))
         (println (utils/get-string :no-project-clj))
-        (try
-          (leiningen.core.project/read-raw project-clj-path)
-          (catch Exception e {}))))))
+        (-> (leiningen.core.project/read-raw project-clj-path)
+            add-sdk-path
+            (try (catch Exception e {})))))))
+
+(defn read-android-project
+  [project]
+  (leiningen.droid.classpath/init-hooks)
+  (some-> project
+          (leiningen.core.project/unmerge-profiles [:base])
+          leiningen.droid.utils/android-parameters
+          add-sdk-path))
 
 (defn create-file-from-template!
   [dir file-name template-namespace data]
@@ -190,7 +199,8 @@
   [path project]
   (cond
     (android-project? path)
-    nil
+    (some-> (read-android-project project)
+            (leiningen.droid/doall []))
     (ios-project? path)
     nil
     (clr-project? path)
@@ -204,7 +214,10 @@
   [path project]
   (cond
     (android-project? path)
-    nil
+    (when-let [project (read-android-project project)]
+      (doseq [cmd ["deploy" "repl"]]
+        (leiningen.droid/execute-subtask project cmd [])
+        (Thread/sleep 10000)))
     (clr-project? path)
     (leiningen.clr/clr project "repl")
     :else
@@ -214,7 +227,10 @@
   [path project]
   (cond
     (android-project? path)
-    nil
+    (some-> project
+            read-android-project
+            (assoc-in [:android :build-type] :release)
+            leiningen.droid/doall)
     (ios-project? path)
     nil
     (clr-project? path)
