@@ -149,7 +149,9 @@
   (reify KeyListener
     (keyReleased [this e] nil)
     (keyTyped [this e]
-      (when (and @enable-advanced? (special-chars (str (.getKeyChar e))))
+      (when (and @enable-advanced?
+                 (or (special-chars (str (.getKeyChar e)))
+                     (advanced-alternative-keymap (convert-key-event e))))
         (.consume e)))
     (keyPressed [this e]
       (when-not (.isConsumed e)
