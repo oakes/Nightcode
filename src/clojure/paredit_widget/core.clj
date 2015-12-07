@@ -82,6 +82,11 @@
    [nil "⌦"] :paredit-forward-delete
    ["C" "Open Bracket"] :paredit-backward-barf-sexp
    ["C" "Close Bracket"] :paredit-forward-barf-sexp
+   ["M" "·"] :paredit-wrap-round
+   ["M" "ß"] :paredit-splice-sexp
+   ["M" "®"] :paredit-raise-sexp
+   ["M" "Í"] :paredit-split-sexp
+   ["M" "Ô"] :paredit-join-sexps
    ["M" "←"] :paredit-expand-left
    ["M" "→"] :paredit-expand-right
    ["M" "↑"] :paredit-expand-up})
