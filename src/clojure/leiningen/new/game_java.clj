@@ -12,14 +12,12 @@
         screen-class-name "MainScreen"
         desktop-class-name "DesktopLauncher"
         android-class-name "AndroidLauncher"
-        ios-class-name "IOSLauncher"
         web-class-name "WebLauncher"
         package-name (t/sanitize (t/multi-segment (or package-name name)))
         main-ns (str package-name "." class-name)
         screen-ns (str package-name "." screen-class-name)
         desktop-ns (str package-name "." desktop-class-name)
         android-ns (str package-name "." android-class-name)
-        ios-ns (str package-name "." ios-class-name)
         web-ns (str package-name "." web-class-name)
         data {:app-name name
               :name (t/project-name name)
@@ -29,19 +27,16 @@
               :screen-class-name screen-class-name
               :desktop-class-name desktop-class-name
               :android-class-name android-class-name
-              :ios-class-name ios-class-name
               :web-class-name web-class-name
               :namespace main-ns
               :screen-namespace screen-ns
               :desktop-namespace desktop-ns
               :android-namespace android-ns
-              :ios-namespace ios-ns
               :web-namespace web-ns
               :path (t/name-to-path main-ns)
               :screen-path (t/name-to-path screen-ns)
               :desktop-path (t/name-to-path desktop-ns)
               :android-path (t/name-to-path android-ns)
-              :ios-path (t/name-to-path ios-ns)
               :web-path (t/name-to-path web-ns)
               :common-path (t/name-to-path package-name)
               :year (t/year)
@@ -71,8 +66,6 @@
                 (lein-droid-render "ic_launcher_hdpi.png")]
                ["android/res/drawable-mdpi/ic_launcher.png"
                 (lein-droid-render "ic_launcher_mdpi.png")]
-               ["android/res/drawable-ldpi/ic_launcher.png"
-                (lein-droid-render "ic_launcher_ldpi.png")]
                ["android/res/values/strings.xml"
                 (lein-droid-render "strings.xml" data)]
                ; android libgdx.so
@@ -96,21 +89,6 @@
                 (io/input-stream (io/resource "armeabi-v7a/libgdx-bullet.so"))]
                ["android/libs/x86/libgdx-bullet.so"
                 (io/input-stream (io/resource "x86/libgdx-bullet.so"))]
-               ; ios
-               ["ios/project.clj" (render "ios-project.clj" data)]
-               ["ios/Info.plist.xml" (render "Info.plist.xml" data)]
-               ["ios/src/{{ios-path}}.java" (render "IOSLauncher.java" data)]
-               ; ios libObjectAL.a and libgdx.a
-               ["ios/libs/libObjectAL.a"
-                (io/input-stream (io/resource "ios/libObjectAL.a"))]
-               ["ios/libs/libgdx.a"
-                (io/input-stream (io/resource "ios/libgdx.a"))]
-               ; ios libgdx-box2d.a
-               ["ios/libs/libgdx-box2d.a"
-                (io/input-stream (io/resource "ios/libgdx-box2d.a"))]
-               ; ios libgdx-bullet.a
-               ["ios/libs/libgdx-bullet.a"
-                (io/input-stream (io/resource "ios/libgdx-bullet.a"))]
                ; web
                ["web/project.clj" (render "web-project.clj" data)]
                ["web/src/GdxDefinition.gwt.xml"
