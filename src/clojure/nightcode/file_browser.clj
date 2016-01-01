@@ -133,7 +133,7 @@
       "cljs" "file-clojure.png"
       "java" "file-java.png"
       "git" "git.png"
-      "logcat" "android2.png"
+      "logcat" nil
       "file.png")))
 
 (defn protect-file?
