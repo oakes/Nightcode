@@ -13,11 +13,11 @@
                   :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
                   :exclusions [clj-aws-s3]]
-                 [lein-cljsbuild "1.0.6"]
+                 [lein-cljsbuild "1.1.2"]
                  [lein-clr "0.2.2"]
                  [lein-droid "0.4.3"]
                  [lein-typed "0.3.5"]
-                 [lein-ring "0.9.6"]
+                 [lein-ring "0.9.7"]
                  [net.cgrand/parsley "0.9.3"
                   :exclusions [org.clojure/clojure]]
                  [net.java.balloontip/balloontip "1.2.4.1"]

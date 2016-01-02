@@ -208,7 +208,10 @@
     (ring-project? path)
     (leiningen.ring/ring project "server")
     :else
-    (leiningen.run/run project)))
+    (do
+      (when (clojurescript-project? path)
+        (leiningen.cljsbuild/cljsbuild project "once"))
+      (leiningen.run/run project))))
 
 (defn run-repl-project-task
   [path project]
