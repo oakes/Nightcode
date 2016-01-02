@@ -196,6 +196,8 @@
 
 (defn run-project-task
   [path project]
+  (when (:cljsbuild project)
+    (leiningen.cljsbuild/cljsbuild project "once"))
   (cond
     (android-project? path)
     (some-> (read-android-project project)
@@ -205,10 +207,7 @@
     (ring-project-map? project)
     (leiningen.ring/ring project "server")
     :else
-    (do
-      (when (:cljsbuild project)
-        (leiningen.cljsbuild/cljsbuild project "once"))
-      (leiningen.run/run project))))
+    (leiningen.run/run project)))
 
 (defn run-repl-project-task
   [path project]
