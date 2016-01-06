@@ -31,7 +31,7 @@
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [net.cgrand/parsley
                                org.clojure/clojure]]
-                 [play-clj/lein-template "1.0.0-SNAPSHOT"]
+                 [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
