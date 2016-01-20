@@ -21,7 +21,7 @@
                  [net.cgrand/parsley "0.9.3"
                   :exclusions [org.clojure/clojure]]
                  [net.java.balloontip/balloontip "1.2.4.1"]
-                 [org.clojure/clojure "1.7.0"]
+                 [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.incubator "0.1.3"]
                  [org.clojure/tools.cli "0.3.3"]
                  [org.clojure/tools.namespace "0.2.10"]
