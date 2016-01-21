@@ -24,16 +24,13 @@
     (let [path (get-path ".lein")]
       (into-array String [(str "LEIN_HOME=" path)]))))
 
-(defn set-home!
+(defn set-properties!
   []
-  (some->> (get-dir) get-path (System/setProperty "user.home")))
-
-(defn set-temp-dir!
-  []
-  (when (get-dir)
-    (let [dir (get-path ".temp")]
-      (-> dir io/file .mkdir)
-      (System/setProperty "java.io.tmpdir" dir))))
+  (when-let [dir (get-dir)]
+    (System/setProperty "user.home" (get-path dir))
+    (let [temp-dir (get-path ".temp")]
+      (-> temp-dir io/file .mkdir)
+      (System/setProperty "java.io.tmpdir" temp-dir))))
 
 (defn create-profiles-clj!
   []
@@ -42,7 +39,7 @@
           m2 (get-path ".m2")
           tmp (get-path ".temp")
           jvm-opts [(str "-Djava.io.tmpdir=" tmp)
-                    (str "-Duser.home=" (get-path (get-dir)))]
+                    (str "-Duser.home=" (get-path))]
           profile {:local-repo m2
                    :jvm-opts jvm-opts
                    :gwt {:extraJvmArgs (clojure.string/join " " jvm-opts)}}
