@@ -30,6 +30,13 @@
 
 ; utilities
 
+(defn java-project-map?
+  [project]
+  (or (:java-only project)
+      (= (count (:source-paths project)) 0)
+      (clojure.set/subset? (set (:source-paths project))
+                           (set (:java-source-paths project)))))
+
 (defn read-file
   [path]
   (let [length (.length (io/file path))]
@@ -91,16 +98,13 @@
   (or (.exists (io/file path "AndroidManifest.xml"))
       (.exists (io/file path "AndroidManifest.template.xml"))))
 
-(defn java-project-map?
-  [project]
-  (or (:java-only project)
-      (= (count (:source-paths project)) 0)
-      (clojure.set/subset? (set (:source-paths project))
-                           (set (:java-source-paths project)))))
+(defn ios-project?
+  [path]
+  (.exists (io/file path "Info.plist.xml")))
 
 (defn java-project?
   [path]
-  (-> path read-project-clj java-project-map?))
+  (some-> path read-project-clj java-project-map?))
 
 (defn clojurescript-project?
   [path]
@@ -114,19 +118,16 @@
   [path]
   (-> path read-project-clj :clr some?))
 
-(defn ring-project-map?
-  [project]
-  (let [{:keys [ring main]} project]
-    (and (some? ring) (nil? main))))
-
 (defn ring-project?
   [path]
-  (-> path read-project-clj ring-project-map?))
+  (let [{:keys [ring main]} (read-project-clj path)]
+    (and (some? ring) (nil? main))))
 
 (defn valid-project?
   [path]
-  (not (and (sandbox/get-dir)
-            (android-project? path))))
+  (and (not (ios-project? path))
+       (or (not (android-project? path))
+           (not (sandbox/get-dir)))))
 
 ; start/stop thread/processes
 
@@ -202,9 +203,11 @@
     (android-project? path)
     (some-> (read-android-project project)
             (leiningen.droid/doall []))
-    (:clr project)
+    (ios-project? path)
+    nil
+    (clr-project? path)
     (leiningen.clr/clr project "run")
-    (ring-project-map? project)
+    (ring-project? path)
     (leiningen.ring/ring project "server")
     :else
     (leiningen.run/run project)))
@@ -217,7 +220,7 @@
       (doseq [cmd ["deploy" "repl"]]
         (leiningen.droid/execute-subtask project cmd [])
         (Thread/sleep 10000)))
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "repl")
     :else
     (leiningen.repl/repl project)))
@@ -230,9 +233,11 @@
             read-android-project
             (assoc-in [:android :build-type] :release)
             leiningen.droid/doall)
-    (:clr project)
+    (ios-project? path)
+    nil
+    (clr-project? path)
     (leiningen.clr/clr project "compile")
-    (:gwt project)
+    (gwt-project? path)
     (leiningen.gwt/gwt project "compile")
     :else
     (leiningen.uberjar/uberjar project)))
@@ -245,7 +250,7 @@
                              (if (:cljsbuild project) "check-cljs" "check"))
       (catch Exception _)))
   (cond
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "test")
     :else
     (leiningen.test/test project)))
@@ -253,7 +258,7 @@
 (defn clean-project-task
   [path project]
   (cond
-    (:clr project)
+    (clr-project? path)
     (leiningen.clr/clr project "clean")
     :else
     (leiningen.clean/clean project)))
