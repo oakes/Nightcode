@@ -7,22 +7,12 @@
             [nightcode.utils :as utils]
             [seesaw.core :as s]))
 
-(defn run-repl!
-  "Starts a REPL process."
-  [process in-out]
-  (lein/stop-process! process)
-  (->> (if (sandbox/get-dir)
-         (clojure.main/repl)
-         (lein/start-process-indirectly! process nil "clojure.main"))
-       (lein/start-thread! in-out)))
-
 (defn create-pane
   "Returns the pane with the REPL."
   [console]
-  (let [process (atom nil)
-        run! (fn [& _]
+  (let [run! (fn [& _]
                (.setText (.getTextArea console) "")
-               (run-repl! process (ui/get-io! console))
+               (lein/start-thread! (ui/get-io! console) (clojure.main/repl))
                (s/request-focus! (-> console .getViewport .getView)))
         pane (s/config! console :id :repl-console)]
     (utils/set-accessible-name! (.getTextArea pane) :repl-console)
