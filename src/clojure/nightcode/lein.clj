@@ -197,7 +197,7 @@
 
 (defn run-project-task
   [path project]
-  (when (:cljsbuild project)
+  (when (clojurescript-project? path)
     (leiningen.cljsbuild/cljsbuild project "once"))
   (cond
     (android-project? path)
