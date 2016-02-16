@@ -3,7 +3,7 @@
 	<head>
 	<title>paren-soup</title>
 	<link rel="stylesheet" type="text/css" href="paren-soup-dark.css">
-		<script type="text/javascript">
+	<script type="text/javascript">
 		function changeCSS(cssFile, cssLinkIndex) {
 			var oldlink = document.getElementsByTagName("link").item(cssLinkIndex);
 			var newlink = document.createElement("link");
@@ -12,13 +12,13 @@
 			newlink.setAttribute("href", cssFile);
 			document.getElementsByTagName("head").item(0).replaceChild(newlink, oldlink);
 		}
-    </script>
-    <style>
-      html, body, .paren-soup, .content {
-        height: 100%;
-        margin: 0;
-      }
-    </style>
+	</script>
+	<style>
+		html, body, .paren-soup, .content {
+			height: 100%;
+			margin: 0;
+		}
+	</style>
 	</head>
 	<body>
 	<div class="paren-soup">
