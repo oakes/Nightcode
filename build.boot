@@ -1,12 +1,12 @@
 (set-env!
   :source-paths #{"src"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.7.0"]
+  :dependencies '[[org.clojure/clojure "1.8.0"]
                   [prismatic/schema "0.4.3"]])
 
 (task-options!
   pom {:project 'nightcode
-       :version "1.0.0-SNAPSHOT"}
+       :version "2.0.0-SNAPSHOT"}
   aot {:namespace '#{net.sekao.nightcode.core}}
   jar {:main 'net.sekao.nightcode.core
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
