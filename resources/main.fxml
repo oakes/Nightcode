@@ -5,17 +5,16 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-
 <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="619.0" prefWidth="834.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <VBox fx:id="sidebar" prefHeight="619.0" prefWidth="283.0">
          <children>
             <HBox fx:id="project_buttons" prefHeight="11.0" prefWidth="265.0">
                <children>
-                  <Button mnemonicParsing="false" text="New Project" />
-                  <Button mnemonicParsing="false" text="Import" />
-                  <Button mnemonicParsing="false" text="Rename" />
-                  <Button mnemonicParsing="false" text="Remove" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" text="New Project" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" text="Import" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" text="Rename" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" text="Remove" />
                </children>
             </HBox>
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />
