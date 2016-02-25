@@ -10,7 +10,6 @@
             [paredit.loc-utils]
             [paredit.parser]
             [paredit.static-analysis]
-            [paredit-widget.core :as pw]
             [seesaw.color :as color]
             [seesaw.core :as s])
   (:import [java.awt.event KeyEvent KeyListener]
@@ -18,14 +17,13 @@
            [nightcode.ui JConsole]
            [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine
-            SearchResult]))
+            SearchResult]
+           [com.oakmac.parinfer Parinfer]))
 
 (def ^:const min-font-size 8)
 (def editors (atom (flatland/ordered-map)))
 (def font-size (atom (max min-font-size (utils/read-pref :font-size 14))))
-(def paredit-enabled? (atom (utils/read-pref :enable-paredit false)))
 (def tabs (atom nil))
-(def paredit-help-frame (s/frame))
 
 ; basic getters
 
@@ -176,42 +174,14 @@
   [& _]
   (swap! font-size inc))
 
-(defn save-paredit!
-  [enable?]
-  (utils/write-pref! :enable-paredit enable?))
-
 (defn save-doc!
   [enabled?]
   (utils/write-pref! :enable-doc enabled?))
-
-(defn toggle-paredit!
-  [& _]
-  (reset! paredit-enabled? (not @paredit-enabled?))
-  (some-> (get-selected-text-area) s/request-focus!))
 
 (defn toggle-doc!
   [& _]
   (reset! completions/doc-enabled? (not @completions/doc-enabled?))
   (some-> (get-selected-text-area) s/request-focus!))
-
-(defn show-paredit-help!
-  [& _]
-  (some-> (get-selected-text-area) s/request-focus!)
-  (let [commands (->> pw/advanced-keymap
-                      (apply concat)
-                      (apply sorted-map-by compare))
-        modifiers {"M" (utils/get-string :alt)
-                   "C" (utils/get-string :ctrl)}
-        frame-function (fn [text] 
-                         (dialogs/show-simple-table! text 
-                                   :container        paredit-help-frame
-                                   :column-delimiter " "
-                                   :title            "Paredit Keys"))]
-    (->> (doseq [[k v] commands]
-           (when-let [modifier (get modifiers (first k))]
-             (println modifier  "+" (second k) (name v))))
-         with-out-str
-         frame-function)))
 
 (defn focus-on-field!
   [id]
@@ -283,12 +253,6 @@
 (def ^:const console-ignore-shortcut-keys #{KeyEvent/VK_Z
                                             KeyEvent/VK_Y})
 
-(defn init-paredit!
-  [text-area enable-default? enable-advanced?]
-  (let [toggle-paredit-fn! (pw/init-paredit! text-area enable-default?)]
-    (toggle-paredit-fn! (and enable-advanced? @paredit-enabled?))
-    (when enable-advanced? toggle-paredit-fn!)))
-
 (defn add-watchers!
   [path extension text-area completer]
   (let [clojure? (contains? utils/clojure-exts extension)
@@ -301,12 +265,7 @@
       (add-watch completions/doc-enabled?
                  (utils/hashed-keyword path)
                  (fn [_ _ _ enable?]
-                   (.setAutoActivationEnabled completer enable?))))
-    (when-let [toggle-fn! (init-paredit! text-area clojure-file? clojure?)]
-      (add-watch paredit-enabled?
-                 (utils/hashed-keyword path)
-                 (fn [_ _ _ enable?]
-                   (toggle-fn! enable?))))))
+                   (.setAutoActivationEnabled completer enable?))))))
 
 (defn add-button-watchers!
   [path pane]
@@ -314,19 +273,12 @@
              (utils/hashed-keyword (str "button:" path))
              (fn [_ _ _ enable?]
                (some-> (s/select pane [:#doc])
-                       (s/config! :selected? enable?))))
-  (add-watch paredit-enabled?
-             (utils/hashed-keyword (str "button:" path))
-             (fn [_ _ _ enable?]
-               (some-> (s/select pane [:#paredit])
                        (s/config! :selected? enable?)))))
 
 (defn remove-watchers!
   [path]
   (remove-watch font-size (utils/hashed-keyword path))
-  (remove-watch paredit-enabled? (utils/hashed-keyword path))
   (remove-watch completions/doc-enabled? (utils/hashed-keyword path))
-  (remove-watch paredit-enabled? (utils/hashed-keyword (str "button:" path)))
   (remove-watch completions/doc-enabled?
                 (utils/hashed-keyword (str "button:" path))))
 
@@ -337,6 +289,18 @@
       Theme/load
       (.apply text-area))
   (set-font-size! text-area @font-size))
+
+(defn paren-mode!
+  [text-area extension]
+  (when (contains? utils/clojure-exts extension)
+    (let [pos (.getCaretPosition text-area)
+          old-text (.getText text-area)
+          new-text (.-text (Parinfer/parenMode old-text (int 0) (int 0) (int 0)))]
+      (.setText text-area new-text)
+      (.setCaretPosition text-area pos)
+      (.discardAllEdits text-area)
+      (.setDirty text-area (not= old-text new-text))))
+  text-area)
 
 (defn create-text-area
   ([]
@@ -358,7 +322,8 @@
         (.setLineWrap (contains? utils/wrap-exts extension))
         (.setMarginLineEnabled true)
         (.setMarginLinePosition 80)
-        (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))))))
+        (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))
+        (paren-mode! extension)))))
 
 (defn create-console
   ([path]
@@ -409,7 +374,7 @@
   true)
 
 (def ^:dynamic *widgets* [:up :save :undo :redo :font-dec :font-inc
-                          :doc :paredit :paredit-help :find :replace :close])
+                          :doc :find :replace :close])
 
 (defn create-actions
   []
@@ -420,8 +385,6 @@
    :font-dec decrease-font-size!
    :font-inc increase-font-size!
    :doc toggle-doc!
-   :paredit toggle-paredit!
-   :paredit-help show-paredit-help!
    :find focus-on-find!
    :replace focus-on-replace!
    :close close-selected-editor!})
@@ -448,14 +411,6 @@
                    :text (utils/get-string :doc)
                    :selected? @completions/doc-enabled?
                    :listen [:action (:doc actions)])
-   :paredit (ui/toggle :id :paredit
-                       :text (utils/get-string :paredit)
-                       :selected? @paredit-enabled?
-                       :listen [:action (:paredit actions)])
-   :paredit-help (doto (ui/button :id :paredit-help
-                                  :text "?"
-                                  :listen [:action (:paredit-help actions)])
-                   (utils/set-accessible-name! :paredit-help))
    :find (doto (s/text :id :find
                        :columns 8
                        :listen [:key-released find-text!])
@@ -487,15 +442,9 @@
           actions (create-actions)
           widgets (create-widgets actions)
           ; remove buttons if they aren't applicable
-          *widgets* (remove (fn [k]
-                              (-> (concat []
-                                          (if-not clojure?
-                                            [:paredit :paredit-help])
-                                          (if-not completer
-                                            [:doc]))
-                                set
-                                (contains? k)))
-                            *widgets*)
+          *widgets* (if completer
+                      *widgets*
+                      (remove #(= % :doc) *widgets*))
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       (utils/set-accessible-name! text-area (.getName (io/file path)))
@@ -579,10 +528,6 @@
            :save-font-size
            (fn [_ _ _ x]
              (save-font-size! x)))
-(add-watch paredit-enabled?
-           :save-paredit
-           (fn [_ _ _ enable?]
-             (save-paredit! enable?)))
 (add-watch completions/doc-enabled?
            :save-doc
            (fn [_ _ _ enable?]

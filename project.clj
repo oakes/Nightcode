@@ -28,6 +28,7 @@
                  [org.eclipse.jgit "3.5.3.201412180710-r"
                   :exclusions [org.apache.httpcomponents/httpclient]]
                  [org.flatland/ordered "1.5.3"]
+                 [org.jetbrains.kotlin/kotlin-stdlib "1.0.0"] ; for parinfer
                  [org.lpetit/paredit.clj "0.19.3"
                   :exclusions [net.cgrand/parsley
                                org.clojure/clojure]]
@@ -35,7 +36,7 @@
                  [seesaw "1.4.5"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
-  :resource-paths ["resources"]
+  :resource-paths ["resources" "lib/parinfer-0.3.0-SNAPSHOT.jar"]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
