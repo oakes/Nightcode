@@ -1,6 +1,7 @@
 (ns nightcode.editors
-  (:require [clojure.java.io :as io]
-            [clojure.string :refer [join split]]
+  (:require [clojure.data :refer [diff]]
+            [clojure.java.io :as io]
+            [clojure.string :refer [join split split-lines]]
             [flatland.ordered.map :as flatland]
             [nightcode.completions :as completions]
             [nightcode.dialogs :as dialogs]
@@ -305,7 +306,37 @@
         index (+ (count s) (inc col))]
     index))
 
-(defn run-parinfer!
+(defn custom-split-lines
+  [s]
+  (let [s (if-not (= \newline (last s))
+            (str s "\n ")
+            (str s " "))
+        lines (split-lines s)
+        last-line (last lines)
+        last-line-len (max 0 (dec (count last-line)))]
+    (conj (vec (butlast lines))
+          (subs last-line 0 last-line-len))))
+
+(defn count-lines-changed
+  [new-lines old-lines]
+  (->> (diff new-lines old-lines) first (remove nil?) count))
+
+(defn update-edit-history!
+  [edit-history state]
+  (let [{:keys [current-state states]} @edit-history
+        old-state (get states current-state)
+        old-lines (:lines old-state)
+        new-lines (:lines state)
+        old-lines-changed (:lines-changed old-state)
+        new-lines-changed (count-lines-changed new-lines old-lines)
+        state (assoc state :lines-changed new-lines-changed)]
+    ; if the last two edits only affected one line, replace the last edit instead of adding a new edit
+    (when (not= old-lines-changed new-lines-changed 1)
+      (swap! edit-history update-in [:current-state] inc))
+    (swap! edit-history update-in [:states] subvec 0 (:current-state @edit-history))
+    (swap! edit-history update-in [:states] conj state)))
+
+(defn get-state
   [^TextEditorPane text-area paren-mode?]
   (let [old-pos (.getCaretPosition text-area)
         old-x (.getCaretOffsetFromLineStart text-area)
@@ -317,47 +348,81 @@
         new-text (:text result)
         new-x (:x result)
         new-pos (row-col->index new-text old-line new-x)]
-    (.replaceRange text-area new-text 0 (count old-text))
-    (.setCaretPosition text-area new-pos)))
+    {:lines (custom-split-lines new-text)
+     :index new-pos}))
+
+(defn refresh-content!
+  [^TextEditorPane text-area state]
+  (let [old-text (.getText text-area)
+        {:keys [lines index]} state]
+    (.replaceRange text-area (join \newline lines) 0 (count old-text))
+    (.setCaretPosition text-area index)))
 
 (defn init-parinfer!
-  [^TextEditorPane text-area extension]
+  [^TextEditorPane text-area extension edit-history]
   (when (contains? utils/clojure-exts extension)
-    ; use paren mode to preprocess the code
     (let [old-text (.getText text-area)]
-      (run-parinfer! text-area true)
+      (reset! edit-history {:current-state -1 :states []})
+      ; use paren mode to preprocess the code
+      (let [state (get-state text-area true)]
+        (update-edit-history! edit-history state)
+        (refresh-content! text-area state))
       (.discardAllEdits text-area)
-      (.setDirty text-area (not= old-text (.getText text-area))))
-    ; add a listener to run indent mode when a key is pressed
-    (.addKeyListener text-area
-      (reify KeyListener
-        (keyReleased [this e]
-          (when-not (or (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
-                                     KeyEvent/VK_RIGHT KeyEvent/VK_LEFT
-                                     KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
-                                     KeyEvent/VK_ALT KeyEvent/VK_META}
-                                   (.getKeyCode e))
-                        (.isControlDown e)
-                        (.isMetaDown e))
-            (run-parinfer! text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))))
-        (keyTyped [this e] nil)
-        (keyPressed [this e] nil))))
+      (.setDirty text-area (not= old-text (.getText text-area)))
+      ; add a listener to run indent mode when a key is pressed
+      (.addKeyListener text-area
+        (reify KeyListener
+          (keyReleased [this e]
+            (when-not (or (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
+                                       KeyEvent/VK_RIGHT KeyEvent/VK_LEFT
+                                       KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
+                                       KeyEvent/VK_ALT KeyEvent/VK_META}
+                                     (.getKeyCode e))
+                          (.isControlDown e)
+                          (.isMetaDown e))
+              (let [state (get-state text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))]
+                (update-edit-history! edit-history state)
+                (refresh-content! text-area state))))
+          (keyTyped [this e] nil)
+          (keyPressed [this e] nil)))))
   text-area)
 
 (defn create-text-area
   ([]
+    (create-text-area (atom nil)))
+  ([edit-history]
     (doto (proxy [TextEditorPane] []
             (setMarginLineEnabled [enabled?]
               (proxy-super setMarginLineEnabled enabled?))
             (setMarginLinePosition [size]
               (proxy-super setMarginLinePosition size))
             (processKeyBinding [ks e condition pressed]
-              (proxy-super processKeyBinding ks e condition pressed)))
+              (proxy-super processKeyBinding ks e condition pressed))
+            (canUndo []
+              (if-let [{:keys [current-state states]} @edit-history]
+                (some? (get states (dec current-state)))
+                (proxy-super canUndo)))
+            (canRedo []
+              (if-let [{:keys [current-state states]} @edit-history]
+                (some? (get states (inc current-state)))
+                (proxy-super canRedo)))
+            (undoLastAction []
+              (if-let [{:keys [current-state states]} @edit-history]
+                (when-let [state (get states (dec current-state))]
+                  (swap! edit-history update-in [:current-state] dec)
+                  (refresh-content! this state))
+                (proxy-super undoLastAction)))
+            (redoLastAction []
+              (if-let [{:keys [current-state states]} @edit-history]
+                (when-let [state (get states (inc current-state))]
+                  (swap! edit-history update-in [:current-state] inc)
+                  (refresh-content! this state))
+                (proxy-super redoLastAction))))
       (.setAntiAliasingEnabled true)
       apply-settings!))
-  ([path]
+  ([path edit-history]
     (let [extension (utils/get-extension path)]
-      (doto (create-text-area)
+      (doto (create-text-area edit-history)
         (.load (FileLocation/create path) "UTF-8")
         .discardAllEdits
         (.setSyntaxEditingStyle (get utils/styles extension))
@@ -365,7 +430,7 @@
         (.setMarginLineEnabled true)
         (.setMarginLinePosition 80)
         (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))
-        (init-parinfer! extension)))))
+        (init-parinfer! extension edit-history)))))
 
 (defn create-console
   ([path]
@@ -475,7 +540,8 @@
 (defmethod create-editor :text [_ path]
   (when (utils/valid-file? (io/file path))
     (let [; create the text editor and the pane that will hold it
-          text-area (create-text-area path)
+          edit-history (atom nil)
+          text-area (create-text-area path edit-history)
           extension (utils/get-extension path)
           clojure? (contains? utils/clojure-exts extension)
           completer (completions/create-completer text-area extension)
@@ -520,7 +586,8 @@
        :text-area text-area
        :close-fn! (fn [])
        :italicize-fn #(.isDirty text-area)
-       :should-remove-fn #(not (.exists (io/file path)))})))
+       :should-remove-fn #(not (.exists (io/file path)))
+       :edit-history edit-history})))
 
 (def ^:dynamic *types* [:text :logcat :git])
 
