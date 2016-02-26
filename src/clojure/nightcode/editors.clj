@@ -1,5 +1,6 @@
 (ns nightcode.editors
   (:require [clojure.java.io :as io]
+            [clojure.string :refer [join split]]
             [flatland.ordered.map :as flatland]
             [nightcode.completions :as completions]
             [nightcode.dialogs :as dialogs]
@@ -18,7 +19,7 @@
            [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine
             SearchResult]
-           [com.oakmac.parinfer Parinfer]))
+           [com.oakmac.parinfer Parinfer ParinferResult]))
 
 (def ^:const min-font-size 8)
 (def editors (atom (flatland/ordered-map)))
@@ -110,7 +111,7 @@
                    (if (italicize-fn) "italic" "normal")
                    (-> e-path io/file .getName)))
          (cons "<center>PgUp PgDn</center>")
-         (clojure.string/join "<br/>")
+         (join "<br/>")
          shortcuts/wrap-hint-text
          (s/editor-pane :editable? false :content-type "text/html" :text)
          (shortcuts/create-hint! true editor-pane)
@@ -295,11 +296,17 @@
     {:x (.-cursorX res) :text (.-text res)}))
 
 (defn indent-mode [text x line]
-  (let [res (Parinfer/indentMode text (int x) (int line) nil)]
+  (let [^ParinferResult res (Parinfer/indentMode text (int x) (int line) nil)]
     {:x (.-cursorX res) :text (.-text res)}))
 
+(defn row-col->index
+  [text row col]
+  (let [s (join \newline (take row (split text #"\n")))
+        index (+ (count s) (inc col))]
+    index))
+
 (defn run-parinfer!
-  [text-area paren-mode?]
+  [^TextEditorPane text-area paren-mode?]
   (let [old-pos (.getCaretPosition text-area)
         old-x (.getCaretOffsetFromLineStart text-area)
         old-line (.getCaretLineNumber text-area)
@@ -309,12 +316,12 @@
                  (indent-mode old-text old-x old-line))
         new-text (:text result)
         new-x (:x result)
-        new-pos (+ old-pos (- new-x old-x))]
+        new-pos (row-col->index new-text old-line new-x)]
     (.setText text-area new-text)
     (.setCaretPosition text-area new-pos)))
 
 (defn init-parinfer!
-  [text-area extension]
+  [^TextEditorPane text-area extension]
   (when (contains? utils/clojure-exts extension)
     ; use paren mode to preprocess the code
     (let [old-text (.getText text-area)]
