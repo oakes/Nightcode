@@ -36,7 +36,7 @@
                  [seesaw "1.4.5"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
-  :resource-paths ["resources" "lib/parinfer-0.3.0.jar"]
+  :resource-paths ["resources" "parinfer-0.3.0"]
   :source-paths ["src/clojure"]
   :java-source-paths ["src/java"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
