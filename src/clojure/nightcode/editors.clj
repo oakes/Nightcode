@@ -290,6 +290,14 @@
       (.apply text-area))
   (set-font-size! text-area @font-size))
 
+(defn paren-mode [text x line]
+  (let [res (Parinfer/parenMode text (int x) (int line) nil)]
+    {:x (.-cursorX res) :text (.-text res)}))
+
+(defn indent-mode [text x line]
+  (let [res (Parinfer/indentMode text (int x) (int line) nil)]
+    {:x (.-cursorX res) :text (.-text res)}))
+
 (defn init-parinfer!
   [text-area extension]
   (when (contains? utils/clojure-exts extension)
@@ -298,30 +306,30 @@
           old-x (.getCaretOffsetFromLineStart text-area)
           old-line (.getCaretLineNumber text-area)
           old-text (.getText text-area)
-          result (Parinfer/parenMode old-text old-x old-line nil)
-          new-text (.-text result)]
+          result (paren-mode old-text old-x old-line)
+          new-text (:text result)
+          new-x (:x result)
+          new-pos (+ old-pos (- new-x old-x))]
       (.setText text-area new-text)
-      (.setCaretPosition text-area old-pos)
+      (.setCaretPosition text-area new-pos)
       (.discardAllEdits text-area)
       (.setDirty text-area (not= old-text new-text)))
     ; add a listener to run indent mode when a key is pressed
     (.addKeyListener text-area
       (reify KeyListener
         (keyReleased [this e]
-          (when-not (contains? #{KeyEvent/VK_DOWN
-                                 KeyEvent/VK_UP
-                                 KeyEvent/VK_RIGHT
-                                 KeyEvent/VK_LEFT}
+          (when-not (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
+                                 KeyEvent/VK_RIGHT KeyEvent/VK_LEFT}
                                (.getKeyCode e))
             (let [old-pos (.getCaretPosition text-area)
                   old-x (.getCaretOffsetFromLineStart text-area)
                   old-line (.getCaretLineNumber text-area)
                   old-text (.getText text-area)
                   result (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
-                           (Parinfer/parenMode old-text old-x old-line nil)
-                           (Parinfer/indentMode old-text old-x old-line nil))
-                  new-text (.-text result)
-                  new-x (.-cursorX result)
+                           (paren-mode old-text old-x old-line)
+                           (indent-mode old-text old-x old-line))
+                  new-text (:text result)
+                  new-x (:x result)
                   new-pos (+ old-pos (- new-x old-x))]
               (.setText text-area new-text)
               (.setCaretPosition text-area new-pos))))
