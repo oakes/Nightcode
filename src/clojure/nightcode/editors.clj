@@ -317,7 +317,7 @@
         new-text (:text result)
         new-x (:x result)
         new-pos (row-col->index new-text old-line new-x)]
-    (.setText text-area new-text)
+    (.replaceRange text-area new-text 0 (count old-text))
     (.setCaretPosition text-area new-pos)))
 
 (defn init-parinfer!
@@ -332,9 +332,13 @@
     (.addKeyListener text-area
       (reify KeyListener
         (keyReleased [this e]
-          (when-not (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
-                                 KeyEvent/VK_RIGHT KeyEvent/VK_LEFT}
-                               (.getKeyCode e))
+          (when-not (or (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
+                                     KeyEvent/VK_RIGHT KeyEvent/VK_LEFT
+                                     KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
+                                     KeyEvent/VK_ALT KeyEvent/VK_META}
+                                   (.getKeyCode e))
+                        (.isControlDown e)
+                        (.isMetaDown e))
             (run-parinfer! text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))))
         (keyTyped [this e] nil)
         (keyPressed [this e] nil))))
