@@ -290,16 +290,43 @@
       (.apply text-area))
   (set-font-size! text-area @font-size))
 
-(defn paren-mode!
+(defn init-parinfer!
   [text-area extension]
   (when (contains? utils/clojure-exts extension)
-    (let [pos (.getCaretPosition text-area)
+    ; use paren mode to preprocess the code
+    (let [old-pos (.getCaretPosition text-area)
+          old-x (.getCaretOffsetFromLineStart text-area)
+          old-line (.getCaretLineNumber text-area)
           old-text (.getText text-area)
-          new-text (.-text (Parinfer/parenMode old-text (int 0) (int 0) (int 0)))]
+          result (Parinfer/parenMode old-text old-x old-line nil)
+          new-text (.-text result)]
       (.setText text-area new-text)
-      (.setCaretPosition text-area pos)
+      (.setCaretPosition text-area old-pos)
       (.discardAllEdits text-area)
-      (.setDirty text-area (not= old-text new-text))))
+      (.setDirty text-area (not= old-text new-text)))
+    ; add a listener to run indent mode when a key is pressed
+    (.addKeyListener text-area
+      (reify KeyListener
+        (keyReleased [this e]
+          (when-not (contains? #{KeyEvent/VK_DOWN
+                                 KeyEvent/VK_UP
+                                 KeyEvent/VK_RIGHT
+                                 KeyEvent/VK_LEFT}
+                               (.getKeyCode e))
+            (let [old-pos (.getCaretPosition text-area)
+                  old-x (.getCaretOffsetFromLineStart text-area)
+                  old-line (.getCaretLineNumber text-area)
+                  old-text (.getText text-area)
+                  result (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
+                           (Parinfer/parenMode old-text old-x old-line nil)
+                           (Parinfer/indentMode old-text old-x old-line nil))
+                  new-text (.-text result)
+                  new-x (.-cursorX result)
+                  new-pos (+ old-pos (- new-x old-x))]
+              (.setText text-area new-text)
+              (.setCaretPosition text-area new-pos))))
+        (keyTyped [this e] nil)
+        (keyPressed [this e] nil))))
   text-area)
 
 (defn create-text-area
@@ -323,7 +350,7 @@
         (.setMarginLineEnabled true)
         (.setMarginLinePosition 80)
         (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))
-        (paren-mode! extension)))))
+        (init-parinfer! extension)))))
 
 (defn create-console
   ([path]
