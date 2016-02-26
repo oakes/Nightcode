@@ -298,22 +298,29 @@
   (let [res (Parinfer/indentMode text (int x) (int line) nil)]
     {:x (.-cursorX res) :text (.-text res)}))
 
+(defn run-parinfer!
+  [text-area paren-mode?]
+  (let [old-pos (.getCaretPosition text-area)
+        old-x (.getCaretOffsetFromLineStart text-area)
+        old-line (.getCaretLineNumber text-area)
+        old-text (.getText text-area)
+        result (if paren-mode?
+                 (paren-mode old-text old-x old-line)
+                 (indent-mode old-text old-x old-line))
+        new-text (:text result)
+        new-x (:x result)
+        new-pos (+ old-pos (- new-x old-x))]
+    (.setText text-area new-text)
+    (.setCaretPosition text-area new-pos)))
+
 (defn init-parinfer!
   [text-area extension]
   (when (contains? utils/clojure-exts extension)
     ; use paren mode to preprocess the code
-    (let [old-pos (.getCaretPosition text-area)
-          old-x (.getCaretOffsetFromLineStart text-area)
-          old-line (.getCaretLineNumber text-area)
-          old-text (.getText text-area)
-          result (paren-mode old-text old-x old-line)
-          new-text (:text result)
-          new-x (:x result)
-          new-pos (+ old-pos (- new-x old-x))]
-      (.setText text-area new-text)
-      (.setCaretPosition text-area new-pos)
+    (let [old-text (.getText text-area)]
+      (run-parinfer! text-area true)
       (.discardAllEdits text-area)
-      (.setDirty text-area (not= old-text new-text)))
+      (.setDirty text-area (not= old-text (.getText text-area))))
     ; add a listener to run indent mode when a key is pressed
     (.addKeyListener text-area
       (reify KeyListener
@@ -321,18 +328,7 @@
           (when-not (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
                                  KeyEvent/VK_RIGHT KeyEvent/VK_LEFT}
                                (.getKeyCode e))
-            (let [old-pos (.getCaretPosition text-area)
-                  old-x (.getCaretOffsetFromLineStart text-area)
-                  old-line (.getCaretLineNumber text-area)
-                  old-text (.getText text-area)
-                  result (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
-                           (paren-mode old-text old-x old-line)
-                           (indent-mode old-text old-x old-line))
-                  new-text (:text result)
-                  new-x (:x result)
-                  new-pos (+ old-pos (- new-x old-x))]
-              (.setText text-area new-text)
-              (.setCaretPosition text-area new-pos))))
+            (run-parinfer! text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))))
         (keyTyped [this e] nil)
         (keyPressed [this e] nil))))
   text-area)
