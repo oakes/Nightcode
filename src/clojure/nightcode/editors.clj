@@ -388,8 +388,7 @@
        (.setLineWrap (contains? utils/wrap-exts extension))
        (.setMarginLineEnabled true)
        (.setMarginLinePosition 80)
-       (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))
-       (init-parinfer! extension edit-history)))))
+       (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))))))
 
 (defn create-console
   ([path]
@@ -540,6 +539,7 @@
             (update-buttons! editor-pane text-area))
           (removeUpdate [this e]
             (update-buttons! editor-pane text-area))))
+      (init-parinfer! text-area extension edit-history)
       ; return a map describing the editor
       {:view editor-pane
        :text-area text-area
