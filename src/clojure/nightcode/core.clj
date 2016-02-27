@@ -27,16 +27,16 @@
                               (repl/create-pane console)
                               :divider-location 0.8
                               :resize-weight 0.5))
-          (one-touch!
-            (if (= (:panel args) "horizontal")
-              (s/left-right-split (editors/create-pane)
-                                  (builders/create-pane)
-                                  :divider-location 0.5
-                                  :resize-weight 0.5)
-              (s/top-bottom-split (editors/create-pane)
-                                  (builders/create-pane)
-                                  :divider-location 0.8
-                                  :resize-weight 0.5)))
+        (one-touch!
+          (if (= (:panel args) "horizontal")
+            (s/left-right-split (editors/create-pane)
+                                (builders/create-pane)
+                                :divider-location 0.5
+                                :resize-weight 0.5)
+            (s/top-bottom-split (editors/create-pane)
+                                (builders/create-pane)
+                                :divider-location 0.8
+                                :resize-weight 0.5)))
         :divider-location 0.32
         :resize-weight 0))))
 

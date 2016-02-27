@@ -192,12 +192,12 @@
 
 (defn update-card!
   ([path]
-    (when-let [file-browser (s/select @ui/root [:#file-browser])]
-      (toggle-visible! file-browser path)
-      (s/config! (s/select file-browser [:#file-grid])
-                 :items (create-tiles (io/file path)))))
+   (when-let [file-browser (s/select @ui/root [:#file-browser])]
+     (toggle-visible! file-browser path)
+     (s/config! (s/select file-browser [:#file-grid])
+                :items (create-tiles (io/file path)))))
   ([]
-    (some-> @ui/tree-selection update-card!)))
+   (some-> @ui/tree-selection update-card!)))
 
 (add-watch ui/tree-selection
            :show-file-browser

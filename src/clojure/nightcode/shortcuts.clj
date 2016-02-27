@@ -106,27 +106,27 @@
 (defn create-hint!
   "Creates a new hint on the given view with the given text."
   ([view contents]
-    (create-hint! false view (wrap-hint-text contents)))
+   (create-hint! false view (wrap-hint-text contents)))
   ([vertically-centered? view contents]
-    (when contents
-      (let [color (ui/background-color)
-            style (ToolTipBalloonStyle. color color)
-            ^CenteredPositioner positioner (CenteredPositioner. 0)
-            ^BalloonTip tip (BalloonTip. view contents style false)
-            view-height (.getHeight view)
-            tip-height (.getHeight tip)
-            y (if (and (pos? view-height) vertically-centered?)
-                (-> (/ view-height 2)
-                    (+ (/ tip-height 2))
-                    (/ view-height))
-                0.5)]
-        (doto positioner
-          (.enableFixedAttachLocation true)
-          (.setAttachLocation 0.5 y))
-        (some->> *hint-container* (.setTopLevelContainer tip))
-        (doto tip
-          (.setPositioner positioner)
-          (.setVisible false))))))
+   (when contents
+     (let [color (ui/background-color)
+           style (ToolTipBalloonStyle. color color)
+           ^CenteredPositioner positioner (CenteredPositioner. 0)
+           ^BalloonTip tip (BalloonTip. view contents style false)
+           view-height (.getHeight view)
+           tip-height (.getHeight tip)
+           y (if (and (pos? view-height) vertically-centered?)
+               (-> (/ view-height 2)
+                   (+ (/ tip-height 2))
+                   (/ view-height))
+               0.5)]
+       (doto positioner
+         (.enableFixedAttachLocation true)
+         (.setAttachLocation 0.5 y))
+       (some->> *hint-container* (.setTopLevelContainer tip))
+       (doto tip
+         (.setPositioner positioner)
+         (.setVisible false))))))
 
 (defn create-hints!
   "Creates hints for all widgets within given target with IDs in `mappings`."

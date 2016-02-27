@@ -58,7 +58,7 @@
           "</body>"
           "</html>")]
     (-> container 
-       (s/config! :content table-markup :title title)
+        (s/config! :content table-markup :title title)
         s/pack!
         center!
         stay-on-top!
@@ -84,14 +84,14 @@
 
 (defn show-open-dialog!
   ([]
-    (show-open-dialog! nil))
+   (show-open-dialog! nil))
   ([dir]
-    (if (sandbox/get-dir)
-      (show-native-dialog! dir FileDialog/LOAD)
-      (chooser/choose-file :type :open
-                           :dir dir
-                           :selection-mode :dirs-only
-                           :remember-directory? (nil? dir)))))
+   (if (sandbox/get-dir)
+     (show-native-dialog! dir FileDialog/LOAD)
+     (chooser/choose-file :type :open
+                          :dir dir
+                          :selection-mode :dirs-only
+                          :remember-directory? (nil? dir)))))
 
 (defn show-remove-dialog!
   [project?]

@@ -219,32 +219,32 @@
 (defn update-project-tree!
   "Updates the project tree, optionally with a new selection."
   ([]
-    (some-> (get-project-tree)
-            (update-project-tree! nil)))
+   (some-> (get-project-tree)
+           (update-project-tree! nil)))
   ([^String new-selection]
-    (if-let [tree (get-project-tree)]
-      (update-project-tree! tree new-selection)
-      (reset! tree-selection new-selection)))
+   (if-let [tree (get-project-tree)]
+     (update-project-tree! tree new-selection)
+     (reset! tree-selection new-selection)))
   ([^JTree tree ^String new-selection]
-    ; put new data in the tree
-    (.setModel tree (create-project-tree!))
-    ; wipe out the in-memory expansions
-    (reset! tree-expansions #{})
-    ; get the expansion/selection and apply them to the tree
-    (let [expansion-set (utils/read-pref :expansion-set)
-          selection (or new-selection (utils/read-pref :selection))]
-      (doseq [i (range) :while (< i (.getRowCount tree))]
-        (let [tree-path (.getPathForRow tree i)
-              str-path (utils/tree-path-to-str tree-path)]
-          (when (or (contains? expansion-set str-path)
-                    (utils/parent-path? str-path new-selection))
-            (.expandPath tree tree-path)
-            (swap! tree-expansions conj str-path))
-          (when (= selection str-path)
-            (.setSelectionPath tree tree-path)))))
-    ; select the first project if there is nothing selected
-    (when (nil? (.getSelectionPath tree))
-      (.setSelectionRow tree 0))
-    ; if the project tree is blank, reset atom so the buttons refresh
-    (when (zero? (count @tree-projects))
-      (reset! tree-selection nil))))
+   ; put new data in the tree
+   (.setModel tree (create-project-tree!))
+   ; wipe out the in-memory expansions
+   (reset! tree-expansions #{})
+   ; get the expansion/selection and apply them to the tree
+   (let [expansion-set (utils/read-pref :expansion-set)
+         selection (or new-selection (utils/read-pref :selection))]
+     (doseq [i (range) :while (< i (.getRowCount tree))]
+       (let [tree-path (.getPathForRow tree i)
+             str-path (utils/tree-path-to-str tree-path)]
+         (when (or (contains? expansion-set str-path)
+                   (utils/parent-path? str-path new-selection))
+           (.expandPath tree tree-path)
+           (swap! tree-expansions conj str-path))
+         (when (= selection str-path)
+           (.setSelectionPath tree tree-path)))))
+   ; select the first project if there is nothing selected
+   (when (nil? (.getSelectionPath tree))
+     (.setSelectionRow tree 0))
+   ; if the project tree is blank, reset atom so the buttons refresh
+   (when (zero? (count @tree-projects))
+     (reset! tree-selection nil))))

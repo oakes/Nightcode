@@ -342,31 +342,31 @@
 
 (defn update-sidebar!
   ([]
-    (let [{:keys [sidebar
-                  repo
-                  content
-                  offset]} (get @editors/editors @ui/tree-selection)]
-      (when (and sidebar repo content offset)
-        (update-sidebar! sidebar repo content offset))))
+   (let [{:keys [sidebar
+                 repo
+                 content
+                 offset]} (get @editors/editors @ui/tree-selection)]
+     (when (and sidebar repo content offset)
+       (update-sidebar! sidebar repo content offset))))
   ([^JTree sidebar ^FileRepository repo content offset]
-    ; remove existing listener
-    (doseq [l (.getTreeSelectionListeners sidebar)]
-      (.removeTreeSelectionListener sidebar l))
-    ; add model and listener, then re-select the row
-    (let [commits (cons nil ; represents uncommitted changes
-                        (try
-                          (-> repo Git. .log (.setMaxCount max-commits)
-                              (.setSkip @offset) .call .iterator iterator-seq)
-                          (catch Exception _ [])))
-          selected-row (selected-row sidebar commits)]
-      (doto sidebar
-        (.setModel (DefaultTreeModel. (root-node commits)))
-        (.addTreeSelectionListener
-          (reify TreeSelectionListener
-            (valueChanged [this e]
-              (->> (some-> e .getPath .getLastPathComponent .getUserObject)
-                   (update-content! sidebar repo content)))))
-        (.setSelectionRow (or selected-row 0))))))
+   ; remove existing listener
+   (doseq [l (.getTreeSelectionListeners sidebar)]
+     (.removeTreeSelectionListener sidebar l))
+   ; add model and listener, then re-select the row
+   (let [commits (cons nil ; represents uncommitted changes
+                       (try
+                         (-> repo Git. .log (.setMaxCount max-commits)
+                             (.setSkip @offset) .call .iterator iterator-seq)
+                         (catch Exception _ [])))
+         selected-row (selected-row sidebar commits)]
+     (doto sidebar
+       (.setModel (DefaultTreeModel. (root-node commits)))
+       (.addTreeSelectionListener
+         (reify TreeSelectionListener
+           (valueChanged [this e]
+             (->> (some-> e .getPath .getLastPathComponent .getUserObject)
+                  (update-content! sidebar repo content)))))
+       (.setSelectionRow (or selected-row 0))))))
 
 (def ^:dynamic *widgets* [:up :pull :push :close])
 
@@ -394,10 +394,10 @@
 
 (defn update-paging-buttons!
   ([offset-atom]
-    (some-> @ui/root (update-paging-buttons! offset-atom)))
+   (some-> @ui/root (update-paging-buttons! offset-atom)))
   ([panel offset-atom]
-    (let [forward (s/select panel [:#git-forward])]
-      (s/config! forward :enabled? (pos? @offset-atom)))))
+   (let [forward (s/select panel [:#git-forward])]
+     (s/config! forward :enabled? (pos? @offset-atom)))))
 
 (defn create-paging-buttons
   [offset-atom]

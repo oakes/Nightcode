@@ -55,9 +55,9 @@
 
 (defn unsaved-paths
   ([]
-    (filter unsaved? (keys @editors)))
+   (filter unsaved? (keys @editors)))
   ([path]
-    (filter #(.startsWith % path) (unsaved-paths))))
+   (filter #(.startsWith % path) (unsaved-paths))))
 
 (defn get-editor-text
   []
@@ -389,70 +389,70 @@
 
 (defn create-text-area
   ([]
-    (create-text-area (atom nil)))
+   (create-text-area (atom nil)))
   ([edit-history]
-    (doto (proxy [TextEditorPane] []
-            (setMarginLineEnabled [enabled?]
-              (proxy-super setMarginLineEnabled enabled?))
-            (setMarginLinePosition [size]
-              (proxy-super setMarginLinePosition size))
-            (processKeyBinding [ks e condition pressed]
-              (proxy-super processKeyBinding ks e condition pressed))
-            (canUndo []
-              (if-let [{:keys [current-state states]} @edit-history]
-                (some? (get states (dec current-state)))
-                (proxy-super canUndo)))
-            (canRedo []
-              (if-let [{:keys [current-state states]} @edit-history]
-                (some? (get states (inc current-state)))
-                (proxy-super canRedo)))
-            (undoLastAction []
-              (if-let [{:keys [current-state states]} @edit-history]
-                (when-let [state (get states (dec current-state))]
-                  (swap! edit-history update-in [:current-state] dec)
-                  (refresh-content! this state))
-                (proxy-super undoLastAction)))
-            (redoLastAction []
-              (if-let [{:keys [current-state states]} @edit-history]
-                (when-let [state (get states (inc current-state))]
-                  (swap! edit-history update-in [:current-state] inc)
-                  (refresh-content! this state))
-                (proxy-super redoLastAction))))
-      (.setAntiAliasingEnabled true)
-      apply-settings!))
+   (doto (proxy [TextEditorPane] []
+           (setMarginLineEnabled [enabled?]
+             (proxy-super setMarginLineEnabled enabled?))
+           (setMarginLinePosition [size]
+             (proxy-super setMarginLinePosition size))
+           (processKeyBinding [ks e condition pressed]
+             (proxy-super processKeyBinding ks e condition pressed))
+           (canUndo []
+             (if-let [{:keys [current-state states]} @edit-history]
+               (some? (get states (dec current-state)))
+               (proxy-super canUndo)))
+           (canRedo []
+             (if-let [{:keys [current-state states]} @edit-history]
+               (some? (get states (inc current-state)))
+               (proxy-super canRedo)))
+           (undoLastAction []
+             (if-let [{:keys [current-state states]} @edit-history]
+               (when-let [state (get states (dec current-state))]
+                 (swap! edit-history update-in [:current-state] dec)
+                 (refresh-content! this state))
+               (proxy-super undoLastAction)))
+           (redoLastAction []
+             (if-let [{:keys [current-state states]} @edit-history]
+               (when-let [state (get states (inc current-state))]
+                 (swap! edit-history update-in [:current-state] inc)
+                 (refresh-content! this state))
+               (proxy-super redoLastAction))))
+     (.setAntiAliasingEnabled true)
+     apply-settings!))
   ([path edit-history]
-    (let [extension (utils/get-extension path)]
-      (doto (create-text-area edit-history)
-        (.load (FileLocation/create path) "UTF-8")
-        .discardAllEdits
-        (.setSyntaxEditingStyle (get utils/styles extension))
-        (.setLineWrap (contains? utils/wrap-exts extension))
-        (.setMarginLineEnabled true)
-        (.setMarginLinePosition 80)
-        (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))
-        (init-parinfer! extension edit-history)))))
+   (let [extension (utils/get-extension path)]
+     (doto (create-text-area edit-history)
+       (.load (FileLocation/create path) "UTF-8")
+       .discardAllEdits
+       (.setSyntaxEditingStyle (get utils/styles extension))
+       (.setLineWrap (contains? utils/wrap-exts extension))
+       (.setMarginLineEnabled true)
+       (.setMarginLinePosition 80)
+       (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))
+       (init-parinfer! extension edit-history)))))
 
 (defn create-console
   ([path]
-    (create-console path "clj"))
+   (create-console path "clj"))
   ([path extension]
-    (let [text-area (create-text-area)
-          completer (completions/create-completer text-area extension)]
-      (add-watchers! path extension text-area completer)
-      (doto text-area
-        (.setSyntaxEditingStyle (get utils/styles extension))
-        (.setLineWrap true)
-        (.addKeyListener
-          (reify KeyListener
-            (keyReleased [this e] nil)
-            (keyTyped [this e] nil)
-            (keyPressed [this e]
-              (when (and @shortcuts/down?
-                         (contains? console-ignore-shortcut-keys
-                                    (.getKeyCode e)))
-                (.consume e))))))
-      (some->> completer (completions/install-completer! text-area))
-      (JConsole. text-area))))
+   (let [text-area (create-text-area)
+         completer (completions/create-completer text-area extension)]
+     (add-watchers! path extension text-area completer)
+     (doto text-area
+       (.setSyntaxEditingStyle (get utils/styles extension))
+       (.setLineWrap true)
+       (.addKeyListener
+         (reify KeyListener
+           (keyReleased [this e] nil)
+           (keyTyped [this e] nil)
+           (keyPressed [this e]
+             (when (and @shortcuts/down?
+                        (contains? console-ignore-shortcut-keys
+                                   (.getKeyCode e)))
+               (.consume e))))))
+     (some->> completer (completions/install-completer! text-area))
+     (JConsole. text-area))))
 
 (defn remove-editors!
   [path]
