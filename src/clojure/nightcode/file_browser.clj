@@ -130,6 +130,7 @@
   (when-not (.isDirectory f)
     (case (utils/get-extension (.getName f))
       "clj" "file-clojure.png"
+      "cljc" "file-clojure.png"
       "cljs" "file-clojure.png"
       "java" "file-java.png"
       "git" "git.png"
