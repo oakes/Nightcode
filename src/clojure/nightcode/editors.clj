@@ -13,7 +13,8 @@
             [paredit.parser]
             [paredit.static-analysis]
             [seesaw.color :as color]
-            [seesaw.core :as s])
+            [seesaw.core :as s]
+            [mistakes-were-made.core :as mwm])
   (:import [java.awt.event KeyEvent KeyListener]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [nightcode.ui JConsole]
@@ -300,42 +301,6 @@
   (let [^ParinferResult res (Parinfer/indentMode text (int x) (int line) nil)]
     {:x (.-cursorX res) :text (.-text res)}))
 
-(defn row-col->index
-  [text row col]
-  (let [s (join \newline (take row (split text #"\n")))
-        index (+ (count s) (inc col))]
-    index))
-
-(defn custom-split-lines
-  [s]
-  (let [s (if-not (= \newline (last s))
-            (str s "\n ")
-            (str s " "))
-        lines (split-lines s)
-        last-line (last lines)
-        last-line-len (max 0 (dec (count last-line)))]
-    (conj (vec (butlast lines))
-          (subs last-line 0 last-line-len))))
-
-(defn count-lines-changed
-  [new-lines old-lines]
-  (->> (diff new-lines old-lines) first (remove nil?) count))
-
-(defn update-edit-history!
-  [edit-history state]
-  (let [{:keys [current-state states]} @edit-history
-        old-state (get states current-state)
-        old-lines (:lines old-state)
-        new-lines (:lines state)
-        old-lines-changed (:lines-changed old-state)
-        new-lines-changed (count-lines-changed new-lines old-lines)
-        state (assoc state :lines-changed new-lines-changed)]
-    ; if the last two edits only affected one line, replace the last edit instead of adding a new edit
-    (when (not= old-lines-changed new-lines-changed 1)
-      (swap! edit-history update-in [:current-state] inc))
-    (swap! edit-history update-in [:states] subvec 0 (:current-state @edit-history))
-    (swap! edit-history update-in [:states] conj state)))
-
 (defn get-state
   [^TextEditorPane text-area paren-mode?]
   (let [old-pos (.getCaretPosition text-area)
@@ -344,12 +309,8 @@
         old-text (.getText text-area)
         result (if paren-mode?
                  (paren-mode old-text old-x old-line)
-                 (indent-mode old-text old-x old-line))
-        new-text (:text result)
-        new-x (:x result)
-        new-pos (row-col->index new-text old-line new-x)]
-    {:lines (custom-split-lines new-text)
-     :index new-pos}))
+                 (indent-mode old-text old-x old-line))]
+    (mwm/get-state (:text result) old-line (:x result))))
 
 (defn refresh-content!
   [^TextEditorPane text-area state]
@@ -360,12 +321,11 @@
 
 (defn init-parinfer!
   [^TextEditorPane text-area extension edit-history]
-  (when (contains? utils/clojure-exts extension)
+  (if (contains? utils/clojure-exts extension)
     (let [old-text (.getText text-area)]
-      (reset! edit-history {:current-state -1 :states []})
       ; use paren mode to preprocess the code
       (let [state (get-state text-area true)]
-        (update-edit-history! edit-history state)
+        (mwm/update-edit-history! edit-history state)
         (refresh-content! text-area state))
       (.discardAllEdits text-area)
       (.setDirty text-area (not= old-text (.getText text-area)))
@@ -381,10 +341,11 @@
                           (.isControlDown e)
                           (.isMetaDown e))
               (let [state (get-state text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))]
-                (update-edit-history! edit-history state)
+                (mwm/update-edit-history! edit-history state)
                 (refresh-content! text-area state))))
           (keyTyped [this e] nil)
-          (keyPressed [this e] nil)))))
+          (keyPressed [this e] nil))))
+    (reset! edit-history nil))
   text-area)
 
 (defn create-text-area
@@ -399,23 +360,21 @@
            (processKeyBinding [ks e condition pressed]
              (proxy-super processKeyBinding ks e condition pressed))
            (canUndo []
-             (if-let [{:keys [current-state states]} @edit-history]
-               (some? (get states (dec current-state)))
+             (if @edit-history
+               (mwm/can-undo? edit-history)
                (proxy-super canUndo)))
            (canRedo []
-             (if-let [{:keys [current-state states]} @edit-history]
-               (some? (get states (inc current-state)))
+             (if @edit-history
+               (mwm/can-redo? edit-history)
                (proxy-super canRedo)))
            (undoLastAction []
-             (if-let [{:keys [current-state states]} @edit-history]
-               (when-let [state (get states (dec current-state))]
-                 (swap! edit-history update-in [:current-state] dec)
+             (if @edit-history
+               (when-let [state (mwm/undo! edit-history)]
                  (refresh-content! this state))
                (proxy-super undoLastAction)))
            (redoLastAction []
-             (if-let [{:keys [current-state states]} @edit-history]
-               (when-let [state (get states (inc current-state))]
-                 (swap! edit-history update-in [:current-state] inc)
+             (if @edit-history
+               (when-let [state (mwm/redo! edit-history)]
                  (refresh-content! this state))
                (proxy-super redoLastAction))))
      (.setAntiAliasingEnabled true)
@@ -540,7 +499,7 @@
 (defmethod create-editor :text [_ path]
   (when (utils/valid-file? (io/file path))
     (let [; create the text editor and the pane that will hold it
-          edit-history (atom nil)
+          edit-history (mwm/create-edit-history)
           text-area (create-text-area path edit-history)
           extension (utils/get-extension path)
           clojure? (contains? utils/clojure-exts extension)
