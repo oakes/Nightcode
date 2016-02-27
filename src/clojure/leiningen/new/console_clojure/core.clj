@@ -1,6 +1,5 @@
 (ns {{namespace}}
   (:gen-class))
 
-(defn -main
-  []
+(defn -main []
   (println "Hello, World!"))

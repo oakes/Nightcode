@@ -7,15 +7,13 @@
                    :subprotocol "h2"
                    :subname db-path})
 
-(defn table-exists?
-  [table-name]
+(defn table-exists? [table-name]
   (try
     (jdbc/query spec [(str "SELECT COUNT(*) FROM " table-name)])
     true
     (catch Exception _ false)))
 
-(defn create-table!
-  [table-name]
+(defn create-table! [table-name]
   (->> (jdbc/create-table-ddl
          table-name
          [:id "BIGINT" "PRIMARY KEY AUTO_INCREMENT"]
@@ -24,15 +22,13 @@
          [:time "BIGINT"])
        (jdbc/db-do-commands spec)))
 
-(defn populate-table!
-  [table-name & rows]
+(defn populate-table! [table-name & rows]
   (when-not (table-exists? table-name)
     (create-table! table-name)
     (doseq [r rows]
       (jdbc/insert! spec table-name r))))
 
-(defn -main
-  []
+(defn -main []
   (populate-table! "posts"
                    {:title "First post!"
                     :body "This is my first post."
