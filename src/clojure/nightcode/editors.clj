@@ -15,7 +15,7 @@
             [seesaw.color :as color]
             [seesaw.core :as s]
             [mistakes-were-made.core :as mwm])
-  (:import [java.awt.event KeyEvent KeyListener]
+  (:import [java.awt.event KeyEvent KeyListener MouseListener]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [nightcode.ui JConsole]
            [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
@@ -315,9 +315,9 @@
 (defn refresh-content!
   [^TextEditorPane text-area state]
   (let [old-text (.getText text-area)
-        {:keys [lines index]} state]
+        {:keys [lines cursor-position]} state]
     (.replaceRange text-area (join \newline lines) 0 (count old-text))
-    (.setCaretPosition text-area index)))
+    (.setCaretPosition text-area cursor-position)))
 
 (defn init-parinfer!
   [^TextEditorPane text-area extension edit-history]
@@ -333,18 +333,30 @@
       (.addKeyListener text-area
         (reify KeyListener
           (keyReleased [this e]
-            (when-not (or (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
-                                       KeyEvent/VK_RIGHT KeyEvent/VK_LEFT
-                                       KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
-                                       KeyEvent/VK_ALT KeyEvent/VK_META}
-                                     (.getKeyCode e))
-                          (.isControlDown e)
-                          (.isMetaDown e))
+            (cond
+              (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
+                           KeyEvent/VK_RIGHT KeyEvent/VK_LEFT}
+                         (.getKeyCode e))
+              (mwm/update-cursor-position! edit-history (.getCaretPosition text-area))
+              
+              (not (or (contains? #{KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
+                                    KeyEvent/VK_ALT KeyEvent/VK_META}
+                                  (.getKeyCode e))
+                       (.isControlDown e)
+                       (.isMetaDown e)))
               (let [state (get-state text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))]
                 (mwm/update-edit-history! edit-history state)
                 (refresh-content! text-area state))))
           (keyTyped [this e] nil)
-          (keyPressed [this e] nil))))
+          (keyPressed [this e] nil)))
+      (.addMouseListener text-area
+        (reify MouseListener
+          (mouseClicked [this e] nil)
+          (mouseEntered [this e] nil)
+          (mouseExited [this e] nil)
+          (mousePressed [this e] nil)
+          (mouseReleased [this e]
+            (mwm/update-cursor-position! edit-history (.getCaretPosition text-area))))))
     (reset! edit-history nil))
   text-area)
 
