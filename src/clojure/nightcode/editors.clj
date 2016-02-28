@@ -324,7 +324,7 @@
   (if (contains? utils/clojure-exts extension)
     (let [old-text (.getText text-area)]
       ; use paren mode to preprocess the code
-      (let [state (get-state text-area true)]
+      (let [state (assoc (get-state text-area true) :cursor-position 0)]
         (mwm/update-edit-history! edit-history state)
         (refresh-content! text-area state))
       (.discardAllEdits text-area)
