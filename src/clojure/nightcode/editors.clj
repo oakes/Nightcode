@@ -253,9 +253,6 @@
 
 ; create and display editors
 
-(def ^:const console-ignore-shortcut-keys #{KeyEvent/VK_Z
-                                            KeyEvent/VK_Y})
-
 (defn add-watchers!
   [path extension text-area completer]
   (let [clojure? (contains? utils/clojure-exts extension)
@@ -349,6 +346,7 @@
                 (refresh-content! text-area state))))
           (keyTyped [this e] nil)
           (keyPressed [this e] nil)))
+      ; add a listener to update the cursor position when the mouse is released
       (.addMouseListener text-area
         (reify MouseListener
           (mouseClicked [this e] nil)
@@ -406,7 +404,8 @@
   ([path]
    (create-console path "clj"))
   ([path extension]
-   (let [text-area (create-text-area)
+   (let [edit-history (mwm/create-edit-history)
+         text-area (create-text-area edit-history)
          completer (completions/create-completer text-area extension)]
      (add-watchers! path extension text-area completer)
      (doto text-area
@@ -417,11 +416,10 @@
            (keyReleased [this e] nil)
            (keyTyped [this e] nil)
            (keyPressed [this e]
-             (when (and @shortcuts/down?
-                        (contains? console-ignore-shortcut-keys
-                                   (.getKeyCode e)))
-               (.consume e))))))
+             (when (= KeyEvent/VK_ENTER (.getKeyCode e))
+               (reset! edit-history (deref (mwm/create-edit-history))))))))
      (some->> completer (completions/install-completer! text-area))
+     (init-parinfer! text-area extension edit-history)
      (JConsole. text-area))))
 
 (defn remove-editors!
