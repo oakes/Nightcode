@@ -235,14 +235,6 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 				e.consume();
 				break;
 
-			case (KeyEvent.VK_Z):      // clear line
-				if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) {
-					replaceRange("", cmdStart, textLength());
-					histLine = 0;
-					e.consume();
-				}
-				break;
-
 			case (KeyEvent.VK_D):      // "end of input"
 				if ((e.getModifiers() & InputEvent.CTRL_MASK) > 0) {
 					e.consume();

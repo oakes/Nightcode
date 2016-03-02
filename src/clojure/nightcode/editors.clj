@@ -317,13 +317,14 @@
     (.setCaretPosition text-area cursor-position)))
 
 (defn init-parinfer!
-  [^TextEditorPane text-area extension edit-history]
+  [^TextEditorPane text-area extension edit-history preprocess?]
   (if (contains? utils/clojure-exts extension)
     (let [old-text (.getText text-area)]
       ; use paren mode to preprocess the code
-      (let [state (assoc (get-state text-area true) :cursor-position 0)]
-        (mwm/update-edit-history! edit-history state)
-        (refresh-content! text-area state))
+      (when preprocess?
+        (let [state (assoc (get-state text-area true) :cursor-position 0)]
+          (mwm/update-edit-history! edit-history state)
+          (refresh-content! text-area state)))
       (.discardAllEdits text-area)
       (.setDirty text-area (not= old-text (.getText text-area)))
       ; add a listener to run indent mode when a key is pressed
@@ -419,7 +420,7 @@
              (when (= KeyEvent/VK_ENTER (.getKeyCode e))
                (reset! edit-history (deref (mwm/create-edit-history))))))))
      (some->> completer (completions/install-completer! text-area))
-     (init-parinfer! text-area extension edit-history)
+     (init-parinfer! text-area extension edit-history false)
      (JConsole. text-area))))
 
 (defn remove-editors!
@@ -541,7 +542,7 @@
       (add-watchers! path extension text-area completer)
       (add-button-watchers! path editor-pane)
       ; initialize parinfer
-      (init-parinfer! text-area extension edit-history)
+      (init-parinfer! text-area extension edit-history true)
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
