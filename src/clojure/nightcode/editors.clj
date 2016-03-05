@@ -1,7 +1,7 @@
 (ns nightcode.editors
   (:require [clojure.data :refer [diff]]
             [clojure.java.io :as io]
-            [clojure.string :refer [join split split-lines]]
+            [clojure.string :as str]
             [flatland.ordered.map :as flatland]
             [nightcode.completions :as completions]
             [nightcode.dialogs :as dialogs]
@@ -14,7 +14,8 @@
             [paredit.static-analysis]
             [seesaw.color :as color]
             [seesaw.core :as s]
-            [mistakes-were-made.core :as mwm])
+            [mistakes-were-made.core :as mwm]
+            [tag-soup.core :as ts])
   (:import [java.awt.event KeyEvent KeyListener MouseListener]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [nightcode.ui JConsole]
@@ -113,7 +114,7 @@
                    (if (italicize-fn) "italic" "normal")
                    (-> e-path io/file .getName)))
          (cons "<center>PgUp PgDn</center>")
-         (join "<br/>")
+         (str/join "<br/>")
          shortcuts/wrap-hint-text
          (s/editor-pane :editable? false :content-type "text/html" :text)
          (shortcuts/create-hint! true editor-pane)
@@ -298,7 +299,7 @@
   (let [^ParinferResult res (Parinfer/indentMode text (int x) (int line) nil)]
     {:x (.-cursorX res) :text (.-text res)}))
 
-(defn get-state
+(defn get-parinfer-state
   [^TextEditorPane text-area paren-mode?]
   (let [old-pos (.getCaretPosition text-area)
         old-x (.getCaretOffsetFromLineStart text-area)
@@ -309,12 +310,35 @@
                  (indent-mode old-text old-x old-line))]
     (mwm/get-state (:text result) old-line (:x result))))
 
+(defn get-normal-state
+  [^TextEditorPane text-area]
+  (let [position (.getCaretPosition text-area)
+        text (.getText text-area)]
+    (assoc (mwm/get-state text position) :should-indent? true)))
+
+(defn add-indent-if-necessary
+  [lines text tags state]
+  (if (:should-indent? state)
+    (let [[cursor-line _] (mwm/position->row-col text (:cursor-position state))
+          indent-level (ts/indent-for-line tags cursor-line)]
+      [(update lines
+               cursor-line
+               (fn [line]
+                 (str (str/join (repeat indent-level " ")) line)))
+       (+ (:cursor-position state) indent-level)])
+    [lines (:cursor-position state)]))
+
 (defn refresh-content!
   [^TextEditorPane text-area state]
   (let [old-text (.getText text-area)
-        {:keys [lines cursor-position]} state]
-    (.replaceRange text-area (join \newline lines) 0 (count old-text))
-    (.setCaretPosition text-area cursor-position)))
+        lines (:lines state)
+        new-text (str/join \newline lines)
+        tags (ts/str->tags new-text)
+        [lines cursor-position] (add-indent-if-necessary (vec lines) new-text tags state)
+        new-text (str/join \newline lines)]
+    (.replaceRange text-area new-text 0 (count old-text))
+    (.setCaretPosition text-area cursor-position)
+    state))
 
 (defn init-parinfer!
   [^TextEditorPane text-area extension edit-history preprocess?]
@@ -322,11 +346,13 @@
     (let [old-text (.getText text-area)]
       ; use paren mode to preprocess the code
       (when preprocess?
-        (let [state (assoc (get-state text-area true) :cursor-position 0)]
-          (mwm/update-edit-history! edit-history state)
-          (refresh-content! text-area state)))
+        (->> (assoc (get-parinfer-state text-area true) :cursor-position 0)
+             (refresh-content! text-area)
+             (mwm/update-edit-history! edit-history)))
       (.discardAllEdits text-area)
       (.setDirty text-area (not= old-text (.getText text-area)))
+      ; disable auto indent because we're providing our own
+      (.setAutoIndentEnabled text-area false)
       ; add a listener to run indent mode when a key is pressed
       (.addKeyListener text-area
         (reify KeyListener
@@ -342,9 +368,11 @@
                                   (.getKeyCode e))
                        (.isControlDown e)
                        (.isMetaDown e)))
-              (let [state (get-state text-area (= (.getKeyCode e) KeyEvent/VK_ENTER))]
-                (mwm/update-edit-history! edit-history state)
-                (refresh-content! text-area state))))
+              (->> (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
+                     (get-normal-state text-area)
+                     (get-parinfer-state text-area false))
+                   (refresh-content! text-area)
+                   (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
           (keyPressed [this e] nil)))
       ; add a listener to update the cursor position when the mouse is released

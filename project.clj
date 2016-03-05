@@ -18,7 +18,7 @@
                  [lein-droid "0.4.3"]
                  [lein-typed "0.3.5"]
                  [lein-ring "0.9.7"]
-                 [mistakes-were-made "1.1.0"]
+                 [mistakes-were-made "1.2.0-SNAPSHOT"]
                  [net.cgrand/parsley "0.9.3"
                   :exclusions [org.clojure/clojure]]
                  [net.java.balloontip/balloontip "1.2.4.1"]
@@ -34,7 +34,8 @@
                   :exclusions [net.cgrand/parsley
                                org.clojure/clojure]]
                  [play-clj/lein-template "1.0.0"]
-                 [seesaw "1.4.5"]]
+                 [seesaw "1.4.5"]
+                 [tag-soup "1.0.0-SNAPSHOT"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
   :resource-paths ["resources"]
