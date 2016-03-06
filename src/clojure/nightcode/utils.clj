@@ -298,7 +298,7 @@ project-set."
   (try
     (binding [*read-eval* false]
       (read-string (str \( 'do \newline s \newline \))))
-    (catch Exception _)))
+    (catch Exception e e)))
 
 (defn format-date
   "Formats unix time (in seconds) into a readable date."

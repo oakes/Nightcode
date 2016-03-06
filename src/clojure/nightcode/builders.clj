@@ -39,13 +39,19 @@
     (conj paths path)
     paths))
 
+(defn ex->print
+  [form]
+  (if (instance? Exception form)
+    (list 'println (.getMessage form))
+    form))
+
 (defn reload!
   [console path timestamp]
   (let [source-paths (-> (lein/read-project-clj path)
                          (lein/stale-clojure-sources timestamp)
                          (add-path @ui/tree-selection)
                          utils/sort-by-dependency)
-        commands (map #(utils/string->form (slurp %)) source-paths)
+        commands (map #(-> % slurp utils/string->form ex->print) source-paths)
         names (map #(-> % io/file .getName) source-paths)]
     (->> (conj (vec commands) (vec names))
          (cons 'do)
@@ -53,11 +59,10 @@
          (.enterLine console))))
 
 (defn eval!
-  "Evals either the selected text or, if no selection, then the corresponding
-top level expression."
   [console]
   (some->> (editors/get-editor-selected-text)
            utils/string->form
+           ex->print
            pr-str
            (.enterLine console)))
 
