@@ -10,9 +10,9 @@
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
                  [leiningen "2.5.3"
-                  :exclusions [leiningen.search]]
+                  :exclusions [leiningen.search org.clojure/tools.reader]]
                  [lein-ancient "0.5.4"
-                  :exclusions [clj-aws-s3]]
+                  :exclusions [clj-aws-s3 org.clojure/tools.reader]]
                  [lein-cljsbuild "1.1.2"]
                  [lein-clr "0.2.2"]
                  [lein-droid "0.4.3"]
