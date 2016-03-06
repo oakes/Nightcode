@@ -571,6 +571,7 @@
       (add-button-watchers! path editor-pane)
       ; initialize parinfer
       (init-parinfer! text-area extension edit-history true)
+      (update-buttons! editor-pane text-area)
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
