@@ -324,7 +324,7 @@
       [(update lines
                cursor-line
                (fn [line]
-                 (str (str/join (repeat indent-level " ")) line)))
+                 (str (str/join (repeat indent-level " ")) (str/triml line))))
        (+ (:cursor-position state) indent-level)])
     [lines (:cursor-position state)]))
 
