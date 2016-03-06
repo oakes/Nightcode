@@ -56,8 +56,7 @@
   "Evals either the selected text or, if no selection, then the corresponding
 top level expression."
   [console]
-  (some->> (or (editors/get-editor-selected-text)
-               (editors/get-tle-under-caret))
+  (some->> (editors/get-editor-selected-text)
            utils/string->form
            pr-str
            (.enterLine console)))

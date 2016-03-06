@@ -9,9 +9,6 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
-            [paredit.loc-utils]
-            [paredit.parser]
-            [paredit.static-analysis]
             [seesaw.color :as color]
             [seesaw.core :as s]
             [mistakes-were-made.core :as mwm]
@@ -70,17 +67,6 @@
   []
   (when-let [text-area (get-selected-text-area)]
     (.getSelectedText text-area)))
-
-(defn get-tle-under-caret
-  "Finds the top-level-expression under the caret and returns it as a string."
-  []
-  (when-let [text-area (get-selected-text-area)]
-    (when-let [point (.getCaretPosition text-area)]
-      (-> (.getText text-area)
-          paredit.parser/parse
-          paredit.loc-utils/parsed-root-loc
-          (paredit.static-analysis/top-level-code-form point)
-          paredit.loc-utils/loc-text))))
 
 ; tabs
 
