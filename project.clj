@@ -35,7 +35,7 @@
                                org.clojure/clojure]]
                  [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]
-                 [tag-soup "1.0.0-SNAPSHOT"]]
+                 [tag-soup "1.0.0"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
   :resource-paths ["resources"]
