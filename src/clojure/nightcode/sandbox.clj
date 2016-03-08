@@ -22,7 +22,9 @@
   []
   (when (get-dir)
     (let [path (get-path ".lein")]
-      (into-array String [(str "LEIN_HOME=" path)]))))
+      (into-array String [(str "LEIN_HOME=" path)
+                          (str "APP_SANDBOX_CONTAINER_ID="
+                               (System/getenv "APP_SANDBOX_CONTAINER_ID"))]))))
 
 (defn set-properties!
   []
