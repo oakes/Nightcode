@@ -285,45 +285,64 @@
   (let [^ParinferResult res (Parinfer/indentMode text (int x) (int line) nil)]
     {:x (.-cursorX res) :text (.-text res)}))
 
+(defn get-cursor-position
+  [^TextEditorPane text-area]
+  [(.getSelectionStart text-area) (.getSelectionEnd text-area)])
+
+(defn set-cursor-position!
+  [^TextEditorPane text-area & [start-pos end-pos]]
+  (if (and start-pos end-pos (not= start-pos end-pos))
+    (do
+      (.setSelectionStart text-area start-pos)
+      (.setSelectionEnd text-area end-pos))
+    (.setCaretPosition text-area start-pos)))
+
 (defn get-parinfer-state
   [^TextEditorPane text-area paren-mode?]
-  (let [old-pos (.getCaretPosition text-area)
-        old-x (.getCaretOffsetFromLineStart text-area)
-        old-line (.getCaretLineNumber text-area)
+  (let [cursor-position (get-cursor-position text-area)
+        [start-pos end-pos] cursor-position
+        selected? (not= start-pos end-pos)
+        [col row] (if selected?
+                    [0 0]
+                    [(.getCaretOffsetFromLineStart text-area)
+                     (.getCaretLineNumber text-area)])
         old-text (.getText text-area)
         result (if paren-mode?
-                 (paren-mode old-text old-x old-line)
-                 (indent-mode old-text old-x old-line))]
-    (mwm/get-state (:text result) old-line (:x result))))
+                 (paren-mode old-text col row)
+                 (indent-mode old-text col row))]
+    (if selected?
+      (mwm/get-state (:text result) cursor-position)
+      (mwm/get-state (:text result) row (:x result)))))
 
 (defn get-normal-state
   [^TextEditorPane text-area]
-  (let [position (.getCaretPosition text-area)
+  (let [position (get-cursor-position text-area)
         text (.getText text-area)]
     (assoc (mwm/get-state text position) :should-indent? true)))
 
-(defn add-indent-if-necessary
-  [lines text tags state]
-  (if (:should-indent? state)
-    (let [[cursor-line _] (mwm/position->row-col text (:cursor-position state))
-          indent-level (ts/indent-for-line tags cursor-line)]
-      [(update lines
-               cursor-line
-               (fn [line]
-                 (str (str/join (repeat indent-level " ")) (str/triml line))))
-       (+ (:cursor-position state) indent-level)])
-    [lines (:cursor-position state)]))
+(defn add-indent!
+  [^TextEditorPane text-area lines text tags state]
+  (let [start-pos (first (:cursor-position state))
+        [cursor-line _] (mwm/position->row-col text start-pos)
+        indent-level (ts/indent-for-line tags cursor-line)
+        lines (update lines
+                cursor-line
+                (fn [line]
+                  (str (str/join (repeat indent-level " ")) (str/triml line))))
+        text (str/join \newline lines)]
+    (.setText text-area text)
+    (.setCaretPosition text-area (+ start-pos indent-level))))
 
 (defn refresh-content!
   [^TextEditorPane text-area state]
-  (let [old-text (.getText text-area)
-        lines (:lines state)
-        new-text (str/join \newline lines)
-        tags (ts/str->tags new-text)
-        [lines cursor-position] (add-indent-if-necessary lines new-text tags state)
+  (let [lines (:lines state)
+        [start-pos end-pos] (:cursor-position state)
         new-text (str/join \newline lines)]
-    (.replaceRange text-area new-text 0 (count old-text))
-    (.setCaretPosition text-area cursor-position)
+    (if (:should-indent? state)
+      (add-indent! text-area lines new-text (ts/str->tags new-text) state)
+      (do
+        (.setText text-area new-text)
+        (set-cursor-position! text-area start-pos end-pos)))
     state))
 
 (defn init-parinfer!
@@ -332,7 +351,7 @@
     (let [old-text (.getText text-area)]
       ; use paren mode to preprocess the code
       (when preprocess?
-        (->> (assoc (get-parinfer-state text-area true) :cursor-position 0)
+        (->> (get-parinfer-state text-area true)
              (refresh-content! text-area)
              (mwm/update-edit-history! edit-history)))
       (.discardAllEdits text-area)
@@ -347,7 +366,7 @@
               (contains? #{KeyEvent/VK_DOWN KeyEvent/VK_UP
                            KeyEvent/VK_RIGHT KeyEvent/VK_LEFT}
                          (.getKeyCode e))
-              (mwm/update-cursor-position! edit-history (.getCaretPosition text-area))
+              (mwm/update-cursor-position! edit-history (get-cursor-position text-area))
               
               (not (or (contains? #{KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
                                     KeyEvent/VK_ALT KeyEvent/VK_META}
@@ -369,7 +388,7 @@
           (mouseExited [this e] nil)
           (mousePressed [this e] nil)
           (mouseReleased [this e]
-            (mwm/update-cursor-position! edit-history (.getCaretPosition text-area))))))
+            (mwm/update-cursor-position! edit-history (get-cursor-position text-area))))))
     (reset! edit-history nil))
   text-area)
 
