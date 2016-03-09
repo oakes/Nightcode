@@ -18,7 +18,7 @@
                  [lein-droid "0.4.3"]
                  [lein-typed "0.3.5"]
                  [lein-ring "0.9.7"]
-                 [mistakes-were-made "1.2.0"]
+                 [mistakes-were-made "1.3.0-SNAPSHOT"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.incubator "0.1.3"]

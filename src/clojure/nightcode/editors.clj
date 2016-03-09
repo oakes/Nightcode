@@ -320,7 +320,7 @@
         lines (:lines state)
         new-text (str/join \newline lines)
         tags (ts/str->tags new-text)
-        [lines cursor-position] (add-indent-if-necessary (vec lines) new-text tags state)
+        [lines cursor-position] (add-indent-if-necessary lines new-text tags state)
         new-text (str/join \newline lines)]
     (.replaceRange text-area new-text 0 (count old-text))
     (.setCaretPosition text-area cursor-position)
