@@ -589,10 +589,6 @@
           shortcuts/create-hints!
           (shortcuts/create-mappings! actions)
           (update-buttons! text-area)))
-      ; update buttons every time a key is typed
-      (s/listen text-area
-                :key-released
-                (fn [e] (update-buttons! editor-pane text-area)))
       ; install completer if it exists
       (some->> completer (completions/install-completer! text-area))
       ; add watchers
@@ -610,6 +606,10 @@
       ; initialize parinfer
       (init-parinfer! text-area extension edit-history true)
       (update-buttons! editor-pane text-area)
+      ; update buttons every time a key is typed
+      (s/listen text-area
+                :key-released
+                (fn [e] (update-buttons! editor-pane text-area)))
       ; return a map describing the editor
       {:view editor-pane
        :text-area text-area
