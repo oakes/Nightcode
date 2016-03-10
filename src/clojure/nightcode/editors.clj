@@ -320,6 +320,26 @@
         text (.getText text-area)]
     (assoc (mwm/get-state text position) :should-indent? true)))
 
+(defn get-indent-state
+  [^TextEditorPane text-area reverse?]
+  (let [[start-pos end-pos] (get-cursor-position text-area)]
+    (if (not= start-pos end-pos)
+      (let [; find the selected lines
+            text (.getText text-area)
+            [start-line start-x] (mwm/position->row-col text start-pos)
+            [end-line end-x] (mwm/position->row-col text end-pos)
+            ; run parinfer on the text
+            state (get-parinfer-state text-area false)
+            ; adjust the selection
+            lines (:lines state)
+            new-text (str/join \newline lines)
+            start-x 0
+            end-x (count (get lines end-line))
+            new-start-pos (mwm/row-col->position new-text start-line start-x)
+            new-end-pos (mwm/row-col->position new-text end-line end-x)]
+        (assoc state :cursor-position [new-start-pos new-end-pos]))
+      (get-parinfer-state text-area false))))
+
 (defn add-indent!
   [^TextEditorPane text-area lines text tags state]
   (let [start-pos (first (:cursor-position state))
@@ -373,8 +393,12 @@
                                   (.getKeyCode e))
                        (.isControlDown e)
                        (.isMetaDown e)))
-              (->> (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
+              (->> (cond
+                     (= (.getKeyCode e) KeyEvent/VK_ENTER)
                      (get-normal-state text-area)
+                     (= (.getKeyCode e) KeyEvent/VK_TAB)
+                     (get-indent-state text-area (.isShiftDown e))
+                     :else
                      (get-parinfer-state text-area false))
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
