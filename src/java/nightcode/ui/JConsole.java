@@ -308,7 +308,7 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 		}
 	}
 
-	private void resetCommandStart() {
+	public void resetCommandStart() {
 		cmdStart = textLength();
 	}
 

@@ -468,17 +468,15 @@
      (add-watchers! path extension text-area completer)
      (doto text-area
        (.setSyntaxEditingStyle (get utils/styles extension))
-       (.setLineWrap true)
-       (.addKeyListener
-         (reify KeyListener
-           (keyReleased [this e] nil)
-           (keyTyped [this e] nil)
-           (keyPressed [this e]
-             (when (= KeyEvent/VK_ENTER (.getKeyCode e))
-               (reset! edit-history (deref (mwm/create-edit-history))))))))
+       (.setLineWrap true))
      (some->> completer (completions/install-completer! text-area))
      (init-parinfer! text-area extension edit-history false)
-     (JConsole. text-area))))
+     (proxy [JConsole] [text-area]
+       (resetCommandStart []
+         (proxy-super resetCommandStart)
+         (reset! edit-history (deref (mwm/create-edit-history)))
+         (->> (mwm/get-state (.getText text-area) (get-cursor-position text-area))
+              (mwm/update-edit-history! edit-history)))))))
 
 (defn remove-editors!
   [path]
