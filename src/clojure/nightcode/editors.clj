@@ -278,11 +278,11 @@
   (set-font-size! text-area @font-size))
 
 (defn paren-mode [text x line]
-  (let [res (Parinfer/parenMode text (int x) (int line) nil)]
+  (let [res (Parinfer/parenMode text (int x) (int line) nil false)]
     {:x (.-cursorX res) :text (.-text res)}))
 
 (defn indent-mode [text x line]
-  (let [^ParinferResult res (Parinfer/indentMode text (int x) (int line) nil)]
+  (let [^ParinferResult res (Parinfer/indentMode text (int x) (int line) nil false)]
     {:x (.-cursorX res) :text (.-text res)}))
 
 (defn get-cursor-position
