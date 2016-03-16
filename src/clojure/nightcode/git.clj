@@ -382,15 +382,15 @@
 (defn create-widgets
   [actions]
   {:up (file-browser/create-up-button)
-   :pull (ui/button :id :pull
-                    :text (utils/get-string :pull)
-                    :listen [:action (:pull actions)])
-   :push (ui/button :id :push
-                    :text (utils/get-string :push)
-                    :listen [:action (:push actions)])
-   :close (ui/button :id :close
-                     :text "X"
-                     :listen [:action (:close actions)])})
+   :pull (s/button :id :pull
+                   :text (utils/get-string :pull)
+                   :listen [:action (:pull actions)])
+   :push (s/button :id :push
+                   :text (utils/get-string :push)
+                   :listen [:action (:push actions)])
+   :close (s/button :id :close
+                    :text "X"
+                    :listen [:action (:close actions)])})
 
 (defn update-paging-buttons!
   ([offset-atom]

@@ -24,9 +24,9 @@
 
 (defn create-up-button
   []
-  (doto (ui/button :id :up
-                   :text "^^"
-                   :listen [:action go-up!])
+  (doto (s/button :id :up
+                  :text "^^"
+                  :listen [:action go-up!])
     (s/text! (shortcuts/wrap-hint-text "&uarr;"))
     (utils/set-accessible-name! :parent-directory)))
 
@@ -91,21 +91,21 @@
 (defn create-widgets
   [actions]
   {:up (create-up-button)
-   :new-file (ui/button :id :new-file
-                        :text (utils/get-string :new-file)
-                        :listen [:action (:new-file actions)])
-   :edit (ui/button :id :edit
-                    :text (utils/get-string :edit)
-                    :listen [:action (:edit actions)])
-   :open-in-browser (ui/button :id :open-in-browser
-                               :text (utils/get-string :open-in-file-browser)
-                               :listen [:action (:open-in-browser actions)])
-   :save (ui/button :id :save
-                    :text (utils/get-string :save)
-                    :listen [:action (:save actions)])
-   :cancel (ui/button :id :cancel
-                      :text (utils/get-string :cancel)
-                      :listen [:action (:cancel actions)])})
+   :new-file (s/button :id :new-file
+                       :text (utils/get-string :new-file)
+                       :listen [:action (:new-file actions)])
+   :edit (s/button :id :edit
+                   :text (utils/get-string :edit)
+                   :listen [:action (:edit actions)])
+   :open-in-browser (s/button :id :open-in-browser
+                              :text (utils/get-string :open-in-file-browser)
+                              :listen [:action (:open-in-browser actions)])
+   :save (s/button :id :save
+                   :text (utils/get-string :save)
+                   :listen [:action (:save actions)])
+   :cancel (s/button :id :cancel
+                     :text (utils/get-string :cancel)
+                     :listen [:action (:cancel actions)])})
 
 (defn toggle-visible!
   [view path]

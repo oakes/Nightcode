@@ -55,9 +55,9 @@
    :toggle-logcat (s/button :id :toggle-logcat
                             :text (utils/get-string :start)
                             :listen [:action (:toggle-logcat actions)])
-   :close (ui/button :id :close
-                     :text "X"
-                     :listen [:action (:close actions)])})
+   :close (s/button :id :close
+                    :text "X"
+                    :listen [:action (:close actions)])})
 
 (defmethod editors/create-editor :logcat [_ path]
   (when (= (.getName (io/file path)) logcat-name)

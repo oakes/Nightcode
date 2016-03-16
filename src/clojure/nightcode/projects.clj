@@ -165,18 +165,18 @@
 
 (defn create-widgets
   [actions]
-  {:new-project (ui/button :id :new-project
-                           :text (utils/get-string :new-project)
-                           :listen [:action (:new-project actions)])
-   :rename (ui/button :id :rename
-                      :text (utils/get-string :rename)
-                      :listen [:action (:rename actions)])
-   :import (ui/button :id :import
-                      :text (utils/get-string :import)
-                      :listen [:action (:import actions)])
-   :remove (ui/button :id :remove
-                      :text (utils/get-string :remove)
-                      :listen [:action (:remove actions)])})
+  {:new-project (s/button :id :new-project
+                          :text (utils/get-string :new-project)
+                          :listen [:action (:new-project actions)])
+   :rename (s/button :id :rename
+                     :text (utils/get-string :rename)
+                     :listen [:action (:rename actions)])
+   :import (s/button :id :import
+                     :text (utils/get-string :import)
+                     :listen [:action (:import actions)])
+   :remove (s/button :id :remove
+                     :text (utils/get-string :remove)
+                     :listen [:action (:remove actions)])})
 
 (defn create-pane
   "Returns the pane with the project tree."

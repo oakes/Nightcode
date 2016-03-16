@@ -162,39 +162,39 @@
 
 (defn create-widgets
   [actions]
-  {:run (ui/button :id :run
-                   :text (utils/get-string :run)
-                   :listen [:action (:run actions)])
-   :run-repl (ui/button :id :run-repl
-                        :text (utils/get-string :run-with-repl)
-                        :listen [:action (:run-repl actions)])
-   :reload (ui/button :id :reload
-                      :text (utils/get-string :reload)
-                      :listen [:action (:reload actions)])
-   :eval (ui/button :id :eval
-                    :text (utils/get-string :eval)
-                    :listen [:action (:eval actions)])
-   :build (ui/button :id :build
-                     :text (utils/get-string :build)
-                     :listen [:action (:build actions)])
-   :test (ui/button :id :test
-                    :text (utils/get-string :test)
-                    :listen [:action (:test actions)])
-   :clean (ui/button :id :clean
-                     :text (utils/get-string :clean)
-                     :listen [:action (:clean actions)])
-   :check-versions (ui/button :id :check-versions
-                              :text (utils/get-string :check-versions)
-                              :listen [:action (:check-versions actions)])
-   :stop (ui/button :id :stop
-                    :text (utils/get-string :stop)
-                    :listen [:action (:stop actions)])
-   :sdk (ui/button :id :sdk
-                   :text (utils/get-string :android-sdk)
-                   :listen [:action (:sdk actions)])
-   :auto (ui/toggle :id :auto
-                    :text (utils/get-string :auto-build)
-                    :listen [:action (:auto actions)])})
+  {:run (s/button :id :run
+                  :text (utils/get-string :run)
+                  :listen [:action (:run actions)])
+   :run-repl (s/button :id :run-repl
+                       :text (utils/get-string :run-with-repl)
+                       :listen [:action (:run-repl actions)])
+   :reload (s/button :id :reload
+                     :text (utils/get-string :reload)
+                     :listen [:action (:reload actions)])
+   :eval (s/button :id :eval
+                   :text (utils/get-string :eval)
+                   :listen [:action (:eval actions)])
+   :build (s/button :id :build
+                    :text (utils/get-string :build)
+                    :listen [:action (:build actions)])
+   :test (s/button :id :test
+                   :text (utils/get-string :test)
+                   :listen [:action (:test actions)])
+   :clean (s/button :id :clean
+                    :text (utils/get-string :clean)
+                    :listen [:action (:clean actions)])
+   :check-versions (s/button :id :check-versions
+                             :text (utils/get-string :check-versions)
+                             :listen [:action (:check-versions actions)])
+   :stop (s/button :id :stop
+                   :text (utils/get-string :stop)
+                   :listen [:action (:stop actions)])
+   :sdk (s/button :id :sdk
+                  :text (utils/get-string :android-sdk)
+                  :listen [:action (:sdk actions)])
+   :auto (s/toggle :id :auto
+                   :text (utils/get-string :auto-build)
+                   :listen [:action (:auto actions)])})
 
 (defn create-builder
   [path]

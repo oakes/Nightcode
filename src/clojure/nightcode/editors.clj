@@ -523,25 +523,25 @@
 (defn create-widgets
   [actions]
   {:up (file-browser/create-up-button)
-   :save (ui/button :id :save
-                    :text (utils/get-string :save)
-                    :listen [:action (:save actions)])
-   :undo (ui/button :id :undo
-                    :text (utils/get-string :undo)
-                    :listen [:action (:undo actions)])
-   :redo (ui/button :id :redo
-                    :text (utils/get-string :redo)
-                    :listen [:action (:redo actions)])
-   :font-dec (ui/button :id :font-dec
-                        :text (utils/get-string :font-dec)
-                        :listen [:action (:font-dec actions)])
-   :font-inc (ui/button :id :font-inc
-                        :text (utils/get-string :font-inc)
-                        :listen [:action (:font-inc actions)])
-   :doc (ui/toggle :id :doc
-                   :text (utils/get-string :doc)
-                   :selected? @completions/doc-enabled?
-                   :listen [:action (:doc actions)])
+   :save (s/button :id :save
+                   :text (utils/get-string :save)
+                   :listen [:action (:save actions)])
+   :undo (s/button :id :undo
+                   :text (utils/get-string :undo)
+                   :listen [:action (:undo actions)])
+   :redo (s/button :id :redo
+                   :text (utils/get-string :redo)
+                   :listen [:action (:redo actions)])
+   :font-dec (s/button :id :font-dec
+                       :text (utils/get-string :font-dec)
+                       :listen [:action (:font-dec actions)])
+   :font-inc (s/button :id :font-inc
+                       :text (utils/get-string :font-inc)
+                       :listen [:action (:font-inc actions)])
+   :doc (s/toggle :id :doc
+                  :text (utils/get-string :doc)
+                  :selected? @completions/doc-enabled?
+                  :listen [:action (:doc actions)])
    :find (doto (s/text :id :find
                        :columns 8
                        :listen [:key-released find-text!])
@@ -552,9 +552,9 @@
                           :listen [:key-released replace-text!])
               (utils/set-accessible-name! :replace)
               (ui/text-prompt! (utils/get-string :replace)))
-   :close (doto (ui/button :id :close
-                           :text "X"
-                           :listen [:action (:close actions)])
+   :close (doto (s/button :id :close
+                          :text "X"
+                          :listen [:action (:close actions)])
             (utils/set-accessible-name! :close))})
 
 (defmulti create-editor (fn [type _] type) :default nil)
