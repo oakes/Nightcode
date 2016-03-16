@@ -6,7 +6,8 @@
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [nightcode.window :as window]
-            [seesaw.core :as s])
+            [seesaw.core :as s]
+            [mistakes-were-made.core :as mwm])
   (:gen-class))
 
 (defn init-completer!
@@ -17,12 +18,13 @@
 
 (defn create-window-content
   [extension]
-  (doto (editors/create-text-area)
-    (.setSyntaxEditingStyle (get utils/styles extension))
-    (.setTabSize 2)
-    (init-completer! extension)
-    (editors/init-paredit! true true)
-    (.setText "(println \"Hello, world!\")")))
+  (let [edit-history (mwm/create-edit-history)]
+    (doto (editors/create-text-area edit-history)
+      (.setSyntaxEditingStyle (get utils/styles extension))
+      (.setTabSize 2)
+      (init-completer! extension)
+      (editors/init-parinfer! extension edit-history true)
+      (.setText "(println \"Hello, world!\")"))))
 
 (defn create-window
   []

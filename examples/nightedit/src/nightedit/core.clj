@@ -14,8 +14,7 @@
   (when-let [f (chooser/choose-file :type :open)]
     ; the binding allows you to remove and/or rearrange widgets
     (binding [editors/*widgets* [:save :undo :redo :font-dec :font-inc
-                                 :doc :paredit :paredit-help :find :replace
-                                 :close]]
+                                 :doc :find :replace :close]]
       ; resetting this atom is all you need to do to open the file
       (reset! ui/tree-selection (.getCanonicalPath f)))))
 
