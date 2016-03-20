@@ -1,4 +1,4 @@
-(defproject nightcode "1.2.0-SNAPSHOT"
+(defproject nightcode "1.1.1"
   :description "An IDE for Clojure and Java"
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
