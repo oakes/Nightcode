@@ -470,7 +470,8 @@
        (.setSyntaxEditingStyle (get utils/styles extension))
        (.setLineWrap true))
      (some->> completer (completions/install-completer! text-area))
-     (init-parinfer! text-area extension edit-history false)
+     (when (= 1 (count (System/getProperty "line.separator")))
+       (init-parinfer! text-area extension edit-history false))
      (proxy [JConsole] [text-area]
        (resetCommandStart []
          (proxy-super resetCommandStart)
