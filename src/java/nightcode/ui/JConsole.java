@@ -312,6 +312,10 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 		cmdStart = textLength();
 	}
 
+	public int getCommandStart() {
+		return cmdStart;
+	}
+
 	private void append(final String string) {
 		final String cleaned = string.replaceAll(ESCAPE_SEQ_PATTERN,"");
 		int slen = textLength();

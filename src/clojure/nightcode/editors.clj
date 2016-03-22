@@ -299,7 +299,11 @@
 
 (defn get-parinfer-state
   [^TextEditorPane text-area paren-mode?]
-  (let [cursor-position (get-cursor-position text-area)
+  (let [parent-pane (some-> text-area .getParent .getParent)
+        start-position (if (instance? JConsole parent-pane)
+                         (.getCommandStart parent-pane)
+                         0)
+        cursor-position (get-cursor-position text-area)
         [start-pos end-pos] cursor-position
         selected? (not= start-pos end-pos)
         [col row] (if selected?
@@ -307,12 +311,16 @@
                     [(.getCaretOffsetFromLineStart text-area)
                      (.getCaretLineNumber text-area)])
         old-text (.getText text-area)
+        first-half (subs old-text 0 start-position)
+        second-half (subs old-text start-position)
+        cleared-text (str (str/replace first-half #"^[\r\n]" " ") second-half)
         result (if paren-mode?
-                 (paren-mode old-text col row)
-                 (indent-mode old-text col row))]
+                 (paren-mode cleared-text col row)
+                 (indent-mode cleared-text col row))
+        new-text (str first-half (subs (:text result) start-position))]
     (if selected?
-      (mwm/get-state (:text result) cursor-position)
-      (mwm/get-state (:text result) row (:x result)))))
+      (mwm/get-state new-text cursor-position)
+      (mwm/get-state new-text row (:x result)))))
 
 (defn get-normal-state
   [^TextEditorPane text-area]
