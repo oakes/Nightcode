@@ -313,7 +313,7 @@
         old-text (.getText text-area)
         first-half (subs old-text 0 start-position)
         second-half (subs old-text start-position)
-        cleared-text (str (str/replace first-half #"^[\r\n]" " ") second-half)
+        cleared-text (str (str/replace first-half #"[^\r^\n]" " ") second-half)
         result (if paren-mode?
                  (paren-mode cleared-text col row)
                  (indent-mode cleared-text col row))
