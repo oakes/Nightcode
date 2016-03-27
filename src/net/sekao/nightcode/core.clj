@@ -1,5 +1,5 @@
 (ns net.sekao.nightcode.core
-  (:require [clojure.java.io :refer [resource]])
+  (:require [clojure.java.io :as io])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage StageBuilder]
@@ -15,7 +15,7 @@
       (.setTitle "Nightcode")
       (.setScene scene)
       (.show))
-    (.load engine (.toExternalForm (resource "public/index.html")))))
+    (.load engine (.toExternalForm (io/resource "public/index.html")))))
 
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))

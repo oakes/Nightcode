@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.web.*?>
-<?import javafx.scene.control.*?>
-<?import java.lang.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="619.0" prefWidth="834.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="619.0" prefWidth="834.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <children>
       <VBox fx:id="sidebar" prefHeight="619.0" prefWidth="283.0">
          <children>
             <HBox fx:id="project_buttons" prefHeight="11.0" prefWidth="265.0">
                <children>
-                  <Button minWidth="-Infinity" mnemonicParsing="false" text="New Project" />
-                  <Button minWidth="-Infinity" mnemonicParsing="false" text="Import" />
-                  <Button minWidth="-Infinity" mnemonicParsing="false" text="Rename" />
-                  <Button minWidth="-Infinity" mnemonicParsing="false" text="Remove" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onNewProject" text="New Project" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onImport" text="Import" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
+                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />
                </children>
             </HBox>
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />
