@@ -1,8 +1,7 @@
 (set-env!
   :source-paths #{"src"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.8.0"]
-                  [prismatic/schema "0.4.3"]])
+  :dependencies '[[org.clojure/clojure "1.8.0"]])
 
 (task-options!
   pom {:project 'nightcode
@@ -16,8 +15,8 @@
   (comp
     (aot)
     (with-pre-wrap fileset
-      (require '[net.sekao.nightcode.core :refer [main]])
-      ((resolve 'main))
+      (require '[net.sekao.nightcode.core :refer [dev-main]])
+      ((resolve 'dev-main))
       fileset)))
 
 (deftask build []

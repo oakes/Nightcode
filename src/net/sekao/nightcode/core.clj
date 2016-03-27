@@ -6,7 +6,7 @@
            [javafx.scene Scene])
   (:gen-class :extends javafx.application.Application))
 
-(defn -start [app ^Stage stage]
+(defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (clojure.java.io/resource "main.fxml"))
         scene (Scene. root 800 600)
         editor (.lookup scene "#editor")
@@ -20,5 +20,5 @@
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))
 
-(defn main [& args]
+(defn dev-main [& args]
   (apply -main args))
