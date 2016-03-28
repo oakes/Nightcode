@@ -1,8 +1,7 @@
 (set-env!
   :source-paths #{"src"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.8.0"]
-                  [mount "0.1.10"]])
+  :dependencies '[[org.clojure/clojure "1.8.0"]])
 
 (task-options!
   pom {:project 'nightcode
