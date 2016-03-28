@@ -9,6 +9,10 @@
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]]))
 
+(defonce state (atom {:project-set (u/read-pref :project-set)
+                      :expansion-set (u/read-pref :expansion-set)
+                      :selection (u/read-pref :selection)}))
+
 (defn -onNewProject [this ^ActionEvent event]
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))]
