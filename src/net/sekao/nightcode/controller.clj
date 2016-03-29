@@ -20,12 +20,12 @@
                   (.setTitle "New Project"))
         window (u/event->window event)]
     (when-let [file (.showSaveDialog chooser window)]
-      (let [dialog (doto (Alert. Alert$AlertType/NONE)
+      (let [dialog (doto (Alert. Alert$AlertType/INFORMATION)
                      (.setHeaderText "Creating project...")
                      (.setGraphic nil)
                      (.initOwner window)
                      (.initStyle StageStyle/UNDECORATED))]
-        (.add (.getButtonTypes dialog) ButtonType/CANCEL)
+        (-> dialog .getDialogPane (.lookupButton ButtonType/OK) (.setDisable true))
         (.show dialog)
         (future
           (b/new-project! file)
