@@ -40,9 +40,13 @@
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
-                  (.setTitle "Import"))]
-    (when-let [file (.showDialog chooser (.getWindow (u/event->scene event)))]
-      (println file))))
+                  (.setTitle "Import"))
+        scene (u/event->scene event)
+        project-tree (.lookup scene "#project_tree")]
+    (when-let [file (.showDialog chooser (.getWindow scene))]
+      (-> state
+          (p/add-to-project-tree! (.getCanonicalPath file))
+          (p/update-project-tree! project-tree)))))
 
 (defn -onRename [this ^ActionEvent event]
   (let [dialog (doto (TextInputDialog.)
