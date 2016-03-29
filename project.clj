@@ -30,7 +30,7 @@
                  [org.jetbrains.kotlin/kotlin-stdlib "1.0.0"] ; for parinfer
                  [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]
-                 [tag-soup "1.0.0"]]
+                 [tag-soup "1.0.1"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
   :resource-paths ["resources"]
