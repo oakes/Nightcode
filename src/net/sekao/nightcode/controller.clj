@@ -3,7 +3,8 @@
             [net.sekao.nightcode.boot :as b])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
-           [javafx.stage DirectoryChooser FileChooser StageStyle Window])
+           [javafx.stage DirectoryChooser FileChooser StageStyle Window]
+           [javafx.application Platform])
   (:gen-class
    :methods [[onNewProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
@@ -16,9 +17,19 @@
 
 (defn -onNewProject [this ^ActionEvent event]
   (let [chooser (doto (FileChooser.)
-                  (.setTitle "New Project"))]
-    (when-let [file (.showSaveDialog chooser (u/event->window event))]
-      (b/new-project (.getName file)))))
+                  (.setTitle "New Project"))
+        window (u/event->window event)]
+    (when-let [file (.showSaveDialog chooser window)]
+      (let [dialog (doto (Alert. Alert$AlertType/NONE)
+                     (.setHeaderText "Creating project...")
+                     (.setGraphic nil)
+                     (.initOwner window)
+                     (.initStyle StageStyle/UNDECORATED))]
+        (.add (.getButtonTypes dialog) ButtonType/CANCEL)
+        (.show dialog)
+        (future
+          (b/new-project! file)
+          (Platform/runLater #(.hide dialog)))))))
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)

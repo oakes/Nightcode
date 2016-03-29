@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.projects :as p]
+            [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.controller :refer [state]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]

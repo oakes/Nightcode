@@ -1,6 +1,29 @@
 (ns net.sekao.nightcode.boot
-  (:require [boot.core :as core]
-            [boot.task.built-in :as built-in]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str])
+  (:import [boot.App]))
 
-(defn new-project [project-name]
-  (core/boot (built-in/speak)))
+(defn boot! [dir & args]
+  (let [old-dir (System/getProperty "user.dir")]
+    (System/setProperty "user.dir" dir)
+    (System/setProperty "java.security.policy"
+                        (-> "java.policy" io/resource .toString))
+    (System/setSecurityManager
+      (proxy [SecurityManager] []
+        (checkExit [status]
+          (throw (Exception.)))))
+    (try
+      (boot.App/main (into-array String args))
+      (catch Exception _)
+      (finally
+        (System/setSecurityManager nil)
+        (System/setProperty "user.dir" old-dir)))))
+
+(defn new-project! [file]
+  (let [dir (.getCanonicalPath (.getParentFile file))
+        project-name (str/lower-case (.getName file))]
+    (boot! dir
+      "--no-boot-script"
+      "-d" "seancorfield/boot-new" "new"
+      "-t" "app"
+      "-n" project-name)))
