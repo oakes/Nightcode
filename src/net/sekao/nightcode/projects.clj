@@ -47,9 +47,9 @@
         false))))
 
 (defn add-to-project-tree! [state-atom path]
-  (->> (swap! state-atom update :project-set conj path)
-       :project-set
-       (u/write-pref! :project-set)))
+  (let [state (swap! state-atom update :project-set conj path)]
+    (u/write-pref! :project-set (:project-set state))
+    state))
 
 (defn update-project-tree! [state tree]
   (doto tree

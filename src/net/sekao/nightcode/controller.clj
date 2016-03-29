@@ -34,8 +34,9 @@
           (Platform/runLater
             (fn []
               (.hide dialog)
-              (p/add-to-project-tree! state (.getCanonicalPath file))
-              (p/update-project-tree! @state project-tree))))))))
+              (-> state
+                  (p/add-to-project-tree! (.getCanonicalPath file))
+                  (p/update-project-tree! project-tree)))))))))
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
