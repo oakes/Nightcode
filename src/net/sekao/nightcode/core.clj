@@ -21,9 +21,7 @@
       (.setScene scene)
       (.show))
     (.load engine (.toExternalForm (io/resource "public/index.html")))
-    (doto project-tree
-      (.setShowRoot false)
-      (.setRoot (p/root-node @state)))))
+    (p/update-project-tree! @state project-tree)))
 
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))

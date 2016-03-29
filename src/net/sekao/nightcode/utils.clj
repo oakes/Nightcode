@@ -30,5 +30,5 @@
 
 ; misc
 
-(defn event->window [^ActionEvent event]
-  (-> event .getSource .getScene .getWindow))
+(defn event->scene [^ActionEvent event]
+  (-> event .getSource .getScene))

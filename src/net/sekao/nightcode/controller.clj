@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.controller
   (:require [net.sekao.nightcode.utils :as u]
-            [net.sekao.nightcode.boot :as b])
+            [net.sekao.nightcode.boot :as b]
+            [net.sekao.nightcode.projects :as p])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
            [javafx.stage DirectoryChooser FileChooser StageStyle Window]
@@ -18,23 +19,28 @@
 (defn -onNewProject [this ^ActionEvent event]
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))
-        window (u/event->window event)]
-    (when-let [file (.showSaveDialog chooser window)]
+        scene (u/event->scene event)
+        project-tree (.lookup scene "#project_tree")]
+    (when-let [file (.showSaveDialog chooser (.getWindow scene))]
       (let [dialog (doto (Alert. Alert$AlertType/INFORMATION)
                      (.setHeaderText "Creating project...")
                      (.setGraphic nil)
-                     (.initOwner window)
+                     (.initOwner (.getWindow scene))
                      (.initStyle StageStyle/UNDECORATED))]
         (-> dialog .getDialogPane (.lookupButton ButtonType/OK) (.setDisable true))
         (.show dialog)
         (future
           (b/new-project! file)
-          (Platform/runLater #(.hide dialog)))))))
+          (Platform/runLater
+            (fn []
+              (.hide dialog)
+              (p/add-to-project-tree! state (.getCanonicalPath file))
+              (p/update-project-tree! @state project-tree))))))))
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
                   (.setTitle "Import"))]
-    (when-let [file (.showDialog chooser (u/event->window event))]
+    (when-let [file (.showDialog chooser (.getWindow (u/event->scene event)))]
       (println file))))
 
 (defn -onRename [this ^ActionEvent event]
@@ -42,7 +48,7 @@
                  (.setTitle "Rename")
                  (.setHeaderText "Enter a path relative to the project root.")
                  (.setGraphic nil)
-                 (.initOwner (u/event->window event)))]
+                 (.initOwner (.getWindow (u/event->scene event))))]
     (when-let [result (-> dialog .showAndWait (.orElse nil))]
       (println result))))
 
@@ -54,6 +60,6 @@
                  (.setTitle "Remove")
                  (.setHeaderText message)
                  (.setGraphic nil)
-                 (.initOwner (u/event->window event)))]
+                 (.initOwner (.getWindow (u/event->scene event))))]
     (when (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
       (println "remove"))))

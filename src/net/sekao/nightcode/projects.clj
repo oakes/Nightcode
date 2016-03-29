@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.projects
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.utils :as u])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]))
@@ -44,3 +45,13 @@
           (proxy-super getChildren)))
       (isLeaf []
         false))))
+
+(defn add-to-project-tree! [state-atom path]
+  (->> (swap! state-atom update :project-set conj path)
+       :project-set
+       (u/write-pref! :project-set)))
+
+(defn update-project-tree! [state tree]
+  (doto tree
+    (.setShowRoot false)
+    (.setRoot (root-node state))))
