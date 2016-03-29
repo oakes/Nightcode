@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.controller
-  (:require [net.sekao.nightcode.utils :as u])
+  (:require [net.sekao.nightcode.utils :as u]
+            [net.sekao.nightcode.boot :as b])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
            [javafx.stage DirectoryChooser FileChooser StageStyle Window])
@@ -17,7 +18,7 @@
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))]
     (when-let [file (.showSaveDialog chooser (u/event->window event))]
-      (println file))))
+      (b/new-project (.getName file)))))
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
