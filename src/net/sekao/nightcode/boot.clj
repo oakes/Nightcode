@@ -24,6 +24,6 @@
         project-name (str/lower-case (.getName file))]
     (boot! dir
       "--no-boot-script"
-      "-d" "seancorfield/boot-new" "new"
+      "-d" "seancorfield/boot-new:0.4.2" "new"
       "-t" "app"
       "-n" project-name)))
