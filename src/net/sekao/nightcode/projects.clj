@@ -66,22 +66,24 @@
     (when (= -1 (.getSelectedIndex selection-model))
       (.select selection-model (int 0)))))
 
+(defn update-project-buttons! [state scene]
+  (let [rename-button (.lookup scene "#rename_button")
+        remove-button (.lookup scene "#remove_button")
+        path (:selection state)
+        file (io/file path)]
+    (.setDisable rename-button (not (.isFile file)))
+    (.setDisable remove-button
+      (and (not (contains? (:project-set state) path))
+        (not (.isFile file))))))
+
 (defn set-selection-listener! [state-atom scene tree]
   (let [selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
           (when-let [path (some-> new-value .getValue .getCanonicalPath)]
-            ; save the new selection
-            (swap! state-atom assoc :selection path)
-            ; disable project tree buttons if necessary
-            (let [rename-button (.lookup scene "#rename_button")
-                  remove-button (.lookup scene "#remove_button")
-                  file (io/file path)]
-              (.setDisable rename-button (not (.isFile file)))
-              (.setDisable remove-button
-                (and (not (contains? (:project-set @state-atom) path))
-                  (not (.isFile file)))))))))))
+            (-> (swap! state-atom assoc :selection path)
+                (update-project-buttons! scene))))))))
 
 (defn set-expanded-listener! [state-atom scene tree]
   (let [root-item (.getRoot tree)]
