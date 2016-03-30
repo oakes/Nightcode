@@ -99,14 +99,31 @@
       (isLeaf []
         false))))
 
+(defn set-expanded-listener! [state-atom tree]
+  (let [root-item (.getRoot tree)]
+    (.addEventHandler root-item
+      (TreeItem/branchExpandedEvent)
+      (reify EventHandler
+        (handle [this event]
+          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
+            (swap! state-atom update :expansion-set conj path)))))
+    (.addEventHandler root-item
+      (TreeItem/branchCollapsedEvent)
+      (reify EventHandler
+        (handle [this event]
+          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
+            (swap! state-atom update :expansion-set disj path)))))))
+
 (defn update-project-tree!
-  ([state tree]
-   (update-project-tree! state tree nil))
-  ([state tree new-selection]
-   (doto tree
-     (.setShowRoot false)
-     (.setRoot (root-node state)))
-   (let [expansions (:expansion-set state)
+  ([state-atom tree]
+   (update-project-tree! state-atom tree nil))
+  ([state-atom tree new-selection]
+   (let [state @state-atom
+         _ (doto tree
+             (.setShowRoot false)
+             (.setRoot (root-node state)))
+         _ (set-expanded-listener! state-atom tree)
+         expansions (:expansion-set state)
          selection (or new-selection (:selection state))
          selection-model (.getSelectionModel tree)]
      ; set expansions and selection
@@ -141,27 +158,12 @@
             (-> (swap! state-atom assoc :selection path)
                 (update-project-buttons! scene))))))))
 
-(defn set-expanded-listener! [state-atom scene tree]
-  (let [root-item (.getRoot tree)]
-    (.addEventHandler root-item
-      (TreeItem/branchExpandedEvent)
-      (reify EventHandler
-        (handle [this event]
-          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
-            (swap! state-atom update :expansion-set conj path)))))
-    (.addEventHandler root-item
-      (TreeItem/branchCollapsedEvent)
-      (reify EventHandler
-        (handle [this event]
-          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
-            (swap! state-atom update :expansion-set disj path)))))))
-
 (defn set-focused-listener! [state-atom stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
       (changed [this observable old-value new-value]
         (when new-value
-          (update-project-tree! @state-atom project-tree))))))
+          (update-project-tree! state-atom project-tree))))))
 
 (defn remove-from-project-tree! [state-atom path]
   (let [{:keys [project-set]} @state-atom]

@@ -34,9 +34,8 @@
           (Platform/runLater
             (fn []
               (.hide dialog)
-              (-> state
-                  (swap! update :project-set conj (.getCanonicalPath file))
-                  (p/update-project-tree! project-tree)))))))))
+              (swap! state update :project-set conj (.getCanonicalPath file))
+              (p/update-project-tree! state project-tree))))))))
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
@@ -45,9 +44,8 @@
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showDialog chooser (.getWindow scene))]
       (let [path (.getCanonicalPath file)]
-        (-> state
-            (swap! update :project-set conj path)
-            (p/update-project-tree! project-tree path))))))
+        (swap! state update :project-set conj path)
+        (p/update-project-tree! state project-tree path)))))
 
 (defn -onRename [this ^ActionEvent event]
   (let [scene (event->scene event)
@@ -68,7 +66,7 @@
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file)
           (p/delete-parents-recursively! (:project-set @state) selected-path)
-          (p/update-project-tree! @state project-tree new-path))))))
+          (p/update-project-tree! state project-tree new-path))))))
 
 (defn -onRemove [this ^ActionEvent event]
   (let [{:keys [project-set selection]} @state
@@ -84,4 +82,4 @@
         project-tree (.lookup scene "#project_tree")]
     (when (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
       (p/remove-from-project-tree! state selection)
-      (p/update-project-tree! @state project-tree))))
+      (p/update-project-tree! state project-tree))))
