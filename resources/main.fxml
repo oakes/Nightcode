@@ -14,8 +14,8 @@
                <children>
                   <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onNewProject" text="New Project" />
                   <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onImport" text="Import" />
-                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
-                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />
+                  <Button fx:id="rename_button" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
+                  <Button fx:id="remove_button" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />
                </children>
             </HBox>
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />

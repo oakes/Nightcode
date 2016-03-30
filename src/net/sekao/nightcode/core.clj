@@ -37,7 +37,7 @@
       (.show))
     (.load engine (.toExternalForm (io/resource "public/index.html")))
     (p/update-project-tree! @state project-tree)
-    (p/set-selection-listener! state project-tree)))
+    (p/set-selection-listener! state scene project-tree)))
 
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))
