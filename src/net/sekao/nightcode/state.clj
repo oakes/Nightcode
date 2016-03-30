@@ -29,8 +29,8 @@
 
 ; state
 
-(defonce state (atom {:project-set (read-pref :project-set)
-                      :expansion-set (read-pref :expansion-set)
+(defonce state (atom {:project-set (read-pref :project-set #{})
+                      :expansion-set (read-pref :expansion-set #{})
                       :selection (read-pref :selection)}))
 
 (add-watch state :state-changed
