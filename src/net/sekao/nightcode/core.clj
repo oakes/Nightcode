@@ -1,7 +1,6 @@
 (ns net.sekao.nightcode.core
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.state :refer [state]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
@@ -10,7 +9,7 @@
   (:gen-class :extends javafx.application.Application))
 
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
-  (let [root (FXMLLoader/load (clojure.java.io/resource "main.fxml"))
+  (let [root (FXMLLoader/load (io/resource "main.fxml"))
         scene (Scene. root 800 600)
         editor (.lookup scene "#editor")
         project-tree (.lookup scene "#project_tree")
