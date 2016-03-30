@@ -1,6 +1,5 @@
 (ns net.sekao.nightcode.projects
-  (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.utils :as u])
+  (:require [clojure.java.io :as io])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
