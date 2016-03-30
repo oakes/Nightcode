@@ -4,7 +4,8 @@
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
-           [javafx.beans.value ChangeListener]))
+           [javafx.beans.value ChangeListener]
+           [javafx.event EventHandler]))
 
 (declare file-node)
 
@@ -82,3 +83,18 @@
               (.setDisable remove-button
                 (and (not (contains? (:project-set @state-atom) path))
                   (not (.isFile file)))))))))))
+
+(defn set-expanded-listener! [state-atom scene tree]
+  (let [root-item (.getRoot tree)]
+    (.addEventHandler root-item
+      (TreeItem/branchExpandedEvent)
+      (reify EventHandler
+        (handle [this event]
+          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
+            (swap! state-atom update :expansion-set conj path)))))
+    (.addEventHandler root-item
+      (TreeItem/branchCollapsedEvent)
+      (reify EventHandler
+        (handle [this event]
+          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
+            (swap! state-atom update :expansion-set disj path)))))))
