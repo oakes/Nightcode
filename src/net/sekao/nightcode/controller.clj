@@ -35,7 +35,7 @@
             (fn []
               (.hide dialog)
               (-> state
-                  (p/add-to-project-tree! (.getCanonicalPath file))
+                  (swap! update :project-set conj (.getCanonicalPath file))
                   (p/update-project-tree! project-tree)))))))))
 
 (defn -onImport [this ^ActionEvent event]
@@ -45,7 +45,7 @@
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showDialog chooser (.getWindow scene))]
       (-> state
-          (p/add-to-project-tree! (.getCanonicalPath file))
+          (swap! update :project-set conj (.getCanonicalPath file))
           (p/update-project-tree! project-tree)))))
 
 (defn -onRename [this ^ActionEvent event]

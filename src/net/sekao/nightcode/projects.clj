@@ -3,7 +3,8 @@
             [net.sekao.nightcode.utils :as u])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
-           [javafx.collections FXCollections]))
+           [javafx.collections FXCollections]
+           [javafx.beans.value ChangeListener]))
 
 (declare file-node)
 
@@ -46,11 +47,6 @@
       (isLeaf []
         false))))
 
-(defn add-to-project-tree! [state-atom path]
-  (let [state (swap! state-atom update :project-set conj path)]
-    (u/write-pref! :project-set (:project-set state))
-    state))
-
 (defn update-project-tree! [state tree]
   (doto tree
     (.setShowRoot false)
@@ -69,3 +65,11 @@
     ; select the first project if there is nothing selected
     (when (= -1 (.getSelectedIndex selection-model))
       (.select selection-model (int 0)))))
+
+(defn set-selection-listener! [state-atom tree]
+  (let [selection-model (.getSelectionModel tree)]
+    (.addListener (.selectedItemProperty selection-model)
+      (reify ChangeListener
+        (changed [this observable old-value new-value]
+          (when-let [path (some-> new-value .getValue .getCanonicalPath)]
+            (swap! state-atom assoc :selection path)))))))
