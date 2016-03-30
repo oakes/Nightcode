@@ -44,9 +44,10 @@
         scene (event->scene event)
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showDialog chooser (.getWindow scene))]
-      (-> state
-          (swap! update :project-set conj (.getCanonicalPath file))
-          (p/update-project-tree! project-tree)))))
+      (let [path (.getCanonicalPath file)]
+        (-> state
+            (swap! update :project-set conj path)
+            (p/update-project-tree! project-tree path))))))
 
 (defn -onRename [this ^ActionEvent event]
   (let [scene (event->scene event)
