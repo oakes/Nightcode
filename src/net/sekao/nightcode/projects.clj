@@ -155,3 +155,9 @@
         (handle [this event]
           (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
             (swap! state-atom update :expansion-set disj path)))))))
+
+(defn remove-from-project-tree! [state-atom path]
+  (let [{:keys [project-set]} @state-atom]
+    (if (contains? project-set path)
+      (swap! state-atom update :project-set disj path)
+      (delete-parents-recursively! project-set path))))

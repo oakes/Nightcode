@@ -62,20 +62,25 @@
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
       (when (not= relative-path new-relative-path)
         (let [new-file (io/file project-path new-relative-path)
-              new-path (.getCanonicalPath new-file)]
+              new-path (.getCanonicalPath new-file)
+              project-tree (.lookup scene "#project_tree")]
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file)
           (p/delete-parents-recursively! (:project-set @state) selected-path)
-          (p/update-project-tree! @state (.lookup scene "#project_tree") new-path))))))
+          (p/update-project-tree! @state project-tree new-path))))))
 
 (defn -onRemove [this ^ActionEvent event]
-  (let [message (if true ; TODO
+  (let [{:keys [project-set selection]} @state
+        message (if (contains? project-set selection)
                   "Remove this project? It WILL NOT be deleted from the disk."
                   "Remove this file? It WILL be deleted from the disk.")
+        scene (event->scene event)
         dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
                  (.setTitle "Remove")
                  (.setHeaderText message)
                  (.setGraphic nil)
-                 (.initOwner (.getWindow (event->scene event))))]
+                 (.initOwner (.getWindow scene)))
+        project-tree (.lookup scene "#project_tree")]
     (when (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
-      (println "remove"))))
+      (p/remove-from-project-tree! state selection)
+      (p/update-project-tree! @state project-tree))))
