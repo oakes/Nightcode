@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.controller
-  (:require [net.sekao.nightcode.boot :as b]
+  (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [state]])
   (:import [javafx.event ActionEvent]
@@ -48,13 +49,24 @@
           (p/update-project-tree! project-tree)))))
 
 (defn -onRename [this ^ActionEvent event]
-  (let [dialog (doto (TextInputDialog.)
+  (let [scene (event->scene event)
+        dialog (doto (TextInputDialog.)
                  (.setTitle "Rename")
                  (.setHeaderText "Enter a path relative to the project root.")
                  (.setGraphic nil)
-                 (.initOwner (.getWindow (event->scene event))))]
-    (when-let [result (-> dialog .showAndWait (.orElse nil))]
-      (println result))))
+                 (.initOwner (.getWindow scene)))
+        project-path (p/get-project-root-path @state)
+        selected-path (:selection @state)
+        relative-path (p/get-relative-path project-path selected-path)]
+    (-> dialog .getEditor (.setText relative-path))
+    (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
+      (when (not= relative-path new-relative-path)
+        (let [new-file (io/file project-path new-relative-path)
+              new-path (.getCanonicalPath new-file)]
+          (.mkdirs (.getParentFile new-file))
+          (.renameTo (io/file selected-path) new-file)
+          (p/delete-parents-recursively! (:project-set @state) selected-path)
+          (p/update-project-tree! @state (.lookup scene "#project_tree") new-path))))))
 
 (defn -onRemove [this ^ActionEvent event]
   (let [message (if true ; TODO

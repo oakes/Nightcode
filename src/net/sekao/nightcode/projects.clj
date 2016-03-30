@@ -6,6 +6,58 @@
            [javafx.beans.value ChangeListener]
            [javafx.event EventHandler]))
 
+; paths
+
+(defn get-relative-path
+  "Returns the selected path as a relative URI to the project path."
+  [project-path selected-path]
+  (-> (.toURI (io/file project-path))
+      (.relativize (.toURI (io/file selected-path)))
+      (.getPath)))
+
+(defn delete-parents-recursively!
+  "Deletes the given file along with all empty parents unless they are in project-set."
+  [project-set path]
+  (let [f (io/file path)]
+    (when (and (zero? (count (.listFiles f)))
+               (not (contains? project-set path)))
+      (io/delete-file f true)
+      (->> f
+           .getParentFile
+           .getCanonicalPath
+           (delete-parents-recursively! project-set))))
+  nil)
+
+(defn delete-children-recursively!
+  "Deletes the children of the given dir along with the dir itself."
+  [path]
+  (let [f (io/file path)]
+    (when (.isDirectory f)
+      (doseq [f2 (.listFiles f)]
+        (delete-children-recursively! f2)))
+    (io/delete-file f))
+  nil)
+
+(defn get-project-root-path
+  "Returns the root path that the selected path is contained within."
+  [state]
+  (when-let [^String selected-path (:selection state)]
+    (-> #(or (.startsWith selected-path (str % File/separator))
+           (= selected-path %))
+        (filter (:project-set state))
+        first)))
+
+(defn parent-path?
+  "Determines if the given parent path is equal to or a parent of the child."
+  [^String parent-path ^String child-path]
+  (or (= parent-path child-path)
+      (and parent-path
+           child-path
+           (.isDirectory (io/file parent-path))
+           (.startsWith child-path (str parent-path File/separator)))))
+
+; tree
+
 (declare file-node)
 
 (defn get-children [files]
@@ -47,24 +99,28 @@
       (isLeaf []
         false))))
 
-(defn update-project-tree! [state tree]
-  (doto tree
-    (.setShowRoot false)
-    (.setRoot (root-node state)))
-  (let [expansions (:expansion-set state)
-        selection (:selection state)
-        selection-model (.getSelectionModel tree)]
-    ; set expansions and selection
-    (doseq [i (range) :while (< i (.getExpandedItemCount tree))]
-      (let [item (.getTreeItem tree i)
-            path (-> item .getValue .getCanonicalPath)]
-        (when (contains? expansions path)
-          (.setExpanded item true))
-        (when (= selection path)
-          (.select selection-model item))))
-    ; select the first project if there is nothing selected
-    (when (= -1 (.getSelectedIndex selection-model))
-      (.select selection-model (int 0)))))
+(defn update-project-tree!
+  ([state tree]
+   (update-project-tree! state tree nil))
+  ([state tree new-selection]
+   (doto tree
+     (.setShowRoot false)
+     (.setRoot (root-node state)))
+   (let [expansions (:expansion-set state)
+         selection (or new-selection (:selection state))
+         selection-model (.getSelectionModel tree)]
+     ; set expansions and selection
+     (doseq [i (range) :while (< i (.getExpandedItemCount tree))]
+       (let [item (.getTreeItem tree i)
+             path (-> item .getValue .getCanonicalPath)]
+         (when (or (contains? expansions path)
+                 (parent-path? path new-selection))
+           (.setExpanded item true))
+         (when (= selection path)
+           (.select selection-model item))))
+     ; select the first project if there is nothing selected
+     (when (= -1 (.getSelectedIndex selection-model))
+       (.select selection-model (int 0))))))
 
 (defn update-project-buttons! [state scene]
   (let [rename-button (.lookup scene "#rename_button")
