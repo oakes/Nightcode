@@ -13,13 +13,10 @@
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]]))
 
-(defn event->scene [^ActionEvent event]
-  (-> event .getSource .getScene))
-
 (defn -onNewProject [this ^ActionEvent event]
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))
-        scene (event->scene event)
+        scene (-> event .getSource .getScene)
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showSaveDialog chooser (.getWindow scene))]
       (let [dialog (doto (Alert. Alert$AlertType/INFORMATION)
@@ -40,7 +37,7 @@
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
                   (.setTitle "Import"))
-        scene (event->scene event)
+        scene (-> event .getSource .getScene)
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showDialog chooser (.getWindow scene))]
       (let [path (.getCanonicalPath file)]
@@ -48,7 +45,7 @@
         (p/update-project-tree! state project-tree path)))))
 
 (defn -onRename [this ^ActionEvent event]
-  (let [scene (event->scene event)
+  (let [scene (-> event .getSource .getScene)
         dialog (doto (TextInputDialog.)
                  (.setTitle "Rename")
                  (.setHeaderText "Enter a path relative to the project root.")
@@ -73,7 +70,7 @@
         message (if (contains? project-set selection)
                   "Remove this project? It WILL NOT be deleted from the disk."
                   "Remove this file? It WILL be deleted from the disk.")
-        scene (event->scene event)
+        scene (-> event .getSource .getScene)
         dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
                  (.setTitle "Remove")
                  (.setHeaderText message)
