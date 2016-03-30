@@ -54,4 +54,18 @@
 (defn update-project-tree! [state tree]
   (doto tree
     (.setShowRoot false)
-    (.setRoot (root-node state))))
+    (.setRoot (root-node state)))
+  (let [expansions (:expansion-set state)
+        selection (:selection state)
+        selection-model (.getSelectionModel tree)]
+    ; set expansions and selection
+    (doseq [i (range) :while (< i (.getExpandedItemCount tree))]
+      (let [item (.getTreeItem tree i)
+            path (-> item .getValue .getCanonicalPath)]
+        (when (contains? expansions path)
+          (.setExpanded item true))
+        (when (= selection path)
+          (.select selection-model item))))
+    ; select the first project if there is nothing selected
+    (when (= -1 (.getSelectedIndex selection-model))
+      (.select selection-model (int 0)))))
