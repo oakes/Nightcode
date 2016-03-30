@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -12,7 +14,11 @@
          <children>
             <HBox fx:id="project_buttons" prefHeight="11.0" prefWidth="265.0">
                <children>
-                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onNewProject" text="New Project" />
+                  <MenuButton fx:id="new_project" minWidth="-Infinity" mnemonicParsing="false" text="New Project">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console" />
+                     </items>
+                  </MenuButton>
                   <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onImport" text="Import" />
                   <Button fx:id="rename_button" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
                   <Button fx:id="remove_button" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />

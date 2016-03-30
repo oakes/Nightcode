@@ -8,15 +8,14 @@
            [javafx.stage DirectoryChooser FileChooser StageStyle Window]
            [javafx.application Platform])
   (:gen-class
-   :methods [[onNewProject [javafx.event.ActionEvent] void]
+   :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]]))
 
-(defn -onNewProject [this ^ActionEvent event]
+(defn new-project! [scene project-type]
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))
-        scene (-> event .getSource .getScene)
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showSaveDialog chooser (.getWindow scene))]
       (let [dialog (doto (Alert. Alert$AlertType/INFORMATION)
@@ -27,12 +26,15 @@
         (-> dialog .getDialogPane (.lookupButton ButtonType/OK) (.setDisable true))
         (.show dialog)
         (future
-          (b/new-project! file)
+          (b/new-project! file (name project-type))
           (Platform/runLater
             (fn []
               (.hide dialog)
               (swap! state update :project-set conj (.getCanonicalPath file))
               (p/update-project-tree! state project-tree))))))))
+
+(defn -onNewConsoleProject [this ^ActionEvent event]
+  (new-project! (-> event .getSource .getParentPopup .getOwnerWindow .getScene) :app))
 
 (defn -onImport [this ^ActionEvent event]
   (let [chooser (doto (DirectoryChooser.)
