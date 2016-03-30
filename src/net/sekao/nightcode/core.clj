@@ -22,7 +22,8 @@
     (p/update-project-tree! @state project-tree)
     (p/update-project-buttons! @state scene)
     (p/set-selection-listener! state scene project-tree)
-    (p/set-expanded-listener! state scene project-tree)))
+    (p/set-expanded-listener! state scene project-tree)
+    (p/set-focused-listener! state stage project-tree)))
 
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))

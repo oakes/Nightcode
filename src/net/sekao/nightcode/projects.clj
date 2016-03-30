@@ -156,6 +156,13 @@
           (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
             (swap! state-atom update :expansion-set disj path)))))))
 
+(defn set-focused-listener! [state-atom stage project-tree]
+  (.addListener (.focusedProperty stage)
+    (reify ChangeListener
+      (changed [this observable old-value new-value]
+        (when new-value
+          (update-project-tree! @state-atom project-tree))))))
+
 (defn remove-from-project-tree! [state-atom path]
   (let [{:keys [project-set]} @state-atom]
     (if (contains? project-set path)
