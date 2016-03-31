@@ -3,7 +3,9 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
@@ -27,10 +29,15 @@
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
-      <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
-         <children>
-            <WebView fx:id="editor" prefHeight="404.0" prefWidth="405.0" VBox.vgrow="ALWAYS" />
-         </children>
-      </VBox>
+      <SplitPane dividerPositions="0.75" orientation="VERTICAL" HBox.hgrow="ALWAYS">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0">
+               <children>
+                  <WebView fx:id="editor" prefHeight="0.0" prefWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+        </items>
+      </SplitPane>
    </children>
 </HBox>
