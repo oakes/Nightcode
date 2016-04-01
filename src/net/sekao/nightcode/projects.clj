@@ -4,7 +4,8 @@
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
            [javafx.beans.value ChangeListener]
-           [javafx.event EventHandler]))
+           [javafx.event EventHandler]
+           [javafx.fxml FXMLLoader]))
 
 ; paths
 
@@ -59,7 +60,8 @@
 ; tree
 
 (definterface ProjectTreeItem
-  (getPath [] "Unique path representing this item"))
+  (getPath [] "Unique path representing this item")
+  (getPane [] "The pane for the given item"))
 
 (declare file-node)
 
@@ -78,7 +80,15 @@
                           (not (.startsWith filename "."))))
                       (.listFiles file)
                       get-children
-                      delay)]
+                      delay)
+        pane (delay (doto (FXMLLoader/load (io/resource "project.fxml"))
+                      (->
+                        .getItems
+                        (.get 0)
+                        .getChildren
+                        (.get 0)
+                        .getEngine
+                        (.load (.toExternalForm (io/resource "public/index.html"))))))]
     (proxy [TreeItem ProjectTreeItem] [value]
       (getChildren []
         (if-not (realized? children)
@@ -88,17 +98,22 @@
       (isLeaf []
         (not (.isDirectory file)))
       (getPath []
-        path))))
+        path)
+      (getPane []
+        @pane))))
 
 (defn home-node []
   (let [value (proxy [Object] []
                 (toString []
-                  "Home"))]
+                  "Home"))
+        pane (delay (FXMLLoader/load (io/resource "home.fxml")))]
     (proxy [TreeItem ProjectTreeItem] [value]
       (isLeaf []
         true)
       (getPath []
-        "**Home**"))))
+        "**Home**")
+      (getPane []
+        @pane))))
 
 (defn root-node [state]
   (let [project-files (->> (:project-set state)
@@ -165,19 +180,17 @@
       (and (not (contains? (:project-set state) path))
         (not (.isFile file))))))
 
-(defn set-selection-listener! [state-atom scene tree content panes]
+(defn set-selection-listener! [state-atom scene tree content]
   (let [selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
-          (when-let [path (some-> new-value .getPath)]
-            (-> (swap! state-atom assoc :selection path)
+          (when new-value
+            (-> (swap! state-atom assoc :selection (.getPath new-value))
                 (update-project-buttons! scene))
             (doto (.getChildren content)
               (.clear)
-              (.add (case path
-                      "**Home**" (:home panes)
-                      (:project panes))))))))))
+              (.add (.getPane new-value)))))))))
 
 (defn set-focused-listener! [state-atom stage project-tree]
   (.addListener (.focusedProperty stage)

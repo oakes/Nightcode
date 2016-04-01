@@ -11,21 +11,16 @@
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))
         scene (Scene. root 1242 768)
-        _ (doto stage
-            (.setTitle "Nightcode")
-            (.setScene scene)
-            (.show))
         project-tree (.lookup scene "#project_tree")
-        content (.lookup scene "#content")
-        panes {:project (.lookup scene "#project")
-               :home (.lookup scene "#home")}
-        editor (.lookup scene "#editor")
-        engine (.getEngine editor)]
+        content (.lookup scene "#content")]
+    (doto stage
+      (.setTitle "Nightcode")
+      (.setScene scene)
+      (.show))
     (-> content .getChildren .clear)
-    (.load engine (.toExternalForm (io/resource "public/index.html")))
     (p/update-project-tree! state project-tree)
     (p/update-project-buttons! @state scene)
-    (p/set-selection-listener! state scene project-tree content panes)
+    (p/set-selection-listener! state scene project-tree content)
     (p/set-focused-listener! state stage project-tree)))
 
 (defn -main [& args]
