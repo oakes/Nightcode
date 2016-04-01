@@ -15,13 +15,17 @@
             (.setTitle "Nightcode")
             (.setScene scene)
             (.show))
-        editor (.lookup scene "#editor")
         project-tree (.lookup scene "#project_tree")
+        content (.lookup scene "#content")
+        panes {:project (.lookup scene "#project")
+               :home (.lookup scene "#home")}
+        editor (.lookup scene "#editor")
         engine (.getEngine editor)]
+    (-> content .getChildren .clear)
     (.load engine (.toExternalForm (io/resource "public/index.html")))
     (p/update-project-tree! state project-tree)
     (p/update-project-buttons! @state scene)
-    (p/set-selection-listener! state scene project-tree)
+    (p/set-selection-listener! state scene project-tree content panes)
     (p/set-focused-listener! state stage project-tree)))
 
 (defn -main [& args]

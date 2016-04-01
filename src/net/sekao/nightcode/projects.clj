@@ -58,6 +58,9 @@
 
 ; tree
 
+(definterface ProjectTreeItem
+  (getPath [] "Unique path representing this item"))
+
 (declare file-node)
 
 (defn get-children [files]
@@ -67,29 +70,42 @@
 
 (defn file-node [file]
   (let [path (.getCanonicalPath file)
-        custom-file (proxy [File] [path]
-                      (toString []
-                        (.getName this)))
+        value (proxy [File] [path]
+                (toString []
+                  (.getName this)))
         children (->> (reify FilenameFilter
                         (accept [this dir filename]
                           (not (.startsWith filename "."))))
                       (.listFiles file)
                       get-children
                       delay)]
-    (proxy [TreeItem] [custom-file]
+    (proxy [TreeItem ProjectTreeItem] [value]
       (getChildren []
         (if-not (realized? children)
           (doto (proxy-super getChildren)
             (.addAll @children))
           (proxy-super getChildren)))
       (isLeaf []
-        (not (.isDirectory file))))))
+        (not (.isDirectory file)))
+      (getPath []
+        path))))
+
+(defn home-node []
+  (let [value (proxy [Object] []
+                (toString []
+                  "Home"))]
+    (proxy [TreeItem ProjectTreeItem] [value]
+      (isLeaf []
+        true)
+      (getPath []
+        "**Home**"))))
 
 (defn root-node [state]
   (let [project-files (->> (:project-set state)
                            (map #(io/file %))
                            (sort-by #(.getName %)))
-        children (delay (get-children project-files))]
+        children (delay (doto (get-children project-files)
+                          (.add 0 (home-node))))]
     (proxy [TreeItem] []
       (getChildren []
         (if-not (realized? children)
@@ -105,13 +121,13 @@
       (TreeItem/branchExpandedEvent)
       (reify EventHandler
         (handle [this event]
-          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
+          (when-let [path (-> event .getTreeItem .getPath)]
             (swap! state-atom update :expansion-set conj path)))))
     (.addEventHandler root-item
       (TreeItem/branchCollapsedEvent)
       (reify EventHandler
         (handle [this event]
-          (when-let [path (-> event .getTreeItem .getValue .getCanonicalPath)]
+          (when-let [path (-> event .getTreeItem .getPath)]
             (swap! state-atom update :expansion-set disj path)))))))
 
 (defn update-project-tree!
@@ -129,7 +145,7 @@
      ; set expansions and selection
      (doseq [i (range) :while (< i (.getExpandedItemCount tree))]
        (let [item (.getTreeItem tree i)
-             path (-> item .getValue .getCanonicalPath)]
+             path (.getPath item)]
          (when (or (contains? expansions path)
                  (parent-path? path new-selection))
            (.setExpanded item true))
@@ -149,14 +165,19 @@
       (and (not (contains? (:project-set state) path))
         (not (.isFile file))))))
 
-(defn set-selection-listener! [state-atom scene tree]
+(defn set-selection-listener! [state-atom scene tree content panes]
   (let [selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
-          (when-let [path (some-> new-value .getValue .getCanonicalPath)]
+          (when-let [path (some-> new-value .getPath)]
             (-> (swap! state-atom assoc :selection path)
-                (update-project-buttons! scene))))))))
+                (update-project-buttons! scene))
+            (doto (.getChildren content)
+              (.clear)
+              (.add (case path
+                      "**Home**" (:home panes)
+                      (:project panes))))))))))
 
 (defn set-focused-listener! [state-atom stage project-tree]
   (.addListener (.focusedProperty stage)

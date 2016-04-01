@@ -7,10 +7,12 @@
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="619.0" prefWidth="834.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <children>
       <VBox fx:id="sidebar" prefHeight="619.0" prefWidth="283.0">
          <children>
@@ -29,15 +31,20 @@
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
-      <SplitPane dividerPositions="0.75" orientation="VERTICAL" HBox.hgrow="ALWAYS">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0">
-               <children>
-                  <WebView fx:id="editor" prefHeight="0.0" prefWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
-        </items>
-      </SplitPane>
+      <StackPane fx:id="content" HBox.hgrow="ALWAYS">
+         <children>
+            <SplitPane fx:id="project" dividerPositions="0.75" orientation="VERTICAL">
+              <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0">
+                     <children>
+                        <WebView fx:id="editor" prefHeight="0.0" prefWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+              </items>
+            </SplitPane>
+            <Pane fx:id="home" />
+         </children>
+      </StackPane>
    </children>
 </HBox>

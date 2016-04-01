@@ -20,8 +20,8 @@
         (System/setProperty "user.dir" old-dir)))))
 
 (defn new-project! [file template]
-  (let [dir (.getCanonicalPath (.getParentFile file))
-        project-name (str/lower-case (.getName file))]
+  (let [dir (-> file .getParentFile .getCanonicalPath)
+        project-name (-> file .getName str/lower-case)]
     (boot! dir
       "--no-boot-script"
       "-d" "seancorfield/boot-new:0.4.2" "new"
