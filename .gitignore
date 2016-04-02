@@ -4,8 +4,5 @@ pom.xml
 pom.xml.asc
 **/gen
 **/target
-*~
-.*
-/TAGS
-/target
-
+.DS_Store
+.*-history
