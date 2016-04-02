@@ -5,7 +5,8 @@
            [javafx.collections FXCollections]
            [javafx.beans.value ChangeListener]
            [javafx.event EventHandler]
-           [javafx.fxml FXMLLoader]))
+           [javafx.fxml FXMLLoader]
+           [javafx.concurrent Worker$State]))
 
 ; paths
 
@@ -65,15 +66,29 @@
 
 (declare get-children)
 
-(defn file-pane []
-  (doto (FXMLLoader/load (io/resource "project.fxml"))
-    (->
-      .getItems
-      (.get 0)
-      .getChildren
-      (.get 0)
-      .getEngine
-      (.load (.toExternalForm (io/resource "public/index.html"))))))
+(defn file-pane [file]
+  (let [pane (FXMLLoader/load (io/resource "project.fxml"))
+        engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)]
+    (->> "public/index.html" io/resource .toExternalForm (.load engine))
+    (-> engine .getLoadWorker .stateProperty
+        (.addListener
+          (proxy [ChangeListener] []
+            (changed [ov old-state new-state]
+              (when (= new-state Worker$State/SUCCEEDED)
+                ; set the page content
+                (-> engine
+                    .getDocument
+                    (.getElementById "content")
+                    (.setTextContent (slurp file)))
+                ; load paren-soup
+                (let [elem (-> engine .getDocument (.createElement "script"))]
+                  (.setAttribute elem "src" "paren-soup.js")
+                  (-> engine
+                      .getDocument
+                      (.getElementsByTagName "body")
+                      (.item 0)
+                      (.appendChild elem))))))))
+    pane))
 
 (defn dir-pane []
   (FXMLLoader/load (io/resource "dir.fxml")))
@@ -105,7 +120,7 @@
       (getPane [state-atom]
         (if (.isDirectory file)
           (dir-pane)
-          (let [pane (or (get-in @state-atom [:panes path] (file-pane)))]
+          (let [pane (or (get-in @state-atom [:panes path] (file-pane file)))]
             (swap! state-atom update :panes assoc path pane)
             pane))))))
 
