@@ -61,14 +61,22 @@
 
 (definterface ProjectTreeItem
   (getPath [] "Unique path representing this item")
-  (getPane [] "The pane for the given item"))
+  (getPane [state-atom] "The pane for the given item"))
 
-(declare file-node)
+(declare get-children)
 
-(defn get-children [files]
-  (let [children (FXCollections/observableArrayList)]
-    (run! #(.add children (file-node %)) files)
-    children))
+(defn file-pane []
+  (doto (FXMLLoader/load (io/resource "project.fxml"))
+    (->
+      .getItems
+      (.get 0)
+      .getChildren
+      (.get 0)
+      .getEngine
+      (.load (.toExternalForm (io/resource "public/index.html"))))))
+
+(defn home-pane []
+  (FXMLLoader/load (io/resource "home.fxml")))
 
 (defn file-node [file]
   (let [path (.getCanonicalPath file)
@@ -80,15 +88,7 @@
                           (not (.startsWith filename "."))))
                       (.listFiles file)
                       get-children
-                      delay)
-        pane (delay (doto (FXMLLoader/load (io/resource "project.fxml"))
-                      (->
-                        .getItems
-                        (.get 0)
-                        .getChildren
-                        (.get 0)
-                        .getEngine
-                        (.load (.toExternalForm (io/resource "public/index.html"))))))]
+                      delay)]
     (proxy [TreeItem ProjectTreeItem] [value]
       (getChildren []
         (if-not (realized? children)
@@ -99,21 +99,25 @@
         (not (.isDirectory file)))
       (getPath []
         path)
-      (getPane []
-        @pane))))
+      (getPane [state-atom]
+        (let [pane (get-in @state-atom [:panes path] (delay (file-pane)))]
+          (swap! state-atom update :panes assoc path pane)
+          @pane)))))
 
 (defn home-node []
-  (let [value (proxy [Object] []
+  (let [path "**Home**"
+        value (proxy [Object] []
                 (toString []
-                  "Home"))
-        pane (delay (FXMLLoader/load (io/resource "home.fxml")))]
+                  "Home"))]
     (proxy [TreeItem ProjectTreeItem] [value]
       (isLeaf []
         true)
       (getPath []
-        "**Home**")
-      (getPane []
-        @pane))))
+        path)
+      (getPane [state-atom]
+        (let [pane (get-in @state-atom [:panes path] (delay (home-pane)))]
+          (swap! state-atom update :panes assoc path pane)
+          @pane)))))
 
 (defn root-node [state]
   (let [project-files (->> (:project-set state)
@@ -129,6 +133,11 @@
           (proxy-super getChildren)))
       (isLeaf []
         false))))
+
+(defn get-children [files]
+  (let [children (FXCollections/observableArrayList)]
+    (run! #(.add children (file-node %)) files)
+    children))
 
 (defn set-expanded-listener! [state-atom tree]
   (let [root-item (.getRoot tree)]
@@ -190,7 +199,7 @@
                 (update-project-buttons! scene))
             (doto (.getChildren content)
               (.clear)
-              (.add (.getPane new-value)))))))))
+              (.add (.getPane new-value state-atom)))))))))
 
 (defn set-focused-listener! [state-atom stage project-tree]
   (.addListener (.focusedProperty stage)

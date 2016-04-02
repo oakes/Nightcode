@@ -31,7 +31,8 @@
 
 (defonce state (atom {:project-set (read-pref :project-set #{})
                       :expansion-set (read-pref :expansion-set #{})
-                      :selection (read-pref :selection)}))
+                      :selection (read-pref :selection)
+                      :panes {}}))
 
 (add-watch state :state-changed
   (fn [_ _ old-state new-state]
