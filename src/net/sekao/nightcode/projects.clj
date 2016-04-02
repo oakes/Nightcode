@@ -75,6 +75,9 @@
       .getEngine
       (.load (.toExternalForm (io/resource "public/index.html"))))))
 
+(defn dir-pane []
+  (FXMLLoader/load (io/resource "dir.fxml")))
+
 (defn home-pane []
   (FXMLLoader/load (io/resource "home.fxml")))
 
@@ -100,9 +103,11 @@
       (getPath []
         path)
       (getPane [state-atom]
-        (let [pane (or (get-in @state-atom [:panes path]) (file-pane))]
-          (swap! state-atom update :panes assoc path pane)
-          pane)))))
+        (if (.isDirectory file)
+          (dir-pane)
+          (let [pane (or (get-in @state-atom [:panes path] (file-pane)))]
+            (swap! state-atom update :panes assoc path pane)
+            pane))))))
 
 (defn home-node []
   (let [path "**Home**"
