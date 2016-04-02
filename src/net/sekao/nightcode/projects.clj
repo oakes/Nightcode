@@ -100,9 +100,9 @@
       (getPath []
         path)
       (getPane [state-atom]
-        (let [pane (get-in @state-atom [:panes path] (delay (file-pane)))]
+        (let [pane (or (get-in @state-atom [:panes path]) (file-pane))]
           (swap! state-atom update :panes assoc path pane)
-          @pane)))))
+          pane)))))
 
 (defn home-node []
   (let [path "**Home**"
@@ -115,9 +115,9 @@
       (getPath []
         path)
       (getPane [state-atom]
-        (let [pane (get-in @state-atom [:panes path] (delay (home-pane)))]
+        (let [pane (or (get-in @state-atom [:panes path]) (home-pane))]
           (swap! state-atom update :panes assoc path pane)
-          @pane)))))
+          pane)))))
 
 (defn root-node [state]
   (let [project-files (->> (:project-set state)
