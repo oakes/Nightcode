@@ -4,5 +4,5 @@ pom.xml
 pom.xml.asc
 **/gen
 **/target
-.DS_Store
-.*-history
+.*
+!.gitignore
