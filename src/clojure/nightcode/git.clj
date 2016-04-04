@@ -353,11 +353,10 @@
    (doseq [l (.getTreeSelectionListeners sidebar)]
      (.removeTreeSelectionListener sidebar l))
    ; add model and listener, then re-select the row
-   (let [commits (cons nil ; represents uncommitted changes
-                       (try
-                         (-> repo Git. .log (.setMaxCount max-commits)
-                             (.setSkip @offset) .call .iterator iterator-seq)
-                         (catch Exception _ [])))
+   (let [commits (try
+                   (-> repo Git. .log (.setMaxCount max-commits)
+                       (.setSkip @offset) .call .iterator iterator-seq)
+                   (catch Exception _ []))
          selected-row (selected-row sidebar commits)]
      (doto sidebar
        (.setModel (DefaultTreeModel. (root-node commits)))
