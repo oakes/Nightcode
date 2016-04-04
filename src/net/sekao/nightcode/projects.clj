@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.projects
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.editors :as e])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
@@ -68,7 +69,8 @@
 
 (defn file-pane [file]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
-        engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)]
+        engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)
+        port @e/create-web-server]
     (->> "public/index.html" io/resource .toExternalForm (.load engine))
     (-> engine .getLoadWorker .stateProperty
         (.addListener
@@ -81,6 +83,13 @@
                     (.getElementById "content")
                     (.setTextContent (slurp file)))
                 ; load paren-soup
+                (let [elem (-> engine .getDocument (.createElement "base"))]
+                  (.setAttribute elem "href" (str "http://localhost:" port))
+                  (-> engine
+                      .getDocument
+                      (.getElementsByTagName "head")
+                      (.item 0)
+                      (.appendChild elem)))
                 (let [elem (-> engine .getDocument (.createElement "script"))]
                   (.setAttribute elem "src" "paren-soup.js")
                   (-> engine

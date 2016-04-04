@@ -2,7 +2,8 @@
   :source-paths #{"src"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/clojure "1.8.0"]
-                  [boot/core "2.5.5"]])
+                  [boot/core "2.5.5"]
+                  [ring "1.4.0"]])
 
 (task-options!
   pom {:project 'nightcode
