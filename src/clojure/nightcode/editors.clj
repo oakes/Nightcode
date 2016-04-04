@@ -412,7 +412,7 @@
                    (mwm/update-edit-history! edit-history))
               
               (and (or (.isControlDown e) (.isMetaDown e))
-                (= (.getKeyCode e) KeyEvent/VK_V))
+                (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
               (->> (get-parinfer-state text-area true)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
