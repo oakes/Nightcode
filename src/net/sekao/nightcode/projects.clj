@@ -80,21 +80,18 @@
                     .getDocument
                     (.getElementById "content")
                     (.setTextContent (slurp file)))
-                ; load paren-soup
-                (let [elem (-> engine .getDocument (.createElement "base"))]
+                ; refresh paren-soup
+                (let [head (-> engine .getDocument (.getElementsByTagName "head") (.item 0))
+                      elem (-> engine .getDocument (.createElement "base"))]
                   (.setAttribute elem "href" (str "http://localhost:" (:web-port state)))
-                  (-> engine
-                      .getDocument
-                      (.getElementsByTagName "head")
-                      (.item 0)
-                      (.appendChild elem)))
-                (let [elem (-> engine .getDocument (.createElement "script"))]
-                  (.setAttribute elem "src" "paren-soup.js")
-                  (-> engine
-                      .getDocument
-                      (.getElementsByTagName "body")
-                      (.item 0)
-                      (.appendChild elem))))))))
+                  (.appendChild head elem))
+                (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
+                      old-elem (-> body (.getElementsByTagName "script") (.item 0))
+                      new-elem (-> engine .getDocument (.createElement "script"))]
+                  (.setAttribute new-elem "src" "paren-soup.js")
+                  (doto body
+                    (.removeChild old-elem)
+                    (.appendChild new-elem))))))))
     pane))
 
 (defn dir-pane []
