@@ -7,11 +7,10 @@
   (when (= (:uri request) "/")
     (redirect "/index.html")))
 
-(def create-web-server
-  (delay
-    (-> handler
-        (wrap-resource "public")
-        (run-jetty {:port 0 :join? false})
-        .getConnectors
-        (aget 0)
-        .getLocalPort)))
+(defn start-web-server! []
+  (-> handler
+      (wrap-resource "public")
+      (run-jetty {:port 0 :join? false})
+      .getConnectors
+      (aget 0)
+      .getLocalPort))

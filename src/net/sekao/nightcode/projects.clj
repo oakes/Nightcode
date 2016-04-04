@@ -1,6 +1,5 @@
 (ns net.sekao.nightcode.projects
-  (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.editors :as e])
+  (:require [clojure.java.io :as io])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
@@ -67,10 +66,9 @@
 
 (declare get-children)
 
-(defn file-pane [file]
+(defn file-pane [state file]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
-        engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)
-        port @e/create-web-server]
+        engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)]
     (->> "public/index.html" io/resource .toExternalForm (.load engine))
     (-> engine .getLoadWorker .stateProperty
         (.addListener
@@ -84,7 +82,7 @@
                     (.setTextContent (slurp file)))
                 ; load paren-soup
                 (let [elem (-> engine .getDocument (.createElement "base"))]
-                  (.setAttribute elem "href" (str "http://localhost:" port))
+                  (.setAttribute elem "href" (str "http://localhost:" (:web-port state)))
                   (-> engine
                       .getDocument
                       (.getElementsByTagName "head")
@@ -129,7 +127,8 @@
       (getPane [state-atom]
         (if (.isDirectory file)
           (dir-pane)
-          (let [pane (or (get-in @state-atom [:panes path] (file-pane file)))]
+          (let [state @state-atom
+                pane (or (get-in state [:panes path] (file-pane state file)))]
             (swap! state-atom update :panes assoc path pane)
             pane))))))
 

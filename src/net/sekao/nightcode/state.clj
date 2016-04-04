@@ -32,6 +32,7 @@
 (defonce state (atom {:project-set (read-pref :project-set #{})
                       :expansion-set (read-pref :expansion-set #{})
                       :selection (read-pref :selection)
+                      :web-port nil
                       :panes {}}))
 
 (add-watch state :state-changed

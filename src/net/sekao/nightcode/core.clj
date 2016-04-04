@@ -1,7 +1,8 @@
 (ns net.sekao.nightcode.core
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.state :refer [state]])
+            [net.sekao.nightcode.state :refer [state]]
+            [net.sekao.nightcode.editors :as e])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage StageBuilder]
@@ -17,6 +18,7 @@
       (.setTitle "Nightcode")
       (.setScene scene)
       (.show))
+    (swap! state assoc :web-port (e/start-web-server!))
     (-> content .getChildren .clear)
     (p/update-project-tree! state project-tree)
     (p/update-project-buttons! @state scene)
