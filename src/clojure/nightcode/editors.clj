@@ -409,6 +409,12 @@
                      :else
                      (get-parinfer-state text-area false))
                    (refresh-content! text-area)
+                   (mwm/update-edit-history! edit-history))
+              
+              (and (or (.isControlDown e) (.isMetaDown e))
+                (= (.getKeyCode e) KeyEvent/VK_V))
+              (->> (get-parinfer-state text-area true)
+                   (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
           (keyPressed [this e] nil)))
@@ -612,10 +618,6 @@
       ; initialize parinfer
       (init-parinfer! text-area extension edit-history true)
       (update-buttons! editor-pane text-area)
-      ; update buttons every time a key is typed
-      (s/listen text-area
-                :key-released
-                (fn [e] (update-buttons! editor-pane text-area)))
       ; return a map describing the editor
       {:view editor-pane
        :text-area text-area
