@@ -396,13 +396,11 @@
                          (.getKeyCode e))
               (mwm/update-cursor-position! edit-history (get-cursor-position text-area))
               
-              (and (or (.isControlDown e) (.isMetaDown e))
-                (= (.getKeyCode e) KeyEvent/VK_V))
-              (->> (get-parinfer-state text-area true)
-                   (refresh-content! text-area)
-                   (mwm/update-edit-history! edit-history))
-              
-              :else
+              (not (or (contains? #{KeyEvent/VK_SHIFT KeyEvent/VK_CONTROL
+                                    KeyEvent/VK_ALT KeyEvent/VK_META}
+                                  (.getKeyCode e))
+                       (.isControlDown e)
+                       (.isMetaDown e)))
               (->> (cond
                      (= (.getKeyCode e) KeyEvent/VK_ENTER)
                      (get-normal-state text-area)
@@ -410,6 +408,12 @@
                      (get-indent-state text-area (.isShiftDown e))
                      :else
                      (get-parinfer-state text-area false))
+                   (refresh-content! text-area)
+                   (mwm/update-edit-history! edit-history))
+              
+              (and (or (.isControlDown e) (.isMetaDown e))
+                (= (.getKeyCode e) KeyEvent/VK_V))
+              (->> (get-parinfer-state text-area true)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
