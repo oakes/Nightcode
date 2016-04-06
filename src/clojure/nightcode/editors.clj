@@ -1,7 +1,7 @@
 (ns nightcode.editors
   (:require [clojure.data :refer [diff]]
             [clojure.java.io :as io]
-            [clojure.string :as str]
+            [clojure.string :as str :refer [join]]
             [flatland.ordered.map :as flatland]
             [nightcode.completions :as completions]
             [nightcode.dialogs :as dialogs]
@@ -100,7 +100,7 @@
                    (if (italicize-fn) "italic" "normal")
                    (-> e-path io/file .getName)))
          (cons "<center>PgUp PgDn</center>")
-         (str/join "<br/>")
+         (join "<br/>")
          shortcuts/wrap-hint-text
          (s/editor-pane :editable? false :content-type "text/html" :text)
          (shortcuts/create-hint! true editor-pane)
@@ -297,22 +297,28 @@
       (.setSelectionEnd text-area end-pos))
     (.setCaretPosition text-area start-pos)))
 
+(defn init-state
+  [^TextEditorPane text-area]
+  (let [pos (get-cursor-position text-area)
+        text (.getText text-area)]
+    {:cursor-position pos
+     :text text}))
+
 (defn get-parinfer-state
-  [^TextEditorPane text-area paren-mode?]
-  (let [parent-pane (some-> text-area .getParent .getParent)
+  [^TextEditorPane text-area paren-mode? initial-state]
+  (let [{:keys [cursor-position text]} initial-state
+        [start-pos end-pos] cursor-position
+        selected? (not= start-pos end-pos)
+        parent-pane (some-> text-area .getParent .getParent)
         start-position (if (instance? JConsole parent-pane)
                          (.getCommandStart parent-pane)
                          0)
-        cursor-position (get-cursor-position text-area)
-        [start-pos end-pos] cursor-position
-        selected? (not= start-pos end-pos)
         [col row] (if selected?
                     [0 0]
                     [(.getCaretOffsetFromLineStart text-area)
                      (.getCaretLineNumber text-area)])
-        old-text (.getText text-area)
-        first-half (subs old-text 0 start-position)
-        second-half (subs old-text start-position)
+        first-half (subs text 0 start-position)
+        second-half (subs text start-position)
         cleared-text (str (str/replace first-half #"[^\r^\n]" " ") second-half)
         result (if paren-mode?
                  (paren-mode cleared-text col row)
@@ -323,53 +329,73 @@
       (mwm/get-state new-text row (:x result)))))
 
 (defn get-normal-state
-  [^TextEditorPane text-area]
-  (let [position (get-cursor-position text-area)
-        text (.getText text-area)]
-    (assoc (mwm/get-state text position) :should-indent? true)))
+  [initial-state]
+  (let [{:keys [cursor-position text]} initial-state]
+    (mwm/get-state text cursor-position)))
 
-(defn get-indent-state
-  [^TextEditorPane text-area reverse?]
-  (let [[start-pos end-pos] (get-cursor-position text-area)]
-    (if (not= start-pos end-pos)
-      (let [; find the selected lines
-            text (.getText text-area)
-            [start-line start-x] (mwm/position->row-col text start-pos)
-            [end-line end-x] (mwm/position->row-col text end-pos)
-            ; run parinfer on the text
-            state (get-parinfer-state text-area false)
-            ; adjust the selection
-            lines (:lines state)
-            new-text (str/join \newline lines)
-            start-x 0
-            end-x (count (get lines end-line))
-            new-start-pos (mwm/row-col->position new-text start-line start-x)
-            new-end-pos (mwm/row-col->position new-text end-line end-x)]
-        (assoc state :cursor-position [new-start-pos new-end-pos]))
-      (get-parinfer-state text-area false))))
-
-(defn add-indent!
+(defn add-indent
   [^TextEditorPane text-area lines text tags state]
-  (let [start-pos (first (:cursor-position state))
-        [cursor-line _] (mwm/position->row-col text start-pos)
-        indent-level (ts/indent-for-line tags cursor-line)
-        lines (update lines
-                cursor-line
-                (fn [line]
-                  (str (str/join (repeat indent-level " ")) (str/triml line))))
-        text (str/join \newline lines)]
-    (.setText text-area text)
-    (.setCaretPosition text-area (+ start-pos indent-level))))
+  (let [cursor-position (:cursor-position state)
+        [start-pos end-pos] cursor-position
+        [start-line _] (mwm/position->row-col text start-pos)
+        [end-line _] (mwm/position->row-col text end-pos)
+        lines-to-change (range start-line (inc end-line))
+        old-indent-level (->> (get lines start-line) seq (take-while #(= % \space)) count)
+        new-indent-level (case (:indent-type state)
+                           :return
+                           (ts/indent-for-line tags start-line)
+                           :back
+                           (ts/back-indent-for-line tags start-line)
+                           :forward
+                           (ts/forward-indent-for-line tags start-line))
+        indent-change (- new-indent-level old-indent-level)
+        indent-change (if (neg? indent-change)
+                        (->> (seq (get lines start-line))
+                             (split-with #(= % \space))
+                             first
+                             (take (* -1 indent-change))
+                             count
+                             (* -1))
+                        indent-change)
+        lines (reduce
+                (fn [lines line-to-change]
+                  (update
+                    lines
+                    line-to-change
+                    (fn [line]
+                      (let [[spaces code] (split-with #(= % \space) (seq line))
+                            spaces (if (pos? indent-change)
+                                     (concat spaces (repeat indent-change \space))
+                                     (drop (* -1 indent-change) spaces))]
+                        (str (join spaces) (join code))))))
+                lines
+                lines-to-change)
+        text (join \newline lines)
+        state (get-parinfer-state text-area false {:text text :cursor-position cursor-position})
+        lines (:lines state)
+        text (join \newline lines)]
+    (assoc state
+      :cursor-position
+      (if (= start-pos end-pos)
+        (let [pos (mwm/row-col->position text start-line new-indent-level)]
+          [pos pos])
+        [(mwm/row-col->position text start-line 0)
+         (mwm/row-col->position text end-line (count (get lines end-line)))]))))
+    
 
 (defn refresh-content!
   [^TextEditorPane text-area state]
   (let [lines (:lines state)
         [start-pos end-pos] (:cursor-position state)
-        new-text (str/join \newline lines)]
-    (if (:should-indent? state)
-      (add-indent! text-area lines new-text (ts/str->tags new-text) state)
-      (do
+        text (join \newline lines)]
+    (if (:indent-type state)
+      (let [tags (ts/str->tags text)
+            {:keys [lines cursor-position]} (add-indent text-area lines text tags state)
+            new-text (join \newline lines)]
         (.setText text-area new-text)
+        (set-cursor-position! text-area (first cursor-position) (second cursor-position)))
+      (do
+        (.setText text-area text)
         (set-cursor-position! text-area start-pos end-pos)))
     state))
 
@@ -379,7 +405,8 @@
     (let [old-text (.getText text-area)]
       ; use paren mode to preprocess the code
       (when preprocess?
-        (->> (get-parinfer-state text-area true)
+        (->> (init-state text-area)
+             (get-parinfer-state text-area true)
              (refresh-content! text-area)
              (mwm/update-edit-history! edit-history)))
       (.discardAllEdits text-area)
@@ -401,23 +428,29 @@
                                   (.getKeyCode e))
                        (.isControlDown e)
                        (.isMetaDown e)))
-              (->> (cond
-                     (= (.getKeyCode e) KeyEvent/VK_ENTER)
-                     (get-normal-state text-area)
-                     (= (.getKeyCode e) KeyEvent/VK_TAB)
-                     (get-indent-state text-area (.isShiftDown e))
-                     :else
-                     (get-parinfer-state text-area false))
-                   (refresh-content! text-area)
-                   (mwm/update-edit-history! edit-history))
+              (let [initial-state (init-state text-area)]
+                (->> (cond
+                       (= (.getKeyCode e) KeyEvent/VK_ENTER)
+                       (assoc (get-normal-state initial-state)
+                         :indent-type :return)
+                       (= (.getKeyCode e) KeyEvent/VK_TAB)
+                       (assoc (get-normal-state initial-state)
+                         :indent-type (if (.isShiftDown e) :back :forward))
+                       :else
+                       (get-parinfer-state text-area false initial-state))
+                     (refresh-content! text-area)
+                     (mwm/update-edit-history! edit-history)))
               
               (and (or (.isControlDown e) (.isMetaDown e))
                 (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
-              (->> (get-parinfer-state text-area false)
+              (->> (init-state text-area)
+                   (get-parinfer-state text-area false)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
-          (keyPressed [this e] nil)))
+          (keyPressed [this e]
+            (when (= (.getKeyCode e) KeyEvent/VK_TAB)
+              (.consume e)))))
       ; add a listener to update the cursor position when the mouse is released
       (.addMouseListener text-area
         (reify MouseListener
