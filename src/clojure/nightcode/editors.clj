@@ -390,14 +390,15 @@
         text (join \newline lines)]
     (if (:indent-type state)
       (let [tags (ts/str->tags text)
-            {:keys [lines cursor-position]} (add-indent text-area lines text tags state)
+            {:keys [lines cursor-position] :as state} (add-indent text-area lines text tags state)
             new-text (join \newline lines)]
         (.setText text-area new-text)
-        (set-cursor-position! text-area (first cursor-position) (second cursor-position)))
+        (set-cursor-position! text-area (first cursor-position) (second cursor-position))
+        state)
       (do
         (.setText text-area text)
-        (set-cursor-position! text-area start-pos end-pos)))
-    state))
+        (set-cursor-position! text-area start-pos end-pos)
+        state))))
 
 (defn init-parinfer!
   [^TextEditorPane text-area extension edit-history preprocess?]
@@ -648,6 +649,9 @@
             (update-buttons! editor-pane text-area))
           (removeUpdate [this e]
             (update-buttons! editor-pane text-area))))
+      (add-watch edit-history :update-edit-history
+        (fn [_ _ _ _]
+          (update-buttons! editor-pane text-area)))
       ; initialize parinfer
       (init-parinfer! text-area extension edit-history true)
       (update-buttons! editor-pane text-area)
