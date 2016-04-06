@@ -1,5 +1,6 @@
 (ns nightcode.builders
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [nightcode.dialogs :as dialogs]
             [nightcode.editors :as editors]
             [nightcode.lein :as lein]
@@ -39,31 +40,26 @@
     (conj paths path)
     paths))
 
-(defn ex->print
-  [form]
-  (if (instance? Exception form)
-    (list 'println (.getMessage form))
-    form))
+(defn sanitize-code
+  [code]
+  (let [result (editors/indent-mode code 0 0)]
+    (str "(do" \newline (:text result) \newline ")")))
 
 (defn reload!
   [console path timestamp]
   (let [source-paths (-> (lein/read-project-clj path)
                          (lein/stale-clojure-sources timestamp)
                          (add-path @ui/tree-selection)
-                         utils/sort-by-dependency)
-        commands (map #(-> % slurp utils/string->form ex->print) source-paths)
-        names (map #(-> % io/file .getName) source-paths)]
-    (->> (conj (vec commands) (vec names))
-         (cons 'do)
-         pr-str
+                         utils/sort-by-dependency)]
+    (->> (map slurp source-paths)
+         (str/join \newline)
+         sanitize-code
          (.enterLine console))))
 
 (defn eval!
   [console]
   (some->> (editors/get-editor-selected-text)
-           utils/string->form
-           ex->print
-           pr-str
+           sanitize-code
            (.enterLine console)))
 
 ; toggling functions

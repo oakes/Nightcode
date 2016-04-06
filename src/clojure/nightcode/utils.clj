@@ -292,14 +292,6 @@ project-set."
   [s]
   (->> (.getBytes s "UTF-8") create-hash BigInteger. (format "%x") keyword))
 
-(defn string->form
-  "Converts expressions in the given string to a do form."
-  [s]
-  (try
-    (binding [*read-eval* false]
-      (read-string (str \( 'do \newline s \newline \))))
-    (catch Exception e e)))
-
 (defn format-date
   "Formats unix time (in seconds) into a readable date."
   [unix-time]

@@ -414,7 +414,7 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 		text.repaint();
 	}
 
-	private void acceptLine(final String line) {
+	public void acceptLine(final String line) {
 		if (outPipe == null) {
 			print("Console internal	error: cannot output ...", Color.red);
 		} else {
@@ -429,8 +429,10 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	}
 
 	public void enterLine(String line) {
+		line = line + System.getProperty("line.separator");
+		histLine = 0;
 		acceptLine(line);
-		enter();
+		text.repaint();
 	}
 
 	public void println(Object o) {

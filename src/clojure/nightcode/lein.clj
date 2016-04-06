@@ -56,6 +56,14 @@
             (or (utils/read-pref :android-sdk)
                 (get-in project [:android :sdk-path]))))
 
+; this is necessary because the Reload and Eval buttons cause the REPL
+; to show a bunch of => symbols for each newline
+(defn add-custom-subsequent-prompt
+  [project]
+  (assoc-in project
+            [:repl-options :subsequent-prompt]
+            (fn [ns] "")))
+
 (defn read-project-clj
   [path]
   (when path
@@ -64,6 +72,7 @@
         (println (utils/get-string :no-project-clj))
         (-> (leiningen.core.project/read-raw project-clj-path)
             add-sdk-path
+            add-custom-subsequent-prompt
             (try (catch Exception e {})))))))
 
 (defn read-android-project
