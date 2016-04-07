@@ -611,6 +611,9 @@
       (some->> completer (completions/install-completer! text-area))
       ; add watchers
       (add-watchers! path text-area)
+      ; initialize parinfer
+      (init-parinfer! text-area extension edit-history true)
+      (update-buttons! editor-pane text-area)
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
@@ -620,12 +623,8 @@
             (update-buttons! editor-pane text-area))
           (removeUpdate [this e]
             (update-buttons! editor-pane text-area))))
-      (add-watch edit-history :update-edit-history
-        (fn [_ _ _ _]
-          (update-buttons! editor-pane text-area)))
-      ; initialize parinfer
-      (init-parinfer! text-area extension edit-history true)
-      (update-buttons! editor-pane text-area)
+      (s/listen text-area :key-released
+        (fn [e] (update-buttons! editor-pane text-area)))
       ; return a map describing the editor
       {:view editor-pane
        :text-area text-area
