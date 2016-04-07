@@ -164,15 +164,6 @@
   [& _]
   (swap! font-size inc))
 
-(defn save-doc!
-  [enabled?]
-  (utils/write-pref! :enable-doc enabled?))
-
-(defn toggle-doc!
-  [& _]
-  (reset! completions/doc-enabled? (not @completions/doc-enabled?))
-  (some-> (get-selected-text-area) s/request-focus!))
-
 (defn focus-on-field!
   [id]
   (when-let [editor (get-selected-editor)]
@@ -241,33 +232,15 @@
 ; create and display editors
 
 (defn add-watchers!
-  [path extension text-area completer]
-  (let [clojure? (contains? utils/clojure-exts extension)
-        clojure-file? (and clojure? (.isFile (io/file path)))]
-    (add-watch font-size
-               (utils/hashed-keyword path)
-               (fn [_ _ _ x]
-                 (set-font-size! text-area x)))
-    (when completer
-      (add-watch completions/doc-enabled?
-                 (utils/hashed-keyword path)
-                 (fn [_ _ _ enable?]
-                   (.setAutoActivationEnabled completer enable?))))))
-
-(defn add-button-watchers!
-  [path pane]
-  (add-watch completions/doc-enabled?
-             (utils/hashed-keyword (str "button:" path))
-             (fn [_ _ _ enable?]
-               (some-> (s/select pane [:#doc])
-                       (s/config! :selected? enable?)))))
+  [path text-area]
+  (add-watch font-size
+             (utils/hashed-keyword path)
+             (fn [_ _ _ x]
+               (set-font-size! text-area x))))
 
 (defn remove-watchers!
   [path]
-  (remove-watch font-size (utils/hashed-keyword path))
-  (remove-watch completions/doc-enabled? (utils/hashed-keyword path))
-  (remove-watch completions/doc-enabled?
-                (utils/hashed-keyword (str "button:" path))))
+  (remove-watch font-size (utils/hashed-keyword path)))
 
 (defn apply-settings!
   [text-area]
@@ -521,7 +494,7 @@
    (let [edit-history (mwm/create-edit-history)
          text-area (create-text-area edit-history)
          completer (completions/create-completer text-area extension)]
-     (add-watchers! path extension text-area completer)
+     (add-watchers! path text-area)
      (doto text-area
        (.setSyntaxEditingStyle (get utils/styles extension))
        (.setLineWrap true))
@@ -561,7 +534,7 @@
   true)
 
 (def ^:dynamic *widgets* [:up :save :undo :redo :font-dec :font-inc
-                          :doc :find :replace :close])
+                          :find :replace :close])
 
 (defn create-actions
   []
@@ -571,7 +544,6 @@
    :redo redo-file!
    :font-dec decrease-font-size!
    :font-inc increase-font-size!
-   :doc toggle-doc!
    :find focus-on-find!
    :replace focus-on-replace!
    :close close-selected-editor!})
@@ -594,10 +566,6 @@
    :font-inc (s/button :id :font-inc
                        :text (utils/get-string :font-inc)
                        :listen [:action (:font-inc actions)])
-   :doc (s/toggle :id :doc
-                  :text (utils/get-string :doc)
-                  :selected? @completions/doc-enabled?
-                  :listen [:action (:doc actions)])
    :find (doto (s/text :id :find
                        :columns 8
                        :listen [:key-released find-text!])
@@ -629,10 +597,6 @@
           ; create the actions and widgets
           actions (create-actions)
           widgets (create-widgets actions)
-          ; remove buttons if they aren't applicable
-          *widgets* (if completer
-                      *widgets*
-                      (remove #(= % :doc) *widgets*))
           ; create the bar that holds the widgets
           widget-bar (ui/wrap-panel :items (map #(get widgets % %) *widgets*))]
       (utils/set-accessible-name! text-area (.getName (io/file path)))
@@ -646,8 +610,7 @@
       ; install completer if it exists
       (some->> completer (completions/install-completer! text-area))
       ; add watchers
-      (add-watchers! path extension text-area completer)
-      (add-button-watchers! path editor-pane)
+      (add-watchers! path text-area)
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
         (reify DocumentListener
@@ -719,7 +682,3 @@
            :save-font-size
            (fn [_ _ _ x]
              (save-font-size! x)))
-(add-watch completions/doc-enabled?
-           :save-doc
-           (fn [_ _ _ enable?]
-             (save-doc! enable?)))

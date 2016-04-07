@@ -35,7 +35,6 @@
                       :redo "Y"
                       :font-dec "MINUS"
                       :font-inc "EQUALS"
-                      :doc "shift D"
                       :paredit "shift P"
                       :find "F"
                       :replace "shift R"

@@ -9,7 +9,6 @@
            [org.fife.ui.autocomplete
             AutoCompletion BasicCompletion DefaultCompletionProvider]))
 
-(def doc-enabled? (atom (utils/read-pref :enable-doc false)))
 (def ^:dynamic *namespaces* ['clojure.core])
 (def ^:const completer-keys #{KeyEvent/VK_ENTER
                               KeyEvent/VK_UP
@@ -70,7 +69,7 @@
       (.setShowDescWindow true)
       (.setAutoCompleteSingleChoices false)
       (.setAutoCompleteEnabled true)
-      (.setAutoActivationEnabled @doc-enabled?)
+      (.setAutoActivationEnabled false)
       (.setAutoActivationDelay 200)
       (.setChoicesWindowSize 150 300)
       (.setDescriptionWindowSize 600 300))))
