@@ -351,9 +351,9 @@
                            :return
                            (ts/indent-for-line tags start-line)
                            :back
-                           (ts/back-indent-for-line tags start-line)
+                           (ts/back-indent-for-line tags start-line old-indent-level)
                            :forward
-                           (ts/forward-indent-for-line tags start-line))
+                           (ts/forward-indent-for-line tags start-line old-indent-level))
         indent-change (- new-indent-level old-indent-level)
         indent-change (if (neg? indent-change)
                         (->> (seq (get lines start-line))
