@@ -475,6 +475,7 @@
                  (refresh-content! this state))
                (proxy-super redoLastAction))))
      (.setAntiAliasingEnabled true)
+     (.setPopupMenu nil)
      apply-settings!))
   ([path edit-history]
    (let [extension (utils/get-extension path)]
