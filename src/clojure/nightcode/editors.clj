@@ -382,11 +382,11 @@
         state))))
 
 (defn init-parinfer!
-  [^TextEditorPane text-area extension edit-history preprocess?]
+  [^TextEditorPane text-area extension edit-history console?]
   (if (contains? utils/clojure-exts extension)
     (let [old-text (.getText text-area)]
       ; use paren mode to preprocess the code
-      (when preprocess?
+      (when-not console?
         (->> (init-state text-area)
              (get-parinfer-state text-area true)
              (refresh-content! text-area)
@@ -413,11 +413,12 @@
               (let [initial-state (init-state text-area)]
                 (->> (cond
                        (= (.getKeyCode e) KeyEvent/VK_ENTER)
-                       (assoc (get-normal-state initial-state)
-                         :indent-type :return)
+                       (let [state (get-normal-state initial-state)]
+                         (if console? state (assoc state :indent-type :return)))
                        (= (.getKeyCode e) KeyEvent/VK_TAB)
-                       (assoc (get-normal-state initial-state)
-                         :indent-type (if (.isShiftDown e) :back :forward))
+                       (let [state (get-normal-state initial-state)
+                             indent-type (if (.isShiftDown e) :back :forward)]
+                         (if console? state (assoc state :indent-type indent-type)))
                        :else
                        (get-parinfer-state text-area false initial-state))
                      (refresh-content! text-area)
@@ -426,7 +427,7 @@
               (and (or (.isControlDown e) (.isMetaDown e))
                 (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
               (->> (init-state text-area)
-                   (get-parinfer-state text-area false)
+                   (get-parinfer-state text-area console?)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
@@ -500,7 +501,7 @@
        (.setSyntaxEditingStyle (get utils/styles extension))
        (.setLineWrap true))
      (some->> completer (completions/install-completer! text-area))
-     (init-parinfer! text-area extension edit-history false)
+     (init-parinfer! text-area extension edit-history true)
      (proxy [JConsole] [text-area]
        (resetCommandStart []
          (proxy-super resetCommandStart)
@@ -613,7 +614,7 @@
       ; add watchers
       (add-watchers! path text-area)
       ; initialize parinfer
-      (init-parinfer! text-area extension edit-history true)
+      (init-parinfer! text-area extension edit-history false)
       (update-buttons! editor-pane text-area)
       ; enable/disable buttons while typing
       (.addDocumentListener (.getDocument text-area)
