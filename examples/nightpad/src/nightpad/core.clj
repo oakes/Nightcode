@@ -12,7 +12,6 @@
 
 (defn init-completer!
   [text-area extension]
-  (reset! completions/doc-enabled? true)
   (some->> (completions/create-completer text-area extension)
            (completions/install-completer! text-area)))
 
@@ -23,7 +22,7 @@
       (.setSyntaxEditingStyle (get utils/styles extension))
       (.setTabSize 2)
       (init-completer! extension)
-      (editors/init-parinfer! extension edit-history true)
+      (editors/init-parinfer! extension edit-history false)
       (.setText "(println \"Hello, world!\")"))))
 
 (defn create-window
