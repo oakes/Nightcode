@@ -427,7 +427,7 @@
               (and (or (.isControlDown e) (.isMetaDown e))
                 (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
               (->> (init-state text-area)
-                   (get-parinfer-state text-area console?)
+                   (get-parinfer-state text-area false)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
