@@ -284,7 +284,7 @@
      :text text}))
 
 (defn get-parinfer-state
-  [^TextEditorPane text-area paren-mode? initial-state]
+  [^TextEditorPane text-area mode initial-state]
   (let [{:keys [cursor-position text]} initial-state
         [start-pos end-pos] cursor-position
         selected? (not= start-pos end-pos)
@@ -299,9 +299,13 @@
         first-half (subs text 0 start-position)
         second-half (subs text start-position)
         cleared-text (str (str/replace first-half #"[^\r^\n]" " ") second-half)
-        result (if paren-mode?
+        result (case mode
+                 :paren
                  (paren-mode cleared-text col row)
-                 (indent-mode cleared-text col row))
+                 :indent
+                 (indent-mode cleared-text col row)
+                 :both
+                 (-> cleared-text (paren-mode col row) :text (indent-mode col row)))
         new-text (str first-half (subs (:text result) start-position))]
     (if selected?
       (mwm/get-state new-text cursor-position)
@@ -351,7 +355,7 @@
                 lines-to-change)
         state (if (= :return (:indent-type state))
                 (assoc state :lines lines)
-                (get-parinfer-state text-area false
+                (get-parinfer-state text-area :indent
                   {:text (join \newline lines) :cursor-position cursor-position}))
         lines (:lines state)
         text (join \newline lines)]
@@ -387,7 +391,7 @@
       ; use paren mode to preprocess the code
       (when-not console?
         (->> (init-state text-area)
-             (get-parinfer-state text-area true)
+             (get-parinfer-state text-area :paren)
              (refresh-content! text-area)
              (mwm/update-edit-history! edit-history)))
       (.discardAllEdits text-area)
@@ -419,14 +423,14 @@
                              indent-type (if (.isShiftDown e) :back :forward)]
                          (if console? state (assoc state :indent-type indent-type)))
                        :else
-                       (get-parinfer-state text-area false initial-state))
+                       (get-parinfer-state text-area :indent initial-state))
                      (refresh-content! text-area)
                      (mwm/update-edit-history! edit-history)))
               
               (and (or (.isControlDown e) (.isMetaDown e))
                    (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
               (->> (init-state text-area)
-                   (get-parinfer-state text-area false)
+                   (get-parinfer-state text-area :both)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)

@@ -42,7 +42,7 @@
 
 (defn sanitize-code
   [code]
-  (let [result (editors/indent-mode code 0 0)]
+  (let [result (-> code (editors/paren-mode 0 0) :text (editors/indent-mode 0 0))]
     (str "(do" \newline (:text result) \newline ")")))
 
 (defn reload!
