@@ -362,7 +362,6 @@
           [pos pos])
         [(mwm/row-col->position text start-line 0)
          (mwm/row-col->position text end-line (count (get lines end-line)))]))))
-    
 
 (defn refresh-content!
   [^TextEditorPane text-area state]
@@ -425,7 +424,7 @@
                      (mwm/update-edit-history! edit-history)))
               
               (and (or (.isControlDown e) (.isMetaDown e))
-                (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
+                   (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
               (->> (init-state text-area)
                    (get-parinfer-state text-area false)
                    (refresh-content! text-area)
