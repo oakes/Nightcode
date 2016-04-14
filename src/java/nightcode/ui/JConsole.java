@@ -317,7 +317,7 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	}
 
 	private void append(final String string) {
-		final String cleaned = string.replaceAll(ESCAPE_SEQ_PATTERN,"");
+		final String cleaned = string.replaceAll(ESCAPE_SEQ_PATTERN,"").replace("\r", "");
 		int slen = textLength();
 		text.select(slen, slen);
 		text.replaceSelection(cleaned);
