@@ -360,8 +360,8 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 			history.addElement(s);
 		}
 
-		s = s + System.getProperty("line.separator");
-		append(System.getProperty("line.separator"));
+		s = s + "\n";
+		append("\n");
 		histLine = 0;
 		acceptLine(s);
 		text.repaint();
@@ -429,14 +429,14 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	}
 
 	public void enterLine(String line) {
-		line = line + System.getProperty("line.separator");
+		line = line + "\n";
 		histLine = 0;
 		acceptLine(line);
 		text.repaint();
 	}
 
 	public void println(Object o) {
-		print(String.valueOf(o) + System.getProperty("line.separator"));
+		print(String.valueOf(o) + "\n");
 		text.repaint();
 	}
 
@@ -451,7 +451,7 @@ public class JConsole extends JScrollPane implements Runnable, KeyListener {
 	}
 
 	public void println() {
-		print(System.getProperty("line.separator"));
+		print("\n");
 		text.repaint();
 	}
 
