@@ -13,21 +13,29 @@
 
 .paren-soup .instarepl {
 	float: left;
+	position: relative;
+	display: list-item;
 	padding-right: 5px;
-	text-align: right;
-	width: 200px;
+	min-width: 200px;
+	max-width: 200px;
 }
 
 .paren-soup .instarepl .result {
-	position: relative;
+	opacity: 0.7;
+	position: absolute;
 	overflow: hidden;
 	background-color: lightgreen;
 	outline: 1px solid;
+	max-width: inherit;
+	word-wrap: break-word;
+	right: 0px;
 }
 
 .paren-soup .instarepl .result:hover {
-	width: 500px;
-	text-align: left;
+	opacity: 1;
+	cursor: pointer;
+	height: auto !important;
+	z-index: 1;
 }
 
 .paren-soup .instarepl .error {
@@ -38,6 +46,7 @@
 	float: left;
 	padding: 0px 5px;
 	text-align: right;
+	opacity: 0.7;
 }
 
 .paren-soup .content {
