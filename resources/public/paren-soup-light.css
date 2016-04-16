@@ -21,7 +21,7 @@
 }
 
 .paren-soup .instarepl .result {
-	opacity: 0.7;
+	/*opacity: 0.7;*/
 	position: absolute;
 	overflow: hidden;
 	background-color: lightgreen;
@@ -32,7 +32,7 @@
 }
 
 .paren-soup .instarepl .result:hover {
-	opacity: 1;
+	/*opacity: 1;*/
 	cursor: pointer;
 	height: auto !important;
 	z-index: 1;
@@ -46,7 +46,7 @@
 	float: left;
 	padding: 0px 5px;
 	text-align: right;
-	opacity: 0.7;
+	/*opacity: 0.7;*/
 }
 
 .paren-soup .content {
