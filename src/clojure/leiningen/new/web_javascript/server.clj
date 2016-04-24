@@ -1,21 +1,30 @@
 (ns {{namespace}}
-  (:require [ring.adapter.jetty :as jetty]
-            [ring.middleware.resource :as resources]
-            [ring.util.response :as response])
+  (:require [compojure.core :as c]
+            [ring.adapter.jetty :refer [run-jetty]]
+            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.resource :refer [wrap-resource]]
+            [hiccup.core :as h])
   (:gen-class))
 
 (def ^:const port 3000)
+(defonce server (atom nil))
 
-(defn open-in-browser! [address]
-  (println "Location:" address)
-  (when (java.awt.Desktop/isDesktopSupported)
-    (.browse (java.awt.Desktop/getDesktop) (java.net.URI. address))))
-
-(defn handler [request]
-  (response/redirect "/index.html"))
-
-(def app (resources/wrap-resource handler "public"))
+(c/defroutes app
+  (c/GET "/" request
+    (h/html [:html
+             [:head
+              [:link {:rel "stylesheet" :href "page.css"}]]
+             [:body
+              [:div
+               [:p {:id "clickable"} "Click me!"]]
+              [:script {:src "main.js"}]]])))
 
 (defn -main [& args]
-  (jetty/run-jetty app {:port port :join? false})
-  (open-in-browser! (str "http://localhost:" port)))
+  (when @server
+    (.stop @server))
+  (reset! server
+          (-> app
+              (wrap-resource "public")
+              (wrap-params)
+              (run-jetty {:port port :join? false})))
+  (println "Running on" (str "http://localhost:" port)))

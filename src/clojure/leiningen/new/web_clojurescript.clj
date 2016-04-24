@@ -15,5 +15,4 @@
                [".gitignore" (render "gitignore" data)]
                ["src/clj/{{path}}.clj" (render "server.clj" data)]
                ["src/cljs/{{path}}.cljs" (render "client.cljs" data)]
-               ["resources/public/page.css" (render "page.css" data)]
-               ["resources/public/index.html" (render "index.html" data)])))
+               ["resources/public/page.css" (render "page.css" data)])))
