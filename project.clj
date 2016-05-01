@@ -27,7 +27,7 @@
                  [org.eclipse.jgit "3.5.3.201412180710-r"
                   :exclusions [org.apache.httpcomponents/httpclient]]
                  [org.flatland/ordered "1.5.3"]
-                 [org.jetbrains.kotlin/kotlin-stdlib "1.0.0"] ; for parinfer
+                 [org.clojars.oakes/parinfer "0.4.0"]
                  [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]
                  [tag-soup "1.1.5"]]
