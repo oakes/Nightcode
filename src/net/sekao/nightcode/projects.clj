@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.projects
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.editors :as editors])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
@@ -75,6 +76,10 @@
           (proxy [ChangeListener] []
             (changed [ov old-state new-state]
               (when (= new-state Worker$State/SUCCEEDED)
+                ; establish the bridge
+                (-> engine
+                    (.executeScript "window")
+                    (.setMember "java" (editors/create-bridge)))
                 ; set the page content
                 (-> engine
                     .getDocument

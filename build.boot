@@ -3,7 +3,9 @@
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/clojure "1.8.0"]
                   [boot/core "2.5.5"]
-                  [ring "1.4.0"]])
+                  [ring "1.4.0"]
+                  [cross-parinfer "1.1.6"]
+                  [html-soup "1.2.2"]])
 
 (task-options!
   pom {:project 'nightcode
