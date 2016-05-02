@@ -9,7 +9,8 @@
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
             [seesaw.color :as color]
-            [seesaw.core :as s]))
+            [seesaw.core :as s]
+            [cross-parinfer.core :as cp]))
 
 (declare show-builder!)
 
@@ -42,7 +43,7 @@
 
 (defn sanitize-code
   [code]
-  (let [result (-> code (editors/paren-mode 0 0) :text (editors/indent-mode 0 0))]
+  (let [result (-> code (cp/paren-mode 0 0) :text (cp/indent-mode 0 0))]
     (str "(do" \newline (:text result) \newline ")")))
 
 (defn reload!

@@ -18,7 +18,7 @@
                  [lein-droid "0.4.3"]
                  [lein-typed "0.3.5"]
                  [lein-ring "0.9.7"]
-                 [mistakes-were-made "1.5.3"]
+                 [mistakes-were-made "1.6.0"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.incubator "0.1.3"]
@@ -30,7 +30,8 @@
                  [org.clojars.oakes/parinfer "0.4.0"]
                  [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]
-                 [tag-soup "1.1.5"]]
+                 [tag-soup "1.1.5"]
+                 [cross-parinfer "1.0.0"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
   :resource-paths ["resources"]

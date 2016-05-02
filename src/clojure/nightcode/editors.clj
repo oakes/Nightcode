@@ -12,14 +12,14 @@
             [seesaw.color :as color]
             [seesaw.core :as s]
             [mistakes-were-made.core :as mwm]
-            [tag-soup.core :as ts])
+            [tag-soup.core :as ts]
+            [cross-parinfer.core :as cp])
   (:import [java.awt.event KeyEvent KeyListener MouseListener]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
            [nightcode.ui JConsole]
            [org.fife.ui.rsyntaxtextarea FileLocation TextEditorPane Theme]
            [org.fife.ui.rtextarea RTextScrollPane SearchContext SearchEngine
-            SearchResult]
-           [com.oakmac.parinfer Parinfer ParinferResult]))
+            SearchResult]))
 
 (def ^:const min-font-size 8)
 (def editors (atom (flatland/ordered-map)))
@@ -250,20 +250,6 @@
       (.apply text-area))
   (set-font-size! text-area @font-size))
 
-(defn paren-mode [text x line]
-  (let [res (try
-              (Parinfer/parenMode text (int x) (int line) nil false)
-              (catch Exception _
-                (Parinfer/parenMode text (int 0) (int 0) nil false)))]
-    {:x (.-cursorX res) :text (.-text res)}))
-
-(defn indent-mode [text x line]
-  (let [res (try
-              (Parinfer/indentMode text (int x) (int line) nil false)
-              (catch Exception _
-                (Parinfer/indentMode text (int 0) (int 0) nil false)))]
-    {:x (.-cursorX res) :text (.-text res)}))
-
 (defn get-cursor-position
   [^TextEditorPane text-area]
   [(.getSelectionStart text-area) (.getSelectionEnd text-area)])
@@ -284,8 +270,8 @@
      :text text}))
 
 (defn get-parinfer-state
-  [^TextEditorPane text-area mode initial-state]
-  (let [{:keys [cursor-position text]} initial-state
+  [^TextEditorPane text-area mode state]
+  (let [{:keys [cursor-position text]} state
         [start-pos end-pos] cursor-position
         selected? (not= start-pos end-pos)
         parent-pane (some-> text-area .getParent .getParent)
@@ -301,88 +287,26 @@
         cleared-text (str (str/replace first-half #"[^\r^\n]" " ") second-half)
         result (case mode
                  :paren
-                 (paren-mode cleared-text col row)
+                 (cp/paren-mode cleared-text col row)
                  :indent
-                 (indent-mode cleared-text col row)
+                 (cp/indent-mode cleared-text col row)
                  :both
-                 (-> cleared-text (paren-mode col row) :text (indent-mode col row)))
+                 (-> cleared-text (cp/paren-mode col row) :text (cp/indent-mode col row)))
         new-text (str first-half (subs (:text result) start-position))]
     (if selected?
-      (mwm/get-state new-text cursor-position)
-      (mwm/get-state new-text row (:x result)))))
-
-(defn get-normal-state
-  [initial-state]
-  (let [{:keys [cursor-position text]} initial-state]
-    (mwm/get-state text cursor-position)))
-
-(defn add-indent
-  [^TextEditorPane text-area lines text tags state]
-  (let [cursor-position (:cursor-position state)
-        [start-pos end-pos] cursor-position
-        [start-line _] (mwm/position->row-col text start-pos)
-        [end-line _] (mwm/position->row-col text end-pos)
-        lines-to-change (range start-line (inc end-line))
-        old-indent-level (->> (get lines start-line) seq (take-while #(= % \space)) count)
-        new-indent-level (case (:indent-type state)
-                           :return
-                           (ts/indent-for-line tags start-line)
-                           :back
-                           (ts/back-indent-for-line tags start-line old-indent-level)
-                           :forward
-                           (ts/forward-indent-for-line tags start-line old-indent-level))
-        indent-change (- new-indent-level old-indent-level)
-        indent-change (if (neg? indent-change)
-                        (->> (seq (get lines start-line))
-                             (split-with #(= % \space))
-                             first
-                             (take (* -1 indent-change))
-                             count
-                             (* -1))
-                        indent-change)
-        lines (reduce
-                (fn [lines line-to-change]
-                  (update
-                    lines
-                    line-to-change
-                    (fn [line]
-                      (let [[spaces code] (split-with #(= % \space) (seq line))
-                            spaces (if (pos? indent-change)
-                                     (concat spaces (repeat indent-change \space))
-                                     (drop (* -1 indent-change) spaces))]
-                        (str (join spaces) (join code))))))
-                lines
-                lines-to-change)
-        state (if (= :return (:indent-type state))
-                (assoc state :lines lines)
-                (get-parinfer-state text-area :indent
-                  {:text (join \newline lines) :cursor-position cursor-position}))
-        lines (:lines state)
-        text (join \newline lines)]
-    (assoc state
-      :cursor-position
-      (if (= start-pos end-pos)
-        (let [pos (mwm/row-col->position text start-line new-indent-level)]
-          [pos pos])
-        [(mwm/row-col->position text start-line 0)
-         (mwm/row-col->position text end-line (count (get lines end-line)))]))))
+      (assoc state :text new-text)
+      (let [pos (cp/row-col->position new-text row (:x result))]
+        (assoc state :text new-text :cursor-position [pos pos])))))
 
 (defn refresh-content!
   [^TextEditorPane text-area state]
-  (let [lines (:lines state)
-        [start-pos end-pos] (:cursor-position state)
-        text (join \newline lines)]
-    (if (:indent-type state)
-      (let [tags (ts/str->tags text)
-            {:keys [lines cursor-position] :as state} (add-indent text-area lines text tags state)
-            new-text (join \newline lines)]
-        (.setText text-area new-text)
-        (set-cursor-position! text-area (first cursor-position) (second cursor-position))
-        state)
-      (do
-        (.setText text-area text)
-        (set-cursor-position! text-area start-pos end-pos)
-        state))))
+  (let [state (if (:indent-type state)
+                (cp/add-indent state)
+                state)
+        [start-pos end-pos] (:cursor-position state)]
+    (.setText text-area (:text state))
+    (set-cursor-position! text-area start-pos end-pos)
+    state))
 
 (defn init-parinfer!
   [^TextEditorPane text-area extension edit-history console?]
@@ -413,17 +337,15 @@
                                   (.getKeyCode e))
                        (.isControlDown e)
                        (.isMetaDown e)))
-              (let [initial-state (init-state text-area)]
+              (let [state (init-state text-area)]
                 (->> (cond
                        (= (.getKeyCode e) KeyEvent/VK_ENTER)
-                       (let [state (get-normal-state initial-state)]
-                         (if console? state (assoc state :indent-type :return)))
+                       (if console? state (assoc state :indent-type :return))
                        (= (.getKeyCode e) KeyEvent/VK_TAB)
-                       (let [state (get-normal-state initial-state)
-                             indent-type (if (.isShiftDown e) :back :forward)]
+                       (let [indent-type (if (.isShiftDown e) :back :forward)]
                          (if console? state (assoc state :indent-type indent-type)))
                        :else
-                       (get-parinfer-state text-area :indent initial-state))
+                       (get-parinfer-state text-area :indent state))
                      (refresh-content! text-area)
                      (mwm/update-edit-history! edit-history)))
               
@@ -509,7 +431,8 @@
        (resetCommandStart []
          (proxy-super resetCommandStart)
          (reset! edit-history (deref (mwm/create-edit-history)))
-         (->> (mwm/get-state (.getText text-area) (get-cursor-position text-area))
+         (->> {:text (.getText text-area)
+               :cursor-position (get-cursor-position text-area)}
               (mwm/update-edit-history! edit-history)))))))
 
 (defn remove-editors!
