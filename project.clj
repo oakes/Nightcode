@@ -10,9 +10,9 @@
                  [gwt-plugin "0.1.6"]
                  [hiccup "1.0.5"]
                  [leiningen "2.5.3"
-                  :exclusions [leiningen.search org.clojure/tools.reader]]
+                  :exclusions [leiningen.search]]
                  [lein-ancient "0.5.4"
-                  :exclusions [clj-aws-s3 org.clojure/tools.reader]]
+                  :exclusions [clj-aws-s3]]
                  [lein-cljsbuild "1.1.2"]
                  [lein-clr "0.2.2"]
                  [lein-droid "0.4.3"]
@@ -30,8 +30,7 @@
                  [org.clojars.oakes/parinfer "0.4.0"]
                  [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]
-                 [tag-soup "1.1.5"]
-                 [cross-parinfer "1.0.3"]]
+                 [cross-parinfer "1.1.0"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
   :resource-paths ["resources"]

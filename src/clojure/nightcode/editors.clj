@@ -12,7 +12,6 @@
             [seesaw.color :as color]
             [seesaw.core :as s]
             [mistakes-were-made.core :as mwm]
-            [tag-soup.core :as ts]
             [cross-parinfer.core :as cp])
   (:import [java.awt.event KeyEvent KeyListener MouseListener]
            [javax.swing.event DocumentListener HyperlinkEvent$EventType]
