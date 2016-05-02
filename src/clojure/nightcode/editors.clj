@@ -269,8 +269,8 @@
     {:cursor-position pos
      :text text}))
 
-(defn get-parinfer-state
-  [^TextEditorPane text-area mode state]
+(defn add-parinfer
+  [^TextEditorPane text-area mode-type state]
   (let [{:keys [cursor-position text]} state
         [start-pos end-pos] cursor-position
         selected? (not= start-pos end-pos)
@@ -285,13 +285,7 @@
         first-half (subs text 0 start-position)
         second-half (subs text start-position)
         cleared-text (str (str/replace first-half #"[^\r^\n]" " ") second-half)
-        result (case mode
-                 :paren
-                 (cp/paren-mode cleared-text col row)
-                 :indent
-                 (cp/indent-mode cleared-text col row)
-                 :both
-                 (-> cleared-text (cp/paren-mode col row) :text (cp/indent-mode col row)))
+        result (cp/mode mode-type cleared-text col row)
         new-text (str first-half (subs (:text result) start-position))]
     (if selected?
       (assoc state :text new-text)
@@ -315,7 +309,7 @@
       ; use paren mode to preprocess the code
       (when-not console?
         (->> (init-state text-area)
-             (get-parinfer-state text-area :paren)
+             (add-parinfer text-area :paren)
              (refresh-content! text-area)
              (mwm/update-edit-history! edit-history)))
       (.discardAllEdits text-area)
@@ -345,14 +339,14 @@
                        (let [indent-type (if (.isShiftDown e) :back :forward)]
                          (if console? state (assoc state :indent-type indent-type)))
                        :else
-                       (get-parinfer-state text-area :indent state))
+                       (add-parinfer text-area :indent state))
                      (refresh-content! text-area)
                      (mwm/update-edit-history! edit-history)))
               
               (and (or (.isControlDown e) (.isMetaDown e))
                    (contains? #{KeyEvent/VK_V KeyEvent/VK_X} (.getKeyCode e)))
               (->> (init-state text-area)
-                   (get-parinfer-state text-area :both)
+                   (add-parinfer text-area :both)
                    (refresh-content! text-area)
                    (mwm/update-edit-history! edit-history))))
           (keyTyped [this e] nil)
