@@ -29,7 +29,7 @@
                  [org.flatland/ordered "1.5.3"]
                  [play-clj/lein-template "1.0.0"]
                  [seesaw "1.4.5"]
-                 [cross-parinfer "1.1.3"]]
+                 [cross-parinfer "1.1.5"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
                        #"org\/apache\/lucene"]
   :resource-paths ["resources"]
