@@ -70,7 +70,7 @@
 (defn file-pane [state file]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
         engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)]
-    (->> "public/index.html" io/resource .toExternalForm (.load engine))
+    (.load engine (str "http://localhost:" (:web-port state)))
     (-> engine .getLoadWorker .stateProperty
         (.addListener
           (proxy [ChangeListener] []
@@ -86,10 +86,6 @@
                     (.getElementById "content")
                     (.setTextContent (slurp file)))
                 ; refresh paren-soup
-                (let [head (-> engine .getDocument (.getElementsByTagName "head") (.item 0))
-                      elem (-> engine .getDocument (.createElement "base"))]
-                  (.setAttribute elem "href" (str "http://localhost:" (:web-port state)))
-                  (.appendChild head elem))
                 (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
                       old-elem (-> body (.getElementsByTagName "script") (.item 0))
                       new-elem (-> engine .getDocument (.createElement "script"))]
