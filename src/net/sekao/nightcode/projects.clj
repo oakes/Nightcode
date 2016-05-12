@@ -125,7 +125,7 @@
         (if (.isDirectory file)
           (dir-pane)
           (let [state @state-atom
-                pane (or (get-in state [:panes path] (file-pane state file)))]
+                pane (or (get-in state [:panes path]) (file-pane state file))]
             (swap! state-atom update :panes assoc path pane)
             pane))))))
 
