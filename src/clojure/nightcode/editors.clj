@@ -1,6 +1,5 @@
 (ns nightcode.editors
-  (:require [clojure.data :refer [diff]]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [clojure.string :as str :refer [join]]
             [flatland.ordered.map :as flatland]
             [nightcode.completions :as completions]
