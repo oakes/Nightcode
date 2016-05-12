@@ -32,10 +32,9 @@
                       :up "U"
                       :save "S"
                       :undo "Z"
-                      :redo "Y"
+                      :redo "shift Z"
                       :font-dec "MINUS"
                       :font-inc "EQUALS"
-                      :paredit "shift P"
                       :find "F"
                       :replace "shift R"
                       :close "W"
@@ -48,8 +47,7 @@
                       :cancel "shift C"
                       :build-console "shift A"
                       :pull "shift L"
-                      :push "shift H"
-                      :configure "shift C"}
+                      :push "shift H"}
                      (:keys custom/edn-prefs)))
 
 (defn create-mapping!
