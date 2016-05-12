@@ -84,7 +84,7 @@
 }
 
 .paren-soup .content .error {
-	display: inline-block;
+	display: none;
 	width: 0.9em;
 	height: 0.9em;
 	background-color: red;
