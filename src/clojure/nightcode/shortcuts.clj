@@ -32,7 +32,7 @@
                       :up "U"
                       :save "S"
                       :undo "Z"
-                      :redo "shift Z"
+                      :redo "Y"
                       :font-dec "MINUS"
                       :font-inc "EQUALS"
                       :find "F"
