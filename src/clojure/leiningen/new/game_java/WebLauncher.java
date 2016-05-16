@@ -10,7 +10,7 @@ public class {{web-class-name}} extends GwtApplication {
 		return new GwtApplicationConfiguration(800, 600);
 	}
 
-	public ApplicationListener getApplicationListener () {
+	public ApplicationListener createApplicationListener () {
 		return new {{class-name}}();
 	}
 }

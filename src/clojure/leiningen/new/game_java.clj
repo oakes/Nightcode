@@ -69,26 +69,38 @@
                ["android/res/values/strings.xml"
                 (lein-droid-render "strings.xml" data)]
                ; android libgdx.so
+               ["android/libs/arm64-v8a/libgdx.so"
+                (io/input-stream (io/resource "arm64-v8a/libgdx.so"))]
                ["android/libs/armeabi/libgdx.so"
                 (io/input-stream (io/resource "armeabi/libgdx.so"))]
                ["android/libs/armeabi-v7a/libgdx.so"
                 (io/input-stream (io/resource "armeabi-v7a/libgdx.so"))]
                ["android/libs/x86/libgdx.so"
                 (io/input-stream (io/resource "x86/libgdx.so"))]
+               ["android/libs/x86_64/libgdx.so"
+                (io/input-stream (io/resource "x86_64/libgdx.so"))]
                ; android libgdx-box2d.so
+               ["android/libs/arm64-v8a/libgdx-box2d.so"
+                (io/input-stream (io/resource "arm64-v8a/libgdx-box2d.so"))]
                ["android/libs/armeabi/libgdx-box2d.so"
                 (io/input-stream (io/resource "armeabi/libgdx-box2d.so"))]
                ["android/libs/armeabi-v7a/libgdx-box2d.so"
                 (io/input-stream (io/resource "armeabi-v7a/libgdx-box2d.so"))]
                ["android/libs/x86/libgdx-box2d.so"
                 (io/input-stream (io/resource "x86/libgdx-box2d.so"))]
+               ["android/libs/x86_64/libgdx-box2d.so"
+                (io/input-stream (io/resource "x86_64/libgdx-box2d.so"))]
                ; android libgdx-bullet.so
+               ["android/libs/arm64-v8a/libgdx-bullet.so"
+                (io/input-stream (io/resource "arm64-v8a/libgdx-bullet.so"))]
                ["android/libs/armeabi/libgdx-bullet.so"
                 (io/input-stream (io/resource "armeabi/libgdx-bullet.so"))]
                ["android/libs/armeabi-v7a/libgdx-bullet.so"
                 (io/input-stream (io/resource "armeabi-v7a/libgdx-bullet.so"))]
                ["android/libs/x86/libgdx-bullet.so"
                 (io/input-stream (io/resource "x86/libgdx-bullet.so"))]
+               ["android/libs/x86_64/libgdx-bullet.so"
+                (io/input-stream (io/resource "x86_64/libgdx-bullet.so"))]
                ; web
                ["web/project.clj" (render "web-project.clj" data)]
                ["web/src/GdxDefinition.gwt.xml"
