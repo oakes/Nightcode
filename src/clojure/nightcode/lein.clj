@@ -92,14 +92,6 @@
            (leiningen.new.templates/->files data)
            io!))))
 
-(defn stale-clojure-sources
-  [project timestamp]
-  (for [dir (:source-paths project)
-        source (filter #(-> % (.getName) (.endsWith ".clj"))
-                       (file-seq (io/file dir)))
-        :when (>= (.lastModified source) timestamp)]
-    (.getCanonicalPath source)))
-
 ; check project types
 
 (defn android-project?

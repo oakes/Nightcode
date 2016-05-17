@@ -47,13 +47,9 @@
     (str "(do" \newline (:text result) \newline ")")))
 
 (defn reload!
-  [console path timestamp]
-  (let [source-paths (-> (lein/read-project-clj path)
-                         (lein/stale-clojure-sources timestamp)
-                         (add-path @ui/tree-selection)
-                         utils/sort-by-dependency)]
-    (->> (map slurp source-paths)
-         (str/join \newline)
+  [console]
+  (when-let [path @ui/tree-selection]
+    (->> (str (slurp path) \newline "nil")
          sanitize-code
          (.enterLine console))))
 
@@ -134,7 +130,7 @@
                (when (not (lein/java-project? path))
                  (reset! last-reload (System/currentTimeMillis))))
    :reload (fn [& _]
-             (reload! console path @last-reload)
+             (reload! console)
              (reset! last-reload (System/currentTimeMillis)))
    :eval (fn [& _]
            (eval! console))
