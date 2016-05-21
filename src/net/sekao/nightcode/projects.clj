@@ -76,10 +76,6 @@
           (proxy [ChangeListener] []
             (changed [ov old-state new-state]
               (when (= new-state Worker$State/SUCCEEDED)
-                ; establish the bridge
-                (-> engine
-                    (.executeScript "window")
-                    (.setMember "java" (editors/create-bridge)))
                 ; set the page content
                 (-> engine
                     .getDocument
