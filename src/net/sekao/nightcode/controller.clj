@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.projects :as p]
+            [net.sekao.nightcode.spec :as spec]
             [net.sekao.nightcode.state :refer [state]]
             [clojure.spec :as s :refer [fdef]])
   (:import [javafx.event ActionEvent]
@@ -16,7 +17,7 @@
              [onRemove [javafx.event.ActionEvent] void]]))
 
 (fdef new-project!
-  :args (s/cat :scene #(instance? Scene %) :project-type keyword?))
+  :args (s/cat :scene spec/scene? :project-type keyword?))
 (defn new-project! [^Scene scene project-type]
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))

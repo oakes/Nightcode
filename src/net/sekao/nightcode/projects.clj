@@ -1,6 +1,8 @@
 (ns net.sekao.nightcode.projects
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.editors :as editors])
+            [net.sekao.nightcode.editors :as editors]
+            [net.sekao.nightcode.spec :as spec]
+            [clojure.spec :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
            [javafx.collections FXCollections]
@@ -11,6 +13,9 @@
 
 ; paths
 
+(fdef get-relative-path
+  :args (s/cat :project-path string? :selected-path string?)
+  :ret string?)
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
   [project-path selected-path]
@@ -18,6 +23,8 @@
       (.relativize (.toURI (io/file selected-path)))
       (.getPath)))
 
+(fdef delete-parents-recursively!
+  :args (s/cat :project-set set? :path string?))
 (defn delete-parents-recursively!
   "Deletes the given file along with all empty parents unless they are in project-set."
   [project-set path]
@@ -31,6 +38,8 @@
            (delete-parents-recursively! project-set))))
   nil)
 
+(fdef delete-children-recursively!
+  :args (s/cat :path string?))
 (defn delete-children-recursively!
   "Deletes the children of the given dir along with the dir itself."
   [path]
@@ -41,6 +50,9 @@
     (io/delete-file f))
   nil)
 
+(fdef get-project-root-path
+  :args (s/cat :state map?)
+  :ret string?)
 (defn get-project-root-path
   "Returns the root path that the selected path is contained within."
   [state]
@@ -50,6 +62,9 @@
         (filter (:project-set state))
         first)))
 
+(fdef parent-path?
+  :args (s/cat :parent-path string? :child-path (s/nilable string?))
+  :ret spec/boolean?)
 (defn parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
   [^String parent-path ^String child-path]
@@ -57,7 +72,8 @@
       (and parent-path
            child-path
            (.isDirectory (io/file parent-path))
-           (.startsWith child-path (str parent-path File/separator)))))
+           (.startsWith child-path (str parent-path File/separator)))
+      false))
 
 ; tree
 
@@ -67,6 +83,9 @@
 
 (declare get-children)
 
+(fdef file-pane
+  :args (s/cat :state map? :file spec/file?)
+  :ret spec/pane?)
 (defn file-pane [state file]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
         engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)]
@@ -91,12 +110,19 @@
                     (.appendChild new-elem))))))))
     pane))
 
+(fdef dir-pane
+  :ret spec/pane?)
 (defn dir-pane []
   (FXMLLoader/load (io/resource "dir.fxml")))
 
+(fdef home-pane
+  :ret spec/pane?)
 (defn home-pane []
   (FXMLLoader/load (io/resource "home.fxml")))
 
+(fdef file-node
+  :args (s/cat :file spec/file?)
+  :ret spec/tree-item?)
 (defn file-node [file]
   (let [path (.getCanonicalPath file)
         value (proxy [File] [path]
@@ -126,6 +152,8 @@
             (swap! state-atom update :panes assoc path pane)
             pane))))))
 
+(fdef home-node
+  :ret spec/tree-item?)
 (defn home-node []
   (let [path "**Home**"
         value (proxy [Object] []
@@ -141,6 +169,9 @@
           (swap! state-atom update :panes assoc path pane)
           pane)))))
 
+(fdef root-node
+  :args (s/cat :state map?)
+  :ret spec/tree-item?)
 (defn root-node [state]
   (let [project-files (->> (:project-set state)
                            (map #(io/file %))
@@ -156,11 +187,16 @@
       (isLeaf []
         false))))
 
+(fdef get-children
+  :args (s/cat :files :net.sekao.nightcode.spec/files)
+  :ret spec/obs-list?)
 (defn get-children [files]
   (let [children (FXCollections/observableArrayList)]
     (run! #(.add children (file-node %)) files)
     children))
 
+(fdef set-expanded-listener!
+  :args (s/cat :state-atom spec/atom? :tree spec/pane?))
 (defn set-expanded-listener! [state-atom tree]
   (let [root-item (.getRoot tree)]
     (.addEventHandler root-item
@@ -176,6 +212,10 @@
           (when-let [path (-> event .getTreeItem .getPath)]
             (swap! state-atom update :expansion-set disj path)))))))
 
+(fdef update-project-tree!
+  :args (s/alt
+          :args2 (s/cat :state-atom spec/atom? :tree spec/pane?)
+          :args3 (s/cat :state-atom spec/atom? :tree spec/pane? :selection (s/nilable string?))))
 (defn update-project-tree!
   ([state-atom tree]
    (update-project-tree! state-atom tree nil))
@@ -201,6 +241,8 @@
      (when (= -1 (.getSelectedIndex selection-model))
        (.select selection-model (int 0))))))
 
+(fdef update-project-buttons!
+  :args (s/cat :state map? :scene spec/scene?))
 (defn update-project-buttons! [state scene]
   (let [rename-button (.lookup scene "#rename_button")
         remove-button (.lookup scene "#remove_button")
@@ -211,6 +253,8 @@
       (and (not (contains? (:project-set state) path))
         (not (.isFile file))))))
 
+(fdef set-selection-listener!
+  :args (s/cat :state-atom spec/atom? :scene spec/scene? :tree spec/pane? :content spec/pane?))
 (defn set-selection-listener! [state-atom scene tree content]
   (let [selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
@@ -223,6 +267,8 @@
               (.clear)
               (.add (.getPane new-value state-atom)))))))))
 
+(fdef set-focused-listener!
+  :args (s/cat :state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
 (defn set-focused-listener! [state-atom stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
@@ -230,6 +276,8 @@
         (when new-value
           (update-project-tree! state-atom project-tree))))))
 
+(fdef remove-from-project-tree!
+  :args (s/cat :state-atom spec/atom? :path string?))
 (defn remove-from-project-tree! [state-atom path]
   (let [{:keys [project-set]} @state-atom]
     (if (contains? project-set path)
