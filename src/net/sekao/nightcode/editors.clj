@@ -4,12 +4,18 @@
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.util.response :refer [redirect]]
             [cross-parinfer.core :as cp]
-            [html-soup.core :as hs]))
+            [html-soup.core :as hs]
+            [clojure.spec :as s :refer [fdef]]))
 
+(fdef handler
+  :args (s/cat :request map?)
+  :ret (s/nilable map?))
 (defn handler [request]
   (when (= (:uri request) "/")
     (redirect "/index.html")))
 
+(fdef start-web-server!
+  :ret integer?)
 (defn start-web-server! []
   (-> handler
       (wrap-resource "public")

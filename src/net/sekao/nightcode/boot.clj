@@ -1,8 +1,11 @@
 (ns net.sekao.nightcode.boot
   (:require [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.spec :as s :refer [fdef]])
   (:import [boot.App]))
 
+(fdef boot!
+  :args (s/cat :dir string? :args (s/* string?)))
 (defn boot! [dir & args]
   (let [old-dir (System/getProperty "user.dir")]
     (System/setProperty "user.dir" dir)
@@ -19,6 +22,8 @@
         (System/setSecurityManager nil)
         (System/setProperty "user.dir" old-dir)))))
 
+(fdef new-project!
+  :args (s/cat :file #(instance? java.io.File %) :template string?))
 (defn new-project! [file template]
   (let [dir (-> file .getParentFile .getCanonicalPath)
         project-name (-> file .getName str/lower-case)]

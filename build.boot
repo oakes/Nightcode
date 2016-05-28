@@ -1,7 +1,7 @@
 (set-env!
   :source-paths #{"src"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.8.0"]
+  :dependencies '[[org.clojure/clojure "1.9.0-alpha3"]
                   [boot/core "2.5.5"]
                   [ring "1.4.0"]
                   [cross-parinfer "1.1.6"]

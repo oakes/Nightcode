@@ -2,18 +2,22 @@
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.state :refer [state]])
+            [net.sekao.nightcode.state :refer [state]]
+            [clojure.spec :as s :refer [fdef]])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
            [javafx.stage DirectoryChooser FileChooser StageStyle Window]
-           [javafx.application Platform])
+           [javafx.application Platform]
+           [javafx.scene Scene])
   (:gen-class
    :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]]))
 
-(defn new-project! [scene project-type]
+(fdef new-project!
+  :args (s/cat :scene #(instance? Scene %) :project-type keyword?))
+(defn new-project! [^Scene scene project-type]
   (let [chooser (doto (FileChooser.)
                   (.setTitle "New Project"))
         project-tree (.lookup scene "#project_tree")]
@@ -26,7 +30,9 @@
         (-> dialog .getDialogPane (.lookupButton ButtonType/OK) (.setDisable true))
         (.show dialog)
         (future
-          (b/new-project! file (name project-type))
+          (try
+            (b/new-project! file (name project-type))
+            (catch Exception e (.printStackTrace e)))
           (Platform/runLater
             (fn []
               (.hide dialog)

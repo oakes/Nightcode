@@ -1,8 +1,10 @@
 (ns net.sekao.nightcode.core
   (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.boot]
+            [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [state]]
-            [net.sekao.nightcode.editors :as e])
+            [clojure.spec :as s])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage StageBuilder]
@@ -29,4 +31,5 @@
   (Application/launch net.sekao.nightcode.core (into-array String args)))
 
 (defn dev-main [& args]
+  (s/instrument-all)
   (apply -main args))
