@@ -3,6 +3,7 @@
             [net.sekao.nightcode.boot]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
+            [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.state :refer [state]]
             [clojure.spec :as s])
   (:import [javafx.application Application]
@@ -20,6 +21,8 @@
       (.setTitle "Nightcode")
       (.setScene scene)
       (.show))
+    (shortcuts/add-tooltips! scene [:new-project :import-project :rename :remove])
+    (shortcuts/set-shortcut-listeners! stage)
     (swap! state assoc :web-port (e/start-web-server!))
     (-> content .getChildren .clear)
     (p/update-project-tree! state project-tree)

@@ -19,9 +19,9 @@
                         <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console" />
                      </items>
                   </MenuButton>
-                  <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onImport" text="Import" />
-                  <Button fx:id="rename_button" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
-                  <Button fx:id="remove_button" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />
+                  <Button fx:id="import_project" minWidth="-Infinity" mnemonicParsing="false" onAction="#onImport" text="Import" />
+                  <Button fx:id="rename" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
+                  <Button fx:id="remove" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />
                </children>
             </HBox>
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />

@@ -12,6 +12,9 @@
 (defn file-array? [x]
   (instance? file-array-type x))
 
+(defn node? [x]
+  (instance? javafx.scene.Node x))
+
 (defn pane? [x]
   (instance? javafx.scene.layout.Region x))
 

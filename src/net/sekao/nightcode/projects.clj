@@ -247,8 +247,8 @@
 (fdef update-project-buttons!
   :args (s/cat :state map? :scene spec/scene?))
 (defn ^:no-check update-project-buttons! [state scene]
-  (let [rename-button (.lookup scene "#rename_button")
-        remove-button (.lookup scene "#remove_button")
+  (let [rename-button (.lookup scene "#rename")
+        remove-button (.lookup scene "#remove")
         path (:selection state)
         file (io/file path)]
     (.setDisable rename-button (not (.isFile file)))
