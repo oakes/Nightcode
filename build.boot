@@ -37,7 +37,7 @@
 (deftask build []
   (comp (aot) (pom) (uber) (jar)))
 
-(deftask specs []
+(deftask spec []
   (comp
     (aot)
     (with-pre-wrap fileset
