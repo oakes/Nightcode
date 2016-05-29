@@ -7,7 +7,7 @@
 
 (fdef boot!
   :args (s/cat :dir string? :args (s/* string?)))
-(defn boot! [dir & args]
+(defn ^:no-check boot! [dir & args]
   (let [old-dir (System/getProperty "user.dir")]
     (System/setProperty "user.dir" dir)
     (System/setProperty "java.security.policy"
@@ -25,7 +25,7 @@
 
 (fdef new-project!
   :args (s/cat :file spec/file? :template string?))
-(defn new-project! [file template]
+(defn ^:no-check new-project! [file template]
   (let [dir (-> file .getParentFile .getCanonicalPath)
         project-name (-> file .getName str/lower-case)]
     (boot! dir

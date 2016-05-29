@@ -15,8 +15,9 @@
     (redirect "/index.html")))
 
 (fdef start-web-server!
+  :args (s/cat)
   :ret integer?)
-(defn start-web-server! []
+(defn ^:no-check start-web-server! []
   (-> handler
       (wrap-resource "public")
       (wrap-content-type)
