@@ -21,7 +21,7 @@
       (.setTitle "Nightcode")
       (.setScene scene)
       (.show))
-    (shortcuts/add-tooltips! scene [:new-project :import-project :rename :remove])
+    (shortcuts/add-tooltips! scene [:project-tree :new-project :import-project :rename :remove])
     (shortcuts/set-shortcut-listeners! stage)
     (swap! state assoc :web-port (e/start-web-server!))
     (-> content .getChildren .clear)

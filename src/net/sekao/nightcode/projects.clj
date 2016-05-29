@@ -9,7 +9,9 @@
            [javafx.beans.value ChangeListener]
            [javafx.event EventHandler]
            [javafx.fxml FXMLLoader]
-           [javafx.concurrent Worker$State]))
+           [javafx.concurrent Worker$State]
+           [javafx.scene Scene]
+           [javafx.stage Stage]))
 
 ; paths
 
@@ -246,7 +248,7 @@
 
 (fdef update-project-buttons!
   :args (s/cat :state map? :scene spec/scene?))
-(defn ^:no-check update-project-buttons! [state scene]
+(defn ^:no-check update-project-buttons! [state ^Scene scene]
   (let [rename-button (.lookup scene "#rename")
         remove-button (.lookup scene "#remove")
         path (:selection state)
@@ -256,9 +258,26 @@
       (and (not (contains? (:project-set state) path))
         (not (.isFile file))))))
 
+(fdef move-project-tree-selection!
+  :args (s/cat :scene spec/scene? :diff integer?))
+(defn ^:no-check move-project-tree-selection! [^Scene scene diff]
+  (let [project-tree (.lookup scene "#project_tree")
+        selection-model (.getSelectionModel project-tree)
+        index (+ diff (.getSelectedIndex selection-model))]
+    (when (>= index 0)
+      (.select selection-model index))))
+
+(fdef toggle-project-tree-selection!
+  :args (s/cat :scene spec/scene?))
+(defn ^:no-check toggle-project-tree-selection! [^Scene scene]
+  (let [project-tree (.lookup scene "#project_tree")
+        selection-model (.getSelectionModel project-tree)]
+    (when-let [item (.getSelectedItem selection-model)]
+      (.setExpanded item (not (.isExpanded item))))))
+
 (fdef set-selection-listener!
   :args (s/cat :state-atom spec/atom? :scene spec/scene? :tree spec/pane? :content spec/pane?))
-(defn ^:no-check set-selection-listener! [state-atom scene tree content]
+(defn ^:no-check set-selection-listener! [state-atom ^Scene scene tree content]
   (let [selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
@@ -272,7 +291,7 @@
 
 (fdef set-focused-listener!
   :args (s/cat :state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
-(defn ^:no-check set-focused-listener! [state-atom stage project-tree]
+(defn ^:no-check set-focused-listener! [state-atom ^Stage stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
       (changed [this observable old-value new-value]
@@ -281,7 +300,7 @@
 
 (fdef remove-from-project-tree!
   :args (s/cat :state-atom spec/atom? :path string?))
-(defn ^:no-check remove-from-project-tree! [state-atom path]
+(defn ^:no-check remove-from-project-tree! [state-atom ^String path]
   (let [{:keys [project-set]} @state-atom]
     (if (contains? project-set path)
       (swap! state-atom update :project-set disj path)

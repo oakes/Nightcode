@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [net.sekao.nightcode.controller :as c]
+            [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
   (:import [javafx.scene Node]
@@ -35,7 +36,7 @@
                :replace "R"
                :close "w"
                :repl-console "E"
-               :project-pane "&uarr; &darr; &crarr;"
+               :project-tree "↑ ↓ ↲"
                :new-file "n"
                :edit "M"
                :open-in-browser "F"
@@ -79,10 +80,13 @@
         point (.localToScene control (double 0) (double 0))
         scene (.getScene stage)
         _ (.show tooltip stage (double 0) (double 0))
-        half-width (- (/ (.getWidth control) 2) (/ (.getWidth tooltip) 4))]
+        half-width (- (/ (.getWidth control) 2)
+                      (/ (.getWidth tooltip) 4))
+        half-height (- (/ (.getHeight control) 2)
+                       (/ (.getHeight tooltip) 4))]
     (.show tooltip stage
       (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
-      (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY))))))
+      (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height)))))
 
 (fdef hide-tooltip!
   :args (s/cat :control spec/node?))
@@ -126,7 +130,15 @@
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
             (toggle-tooltips! stage false)
             (.isShortcutDown e)
-            (run-shortcut! scene (.getText e) (.isShiftDown e))))))
+            (cond
+              (= (.getCode e) KeyCode/UP)
+              (p/move-project-tree-selection! scene -1)
+              (= (.getCode e) KeyCode/DOWN)
+              (p/move-project-tree-selection! scene 1)
+              (= (.getCode e) KeyCode/ENTER)
+              (p/toggle-project-tree-selection! scene)
+              :else
+              (run-shortcut! scene (.getText e) (.isShiftDown e)))))))
     ; hide tooltips on window focus
     (.addListener (.focusedProperty stage)
       (reify ChangeListener
