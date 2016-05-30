@@ -13,7 +13,7 @@
            [javafx.scene Scene])
   (:gen-class :extends javafx.application.Application))
 
-(def actions {:new-project c/show-new-project!
+(def actions {:start c/show-start-menu!
               :import-project c/import!
               :rename c/rename!
               :remove c/remove!
@@ -41,7 +41,7 @@
     (p/set-selection-listener! state stage project-tree content)
     (p/set-focused-listener! state stage project-tree)
     (p/set-project-key-listener! stage)
-    (shortcuts/add-tooltips! scene [:project-tree :new-project :import-project :rename :remove])
+    (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
     (shortcuts/set-shortcut-listeners! stage actions)))
 
 (defn -main [& args]

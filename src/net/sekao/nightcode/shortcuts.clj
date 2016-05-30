@@ -13,7 +13,7 @@
            [javafx.application Platform]))
 
 (def mappings {; project pane
-               :new-project "p"
+               :start "p"
                :import-project "o"
                :rename "m"
                :remove "g"

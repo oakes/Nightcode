@@ -26,8 +26,8 @@
 
 ; new project
 
-(defn show-new-project! [^Scene scene]
-  (some-> (.lookup scene "#new_project") .show))
+(defn show-start-menu! [^Scene scene]
+  (some-> (.lookup scene "#start") .show))
 
 (defn new-project! [^Scene scene project-type]
   (let [chooser (doto (FileChooser.)

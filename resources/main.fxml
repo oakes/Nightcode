@@ -10,11 +10,11 @@
 
 <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <children>
-      <VBox fx:id="sidebar" prefHeight="619.0" prefWidth="283.0">
+      <VBox fx:id="sidebar" prefWidth="245.0">
          <children>
             <HBox fx:id="project_buttons">
                <children>
-                  <MenuButton fx:id="new_project" minWidth="-Infinity" mnemonicParsing="false" text="New Project">
+                  <MenuButton fx:id="start" minWidth="-Infinity" mnemonicParsing="false" text="Start">
                      <items>
                         <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console" />
                      </items>
