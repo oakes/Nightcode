@@ -27,15 +27,15 @@
       (.setTitle "Nightcode")
       (.setScene scene)
       (.show))
-    (shortcuts/add-tooltips! scene [:project-tree :new-project :import-project :rename :remove])
-    (shortcuts/set-shortcut-listeners! stage actions)
     (swap! state assoc :web-port (e/start-web-server!))
     (-> content .getChildren .clear)
     (p/update-project-tree! state project-tree)
     (p/update-project-buttons! @state scene)
     (p/set-selection-listener! state stage project-tree content)
     (p/set-focused-listener! state stage project-tree)
-    (p/set-project-key-listener! stage)))
+    (p/set-project-key-listener! stage)
+    (shortcuts/add-tooltips! scene [:project-tree :new-project :import-project :rename :remove])
+    (shortcuts/set-shortcut-listeners! stage actions)))
 
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))

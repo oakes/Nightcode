@@ -97,11 +97,12 @@
         (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height))))))
 
 (fdef show-tooltips!
-  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :stage spec/stage?))
-(defn ^:no-check show-tooltips! [node ^Stage stage]
-  (doseq [id (keys mappings)]
-    (when-let [control (.lookup node (keyword->fx-id id))]
-      (show-tooltip! stage control))))
+  :args (s/cat :stage spec/stage?))
+(defn ^:no-check show-tooltips! [^Stage stage]
+  (let [scene (.getScene stage)]
+    (doseq [id (keys mappings)]
+      (when-let [control (.lookup scene (keyword->fx-id id))]
+        (show-tooltip! stage control)))))
 
 (fdef hide-tooltip!
   :args (s/cat :control spec/node?))
@@ -135,7 +136,7 @@
       (reify EventHandler
         (handle [this e]
           (when (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (show-tooltips! scene stage)))))
+            (show-tooltips! stage)))))
     ; hide tooltips and run shortcut on key released
     (.addEventHandler scene KeyEvent/KEY_RELEASED
       (reify EventHandler
@@ -144,7 +145,13 @@
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
             (hide-tooltips! scene)
             (.isShortcutDown e)
-            (run-shortcut! scene actions (.getText e) (.isShiftDown e))))))
+            (if (#{KeyCode/UP KeyCode/DOWN} (.getCode e))
+              ; if any new controls have appeared, make sure their tooltips are showing
+              (Platform/runLater
+                (fn []
+                  (show-tooltips! stage)))
+              ; run the action for the given key
+              (run-shortcut! scene actions (.getText e) (.isShiftDown e)))))))
     ; hide tooltips on window focus
     (.addListener (.focusedProperty stage)
       (reify ChangeListener
