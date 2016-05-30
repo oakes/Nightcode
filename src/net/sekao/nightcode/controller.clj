@@ -7,7 +7,8 @@
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
            [javafx.stage DirectoryChooser FileChooser StageStyle Window Modality]
            [javafx.application Platform]
-           [javafx.scene Scene])
+           [javafx.scene Scene]
+           [javafx.scene.input KeyEvent])
   (:gen-class
    :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
@@ -15,7 +16,12 @@
              [onRemove [javafx.event.ActionEvent] void]
              [onSave [javafx.event.ActionEvent] void]
              [onUndo [javafx.event.ActionEvent] void]
-             [onRedo [javafx.event.ActionEvent] void]]))
+             [onRedo [javafx.event.ActionEvent] void]
+             [fontDec [javafx.event.ActionEvent] void]
+             [fontInc [javafx.event.ActionEvent] void]
+             [find [javafx.scene.input.KeyEvent] void]
+             [replace [javafx.scene.input.KeyEvent] void]
+             [close [javafx.event.ActionEvent] void]]))
 
 (defn show-new-project! [^Scene scene]
   (some-> (.lookup scene "#new_project") .show))
@@ -103,3 +109,8 @@
 (defn -onSave [this ^ActionEvent event])
 (defn -onUndo [this ^ActionEvent event])
 (defn -onRedo [this ^ActionEvent event])
+(defn -findDec [this ^ActionEvent event])
+(defn -fontInc [this ^ActionEvent event])
+(defn -find [this ^KeyEvent event])
+(defn -replace [this ^KeyEvent event])
+(defn -close [this ^ActionEvent event])

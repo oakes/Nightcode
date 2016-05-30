@@ -70,9 +70,8 @@
 (defn ^:no-check add-tooltips!
   ([nodes]
    (doseq [node nodes]
-     (let [id (.getId node)
-           key (fx-id->keyword id)]
-       (when-let [text (get mappings key)]
+     (when-let [id (.getId node)]
+       (when-let [text (get mappings (fx-id->keyword id))]
          (add-tooltip! node text)))))
   ([^Scene scene ids]
    (doseq [id ids]
