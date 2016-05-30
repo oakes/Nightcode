@@ -18,7 +18,8 @@
           (throw (Exception.)))))
     (try
       (boot.App/main (into-array String args))
-      (catch Exception _)
+      (catch Exception e
+        (.printStackTrace e))
       (finally
         (System/setSecurityManager nil)
         (System/setProperty "user.dir" old-dir)))))

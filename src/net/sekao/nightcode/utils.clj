@@ -44,7 +44,7 @@
 
 (fdef get-project-root-path
   :args (s/cat :state map?)
-  :ret string?)
+  :ret (s/nilable string?))
 (defn ^:no-check get-project-root-path
   "Returns the root path that the selected path is contained within."
   [state]
