@@ -6,7 +6,7 @@
 
 <SplitPane dividerPositions="0.75" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <items>
-      <StackPane fx:id="editors" />
+      <StackPane />
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
    </items>
 </SplitPane>

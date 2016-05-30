@@ -7,7 +7,7 @@
 
 <VBox fx:id="sidebar" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <children>
-      <HBox fx:id="editor_buttons" prefHeight="11.0" prefWidth="265.0" VBox.vgrow="NEVER">
+      <HBox fx:id="editor_buttons">
          <children>
             <Button fx:id="save" minWidth="-Infinity" mnemonicParsing="false" onAction="#onSave" text="Save" />
             <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
