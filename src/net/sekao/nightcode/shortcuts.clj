@@ -120,9 +120,11 @@
 (defn ^:no-check run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (get reverse-mappings (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
-      (Platform/runLater
-        (fn []
-          (action scene))))))
+      (let [fx-id (keyword->fx-id id)]
+        (when (-> scene (.lookup fx-id) .isDisabled not)
+          (Platform/runLater
+            (fn []
+              (action scene))))))))
 
 (fdef set-shortcut-listeners!
   :args (s/cat :stage spec/stage? :actions map?))
