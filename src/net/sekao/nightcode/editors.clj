@@ -12,6 +12,9 @@
             [net.sekao.nightcode.spec :as spec])
   (:import [javafx.fxml FXMLLoader]))
 
+(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
+(def ^:const wrap-exts #{"md" "txt"})
+
 (fdef handler
   :args (s/cat :request map?)
   :ret (s/nilable map?))
@@ -50,8 +53,10 @@
   (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
         buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))
-        engine (.getEngine webview)]
+        engine (.getEngine webview)
+        clojure? (-> file .getName u/get-extension clojure-exts)]
     (shortcuts/add-tooltips! buttons)
+    ;(-> pane .getChildren (.get 0) (.setDisable true))
     (-> engine
         (.executeScript "window")
         (.setMember "java"
@@ -62,13 +67,13 @@
                   .getDocument
                   (.getElementById "content")
                   (.setTextContent (slurp file)))
-              ; refresh paren-soup
-              (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
-                    old-elem (-> body (.getElementsByTagName "script") (.item 0))
-                    new-elem (-> engine .getDocument (.createElement "script"))]
-                (.setAttribute new-elem "src" "paren-soup.js")
-                (doto body
-                  (.removeChild old-elem)
-                  (.appendChild new-elem)))))))
-    (.load engine (str "http://localhost:" (:web-port state)))
+              ; inject paren-soup
+              (when clojure?
+                (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
+                      script (-> engine .getDocument (.createElement "script"))]
+                  (.setAttribute script "src" "paren-soup.js")
+                  (.appendChild body script)))))))
+    (.load engine (str "http://localhost:"
+                    (:web-port state)
+                    (if clojure? "/index.html" "/index2.html")))
     pane))

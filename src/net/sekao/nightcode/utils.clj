@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.utils
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
   (:import [java.io File]))
@@ -65,3 +66,14 @@
            (.isDirectory (io/file parent-path))
            (.startsWith child-path (str parent-path File/separator)))
       false))
+
+(fdef get-extension
+  :args (s/cat :path string?)
+  :ret string?)
+(defn get-extension
+  "Returns the extension in the given path name."
+  [^String path]
+  (->> (.lastIndexOf path ".")
+       (+ 1)
+       (subs path)
+       str/lower-case))

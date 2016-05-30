@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="codemirror.css">
+		<style>
+			@font-face {
+				font-family: 'Fira Code';
+				src: url('fonts/FiraCode-Regular.otf') format('opentype');
+			}
+			html, body, .CodeMirror {
+				height: 100%;
+				margin: 0;
+			}
+			.CodeMirror {
+				font-family: 'Fira Code';
+			}
+		</style>
+		<script type='text/javascript' src="codemirror.js"></script>
+		<!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->
+	</head>
+	<body>
+		<div id="content"></div>
+		<script type='text/javascript'>
+			if (window.java) {
+				window.onload = function() {
+					window.java.onload();
+					var content = document.getElementById("content");
+					var editor = CodeMirror(document.body, {
+						value: content.textContent,
+						lineNumbers: true
+					});
+					document.body.removeChild(content);
+				}
+			}
+		</script>
+	</body>
+</html>
