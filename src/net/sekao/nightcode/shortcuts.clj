@@ -132,14 +132,14 @@
   (let [^Scene scene (.getScene stage)]
     ; show tooltips on key pressed
     (.addEventHandler scene KeyEvent/KEY_PRESSED
-      (proxy [EventHandler] []
-        (handle [^KeyEvent e]
+      (reify EventHandler
+        (handle [this e]
           (when (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
             (show-tooltips! scene stage)))))
     ; hide tooltips and run shortcut on key released
     (.addEventHandler scene KeyEvent/KEY_RELEASED
-      (proxy [EventHandler] []
-        (handle [^KeyEvent e]
+      (reify EventHandler
+        (handle [this e]
           (cond
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
             (hide-tooltips! scene)

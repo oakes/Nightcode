@@ -335,8 +335,8 @@
 (defn ^:no-check set-project-key-listener! [^Stage stage]
   (let [^Scene scene (.getScene stage)]
     (.addEventHandler scene KeyEvent/KEY_RELEASED
-      (proxy [EventHandler] []
-        (handle [^KeyEvent e]
+      (reify EventHandler
+        (handle [this e]
           (when (.isShortcutDown e)
             (cond
               (= (.getCode e) KeyCode/UP)
