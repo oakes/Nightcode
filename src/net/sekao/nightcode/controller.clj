@@ -23,6 +23,8 @@
              [replace [javafx.scene.input.KeyEvent] void]
              [close [javafx.event.ActionEvent] void]]))
 
+; new project
+
 (defn show-new-project! [^Scene scene]
   (some-> (.lookup scene "#new_project") .show))
 
@@ -51,6 +53,8 @@
 (defn -onNewConsoleProject [this ^ActionEvent event]
   (new-project! (-> event .getSource .getParentPopup .getOwnerWindow .getScene) :app))
 
+; import
+
 (defn import! [^Scene scene]
   (let [chooser (doto (DirectoryChooser.)
                   (.setTitle "Import"))
@@ -62,6 +66,8 @@
 
 (defn -onImport [this ^ActionEvent event]
   (import! (-> event .getSource .getScene)))
+
+; rename
 
 (defn rename! [^Scene scene]
   (let [dialog (doto (TextInputDialog.)
@@ -87,6 +93,8 @@
 (defn -onRename [this ^ActionEvent event]
   (rename! (-> event .getSource .getScene)))
 
+; remove
+
 (defn remove! [^Scene scene]
   (let [{:keys [project-set selection]} @state
         message (if (contains? project-set selection)
@@ -106,11 +114,34 @@
 (defn -onRemove [this ^ActionEvent event]
   (remove! (-> event .getSource .getScene)))
 
+; save
+
 (defn -onSave [this ^ActionEvent event])
+
+; undo
+
 (defn -onUndo [this ^ActionEvent event])
+
+; redo
+
 (defn -onRedo [this ^ActionEvent event])
-(defn -findDec [this ^ActionEvent event])
+
+; font dec
+
+(defn -fontDec [this ^ActionEvent event])
+
+; font inc
+
 (defn -fontInc [this ^ActionEvent event])
+
+; find
+
 (defn -find [this ^KeyEvent event])
+
+; replace
+
 (defn -replace [this ^KeyEvent event])
+
+; close
+
 (defn -close [this ^ActionEvent event])
