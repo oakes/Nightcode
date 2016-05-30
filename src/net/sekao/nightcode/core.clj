@@ -17,7 +17,7 @@
               :import-project c/import!
               :rename c/rename!
               :remove c/remove!
-              ;:up
+              :up c/up!
               ;:save
               ;:undo
               ;:redo

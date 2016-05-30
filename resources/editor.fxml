@@ -11,13 +11,14 @@
    <children>
       <HBox fx:id="editor_buttons">
          <children>
+            <Button fx:id="up" mnemonicParsing="false" onAction="#onUp" text="↑" />
             <Button fx:id="save" minWidth="-Infinity" mnemonicParsing="false" onAction="#onSave" text="Save" />
             <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
             <Button fx:id="redo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRedo" text="Redo" />
             <TextField fx:id="find" onKeyPressed="#find" promptText="Find" />
             <TextField fx:id="replace" onKeyPressed="#replace" promptText="Replace" />
             <Separator HBox.hgrow="ALWAYS" />
-            <Button fx:id="close" minWidth="-Infinity" mnemonicParsing="false" onAction="#close" text="X" />
+            <Button fx:id="close" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClose" text="X" />
          </children>
       </HBox>
       <WebView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />

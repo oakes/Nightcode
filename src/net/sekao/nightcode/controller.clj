@@ -15,12 +15,13 @@
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]
+             [onUp [javafx.event.ActionEvent] void]
              [onSave [javafx.event.ActionEvent] void]
              [onUndo [javafx.event.ActionEvent] void]
              [onRedo [javafx.event.ActionEvent] void]
              [find [javafx.scene.input.KeyEvent] void]
              [replace [javafx.scene.input.KeyEvent] void]
-             [close [javafx.event.ActionEvent] void]]))
+             [onClose [javafx.event.ActionEvent] void]]))
 
 ; new project
 
@@ -50,7 +51,7 @@
               (p/update-project-tree! state project-tree))))))))
 
 (defn -onNewConsoleProject [this ^ActionEvent event]
-  (new-project! (-> event .getSource .getParentPopup .getOwnerWindow .getScene) :app))
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :app)))
 
 ; import
 
@@ -64,7 +65,7 @@
         (p/update-project-tree! state project-tree path)))))
 
 (defn -onImport [this ^ActionEvent event]
-  (import! (-> event .getSource .getScene)))
+  (-> event .getSource .getScene import!))
 
 ; rename
 
@@ -90,7 +91,7 @@
           (p/update-project-tree! state project-tree new-path))))))
 
 (defn -onRename [this ^ActionEvent event]
-  (rename! (-> event .getSource .getScene)))
+  (-> event .getSource .getScene rename!))
 
 ; remove
 
@@ -111,7 +112,18 @@
       (p/update-project-tree! state project-tree))))
 
 (defn -onRemove [this ^ActionEvent event]
-  (remove! (-> event .getSource .getScene)))
+  (-> event .getSource .getScene remove!))
+
+; up
+
+(defn up! [^Scene scene]
+  (when-let [path (:selection @state)]
+    (let [project-tree (.lookup scene "#project_tree")]
+      (->> path io/file .getParentFile .getCanonicalPath
+           (p/update-project-tree! state project-tree)))))
+
+(defn -onUp [this ^ActionEvent event]
+  (-> event .getSource .getScene up!))
 
 ; save
 
@@ -151,5 +163,5 @@
       (e/remove-editors! path state)
       (p/update-project-tree! state project-tree new-path))))
 
-(defn -close [this ^ActionEvent event]
-  (close! (-> event .getSource .getScene)))
+(defn -onClose [this ^ActionEvent event]
+  (-> event .getSource .getScene close!))
