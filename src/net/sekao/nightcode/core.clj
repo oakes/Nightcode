@@ -16,7 +16,14 @@
 (def actions {:new-project c/show-new-project!
               :import-project c/import!
               :rename c/rename!
-              :remove c/remove!})
+              :remove c/remove!
+              ;:up
+              ;:save
+              ;:undo
+              ;:redo
+              :find c/focus-on-find!
+              :replace c/focus-on-replace!
+              :close c/close!})
 
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))

@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.controller
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.boot :as b]
+            [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [state]])
   (:import [javafx.event ActionEvent]
@@ -17,8 +18,6 @@
              [onSave [javafx.event.ActionEvent] void]
              [onUndo [javafx.event.ActionEvent] void]
              [onRedo [javafx.event.ActionEvent] void]
-             [fontDec [javafx.event.ActionEvent] void]
-             [fontInc [javafx.event.ActionEvent] void]
              [find [javafx.scene.input.KeyEvent] void]
              [replace [javafx.scene.input.KeyEvent] void]
              [close [javafx.event.ActionEvent] void]]))
@@ -126,22 +125,31 @@
 
 (defn -onRedo [this ^ActionEvent event])
 
-; font dec
-
-(defn -fontDec [this ^ActionEvent event])
-
-; font inc
-
-(defn -fontInc [this ^ActionEvent event])
-
 ; find
+
+(defn focus-on-find! [^Scene scene]
+  (some-> (.lookup scene "#find") .requestFocus))
 
 (defn -find [this ^KeyEvent event])
 
 ; replace
 
+(defn focus-on-replace! [^Scene scene]
+  (some-> (.lookup scene "#replace") .requestFocus))
+
 (defn -replace [this ^KeyEvent event])
 
 ; close
 
-(defn -close [this ^ActionEvent event])
+(defn close! [^Scene scene]
+  (when-let [path (:selection @state)]
+    (let [file (io/file path)
+          new-path (if (.isDirectory file)
+                     path
+                     (.getCanonicalPath (.getParentFile file)))
+          project-tree (.lookup scene "#project_tree")]
+      (e/remove-editors! path state)
+      (p/update-project-tree! state project-tree new-path))))
+
+(defn -close [this ^ActionEvent event]
+  (close! (-> event .getSource .getScene)))

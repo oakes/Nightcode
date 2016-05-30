@@ -14,8 +14,6 @@
             <Button fx:id="save" minWidth="-Infinity" mnemonicParsing="false" onAction="#onSave" text="Save" />
             <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
             <Button fx:id="redo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRedo" text="Redo" />
-            <Button fx:id="font_dec" minWidth="-Infinity" mnemonicParsing="false" onAction="#fontDec" text="Font -" />
-            <Button fx:id="font_inc" minWidth="-Infinity" mnemonicParsing="false" onAction="#fontInc" text="Font +" />
             <TextField fx:id="find" onKeyPressed="#find" promptText="Find" />
             <TextField fx:id="replace" onKeyPressed="#replace" promptText="Replace" />
             <Separator HBox.hgrow="ALWAYS" />

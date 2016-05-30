@@ -1,6 +1,5 @@
 (ns net.sekao.nightcode.projects
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.editors :as editors]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])

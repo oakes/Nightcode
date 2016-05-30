@@ -12,10 +12,21 @@
            [javafx.beans.value ChangeListener]
            [javafx.application Platform]))
 
-(def mappings {:new-project "p"
+(def mappings {; project pane
+               :new-project "p"
                :import-project "o"
                :rename "m"
                :remove "g"
+               :project-tree "↑ ↓ ↲"
+               ; editor pane
+               :up "u"
+               :save "s"
+               :undo "z"
+               :redo "y"
+               :find "f"
+               :replace "R"
+               :close "w"
+               ; build pane
                :run "r"
                :run-repl "X"
                :reload "S"
@@ -24,22 +35,12 @@
                :test "t"
                :clean "l"
                :stop "i"
-               :up "u"
-               :save "s"
-               :undo "z"
-               :redo "y"
-               :font-dec "-"
-               :font-inc "="
-               :find "f"
-               :replace "R"
-               :close "w"
-               :repl-console "E"
-               :project-tree "↑ ↓ ↲"
+               :build-console "A"
+               ; directory pane
                :new-file "n"
                :edit "M"
                :open-in-browser "F"
-               :cancel "C"
-               :build-console "A"})
+               :cancel "C"})
 
 (def reverse-mappings (set/map-invert mappings))
 
@@ -121,7 +122,7 @@
   (when-let [id (get reverse-mappings (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
       (let [fx-id (keyword->fx-id id)]
-        (when (-> scene (.lookup fx-id) .isDisabled not)
+        (when (some-> scene (.lookup fx-id) .isDisabled not)
           (Platform/runLater
             (fn []
               (action scene))))))))
