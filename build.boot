@@ -5,9 +5,7 @@
                   ; project deps
                   [org.clojure/clojure "1.9.0-alpha3"]
                   [boot/core "2.5.5"]
-                  [ring "1.4.0"]
-                  [cross-parinfer "1.1.6"]
-                  [html-soup "1.2.2"]])
+                  [ring "1.4.0"]])
 
 (task-options!
   pom {:project 'nightcode

@@ -4,8 +4,6 @@
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.util.response :refer [redirect]]
-            [cross-parinfer.core :as cp]
-            [html-soup.core :as hs]
             [clojure.spec :as s :refer [fdef]]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.utils :as u]
