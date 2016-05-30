@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.projects
   (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.spec :as spec]
             [net.sekao.nightcode.utils :as u]
@@ -15,9 +16,6 @@
            [javafx.stage Stage]
            [javafx.scene.input KeyEvent KeyCode]))
 
-(definterface Bridge
-  (onload []))
-
 (definterface ProjectTreeItem
   (getPath [] "Unique path representing this item")
   (getPane [state-atom] "The pane for the given item"))
@@ -29,36 +27,6 @@
   :ret spec/pane?)
 (defn ^:no-check project-pane []
   (FXMLLoader/load (io/resource "project.fxml")))
-
-(fdef editor-pane
-  :args (s/cat :state map? :file spec/file?)
-  :ret spec/pane?)
-(defn ^:no-check editor-pane [state file]
-  (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
-        buttons (-> pane .getChildren (.get 0) .getChildren seq)
-        webview (-> pane .getChildren (.get 1))
-        engine (.getEngine webview)]
-    (shortcuts/add-tooltips! buttons)
-    (-> engine
-        (.executeScript "window")
-        (.setMember "java"
-          (proxy [Bridge] []
-            (onload []
-              ; set the page content
-              (-> engine
-                  .getDocument
-                  (.getElementById "content")
-                  (.setTextContent (slurp file)))
-              ; refresh paren-soup
-              (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
-                    old-elem (-> body (.getElementsByTagName "script") (.item 0))
-                    new-elem (-> engine .getDocument (.createElement "script"))]
-                (.setAttribute new-elem "src" "paren-soup.js")
-                (doto body
-                  (.removeChild old-elem)
-                  (.appendChild new-elem)))))))
-    (.load engine (str "http://localhost:" (:web-port state)))
-    pane))
 
 (fdef dir-pane
   :args (s/cat)
@@ -104,7 +72,7 @@
                   pane (if (.isDirectory file)
                          (dir-pane)
                          (or (get-in state [:editor-panes path])
-                             (editor-pane state file)))
+                             (e/editor-pane state file)))
                   editors (-> project-pane .getItems (.get 0))]
               (doto (.getChildren editors)
                 (.clear)
