@@ -13,8 +13,7 @@
            [javafx.concurrent Worker$State]
            [javafx.scene Scene]
            [javafx.stage Stage]
-           [javafx.scene.input KeyEvent KeyCode]
-           [javafx.scene.web WebEngine]))
+           [javafx.scene.input KeyEvent KeyCode]))
 
 ; paths
 
