@@ -3,7 +3,8 @@
             [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.state :refer [state]])
+            [net.sekao.nightcode.state :refer [state]]
+            [net.sekao.nightcode.utils :as u])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
            [javafx.stage DirectoryChooser FileChooser StageStyle Window Modality]
@@ -76,9 +77,9 @@
                  (.setGraphic nil)
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
-        project-path (p/get-project-root-path @state)
+        project-path (u/get-project-root-path @state)
         selected-path (:selection @state)
-        relative-path (p/get-relative-path project-path selected-path)]
+        relative-path (u/get-relative-path project-path selected-path)]
     (-> dialog .getEditor (.setText relative-path))
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
       (when (not= relative-path new-relative-path)
@@ -87,7 +88,7 @@
               project-tree (.lookup scene "#project_tree")]
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file)
-          (p/delete-parents-recursively! (:project-set @state) selected-path)
+          (u/delete-parents-recursively! (:project-set @state) selected-path)
           (p/update-project-tree! state project-tree new-path))))))
 
 (defn -onRename [this ^ActionEvent event]
