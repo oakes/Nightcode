@@ -224,8 +224,8 @@
                                  :listen [:action refresh!]
                                  :valign :center
                                  :halign :center)
-                        (.setSelectedIcon (icon/icon (str (name id) "2.png")))
-                        (.setIcon (icon/icon (str (name id) ".png")))
+                        (.setSelectedIcon (icon/icon (str "images/" (name id) "2.png")))
+                        (.setIcon (icon/icon (str "images/" (name id) ".png")))
                         (.setVerticalTextPosition JRadioButton/BOTTOM)
                         (.setHorizontalTextPosition JRadioButton/CENTER)))]
     (s/config! exec-btn :listen [:action #(s/return-from-dialog % (finish))])

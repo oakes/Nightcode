@@ -50,7 +50,7 @@
                  :content (create-window-content args)
                  :width 1242
                  :height 768
-                 :icon "logo_launcher.png"
+                 :icon "images/logo_launcher.png"
                  :on-close :nothing)
     ; set various window properties
     window/enable-full-screen!
@@ -60,7 +60,7 @@
   "Launches the main window."
   [& args]
   (let [parsed-args (custom/parse-args args)]
-    (window/set-icon! "logo_launcher.png")
+    (window/set-icon! "images/logo_launcher.png")
     (window/set-theme! parsed-args)
     (sandbox/create-profiles-clj!)
     (sandbox/read-file-permissions!)

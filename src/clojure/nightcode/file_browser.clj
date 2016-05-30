@@ -129,13 +129,13 @@
   [f]
   (when-not (.isDirectory f)
     (case (utils/get-extension (.getName f))
-      "clj" "file-clojure.png"
-      "cljc" "file-clojure.png"
-      "cljs" "file-clojure.png"
-      "java" "file-java.png"
-      "git" "git.png"
+      "clj" "images/file-clojure.png"
+      "cljc" "images/file-clojure.png"
+      "cljs" "images/file-clojure.png"
+      "java" "images/file-java.png"
+      "git" "images/git.png"
       "logcat" nil
-      "file.png")))
+      "images/file.png")))
 
 (defn protect-file?
   [path]

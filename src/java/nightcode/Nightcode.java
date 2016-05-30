@@ -40,7 +40,7 @@ public class Nightcode {
         if (splash == null) {
             JWindow window = new JWindow();
             ClassLoader cl = this.getClass().getClassLoader();
-            Icon icon  = new ImageIcon(cl.getResource("logo_splash.png"));
+            Icon icon  = new ImageIcon(cl.getResource("images/logo_splash.png"));
             window.add(new JLabel(icon));
             window.setSize(icon.getIconWidth(), icon.getIconHeight());
             window.setLocationRelativeTo(null);
