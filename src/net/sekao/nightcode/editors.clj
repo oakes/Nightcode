@@ -56,7 +56,7 @@
         engine (.getEngine webview)
         clojure? (-> file .getName u/get-extension clojure-exts)]
     (shortcuts/add-tooltips! buttons)
-    ;(-> pane .getChildren (.get 0) (.setDisable true))
+    (-> pane .getChildren (.get 0) (.setDisable true))
     (-> engine
         (.executeScript "window")
         (.setMember "java"

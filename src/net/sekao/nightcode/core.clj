@@ -31,7 +31,7 @@
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
     (doto stage
-      (.setTitle "Nightcode")
+      (.setTitle "Nightcode 2.0.0-SNAPSHOT")
       (.setScene scene)
       (.show))
     (swap! state assoc :web-port (e/start-web-server!))
