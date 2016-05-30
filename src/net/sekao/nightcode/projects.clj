@@ -13,7 +13,8 @@
            [javafx.concurrent Worker$State]
            [javafx.scene Scene]
            [javafx.stage Stage]
-           [javafx.scene.input KeyEvent KeyCode]))
+           [javafx.scene.input KeyEvent KeyCode]
+           [javafx.scene.web WebEngine]))
 
 ; paths
 
@@ -81,6 +82,9 @@
 
 ; tree
 
+(definterface Bridge
+  (onload []))
+
 (definterface ProjectTreeItem
   (getPath [] "Unique path representing this item")
   (getPane [state-atom] "The pane for the given item"))
@@ -102,25 +106,25 @@
         webview (-> pane .getChildren (.get 1))
         engine (.getEngine webview)]
     (shortcuts/add-tooltips! buttons)
+    (-> engine
+        (.executeScript "window")
+        (.setMember "java"
+          (proxy [Bridge] []
+            (onload []
+              ; set the page content
+              (-> engine
+                  .getDocument
+                  (.getElementById "content")
+                  (.setTextContent (slurp file)))
+              ; refresh paren-soup
+              (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
+                    old-elem (-> body (.getElementsByTagName "script") (.item 0))
+                    new-elem (-> engine .getDocument (.createElement "script"))]
+                (.setAttribute new-elem "src" "paren-soup.js")
+                (doto body
+                  (.removeChild old-elem)
+                  (.appendChild new-elem)))))))
     (.load engine (str "http://localhost:" (:web-port state)))
-    (-> engine .getLoadWorker .stateProperty
-        (.addListener
-          (proxy [ChangeListener] []
-            (changed [ov old-state new-state]
-              (when (= new-state Worker$State/SUCCEEDED)
-                ; set the page content
-                (-> engine
-                    .getDocument
-                    (.getElementById "content")
-                    (.setTextContent (slurp file)))
-                ; refresh paren-soup
-                (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
-                      old-elem (-> body (.getElementsByTagName "script") (.item 0))
-                      new-elem (-> engine .getDocument (.createElement "script"))]
-                  (.setAttribute new-elem "src" "paren-soup.js")
-                  (doto body
-                    (.removeChild old-elem)
-                    (.appendChild new-elem))))))))
     pane))
 
 (fdef dir-pane

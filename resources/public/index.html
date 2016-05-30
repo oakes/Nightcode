@@ -25,6 +25,19 @@
 			<div class="numbers"></div>
 			<div class="content" contenteditable="true" id="content"></div>
 		</div>
-		<script type='text/javascript' src='paren-soup.js'></script>
+		<script type='text/javascript'>
+			if (window.java) {
+				window.onload = function() {
+					window.java.onload();
+				}
+			}
+			else {
+				var script = document.createElement('script');
+			    script.type = 'text/javascript';
+			    script.async = true;
+			    script.src = 'paren-soup.js';
+			    document.body.appendChild(script);
+			}
+		</script>
 	</body>
 </html>
