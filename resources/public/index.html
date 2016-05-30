@@ -8,18 +8,21 @@
 				src: url('fonts/FiraCode-Regular.otf') format('opentype');
 			}
 			html, body, .paren-soup {
+				font-family: 'Fira Code';
 				height: 100%;
 				margin: 0;
 			}
-			.paren-soup .content {
-				min-height: 100%;
-			}
-			html, body, .paren-soup .content {
+			html, body {
 				overflow: hidden;
 			}
 			.paren-soup {
-				overflow: auto;
-				font-family: 'Fira Code';
+				overflow-x: visible;
+				overflow-y: auto;
+			}
+			.paren-soup .content {
+				min-height: 100%;
+				overflow-x: auto;
+				overflow-y: visible;
 			}
 		</style>
 		<!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->

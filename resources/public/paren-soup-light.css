@@ -2,6 +2,7 @@
 	font-size: 16px;
 	font-family: monospace;
 	color: gray;
+	background-color: #f7f7f7;
 	outline: 1px solid;
 }
 
@@ -21,7 +22,6 @@
 }
 
 .paren-soup .instarepl .result {
-	/*opacity: 0.7;*/
 	position: absolute;
 	overflow: hidden;
 	background-color: lightgreen;
@@ -29,13 +29,14 @@
 	max-width: inherit;
 	word-wrap: break-word;
 	right: 0px;
+	/*opacity: 0.7;*/
 }
 
 .paren-soup .instarepl .result:hover {
-	/*opacity: 1;*/
 	cursor: pointer;
 	height: auto !important;
 	z-index: 1;
+	/*opacity: 1;*/
 }
 
 .paren-soup .instarepl .error {
@@ -56,6 +57,8 @@
 	white-space: pre;
 	word-wrap: normal;
 	overflow: scroll;
+	border-left: 1px solid #ddd;
+	background-color: white;
 }
 
 .paren-soup .content .symbol {
