@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.projects
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.editors :as editors]
+            [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
@@ -11,7 +12,8 @@
            [javafx.fxml FXMLLoader]
            [javafx.concurrent Worker$State]
            [javafx.scene Scene]
-           [javafx.stage Stage]))
+           [javafx.stage Stage]
+           [javafx.scene.input KeyEvent KeyCode]))
 
 ; paths
 
@@ -85,12 +87,21 @@
 
 (declare get-children)
 
-(fdef file-pane
+(fdef project-pane
+  :args (s/cat)
+  :ret spec/pane?)
+(defn ^:no-check project-pane []
+  (FXMLLoader/load (io/resource "project.fxml")))
+
+(fdef editor-pane
   :args (s/cat :state map? :file spec/file?)
   :ret spec/pane?)
-(defn ^:no-check file-pane [state file]
-  (let [pane (FXMLLoader/load (io/resource "project.fxml"))
-        engine (-> pane .getItems (.get 0) .getChildren (.get 0) .getEngine)]
+(defn ^:no-check editor-pane [state file]
+  (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
+        buttons (-> pane .getChildren (.get 0) .getChildren seq)
+        webview (-> pane .getChildren (.get 1))
+        engine (.getEngine webview)]
+    (shortcuts/add-tooltips! buttons)
     (.load engine (str "http://localhost:" (:web-port state)))
     (-> engine .getLoadWorker .stateProperty
         (.addListener
@@ -149,12 +160,21 @@
       (getPath []
         path)
       (getPane [state-atom]
-        (if (.isDirectory file)
-          (dir-pane)
-          (let [state @state-atom
-                pane (or (get-in state [:panes path]) (file-pane state file))]
-            (swap! state-atom update :panes assoc path pane)
-            pane))))))
+        (let [state @state-atom]
+          (when-let [parent-path (get-project-root-path state)]
+            (let [project-pane (or (get-in state [:project-panes parent-path])
+                                   (project-pane))
+                  pane (if (.isDirectory file)
+                         (dir-pane)
+                         (or (get-in state [:editor-panes path])
+                             (editor-pane state file)))
+                  editors (-> project-pane .getItems (.get 0))]
+              (doto (.getChildren editors)
+                (.clear)
+                (.add pane))
+              (swap! state-atom update :project-panes assoc parent-path project-pane)
+              (swap! state-atom update :editor-panes assoc path pane)
+              project-pane)))))))
 
 (fdef home-node
   :args (s/cat)
@@ -170,8 +190,9 @@
       (getPath []
         path)
       (getPane [state-atom]
-        (let [pane (or (get-in @state-atom [:panes path]) (home-pane))]
-          (swap! state-atom update :panes assoc path pane)
+        (let [pane (or (get-in @state-atom [:editor-panes path])
+                       (home-pane))]
+          (swap! state-atom update :editor-panes assoc path pane)
           pane)))))
 
 (fdef root-node
@@ -276,18 +297,21 @@
       (.setExpanded item (not (.isExpanded item))))))
 
 (fdef set-selection-listener!
-  :args (s/cat :state-atom spec/atom? :scene spec/scene? :tree spec/pane? :content spec/pane?))
-(defn ^:no-check set-selection-listener! [state-atom ^Scene scene tree content]
-  (let [selection-model (.getSelectionModel tree)]
+  :args (s/cat :state-atom spec/atom? :stage spec/stage? :tree spec/pane? :content spec/pane?))
+(defn ^:no-check set-selection-listener! [state-atom ^Stage stage tree content]
+  (let [scene (.getScene stage)
+        selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
+          (some-> old-value (.getPane state-atom) shortcuts/hide-tooltips!)
           (when new-value
             (-> (swap! state-atom assoc :selection (.getPath new-value))
                 (update-project-buttons! scene))
-            (doto (.getChildren content)
-              (.clear)
-              (.add (.getPane new-value state-atom)))))))))
+            (when-let [new-pane (.getPane new-value state-atom)]
+              (doto (.getChildren content)
+                (.clear)
+                (.add new-pane)))))))))
 
 (fdef set-focused-listener!
   :args (s/cat :state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
@@ -305,3 +329,19 @@
     (if (contains? project-set path)
       (swap! state-atom update :project-set disj path)
       (delete-parents-recursively! project-set path))))
+
+(fdef set-project-key-listener!
+  :args (s/cat :stage spec/stage?))
+(defn ^:no-check set-project-key-listener! [^Stage stage]
+  (let [^Scene scene (.getScene stage)]
+    (.addEventHandler scene KeyEvent/KEY_RELEASED
+      (proxy [EventHandler] []
+        (handle [^KeyEvent e]
+          (when (.isShortcutDown e)
+            (cond
+              (= (.getCode e) KeyCode/UP)
+              (move-project-tree-selection! scene -1)
+              (= (.getCode e) KeyCode/DOWN)
+              (move-project-tree-selection! scene 1)
+              (= (.getCode e) KeyCode/ENTER)
+              (toggle-project-tree-selection! scene))))))))

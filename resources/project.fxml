@@ -2,15 +2,11 @@
 
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.web.WebView?>
+<?import javafx.scene.layout.StackPane?>
 
 <SplitPane dividerPositions="0.75" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <items>
-      <AnchorPane minHeight="0.0" minWidth="0.0">
-         <children>
-            <WebView prefHeight="0.0" prefWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-         </children>
-      </AnchorPane>
+      <StackPane fx:id="editors" />
       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
    </items>
 </SplitPane>

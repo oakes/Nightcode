@@ -12,7 +12,10 @@
    :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
-             [onRemove [javafx.event.ActionEvent] void]]))
+             [onRemove [javafx.event.ActionEvent] void]
+             [onSave [javafx.event.ActionEvent] void]
+             [onUndo [javafx.event.ActionEvent] void]
+             [onRedo [javafx.event.ActionEvent] void]]))
 
 (defn show-new-project! [^Scene scene]
   (some-> (.lookup scene "#new_project") .show))
@@ -96,3 +99,7 @@
 
 (defn -onRemove [this ^ActionEvent event]
   (remove! (-> event .getSource .getScene)))
+
+(defn -onSave [this ^ActionEvent event])
+(defn -onUndo [this ^ActionEvent event])
+(defn -onRedo [this ^ActionEvent event])

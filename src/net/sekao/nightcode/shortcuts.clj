@@ -1,8 +1,6 @@
 (ns net.sekao.nightcode.shortcuts
   (:require [clojure.string :as str]
             [clojure.set :as set]
-            [net.sekao.nightcode.controller :as c]
-            [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
   (:import [javafx.scene Node]
@@ -45,16 +43,17 @@
 
 (def reverse-mappings (set/map-invert mappings))
 
-(def actions {:new-project c/show-new-project!
-              :import-project c/import!
-              :rename c/rename!
-              :remove c/remove!})
-
 (fdef keyword->fx-id
   :args (s/cat :k keyword?)
   :ret string?)
 (defn keyword->fx-id [k]
   (str "#" (str/replace (name k) #"-" "_")))
+
+(fdef fx-id->keyword
+  :args (s/cat :s string?)
+  :ret keyword?)
+(defn fx-id->keyword [s]
+  (-> s (str/replace #"_" "-") keyword))
 
 (fdef add-tooltip!
   :args (s/cat :control spec/node? :text string?))
@@ -65,47 +64,60 @@
       (.setAutoHide false))))
 
 (fdef add-tooltips!
-  :args (s/cat :scene spec/scene? :ids (s/coll-of keyword? [])))
-(defn ^:no-check add-tooltips! [^Scene scene ids]
-  (doseq [id ids]
-    (let [control (.lookup scene (keyword->fx-id id))
-          text (get mappings id)]
-      (when (and control text)
-        (add-tooltip! control text)))))
+  :args (s/alt
+          :nodes (s/cat :nodes (s/coll-of spec/node? []))
+          :ids (s/cat :scene spec/scene? :ids (s/coll-of keyword? []))))
+(defn ^:no-check add-tooltips!
+  ([nodes]
+   (doseq [node nodes]
+     (let [id (.getId node)
+           key (fx-id->keyword id)]
+       (when-let [text (get mappings key)]
+         (add-tooltip! node text)))))
+  ([^Scene scene ids]
+   (doseq [id ids]
+     (let [control (.lookup scene (keyword->fx-id id))
+           text (get mappings id)]
+       (when (and control text)
+         (add-tooltip! control text))))))
 
 (fdef show-tooltip!
   :args (s/cat :stage spec/stage? :control spec/node?))
 (defn ^:no-check show-tooltip! [^Stage stage ^Node control]
-  (let [^Tooltip tooltip (.getTooltip control)
-        point (.localToScene control (double 0) (double 0))
-        scene (.getScene stage)
-        _ (.show tooltip stage (double 0) (double 0))
-        half-width (- (/ (.getWidth control) 2)
-                      (/ (.getWidth tooltip) 4))
-        half-height (- (/ (.getHeight control) 2)
-                       (/ (.getHeight tooltip) 4))]
-    (.show tooltip stage
-      (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
-      (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height)))))
+  (when-let [^Tooltip tooltip (.getTooltip control)]
+    (let [point (.localToScene control (double 0) (double 0))
+          scene (.getScene stage)
+          _ (.show tooltip stage (double 0) (double 0))
+          half-width (- (/ (.getWidth control) 2)
+                        (/ (.getWidth tooltip) 4))
+          half-height (- (/ (.getHeight control) 2)
+                         (/ (.getHeight tooltip) 4))]
+      (.show tooltip stage
+        (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
+        (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height))))))
+
+(fdef show-tooltips!
+  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :stage spec/stage?))
+(defn ^:no-check show-tooltips! [node ^Stage stage]
+  (doseq [id (keys mappings)]
+    (when-let [control (.lookup node (keyword->fx-id id))]
+      (show-tooltip! stage control))))
 
 (fdef hide-tooltip!
   :args (s/cat :control spec/node?))
 (defn ^:no-check hide-tooltip! [^Node control]
-  (-> control .getTooltip .hide))
+  (some-> control .getTooltip .hide))
 
-(fdef toggle-tooltips!
-  :args (s/cat :stage spec/stage? :show? spec/boolean?))
-(defn ^:no-check toggle-tooltips! [^Stage stage show?]
-  (let [^Scene scene (.getScene stage)]
-    (doseq [id (keys mappings)]
-      (when-let [control (.lookup scene (keyword->fx-id id))]
-        (if show?
-          (show-tooltip! stage control)
-          (hide-tooltip! control))))))
+(fdef hide-tooltips!
+  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?)))
+(defn ^:no-check hide-tooltips! [node]
+  (doseq [id (keys mappings)]
+    (when-let [control (.lookup node (keyword->fx-id id))]
+      (hide-tooltip! control))))
 
 (fdef run-shortcut!
-  :args (s/cat :scene spec/scene? :text string? :shift? spec/boolean?))
-(defn ^:no-check run-shortcut! [^Scene scene ^String text shift?]
+  :args (s/cat :scene spec/scene? :actions map? :text string? :shift? spec/boolean?))
+(defn ^:no-check run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (get reverse-mappings (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
       (Platform/runLater
@@ -113,35 +125,27 @@
           (action scene))))))
 
 (fdef set-shortcut-listeners!
-  :args (s/cat :stage spec/stage?))
-(defn ^:no-check set-shortcut-listeners! [^Stage stage]
+  :args (s/cat :stage spec/stage? :actions map?))
+(defn ^:no-check set-shortcut-listeners! [^Stage stage actions]
   (let [^Scene scene (.getScene stage)]
     ; show tooltips on key pressed
     (.addEventHandler scene KeyEvent/KEY_PRESSED
       (proxy [EventHandler] []
         (handle [^KeyEvent e]
           (when (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (toggle-tooltips! stage true)))))
+            (show-tooltips! scene stage)))))
     ; hide tooltips and run shortcut on key released
     (.addEventHandler scene KeyEvent/KEY_RELEASED
       (proxy [EventHandler] []
         (handle [^KeyEvent e]
           (cond
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (toggle-tooltips! stage false)
+            (hide-tooltips! scene)
             (.isShortcutDown e)
-            (cond
-              (= (.getCode e) KeyCode/UP)
-              (p/move-project-tree-selection! scene -1)
-              (= (.getCode e) KeyCode/DOWN)
-              (p/move-project-tree-selection! scene 1)
-              (= (.getCode e) KeyCode/ENTER)
-              (p/toggle-project-tree-selection! scene)
-              :else
-              (run-shortcut! scene (.getText e) (.isShiftDown e)))))))
+            (run-shortcut! scene actions (.getText e) (.isShiftDown e))))))
     ; hide tooltips on window focus
     (.addListener (.focusedProperty stage)
       (reify ChangeListener
         (changed [this observable old-value new-value]
           (when new-value
-            (toggle-tooltips! stage false)))))))
+            (hide-tooltips! scene)))))))

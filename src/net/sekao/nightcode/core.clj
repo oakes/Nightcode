@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.core
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.boot]
+            [net.sekao.nightcode.controller :as c]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.shortcuts :as shortcuts]
@@ -12,6 +13,11 @@
            [javafx.scene Scene])
   (:gen-class :extends javafx.application.Application))
 
+(def actions {:new-project c/show-new-project!
+              :import-project c/import!
+              :rename c/rename!
+              :remove c/remove!})
+
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))
         scene (Scene. root 1242 768)
@@ -22,13 +28,14 @@
       (.setScene scene)
       (.show))
     (shortcuts/add-tooltips! scene [:project-tree :new-project :import-project :rename :remove])
-    (shortcuts/set-shortcut-listeners! stage)
+    (shortcuts/set-shortcut-listeners! stage actions)
     (swap! state assoc :web-port (e/start-web-server!))
     (-> content .getChildren .clear)
     (p/update-project-tree! state project-tree)
     (p/update-project-buttons! @state scene)
-    (p/set-selection-listener! state scene project-tree content)
-    (p/set-focused-listener! state stage project-tree)))
+    (p/set-selection-listener! state stage project-tree content)
+    (p/set-focused-listener! state stage project-tree)
+    (p/set-project-key-listener! stage)))
 
 (defn -main [& args]
   (Application/launch net.sekao.nightcode.core (into-array String args)))

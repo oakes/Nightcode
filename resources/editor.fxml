@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+
+<VBox fx:id="sidebar" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
+   <children>
+      <HBox fx:id="editor_buttons" prefHeight="11.0" prefWidth="265.0" VBox.vgrow="NEVER">
+         <children>
+            <Button fx:id="save" minWidth="-Infinity" mnemonicParsing="false" onAction="#onSave" text="Save" />
+            <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
+            <Button fx:id="redo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRedo" text="Redo" />
+         </children>
+      </HBox>
+      <WebView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+   </children>
+</VBox>
