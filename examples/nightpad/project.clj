@@ -1,6 +1,6 @@
 (defproject nightpad "0.0.1-SNAPSHOT"
   :description "FIXME: write description"
-  :dependencies [[nightcode "1.3.0"
+  :dependencies [[nightcode "1.3.1"
                   :exclusions [gwt-plugin
                                leiningen
                                lein-ancient
