@@ -27,7 +27,7 @@
                  [org.eclipse.jgit "3.5.3.201412180710-r"
                   :exclusions [org.apache.httpcomponents/httpclient]]
                  [org.flatland/ordered "1.5.3"]
-                 [play-clj/lein-template "1.1.0"]
+                 [play-clj/lein-template "1.1.0.1"]
                  [seesaw "1.4.5"]
                  [cross-parinfer "1.1.6"]]
   :uberjar-exclusions [#"PHPTokenMaker\.class"
