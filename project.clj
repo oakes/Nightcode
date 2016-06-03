@@ -1,4 +1,4 @@
-(defproject nightcode "1.4.0-SNAPSHOT"
+(defproject nightcode "1.3.1-SNAPSHOT"
   :description "An IDE for Clojure and Java"
   :url "https://github.com/oakes/Nightcode"
   :license {:name "Public Domain"
@@ -18,7 +18,7 @@
                  [lein-droid "0.4.3"]
                  [lein-typed "0.3.5"]
                  [lein-ring "0.9.7"]
-                 [mistakes-were-made "1.6.2"]
+                 [mistakes-were-made "1.6.3"]
                  [net.java.balloontip/balloontip "1.2.4.1"]
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.incubator "0.1.3"]
