@@ -406,11 +406,16 @@
        (.setMarginLinePosition 80)
        (.setTabSize (if (contains? utils/clojure-exts extension) 2 4))))))
 
+(defn create-edit-history []
+  (let [h (mwm/create-edit-history)]
+    (swap! h assoc :limit 100)
+    h))
+
 (defn create-console
   ([path]
    (create-console path "clj"))
   ([path extension]
-   (let [edit-history (mwm/create-edit-history)
+   (let [edit-history (create-edit-history)
          text-area (create-text-area edit-history)
          completer (completions/create-completer text-area extension)]
      (add-watchers! path text-area)
@@ -422,7 +427,7 @@
      (proxy [JConsole] [text-area]
        (resetCommandStart []
          (proxy-super resetCommandStart)
-         (reset! edit-history (deref (mwm/create-edit-history)))
+         (reset! edit-history (deref (create-edit-history)))
          (->> {:text (.getText text-area)
                :cursor-position (get-cursor-position text-area)}
               (mwm/update-edit-history! edit-history)))))))
@@ -508,7 +513,7 @@
 (defmethod create-editor :text [_ path]
   (when (utils/valid-file? (io/file path))
     (let [; create the text editor and the pane that will hold it
-          edit-history (mwm/create-edit-history)
+          edit-history (create-edit-history)
           text-area (create-text-area path edit-history)
           extension (utils/get-extension path)
           clojure? (contains? utils/clojure-exts extension)
