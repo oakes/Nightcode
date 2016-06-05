@@ -22,7 +22,7 @@
                :up "u"
                :save "s"
                :undo "z"
-               :redo "y"
+               :redo "Z"
                :find "f"
                :replace "R"
                :close "w"
