@@ -25,25 +25,25 @@
 (fdef project-pane
   :args (s/cat)
   :ret spec/pane?)
-(defn ^:no-check project-pane []
+(defn project-pane []
   (FXMLLoader/load (io/resource "project.fxml")))
 
 (fdef dir-pane
   :args (s/cat)
   :ret spec/pane?)
-(defn ^:no-check dir-pane []
+(defn dir-pane []
   (FXMLLoader/load (io/resource "dir.fxml")))
 
 (fdef home-pane
   :args (s/cat)
   :ret spec/pane?)
-(defn ^:no-check home-pane []
+(defn home-pane []
   (FXMLLoader/load (io/resource "home.fxml")))
 
 (fdef file-node
   :args (s/cat :file spec/file?)
   :ret spec/tree-item?)
-(defn ^:no-check file-node [file]
+(defn file-node [file]
   (let [path (.getCanonicalPath file)
         value (proxy [File] [path]
                 (toString []
@@ -84,7 +84,7 @@
 (fdef home-node
   :args (s/cat)
   :ret spec/tree-item?)
-(defn ^:no-check home-node []
+(defn home-node []
   (let [path "**Home**"
         value (proxy [Object] []
                 (toString []
@@ -103,7 +103,7 @@
 (fdef root-node
   :args (s/cat :state map?)
   :ret spec/tree-item?)
-(defn ^:no-check root-node [state]
+(defn root-node [state]
   (let [project-files (->> (:project-set state)
                            (map #(io/file %))
                            (sort-by #(.getName %)))
@@ -121,14 +121,14 @@
 (fdef get-children
   :args (s/cat :files :net.sekao.nightcode.spec/files)
   :ret spec/obs-list?)
-(defn ^:no-check get-children [files]
+(defn get-children [files]
   (let [children (FXCollections/observableArrayList)]
     (run! #(.add children (file-node %)) files)
     children))
 
 (fdef set-expanded-listener!
   :args (s/cat :state-atom spec/atom? :tree spec/pane?))
-(defn ^:no-check set-expanded-listener! [state-atom tree]
+(defn set-expanded-listener! [state-atom tree]
   (let [root-item (.getRoot tree)]
     (.addEventHandler root-item
       (TreeItem/branchExpandedEvent)
@@ -147,7 +147,7 @@
   :args (s/alt
           :args2 (s/cat :state-atom spec/atom? :tree spec/pane?)
           :args3 (s/cat :state-atom spec/atom? :tree spec/pane? :selection (s/nilable string?))))
-(defn ^:no-check update-project-tree!
+(defn update-project-tree!
   ([state-atom tree]
    (update-project-tree! state-atom tree nil))
   ([state-atom tree new-selection]
@@ -174,7 +174,7 @@
 
 (fdef update-project-buttons!
   :args (s/cat :state map? :scene spec/scene?))
-(defn ^:no-check update-project-buttons! [state ^Scene scene]
+(defn update-project-buttons! [state ^Scene scene]
   (let [rename-button (.lookup scene "#rename")
         remove-button (.lookup scene "#remove")
         path (:selection state)
@@ -186,7 +186,7 @@
 
 (fdef move-project-tree-selection!
   :args (s/cat :scene spec/scene? :diff integer?))
-(defn ^:no-check move-project-tree-selection! [^Scene scene diff]
+(defn move-project-tree-selection! [^Scene scene diff]
   (let [project-tree (.lookup scene "#project_tree")
         selection-model (.getSelectionModel project-tree)
         index (+ diff (.getSelectedIndex selection-model))]
@@ -195,7 +195,7 @@
 
 (fdef toggle-project-tree-selection!
   :args (s/cat :scene spec/scene?))
-(defn ^:no-check toggle-project-tree-selection! [^Scene scene]
+(defn toggle-project-tree-selection! [^Scene scene]
   (let [project-tree (.lookup scene "#project_tree")
         selection-model (.getSelectionModel project-tree)]
     (when-let [item (.getSelectedItem selection-model)]
@@ -203,7 +203,7 @@
 
 (fdef set-selection-listener!
   :args (s/cat :state-atom spec/atom? :stage spec/stage? :tree spec/pane? :content spec/pane?))
-(defn ^:no-check set-selection-listener! [state-atom ^Stage stage tree content]
+(defn set-selection-listener! [state-atom ^Stage stage tree content]
   (let [scene (.getScene stage)
         selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
@@ -220,7 +220,7 @@
 
 (fdef set-focused-listener!
   :args (s/cat :state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
-(defn ^:no-check set-focused-listener! [state-atom ^Stage stage project-tree]
+(defn set-focused-listener! [state-atom ^Stage stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
       (changed [this observable old-value new-value]
@@ -229,7 +229,7 @@
 
 (fdef remove-from-project-tree!
   :args (s/cat :state-atom spec/atom? :path string?))
-(defn ^:no-check remove-from-project-tree! [state-atom ^String path]
+(defn remove-from-project-tree! [state-atom ^String path]
   (let [{:keys [project-set]} @state-atom]
     (if (contains? project-set path)
       (swap! state-atom update :project-set disj path)
@@ -237,7 +237,7 @@
 
 (fdef set-project-key-listener!
   :args (s/cat :stage spec/stage?))
-(defn ^:no-check set-project-key-listener! [^Stage stage]
+(defn set-project-key-listener! [^Stage stage]
   (let [^Scene scene (.getScene stage)]
     (.addEventHandler scene KeyEvent/KEY_RELEASED
       (reify EventHandler

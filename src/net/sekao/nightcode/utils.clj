@@ -17,7 +17,7 @@
 
 (fdef delete-parents-recursively!
   :args (s/cat :project-set set? :path string?))
-(defn ^:no-check delete-parents-recursively!
+(defn delete-parents-recursively!
   "Deletes the given file along with all empty parents unless they are in project-set."
   [project-set path]
   (let [f (io/file path)]
@@ -32,7 +32,7 @@
 
 (fdef delete-children-recursively!
   :args (s/cat :path string?))
-(defn ^:no-check delete-children-recursively!
+(defn delete-children-recursively!
   "Deletes the children of the given dir along with the dir itself."
   [path]
   (let [f (io/file path)]
@@ -45,7 +45,7 @@
 (fdef get-project-root-path
   :args (s/cat :state map?)
   :ret (s/nilable string?))
-(defn ^:no-check get-project-root-path
+(defn get-project-root-path
   "Returns the root path that the selected path is contained within."
   [state]
   (when-let [^String selected-path (:selection state)]

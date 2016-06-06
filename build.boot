@@ -16,9 +16,6 @@
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
                   "Url" "https://github.com/oakes/Nightcode"}})
 
-(require '[clojure.spec :as s]
-         '[clojure.spec.test :as t])
-
 (deftask run []
   (comp
     (aot)
@@ -34,26 +31,3 @@
 
 (deftask build []
   (comp (aot) (pom) (uber) (jar)))
-
-(deftask spec []
-  (comp
-    (aot)
-    (with-pre-wrap fileset
-      (require '[net.sekao.nightcode.core])
-      (let [vs (s/speced-vars)
-            reporter-fn println]
-        (reduce
-          (fn [totals v]
-            (if (-> v meta :no-check)
-              totals
-              (let [_  (println "Checking" v)
-                    ret (t/check-var v :reporter-fn reporter-fn)]
-                (prn ret)
-                (cond-> totals
-                        true (update :test inc)
-                        (true? (:result ret)) (update :pass inc)
-                        (:clojure.spec.test/problems (:result ret)) (update :fail inc)
-                        (instance? Throwable (:result ret)) (update :error inc)))))
-          {:test 0, :pass 0, :fail 0, :error 0}
-          vs))
-      fileset)))

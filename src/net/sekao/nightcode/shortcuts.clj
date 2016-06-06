@@ -58,7 +58,7 @@
 
 (fdef add-tooltip!
   :args (s/cat :control spec/node? :text string?))
-(defn ^:no-check add-tooltip! [^Node control ^String text]
+(defn add-tooltip! [^Node control ^String text]
   (.setTooltip control
     (doto (Tooltip.)
       (.setText text)
@@ -68,7 +68,7 @@
   :args (s/alt
           :nodes (s/cat :nodes (s/coll-of spec/node? []))
           :ids (s/cat :scene spec/scene? :ids (s/coll-of keyword? []))))
-(defn ^:no-check add-tooltips!
+(defn add-tooltips!
   ([nodes]
    (doseq [node nodes]
      (when-let [id (.getId node)]
@@ -83,7 +83,7 @@
 
 (fdef show-tooltip!
   :args (s/cat :stage spec/stage? :control spec/node?))
-(defn ^:no-check show-tooltip! [^Stage stage ^Node control]
+(defn show-tooltip! [^Stage stage ^Node control]
   (when-let [^Tooltip tooltip (.getTooltip control)]
     (let [point (.localToScene control (double 0) (double 0))
           scene (.getScene stage)
@@ -98,7 +98,7 @@
 
 (fdef show-tooltips!
   :args (s/cat :stage spec/stage?))
-(defn ^:no-check show-tooltips! [^Stage stage]
+(defn show-tooltips! [^Stage stage]
   (let [scene (.getScene stage)]
     (doseq [id (keys mappings)]
       (when-let [control (.lookup scene (keyword->fx-id id))]
@@ -106,19 +106,19 @@
 
 (fdef hide-tooltip!
   :args (s/cat :control spec/node?))
-(defn ^:no-check hide-tooltip! [^Node control]
+(defn hide-tooltip! [^Node control]
   (some-> control .getTooltip .hide))
 
 (fdef hide-tooltips!
   :args (s/cat :node (s/or :node spec/node? :stage spec/scene?)))
-(defn ^:no-check hide-tooltips! [node]
+(defn hide-tooltips! [node]
   (doseq [id (keys mappings)]
     (when-let [control (.lookup node (keyword->fx-id id))]
       (hide-tooltip! control))))
 
 (fdef run-shortcut!
   :args (s/cat :scene spec/scene? :actions map? :text string? :shift? spec/boolean?))
-(defn ^:no-check run-shortcut! [^Scene scene actions ^String text shift?]
+(defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (get reverse-mappings (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
       (let [fx-id (keyword->fx-id id)]
@@ -129,7 +129,7 @@
 
 (fdef set-shortcut-listeners!
   :args (s/cat :stage spec/stage? :actions map?))
-(defn ^:no-check set-shortcut-listeners! [^Stage stage actions]
+(defn set-shortcut-listeners! [^Stage stage actions]
   (let [^Scene scene (.getScene stage)]
     ; show tooltips on key pressed
     (.addEventHandler scene KeyEvent/KEY_PRESSED

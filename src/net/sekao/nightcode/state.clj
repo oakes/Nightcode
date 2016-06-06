@@ -9,7 +9,7 @@
 
 (fdef write-pref!
   :args (s/cat :key keyword? :val identity))
-(defn ^:no-check write-pref!
+(defn write-pref!
   "Writes a key-value pair to the preference file."
   [k v]
   (doto prefs
@@ -18,7 +18,7 @@
 
 (fdef remove-pref!
   :args (s/cat :key keyword?))
-(defn ^:no-check remove-pref!
+(defn remove-pref!
   "Removes a key-value pair from the preference file."
   [k]
   (doto prefs
@@ -29,7 +29,7 @@
   :args (s/alt
           :key-only (s/cat :key keyword?)
           :key-and-val (s/cat :key keyword? :default-val identity)))
-(defn ^:no-check read-pref
+(defn read-pref
   "Reads value from the given key in the preference file."
   ([k]
    (read-pref k nil))

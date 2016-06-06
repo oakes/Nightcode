@@ -23,7 +23,7 @@
 (fdef start-web-server!
   :args (s/cat)
   :ret integer?)
-(defn ^:no-check start-web-server! []
+(defn start-web-server! []
   (-> handler
       (wrap-resource "public")
       (wrap-content-type)
@@ -34,7 +34,7 @@
 
 (fdef remove-editors!
   :args (s/cat :path string? :state spec/atom?))
-(defn ^:no-check remove-editors! [^String path state-atom]
+(defn remove-editors! [^String path state-atom]
   (doseq [[editor-path pane] (:editor-panes @state-atom)]
     (when (u/parent-path? path editor-path)
       (swap! state-atom update :editor-panes dissoc editor-path)
@@ -47,14 +47,13 @@
 (fdef editor-pane
   :args (s/cat :state map? :file spec/file?)
   :ret spec/pane?)
-(defn ^:no-check editor-pane [state file]
+(defn editor-pane [state file]
   (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
         buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))
         engine (.getEngine webview)
         clojure? (-> file .getName u/get-extension clojure-exts)]
     (shortcuts/add-tooltips! buttons)
-    ;(-> pane .getChildren (.get 0) (.setDisable true))
     (-> engine
         (.executeScript "window")
         (.setMember "java"
