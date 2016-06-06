@@ -52,7 +52,7 @@
               (p/update-project-tree! state project-tree))))))))
 
 (defn -onNewConsoleProject [this ^ActionEvent event]
-  #_(-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :app)))
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :app)))
 
 ; import
 

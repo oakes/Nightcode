@@ -18,11 +18,9 @@
           (throw (Exception.)))))
     (try
       (boot.App/main (into-array String args))
-      (catch Exception e
-        (.printStackTrace e))
-      (finally
-        (System/setSecurityManager nil)
-        (System/setProperty "user.dir" old-dir)))))
+      (catch Exception _))
+    (System/setSecurityManager nil)
+    (System/setProperty "user.dir" old-dir)))
 
 (fdef new-project!
   :args (s/cat :file spec/file? :template string?))
@@ -31,6 +29,6 @@
         project-name (-> file .getName str/lower-case)]
     (boot! dir
       "--no-boot-script"
-      "-d" "seancorfield/boot-new:0.4.2" "new"
+      "-d" "seancorfield/boot-new" "new"
       "-t" template
       "-n" project-name)))

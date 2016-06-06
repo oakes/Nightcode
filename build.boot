@@ -4,7 +4,10 @@
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
                   [org.clojure/clojure "1.9.0-alpha4"]
-                  [boot/core "2.5.5"]
+                  [boot/core "2.6.0"]
+                  [boot/base "2.6.0"]
+                  [seancorfield/boot-new "0.4.4"]
+                  [stencil "0.5.0" :exclusions [org.clojure/clojure]] ; for boot-new
                   [ring "1.4.0"]])
 
 (task-options!
