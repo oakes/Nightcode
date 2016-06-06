@@ -8,7 +8,9 @@
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.spec :as spec])
-  (:import [javafx.fxml FXMLLoader]))
+  (:import [javafx.fxml FXMLLoader]
+           [javafx.scene.web WebEngine]
+           [java.io File]))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 (def ^:const wrap-exts #{"md" "txt"})
@@ -44,6 +46,21 @@
 (definterface Bridge
   (onload []))
 
+(fdef onload
+  :args (s/cat :engine :clojure.spec/any :file spec/file? :clojure? spec/boolean?))
+(defn onload [^WebEngine engine ^File file clojure?]
+  ; set the page content
+  (-> engine
+      .getDocument
+      (.getElementById "content")
+      (.setTextContent (slurp file)))
+  ; inject paren-soup
+  (when clojure?
+    (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
+          script (-> engine .getDocument (.createElement "script"))]
+      (.setAttribute script "src" "paren-soup.js")
+      (.appendChild body script))))
+
 (fdef editor-pane
   :args (s/cat :state map? :file spec/file?)
   :ret spec/pane?)
@@ -52,24 +69,16 @@
         buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))
         engine (.getEngine webview)
-        clojure? (-> file .getName u/get-extension clojure-exts)]
+        clojure? (-> file .getName u/get-extension clojure-exts some?)]
     (shortcuts/add-tooltips! buttons)
     (-> engine
         (.executeScript "window")
         (.setMember "java"
           (proxy [Bridge] []
             (onload []
-              ; set the page content
-              (-> engine
-                  .getDocument
-                  (.getElementById "content")
-                  (.setTextContent (slurp file)))
-              ; inject paren-soup
-              (when clojure?
-                (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
-                      script (-> engine .getDocument (.createElement "script"))]
-                  (.setAttribute script "src" "paren-soup.js")
-                  (.appendChild body script)))))))
+              (try
+                (onload engine file clojure?)
+                (catch Exception e (.printStackTrace e)))))))
     (.load engine (str "http://localhost:"
                     (:web-port state)
                     (if clojure? "/index.html" "/index2.html")))
