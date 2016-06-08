@@ -175,14 +175,14 @@
 (fdef update-project-buttons!
   :args (s/cat :state map? :scene spec/scene?))
 (defn update-project-buttons! [state ^Scene scene]
-  (let [rename-button (.lookup scene "#rename")
-        remove-button (.lookup scene "#remove")
-        path (:selection state)
-        file (io/file path)]
-    (.setDisable rename-button (not (.isFile file)))
-    (.setDisable remove-button
-      (and (not (contains? (:project-set state) path))
-        (not (.isFile file))))))
+  (when-let [path (:selection state)]
+    (let [rename-button (.lookup scene "#rename")
+          remove-button (.lookup scene "#remove")
+          file (io/file path)]
+      (.setDisable rename-button (not (.isFile file)))
+      (.setDisable remove-button
+        (and (not (contains? (:project-set state) path))
+          (not (.isFile file)))))))
 
 (fdef move-project-tree-selection!
   :args (s/cat :scene spec/scene? :diff integer?))
