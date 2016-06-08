@@ -10,7 +10,6 @@
   '[clojure.java.io :as io])
 
 (deftask build []
-  (set-env! :source-paths #{"src"})
   (comp
     (cljs :optimizations :simple)
     (target)
