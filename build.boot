@@ -33,4 +33,4 @@
     (repl :init-ns 'net.sekao.nightcode.core)))
 
 (deftask build []
-  (comp (aot) (pom) (uber) (jar)))
+  (comp (aot) (pom) (uber) (jar) (target)))

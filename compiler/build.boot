@@ -1,6 +1,5 @@
 (set-env!
   :source-paths #{"src"}
-  :resource-paths #{"resources"}
   :dependencies '[[adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   ; project deps
                   [org.clojure/clojure "1.9.0-alpha4"]
@@ -14,6 +13,7 @@
   (set-env! :source-paths #{"src"})
   (comp
     (cljs :optimizations :simple)
+    (target)
     (with-pre-wrap fileset
       (let [from (io/file "target/main.js")
             to (io/file "../resources/public/paren-soup-compiler.js")]
