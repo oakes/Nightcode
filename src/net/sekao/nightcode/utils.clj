@@ -13,9 +13,8 @@
        (proxy [SecurityManager] []
          (checkExit [status#]
            (throw (SecurityException. "Exit not allowed.")))))
-     (let [result# ~body]
-       (System/setSecurityManager nil)
-       result#)))
+     (try ~body
+       (finally (System/setSecurityManager nil)))))
 
 (fdef get-relative-path
   :args (s/cat :project-path string? :selected-path string?)
