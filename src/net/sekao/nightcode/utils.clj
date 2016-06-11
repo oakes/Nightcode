@@ -5,6 +5,18 @@
             [clojure.spec :as s :refer [fdef]])
   (:import [java.io File]))
 
+(defmacro with-security [body]
+  `(do
+     (System/setProperty "java.security.policy"
+                        (-> "java.policy" io/resource .toString))
+     (System/setSecurityManager
+       (proxy [SecurityManager] []
+         (checkExit [status#]
+           (throw (Exception. "Exit not allowed")))))
+     (let [result# (try ~body (catch Exception e# e#))]
+       (System/setSecurityManager nil)
+       result#)))
+
 (fdef get-relative-path
   :args (s/cat :project-path string? :selected-path string?)
   :ret string?)

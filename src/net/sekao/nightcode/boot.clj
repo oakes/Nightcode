@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.spec :as s :refer [fdef]]
-            [net.sekao.nightcode.spec :as spec])
+            [net.sekao.nightcode.spec :as spec]
+            [net.sekao.nightcode.utils :as u])
   (:import [boot.App]))
 
 (fdef boot!
@@ -10,16 +11,8 @@
 (defn boot! [dir & args]
   (let [old-dir (System/getProperty "user.dir")]
     (System/setProperty "user.dir" dir)
-    (System/setProperty "java.security.policy"
-                        (-> "java.policy" io/resource .toString))
-    (System/setSecurityManager
-      (proxy [SecurityManager] []
-        (checkExit [status]
-          (throw (Exception.)))))
-    (try
-      (boot.App/main (into-array String args))
-      (catch Exception _))
-    (System/setSecurityManager nil)
+    (u/with-security
+      (boot.App/main (into-array String args)))
     (System/setProperty "user.dir" old-dir)))
 
 (fdef new-project!

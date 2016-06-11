@@ -1,9 +1,11 @@
 (ns net.sekao.nightcode.editors
   (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.util.response :refer [redirect]]
+            [ring.util.request :refer [body-string]]
             [clojure.spec :as s :refer [fdef]]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.utils :as u]
@@ -15,12 +17,45 @@
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 (def ^:const wrap-exts #{"md" "txt"})
 
+(fdef eval-form
+  :args (s/cat :form-str string? :nspace spec/ns?)
+  :ret vector?)
+(defn eval-form [form-str nspace]
+  (binding [*read-eval* false
+            *ns* nspace]
+    (try
+      (refer-clojure)
+      (let [form (read-string form-str)
+            result (u/with-security (eval form))
+            current-ns (if (and (coll? form) (= 'ns (first form)))
+                         (-> form second create-ns)
+                         *ns*)]
+        [result current-ns])
+      (catch Exception e [e *ns*]))))
+
+(fdef eval-forms
+  :args (s/cat :forms-str string?)
+  :ret vector?)
+(defn eval-forms [forms-str]
+  (loop [forms (edn/read-string forms-str)
+         results []
+         nspace (create-ns 'clj.user)]
+    (if-let [form (first forms)]
+      (let [[result current-ns] (eval-form form nspace)
+            result-str (if (instance? Exception result) [(.getMessage result)] (pr-str result))]
+        (recur (rest forms) (conj results result-str) current-ns))
+      results)))
+
 (fdef handler
   :args (s/cat :request map?)
   :ret (s/nilable map?))
 (defn handler [request]
-  (when (= (:uri request) "/")
-    (redirect "/index.html")))
+  (case (:uri request)
+    "/" (redirect "/index.html")
+    "/eval" {:status 200
+             :headers {"Content-Type" "text/plain"}
+             :body (pr-str (eval-forms (body-string request)))}
+    nil))
 
 (fdef start-web-server!
   :args (s/cat)

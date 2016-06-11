@@ -33,6 +33,9 @@
 (defn stage? [x]
   (instance? javafx.stage.Stage x))
 
+(defn ns? [x]
+  (instance? clojure.lang.Namespace x))
+
 (s/def ::files
   (s/or :primitive-array file-array?
         :collection (s/coll-of file? [])))
