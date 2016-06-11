@@ -8,7 +8,8 @@
                   [boot/base "2.6.0"]
                   [seancorfield/boot-new "0.4.4"]
                   [stencil "0.5.0" :exclusions [org.clojure/clojure]] ; for boot-new
-                  [ring "1.4.0"]])
+                  [ring "1.4.0"]
+                  [clojail "1.0.6"]])
 
 (task-options!
   pom {:project 'nightcode

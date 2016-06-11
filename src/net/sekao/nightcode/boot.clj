@@ -11,8 +11,10 @@
 (defn boot! [dir & args]
   (let [old-dir (System/getProperty "user.dir")]
     (System/setProperty "user.dir" dir)
-    (u/with-security
-      (boot.App/main (into-array String args)))
+    (try
+      (u/with-security
+        (boot.App/main (into-array String args)))
+      (catch SecurityException _))
     (System/setProperty "user.dir" old-dir)))
 
 (fdef new-project!

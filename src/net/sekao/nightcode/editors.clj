@@ -9,29 +9,39 @@
             [clojure.spec :as s :refer [fdef]]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.utils :as u]
-            [net.sekao.nightcode.spec :as spec])
+            [net.sekao.nightcode.spec :as spec]
+            [clojail.core :as clojail])
   (:import [javafx.fxml FXMLLoader]
            [javafx.scene.web WebEngine]
-           [java.io File]))
+           [java.io File StringWriter]))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 (def ^:const wrap-exts #{"md" "txt"})
+
+(fdef eval-form-safely
+  :args (s/cat :form :clojure.spec/any :nspace spec/ns?)
+  :ret :clojure.spec/any)
+(defn eval-form-safely [form nspace]
+  (u/with-security
+    (clojail/thunk-timeout
+      (fn []
+        (binding [*ns* nspace
+                  *out* (StringWriter.)]
+          (refer-clojure)
+          [(eval form)
+           (if (and (coll? form) (= 'ns (first form)))
+             (-> form second create-ns)
+             *ns*)]))
+      1000)))
 
 (fdef eval-form
   :args (s/cat :form-str string? :nspace spec/ns?)
   :ret vector?)
 (defn eval-form [form-str nspace]
-  (binding [*read-eval* false
-            *ns* nspace]
+  (binding [*read-eval* false]
     (try
-      (refer-clojure)
-      (let [form (read-string form-str)
-            result (u/with-security (eval form))
-            current-ns (if (and (coll? form) (= 'ns (first form)))
-                         (-> form second create-ns)
-                         *ns*)]
-        [result current-ns])
-      (catch Exception e [e *ns*]))))
+      (eval-form-safely (read-string form-str) nspace)
+      (catch Exception e [e nspace]))))
 
 (fdef eval-forms
   :args (s/cat :forms-str string?)

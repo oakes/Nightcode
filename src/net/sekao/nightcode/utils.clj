@@ -12,8 +12,8 @@
      (System/setSecurityManager
        (proxy [SecurityManager] []
          (checkExit [status#]
-           (throw (Exception. "Exit not allowed")))))
-     (let [result# (try ~body (catch Exception e# e#))]
+           (throw (SecurityException. "Exit not allowed.")))))
+     (let [result# ~body]
        (System/setSecurityManager nil)
        result#)))
 
