@@ -16,13 +16,11 @@
 				overflow: hidden;
 			}
 			.paren-soup {
-				overflow-x: visible;
-				overflow-y: auto;
+				overflow: auto;
 			}
 			.paren-soup .content {
 				min-height: 100%;
-				overflow-x: auto;
-				overflow-y: visible;
+				overflow: hidden;
 			}
 		</style>
 		<!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->
@@ -37,7 +35,7 @@
 			if (window.java) {
 				window.onload = function() {
 					window.java.onload();
-				}
+				};
 			}
 			else {
 				var script = document.createElement('script');
