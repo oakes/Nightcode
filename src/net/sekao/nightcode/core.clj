@@ -21,6 +21,7 @@
               :save c/save!
               ;:undo
               ;:redo
+              :instarepl c/toggle-instarepl!
               :find c/focus-on-find!
               :replace c/focus-on-replace!
               :close c/close!})

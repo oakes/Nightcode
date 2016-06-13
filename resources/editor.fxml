@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
@@ -15,6 +16,7 @@
             <Button fx:id="save" minWidth="-Infinity" mnemonicParsing="false" onAction="#onSave" text="Save" />
             <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
             <Button fx:id="redo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRedo" text="Redo" />
+            <ToggleButton fx:id="instarepl" minWidth="-Infinity" mnemonicParsing="false" onAction="#onInstaRepl" text="InstaREPL" />
             <TextField fx:id="find" onKeyPressed="#find" promptText="Find" />
             <TextField fx:id="replace" onKeyPressed="#replace" promptText="Replace" />
             <Separator HBox.hgrow="ALWAYS" />

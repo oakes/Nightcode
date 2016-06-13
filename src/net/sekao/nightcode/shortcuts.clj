@@ -23,6 +23,7 @@
                :save "s"
                :undo "z"
                :redo "Z"
+               :instarepl "l"
                :find "f"
                :replace "R"
                :close "w"
@@ -33,7 +34,6 @@
                :eval "e"
                :build "b"
                :test "t"
-               :clean "l"
                :stop "i"
                :build-console "A"
                ; directory pane

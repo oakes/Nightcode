@@ -20,6 +20,7 @@
              [onSave [javafx.event.ActionEvent] void]
              [onUndo [javafx.event.ActionEvent] void]
              [onRedo [javafx.event.ActionEvent] void]
+             [onInstaRepl [javafx.event.ActionEvent] void]
              [find [javafx.scene.input.KeyEvent] void]
              [replace [javafx.scene.input.KeyEvent] void]
              [onClose [javafx.event.ActionEvent] void]]))
@@ -146,6 +147,21 @@
 ; redo
 
 (defn -onRedo [this ^ActionEvent event])
+
+; instaREPL
+
+(defn toggle-instarepl! [^Scene scene]
+  (when-let [path (:selection @pref-state)]
+    (when-let [pane (get (:editor-panes @runtime-state) path)]
+      (let [editor (.lookup pane "#editor")
+            engine (.getEngine editor)
+            instarepl (.lookup pane "#instarepl")]
+        (when scene ; ugly way of determining if we need to manually change the toggle
+          (.setSelected instarepl (not (.isSelected instarepl))))
+        (e/toggle-instarepl! engine (.isSelected instarepl))))))
+
+(defn -onInstaRepl [this ^ActionEvent event]
+  (toggle-instarepl! nil))
 
 ; find
 

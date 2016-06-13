@@ -27,7 +27,7 @@
 	</head>
 	<body>
 		<div class="paren-soup">
-			<div class="instarepl"></div>
+			<div id="instarepl"></div>
 			<div class="numbers"></div>
 			<div class="content" contenteditable="true" id="content"></div>
 		</div>
@@ -53,6 +53,19 @@
 
 			function isClean() {
 				return lastTextContent == getTextContent();
+			}
+
+			function showInstaRepl() {
+				var instarepl = document.getElementById('instarepl');
+				instarepl.className = "instarepl";
+				paren_soup.core.init();
+			}
+
+			function hideInstaRepl() {
+				var instarepl = document.getElementById('instarepl');
+				instarepl.className = "";
+				instarepl.innerHTML = "";
+				paren_soup.core.init();
 			}
 			
 			window.onload = function() {

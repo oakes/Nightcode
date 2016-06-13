@@ -88,16 +88,23 @@
       (shortcuts/hide-tooltips! pane)
       (-> pane .getParent .getChildren (.remove pane)))))
 
+(defn toggle-instarepl! [^WebEngine engine selected?]
+  (if selected?
+    (.executeScript engine "showInstaRepl()")
+    (.executeScript engine "hideInstaRepl()")))
+
 (definterface Bridge
   (onload [])
   (onchange []))
 
 (fdef update-editor-buttons!
-  :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
-(defn update-editor-buttons! [pane ^WebEngine engine]
+  :args (s/cat :pane spec/pane? :engine :clojure.spec/any :clojure? spec/boolean?))
+(defn update-editor-buttons! [pane ^WebEngine engine clojure?]
   (let [save (.lookup pane "#save")
+        instarepl (.lookup pane "#instarepl")
         clean? (.executeScript engine "isClean()")]
-    (.setDisable save clean?)))
+    (.setDisable save clean?)
+    (.setManaged instarepl clojure?)))
 
 (fdef onload
   :args (s/cat :engine :clojure.spec/any :file spec/file?))
@@ -128,7 +135,7 @@
                 (catch Exception e (.printStackTrace e))))
             (onchange []
               (try
-                (update-editor-buttons! pane engine)
+                (update-editor-buttons! pane engine clojure?)
                 (catch Exception e (.printStackTrace e)))))))
     (.load engine (str "http://localhost:"
                     (:web-port runtime-state)
