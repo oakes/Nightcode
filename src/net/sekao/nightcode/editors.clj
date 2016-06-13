@@ -116,6 +116,7 @@
         webview (-> pane .getChildren (.get 1))
         engine (.getEngine webview)
         clojure? (-> file .getName u/get-extension clojure-exts some?)]
+    (.setContextMenuEnabled webview false)
     (shortcuts/add-tooltips! buttons)
     (-> engine
         (.executeScript "window")
