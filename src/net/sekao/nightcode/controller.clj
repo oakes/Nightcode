@@ -133,7 +133,8 @@
     (when-let [pane (get (:editor-panes @runtime-state) path)]
       (let [editor (.lookup pane "#editor")
             engine (.getEngine editor)]
-        (spit (io/file path) (.executeScript engine "getTextContent()"))))))
+        (spit (io/file path) (.executeScript engine "getTextContent()"))
+        (.executeScript engine "markClean()")))))
 
 (defn -onSave [this ^ActionEvent event]
   (-> event .getSource .getScene save!))

@@ -89,22 +89,23 @@
       (-> pane .getParent .getChildren (.remove pane)))))
 
 (definterface Bridge
-  (onload []))
+  (onload [])
+  (onchange []))
+
+(fdef update-editor-buttons!
+  :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
+(defn update-editor-buttons! [pane ^WebEngine engine]
+  (let [save (.lookup pane "#save")
+        clean? (.executeScript engine "isClean()")]
+    (.setDisable save clean?)))
 
 (fdef onload
-  :args (s/cat :engine :clojure.spec/any :file spec/file? :clojure? spec/boolean?))
-(defn onload [^WebEngine engine ^File file clojure?]
-  ; set the page content
+  :args (s/cat :engine :clojure.spec/any :file spec/file?))
+(defn onload [^WebEngine engine ^File file]
   (-> engine
       .getDocument
       (.getElementById "content")
-      (.setTextContent (slurp file)))
-  ; inject paren-soup
-  (when clojure?
-    (let [body (-> engine .getDocument (.getElementsByTagName "body") (.item 0))
-          script (-> engine .getDocument (.createElement "script"))]
-      (.setAttribute script "src" "paren-soup.js")
-      (.appendChild body script))))
+      (.setTextContent (slurp file))))
 
 (fdef editor-pane
   :args (s/cat :runtime-state map? :file spec/file?)
@@ -122,7 +123,11 @@
           (proxy [Bridge] []
             (onload []
               (try
-                (onload engine file clojure?)
+                (onload engine file)
+                (catch Exception e (.printStackTrace e))))
+            (onchange []
+              (try
+                (update-editor-buttons! pane engine)
                 (catch Exception e (.printStackTrace e)))))))
     (.load engine (str "http://localhost:"
                     (:web-port runtime-state)

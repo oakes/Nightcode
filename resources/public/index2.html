@@ -22,22 +22,45 @@
 		<div id="content"></div>
 		<script type='text/javascript'>
 			var editor = null;
-			
-			window.onload = function() {
-				if (window.java) {
-					window.java.onload();
-				}
+
+			function init() {
 				var content = document.getElementById("content");
 				editor = CodeMirror(document.body, {
 					value: content.textContent,
 					lineNumbers: true
 				});
 				document.body.removeChild(content);
-			};
+			}
 			
 			function getTextContent() {
 				return editor.getValue();
 			}
+
+			var lastTextContent = "";
+
+			function markClean() {
+				lastTextContent = getTextContent();
+				window.java.onchange();
+			}
+
+			function isClean() {
+				return lastTextContent == getTextContent();
+			}
+			
+			window.onload = function() {
+				if (window.java) {
+					window.java.onload();
+					window.onkeyup = function(e) {
+						window.java.onchange();
+					};
+				}
+
+				init();
+
+				if (window.java) {
+					markClean();
+				}
+			};
 		</script>
 	</body>
 </html>

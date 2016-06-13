@@ -32,22 +32,44 @@
 			<div class="content" contenteditable="true" id="content"></div>
 		</div>
 		<script type='text/javascript'>
-			if (window.java) {
-				window.onload = function() {
-					window.java.onload();
-				};
-			}
-			else {
+			function init() {
 				var script = document.createElement('script');
 				script.type = 'text/javascript';
 				script.async = true;
 				script.src = 'paren-soup.js';
 				document.body.appendChild(script);
 			}
-
+		
 			function getTextContent() {
 				return document.getElementById('content').textContent;
 			}
+
+			var lastTextContent = "";
+
+			function markClean() {
+				lastTextContent = getTextContent();
+				window.java.onchange();
+			}
+
+			function isClean() {
+				return lastTextContent == getTextContent();
+			}
+			
+			window.onload = function() {
+				if (window.java) {
+					window.java.onload();
+					window.onkeyup = function(e) {
+						window.java.onchange();
+					};
+					markClean();
+				}
+
+				init();
+
+				if (window.java) {
+					window.java.onchange();
+				}
+			};
 		</script>
 	</body>
 </html>
