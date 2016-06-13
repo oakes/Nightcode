@@ -18,7 +18,7 @@
 
 (definterface ProjectTreeItem
   (getPath [] "Unique path representing this item")
-  (getPane [state-atom] "The pane for the given item"))
+  (getPane [runtime-state-atom parent-path] "The pane for the given item"))
 
 (declare get-children)
 
@@ -64,22 +64,22 @@
         (not (.isDirectory file)))
       (getPath []
         path)
-      (getPane [state-atom]
-        (let [state @state-atom]
-          (when-let [parent-path (u/get-project-root-path state)]
-            (let [project-pane (or (get-in state [:project-panes parent-path])
-                                   (project-pane))
-                  pane (if (.isDirectory file)
-                         (dir-pane)
-                         (or (get-in state [:editor-panes path])
-                             (e/editor-pane state file)))
-                  editors (-> project-pane .getItems (.get 0))]
-              (doto (.getChildren editors)
-                (.clear)
-                (.add pane))
-              (swap! state-atom update :project-panes assoc parent-path project-pane)
-              (swap! state-atom update :editor-panes assoc path pane)
-              project-pane)))))))
+      (getPane [runtime-state-atom parent-path]
+        (when parent-path
+          (let [state @runtime-state-atom
+                project-pane (or (get-in state [:project-panes parent-path])
+                                 (project-pane))
+                pane (if (.isDirectory file)
+                       (dir-pane)
+                       (or (get-in state [:editor-panes path])
+                           (e/editor-pane state file)))
+                editors (-> project-pane .getItems (.get 0))]
+            (doto (.getChildren editors)
+              (.clear)
+              (.add pane))
+            (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
+            (swap! runtime-state-atom update :editor-panes assoc path pane)
+            project-pane))))))
 
 (fdef home-node
   :args (s/cat)
@@ -94,17 +94,17 @@
         true)
       (getPath []
         path)
-      (getPane [state-atom]
-        (let [pane (or (get-in @state-atom [:editor-panes path])
+      (getPane [runtime-state-atom _]
+        (let [pane (or (get-in @runtime-state-atom [:editor-panes path])
                        (home-pane))]
-          (swap! state-atom update :editor-panes assoc path pane)
+          (swap! runtime-state-atom update :editor-panes assoc path pane)
           pane)))))
 
 (fdef root-node
-  :args (s/cat :state map?)
+  :args (s/cat :pref-state map?)
   :ret spec/tree-item?)
-(defn root-node [state]
-  (let [project-files (->> (:project-set state)
+(defn root-node [pref-state]
+  (let [project-files (->> (:project-set pref-state)
                            (map #(io/file %))
                            (sort-by #(.getName %)))
         children (delay (doto (get-children project-files)
@@ -127,35 +127,35 @@
     children))
 
 (fdef set-expanded-listener!
-  :args (s/cat :state-atom spec/atom? :tree spec/pane?))
-(defn set-expanded-listener! [state-atom tree]
+  :args (s/cat :pref-state-atom spec/atom? :tree spec/pane?))
+(defn set-expanded-listener! [pref-state-atom tree]
   (let [root-item (.getRoot tree)]
     (.addEventHandler root-item
       (TreeItem/branchExpandedEvent)
       (reify EventHandler
         (handle [this event]
           (when-let [path (-> event .getTreeItem .getPath)]
-            (swap! state-atom update :expansion-set conj path)))))
+            (swap! pref-state-atom update :expansion-set conj path)))))
     (.addEventHandler root-item
       (TreeItem/branchCollapsedEvent)
       (reify EventHandler
         (handle [this event]
           (when-let [path (-> event .getTreeItem .getPath)]
-            (swap! state-atom update :expansion-set disj path)))))))
+            (swap! pref-state-atom update :expansion-set disj path)))))))
 
 (fdef update-project-tree!
   :args (s/alt
-          :args2 (s/cat :state-atom spec/atom? :tree spec/pane?)
-          :args3 (s/cat :state-atom spec/atom? :tree spec/pane? :selection (s/nilable string?))))
+          :args2 (s/cat :pref-state-atom spec/atom? :tree spec/pane?)
+          :args3 (s/cat :pref-state-atom spec/atom? :tree spec/pane? :selection (s/nilable string?))))
 (defn update-project-tree!
-  ([state-atom tree]
-   (update-project-tree! state-atom tree nil))
-  ([state-atom tree new-selection]
-   (let [state @state-atom
+  ([pref-state-atom tree]
+   (update-project-tree! pref-state-atom tree nil))
+  ([pref-state-atom tree new-selection]
+   (let [state @pref-state-atom
          _ (doto tree
              (.setShowRoot false)
              (.setRoot (root-node state)))
-         _ (set-expanded-listener! state-atom tree)
+         _ (set-expanded-listener! pref-state-atom tree)
          expansions (:expansion-set state)
          selection (or new-selection (:selection state))
          selection-model (.getSelectionModel tree)]
@@ -173,15 +173,15 @@
        (.select selection-model (int 0))))))
 
 (fdef update-project-buttons!
-  :args (s/cat :state map? :scene spec/scene?))
-(defn update-project-buttons! [state ^Scene scene]
-  (when-let [path (:selection state)]
+  :args (s/cat :pref-state map? :scene spec/scene?))
+(defn update-project-buttons! [pref-state ^Scene scene]
+  (when-let [path (:selection pref-state)]
     (let [rename-button (.lookup scene "#rename")
           remove-button (.lookup scene "#remove")
           file (io/file path)]
       (.setDisable rename-button (not (.isFile file)))
       (.setDisable remove-button
-        (and (not (contains? (:project-set state) path))
+        (and (not (contains? (:project-set pref-state) path))
           (not (.isFile file)))))))
 
 (fdef move-project-tree-selection!
@@ -202,37 +202,39 @@
       (.setExpanded item (not (.isExpanded item))))))
 
 (fdef set-selection-listener!
-  :args (s/cat :state-atom spec/atom? :stage spec/stage? :tree spec/pane? :content spec/pane?))
-(defn set-selection-listener! [state-atom ^Stage stage tree content]
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom?
+          :stage spec/stage? :tree spec/pane? :content spec/pane?))
+(defn set-selection-listener! [pref-state-atom runtime-state-atom ^Stage stage tree content]
   (let [scene (.getScene stage)
         selection-model (.getSelectionModel tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
-          (some-> old-value (.getPane state-atom) shortcuts/hide-tooltips!)
-          (when new-value
-            (-> (swap! state-atom assoc :selection (.getPath new-value))
-                (update-project-buttons! scene))
-            (when-let [new-pane (.getPane new-value state-atom)]
-              (doto (.getChildren content)
-                (.clear)
-                (.add new-pane)))))))))
+          (let [parent-path (u/get-project-root-path @pref-state-atom)]
+            (some-> old-value (.getPane runtime-state-atom parent-path) shortcuts/hide-tooltips!)
+            (when new-value
+              (-> (swap! pref-state-atom assoc :selection (.getPath new-value))
+                  (update-project-buttons! scene))
+              (when-let [new-pane (.getPane new-value runtime-state-atom parent-path)]
+                (doto (.getChildren content)
+                  (.clear)
+                  (.add new-pane))))))))))
 
 (fdef set-focused-listener!
-  :args (s/cat :state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
-(defn set-focused-listener! [state-atom ^Stage stage project-tree]
+  :args (s/cat :pref-state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
+(defn set-focused-listener! [pref-state-atom ^Stage stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
       (changed [this observable old-value new-value]
         (when new-value
-          (update-project-tree! state-atom project-tree))))))
+          (update-project-tree! pref-state-atom project-tree))))))
 
 (fdef remove-from-project-tree!
-  :args (s/cat :state-atom spec/atom? :path string?))
-(defn remove-from-project-tree! [state-atom ^String path]
-  (let [{:keys [project-set]} @state-atom]
+  :args (s/cat :pref-state-atom spec/atom? :path string?))
+(defn remove-from-project-tree! [pref-state-atom ^String path]
+  (let [{:keys [project-set]} @pref-state-atom]
     (if (contains? project-set path)
-      (swap! state-atom update :project-set disj path)
+      (swap! pref-state-atom update :project-set disj path)
       (u/delete-parents-recursively! project-set path))))
 
 (fdef set-project-key-listener!

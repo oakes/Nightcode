@@ -3,7 +3,7 @@
             [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.state :refer [state]]
+            [net.sekao.nightcode.state :refer [pref-state runtime-state]]
             [net.sekao.nightcode.utils :as u])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
@@ -48,8 +48,8 @@
           (Platform/runLater
             (fn []
               (.hide dialog)
-              (swap! state update :project-set conj (.getCanonicalPath file))
-              (p/update-project-tree! state project-tree))))))))
+              (swap! pref-state update :project-set conj (.getCanonicalPath file))
+              (p/update-project-tree! pref-state project-tree))))))))
 
 (defn -onNewConsoleProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :app)))
@@ -62,8 +62,8 @@
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showDialog chooser (.getWindow scene))]
       (let [path (.getCanonicalPath file)]
-        (swap! state update :project-set conj path)
-        (p/update-project-tree! state project-tree path)))))
+        (swap! pref-state update :project-set conj path)
+        (p/update-project-tree! pref-state project-tree path)))))
 
 (defn -onImport [this ^ActionEvent event]
   (-> event .getSource .getScene import!))
@@ -77,8 +77,8 @@
                  (.setGraphic nil)
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
-        project-path (u/get-project-root-path @state)
-        selected-path (:selection @state)
+        project-path (u/get-project-root-path @pref-state)
+        selected-path (:selection @pref-state)
         relative-path (u/get-relative-path project-path selected-path)]
     (-> dialog .getEditor (.setText relative-path))
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
@@ -88,8 +88,8 @@
               project-tree (.lookup scene "#project_tree")]
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file)
-          (u/delete-parents-recursively! (:project-set @state) selected-path)
-          (p/update-project-tree! state project-tree new-path))))))
+          (u/delete-parents-recursively! (:project-set @pref-state) selected-path)
+          (p/update-project-tree! pref-state project-tree new-path))))))
 
 (defn -onRename [this ^ActionEvent event]
   (-> event .getSource .getScene rename!))
@@ -97,7 +97,7 @@
 ; remove
 
 (defn remove! [^Scene scene]
-  (let [{:keys [project-set selection]} @state
+  (let [{:keys [project-set selection]} @pref-state
         message (if (contains? project-set selection)
                   "Remove this project? It WILL NOT be deleted from the disk."
                   "Remove this file? It WILL be deleted from the disk.")
@@ -109,8 +109,8 @@
                  (.initModality Modality/WINDOW_MODAL))
         project-tree (.lookup scene "#project_tree")]
     (when (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
-      (p/remove-from-project-tree! state selection)
-      (p/update-project-tree! state project-tree))))
+      (p/remove-from-project-tree! pref-state selection)
+      (p/update-project-tree! pref-state project-tree))))
 
 (defn -onRemove [this ^ActionEvent event]
   (-> event .getSource .getScene remove!))
@@ -118,10 +118,10 @@
 ; up
 
 (defn up! [^Scene scene]
-  (when-let [path (:selection @state)]
+  (when-let [path (:selection @pref-state)]
     (let [project-tree (.lookup scene "#project_tree")]
       (->> path io/file .getParentFile .getCanonicalPath
-           (p/update-project-tree! state project-tree)))))
+           (p/update-project-tree! pref-state project-tree)))))
 
 (defn -onUp [this ^ActionEvent event]
   (-> event .getSource .getScene up!))
@@ -129,8 +129,8 @@
 ; save
 
 (defn save! [^Scene scene]
-  (when-let [path (:selection @state)]
-    (when-let [pane (get (:editor-panes @state) path)]
+  (when-let [path (:selection @pref-state)]
+    (when-let [pane (get (:editor-panes @runtime-state) path)]
       (let [editor (.lookup pane "#editor")
             engine (.getEngine editor)]
         (spit (io/file path) (.executeScript engine "getTextContent()"))))))
@@ -163,14 +163,14 @@
 ; close
 
 (defn close! [^Scene scene]
-  (when-let [path (:selection @state)]
+  (when-let [path (:selection @pref-state)]
     (let [file (io/file path)
           new-path (if (.isDirectory file)
                      path
                      (.getCanonicalPath (.getParentFile file)))
           project-tree (.lookup scene "#project_tree")]
-      (e/remove-editors! path state)
-      (p/update-project-tree! state project-tree new-path))))
+      (e/remove-editors! path runtime-state)
+      (p/update-project-tree! pref-state project-tree new-path))))
 
 (defn -onClose [this ^ActionEvent event]
   (-> event .getSource .getScene close!))

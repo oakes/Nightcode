@@ -54,15 +54,15 @@
   nil)
 
 (fdef get-project-root-path
-  :args (s/cat :state map?)
+  :args (s/cat :pref-state map?)
   :ret (s/nilable string?))
 (defn get-project-root-path
   "Returns the root path that the selected path is contained within."
-  [state]
-  (when-let [^String selected-path (:selection state)]
+  [pref-state]
+  (when-let [^String selected-path (:selection pref-state)]
     (-> #(or (.startsWith selected-path (str % File/separator))
            (= selected-path %))
-        (filter (:project-set state))
+        (filter (:project-set pref-state))
         first)))
 
 (fdef parent-path?

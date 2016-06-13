@@ -5,7 +5,7 @@
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.shortcuts :as shortcuts]
-            [net.sekao.nightcode.state :refer [state]]
+            [net.sekao.nightcode.state :refer [pref-state runtime-state]]
             [clojure.spec :as s])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
@@ -34,12 +34,12 @@
       (.setTitle "Nightcode 2.0.0-SNAPSHOT")
       (.setScene scene)
       (.show))
-    (swap! state assoc :web-port (e/start-web-server!))
+    (swap! runtime-state assoc :web-port (e/start-web-server!))
     (-> content .getChildren .clear)
-    (p/update-project-tree! state project-tree)
-    (p/update-project-buttons! @state scene)
-    (p/set-selection-listener! state stage project-tree content)
-    (p/set-focused-listener! state stage project-tree)
+    (p/update-project-tree! pref-state project-tree)
+    (p/update-project-buttons! @pref-state scene)
+    (p/set-selection-listener! pref-state runtime-state stage project-tree content)
+    (p/set-focused-listener! pref-state stage project-tree)
     (p/set-project-key-listener! stage)
     (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
     (shortcuts/set-shortcut-listeners! stage actions)))

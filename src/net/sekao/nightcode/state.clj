@@ -40,14 +40,15 @@
 
 ; state
 
-(defonce state (atom {:project-set (read-pref :project-set #{})
-                      :expansion-set (read-pref :expansion-set #{})
-                      :selection (read-pref :selection)
-                      :web-port nil
-                      :project-panes {}
-                      :editor-panes {}}))
+(defonce pref-state (atom {:project-set (read-pref :project-set #{})
+                           :expansion-set (read-pref :expansion-set #{})
+                           :selection (read-pref :selection)}))
 
-(add-watch state :write-prefs
+(defonce runtime-state (atom {:web-port nil
+                              :project-panes {}
+                              :editor-panes {}}))
+
+(add-watch pref-state :write-prefs
   (fn [_ _ old-state new-state]
     (let [old-projects (:project-set old-state)
           new-projects (:project-set new-state)

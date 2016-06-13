@@ -80,11 +80,11 @@
       .getLocalPort))
 
 (fdef remove-editors!
-  :args (s/cat :path string? :state spec/atom?))
-(defn remove-editors! [^String path state-atom]
-  (doseq [[editor-path pane] (:editor-panes @state-atom)]
+  :args (s/cat :path string? :runtime-state-atom spec/atom?))
+(defn remove-editors! [^String path runtime-state-atom]
+  (doseq [[editor-path pane] (:editor-panes @runtime-state-atom)]
     (when (u/parent-path? path editor-path)
-      (swap! state-atom update :editor-panes dissoc editor-path)
+      (swap! runtime-state-atom update :editor-panes dissoc editor-path)
       (shortcuts/hide-tooltips! pane)
       (-> pane .getParent .getChildren (.remove pane)))))
 
@@ -107,9 +107,9 @@
       (.appendChild body script))))
 
 (fdef editor-pane
-  :args (s/cat :state map? :file spec/file?)
+  :args (s/cat :runtime-state map? :file spec/file?)
   :ret spec/pane?)
-(defn editor-pane [state file]
+(defn editor-pane [runtime-state file]
   (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
         buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))
@@ -125,6 +125,6 @@
                 (onload engine file clojure?)
                 (catch Exception e (.printStackTrace e)))))))
     (.load engine (str "http://localhost:"
-                    (:web-port state)
+                    (:web-port runtime-state)
                     (if clojure? "/index.html" "/index2.html")))
     pane))
