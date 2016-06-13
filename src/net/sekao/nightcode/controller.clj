@@ -128,7 +128,15 @@
 
 ; save
 
-(defn -onSave [this ^ActionEvent event])
+(defn save! [^Scene scene]
+  (when-let [path (:selection @state)]
+    (when-let [pane (get (:editor-panes @state) path)]
+      (let [editor (.lookup pane "#editor")
+            engine (.getEngine editor)]
+        (spit (io/file path) (.executeScript engine "getTextContent()"))))))
+
+(defn -onSave [this ^ActionEvent event]
+  (-> event .getSource .getScene save!))
 
 ; undo
 

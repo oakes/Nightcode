@@ -18,7 +18,7 @@
               :rename c/rename!
               :remove c/remove!
               :up c/up!
-              ;:save
+              :save c/save!
               ;:undo
               ;:redo
               :find c/focus-on-find!

@@ -21,16 +21,22 @@
 	<body>
 		<div id="content"></div>
 		<script type='text/javascript'>
+			var editor = null;
+			
 			window.onload = function() {
 				if (window.java) {
 					window.java.onload();
 				}
 				var content = document.getElementById("content");
-				var editor = CodeMirror(document.body, {
+				editor = CodeMirror(document.body, {
 					value: content.textContent,
 					lineNumbers: true
 				});
 				document.body.removeChild(content);
+			};
+			
+			function getTextContent() {
+				return editor.getValue();
 			}
 		</script>
 	</body>

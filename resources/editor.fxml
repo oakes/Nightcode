@@ -21,6 +21,6 @@
             <Button fx:id="close" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClose" text="X" />
          </children>
       </HBox>
-      <WebView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+      <WebView fx:id="editor" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
    </children>
 </VBox>
