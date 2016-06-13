@@ -121,8 +121,8 @@
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (get reverse-mappings (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
-      (let [fx-id (keyword->fx-id id)]
-        (when (some-> scene (.lookup fx-id) .isDisabled not)
+      (when-let [widget (some-> scene (.lookup (keyword->fx-id id)))]
+        (when (and (not (.isDisabled widget)) (.isManaged widget))
           (Platform/runLater
             (fn []
               (action scene))))))))
