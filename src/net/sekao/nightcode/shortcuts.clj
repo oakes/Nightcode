@@ -12,37 +12,37 @@
            [javafx.beans.value ChangeListener]
            [javafx.application Platform]))
 
-(def mappings {; project pane
-               :start "p"
-               :import-project "o"
-               :rename "m"
-               :remove "g"
-               :project-tree "↑ ↓ ↲"
-               ; editor pane
-               :up "u"
-               :save "s"
-               :undo "z"
-               :redo "Z"
-               :instarepl "l"
-               :find "f"
-               :replace "R"
-               :close "w"
-               ; build pane
-               :run "r"
-               :run-repl "X"
-               :reload "S"
-               :eval "e"
-               :build "b"
-               :test "t"
-               :stop "i"
-               :build-console "A"
-               ; directory pane
-               :new-file "n"
-               :edit "M"
-               :open-in-browser "F"
-               :cancel "C"})
+(def id->key-char {; project pane
+                   :start "p"
+                   :import-project "o"
+                   :rename "m"
+                   :remove "g"
+                   :project-tree "↑ ↓ ↲"
+                   ; editor pane
+                   :up "u"
+                   :save "s"
+                   :undo "z"
+                   :redo "Z"
+                   :instarepl "l"
+                   :find "f"
+                   :replace "R"
+                   :close "w"
+                   ; build pane
+                   :run "r"
+                   :run-repl "X"
+                   :reload "S"
+                   :eval "e"
+                   :build "b"
+                   :test "t"
+                   :stop "i"
+                   :build-console "A"
+                   ; directory pane
+                   :new-file "n"
+                   :edit "M"
+                   :open-in-browser "F"
+                   :cancel "C"})
 
-(def reverse-mappings (set/map-invert mappings))
+(def key-char->id (set/map-invert id->key-char))
 
 (fdef keyword->fx-id
   :args (s/cat :k keyword?)
@@ -72,12 +72,12 @@
   ([nodes]
    (doseq [node nodes]
      (when-let [id (.getId node)]
-       (when-let [text (get mappings (fx-id->keyword id))]
+       (when-let [text (get id->key-char (fx-id->keyword id))]
          (add-tooltip! node text)))))
   ([^Scene scene ids]
    (doseq [id ids]
      (let [control (.lookup scene (keyword->fx-id id))
-           text (get mappings id)]
+           text (get id->key-char id)]
        (when (and control text)
          (add-tooltip! control text))))))
 
@@ -100,7 +100,7 @@
   :args (s/cat :stage spec/stage?))
 (defn show-tooltips! [^Stage stage]
   (let [scene (.getScene stage)]
-    (doseq [id (keys mappings)]
+    (doseq [id (keys id->key-char)]
       (when-let [control (.lookup scene (keyword->fx-id id))]
         (show-tooltip! stage control)))))
 
@@ -112,14 +112,14 @@
 (fdef hide-tooltips!
   :args (s/cat :node (s/or :node spec/node? :stage spec/scene?)))
 (defn hide-tooltips! [node]
-  (doseq [id (keys mappings)]
+  (doseq [id (keys id->key-char)]
     (when-let [control (.lookup node (keyword->fx-id id))]
       (hide-tooltip! control))))
 
 (fdef run-shortcut!
   :args (s/cat :scene spec/scene? :actions map? :text string? :shift? spec/boolean?))
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
-  (when-let [id (get reverse-mappings (if shift? (.toUpperCase text) text))]
+  (when-let [id (get key-char->id (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
       (when-let [widget (some-> scene (.lookup (keyword->fx-id id)))]
         (when (and (not (.isDisabled widget)) (.isManaged widget))
