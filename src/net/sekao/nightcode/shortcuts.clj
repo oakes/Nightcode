@@ -56,9 +56,9 @@
   (-> s (str/replace #"_" "-") keyword))
 
 (fdef add-tooltip!
-  :args (s/cat :control spec/node? :text string?))
-(defn add-tooltip! [^Node control ^String text]
-  (.setTooltip control
+  :args (s/cat :node spec/node? :text string?))
+(defn add-tooltip! [^Node node ^String text]
+  (.setTooltip node
     (doto (Tooltip.)
       (.setOpacity 0)
       (.setText text))))
@@ -72,24 +72,25 @@
    (doseq [node nodes]
      (when-let [id (.getId node)]
        (when-let [text (get id->key-char (fx-id->keyword id))]
-         (add-tooltip! node text)))))
+         (when (.isManaged node)
+           (add-tooltip! node text))))))
   ([^Scene scene ids]
    (doseq [id ids]
-     (let [control (.lookup scene (keyword->fx-id id))
+     (let [node (.lookup scene (keyword->fx-id id))
            text (get id->key-char id)]
-       (when (and control text)
-         (add-tooltip! control text))))))
+       (when (and node text (.isManaged node))
+         (add-tooltip! node text))))))
 
 (fdef show-tooltip!
-  :args (s/cat :stage spec/stage? :control spec/node?))
-(defn show-tooltip! [^Stage stage ^Node control]
-  (when-let [^Tooltip tooltip (.getTooltip control)]
-    (let [point (.localToScene control (double 0) (double 0))
+  :args (s/cat :stage spec/stage? :node spec/node?))
+(defn show-tooltip! [^Stage stage ^Node node]
+  (when-let [^Tooltip tooltip (.getTooltip node)]
+    (let [point (.localToScene node (double 0) (double 0))
           scene (.getScene stage)
           _ (.show tooltip stage (double 0) (double 0))
-          half-width (- (/ (.getWidth control) 2)
+          half-width (- (/ (.getWidth node) 2)
                         (/ (.getWidth tooltip) 4))
-          half-height (- (/ (.getHeight control) 2)
+          half-height (- (/ (.getHeight node) 2)
                          (/ (.getHeight tooltip) 4))]
       (doto tooltip
         (.setOpacity 1)
@@ -102,13 +103,13 @@
 (defn show-tooltips! [^Stage stage]
   (let [scene (.getScene stage)]
     (doseq [id (keys id->key-char)]
-      (when-let [control (.lookup scene (keyword->fx-id id))]
-        (show-tooltip! stage control)))))
+      (when-let [node (.lookup scene (keyword->fx-id id))]
+        (show-tooltip! stage node)))))
 
 (fdef hide-tooltip!
-  :args (s/cat :control spec/node?))
-(defn hide-tooltip! [^Node control]
-  (when-let [tooltip (.getTooltip control)]
+  :args (s/cat :node spec/node?))
+(defn hide-tooltip! [^Node node]
+  (when-let [tooltip (.getTooltip node)]
     (doto tooltip
       (.setOpacity 0)
       (.hide))))
@@ -117,16 +118,16 @@
   :args (s/cat :node (s/or :node spec/node? :stage spec/scene?)))
 (defn hide-tooltips! [node]
   (doseq [id (keys id->key-char)]
-    (when-let [control (.lookup node (keyword->fx-id id))]
-      (hide-tooltip! control))))
+    (when-let [node (.lookup node (keyword->fx-id id))]
+      (hide-tooltip! node))))
 
 (fdef run-shortcut!
   :args (s/cat :scene spec/scene? :actions map? :text string? :shift? spec/boolean?))
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (get key-char->id (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]
-      (when-let [widget (some-> scene (.lookup (keyword->fx-id id)))]
-        (when (and (not (.isDisabled widget)) (.isManaged widget))
+      (when-let [node (some-> scene (.lookup (keyword->fx-id id)))]
+        (when (and (not (.isDisabled node)) (.isManaged node))
           (Platform/runLater
             (fn []
               (action scene))))))))
@@ -150,7 +151,7 @@
             (hide-tooltips! scene)
             (.isShortcutDown e)
             (if (#{KeyCode/UP KeyCode/DOWN} (.getCode e))
-              ; if any new controls have appeared, make sure their tooltips are showing
+              ; if any new nodes have appeared, make sure their tooltips are showing
               (Platform/runLater
                 (fn []
                   (show-tooltips! stage)))

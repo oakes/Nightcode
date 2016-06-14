@@ -122,6 +122,10 @@
         engine (.getEngine webview)
         clojure? (-> file .getName u/get-extension clojure-exts some?)]
     (.setContextMenuEnabled webview false)
+    (-> (filter #(= "instarepl" (.getId %)) buttons)
+        first
+        (.lookup "#instarepl")
+        (.setManaged clojure?))
     (shortcuts/add-tooltips! buttons)
     (-> engine
         (.executeScript "window")
@@ -130,7 +134,6 @@
             (onload []
               (try
                 (onload engine file)
-                (-> pane (.lookup "#instarepl") (.setManaged clojure?))
                 (catch Exception e (.printStackTrace e))))
             (onchange []
               (try
