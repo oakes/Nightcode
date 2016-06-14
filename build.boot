@@ -3,7 +3,7 @@
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
-                  [org.clojure/clojure "1.9.0-alpha4"]
+                  [org.clojure/clojure "1.9.0-alpha6"]
                   [boot/core "2.6.0"]
                   [boot/base "2.6.0"]
                   [seancorfield/boot-new "0.4.4"]

@@ -1,9 +1,6 @@
 (ns net.sekao.nightcode.spec
   (:require [clojure.spec :as s]))
 
-(defn boolean? [x]
-  (instance? Boolean x))
-
 (defn file? [x]
   (instance? java.io.File x))
 

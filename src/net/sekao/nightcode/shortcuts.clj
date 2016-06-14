@@ -122,7 +122,7 @@
       (hide-tooltip! node))))
 
 (fdef run-shortcut!
-  :args (s/cat :scene spec/scene? :actions map? :text string? :shift? spec/boolean?))
+  :args (s/cat :scene spec/scene? :actions map? :text string? :shift? boolean?))
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (get key-char->id (if shift? (.toUpperCase text) text))]
     (when-let [action (get actions id)]

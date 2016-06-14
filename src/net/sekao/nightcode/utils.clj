@@ -67,7 +67,7 @@
 
 (fdef parent-path?
   :args (s/cat :parent-path string? :child-path (s/nilable string?))
-  :ret spec/boolean?)
+  :ret boolean?)
 (defn parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
   [^String parent-path ^String child-path]
