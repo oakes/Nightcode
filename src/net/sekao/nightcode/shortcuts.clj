@@ -25,7 +25,6 @@
                    :redo "Z"
                    :instarepl "l"
                    :find "f"
-                   :replace "R"
                    :close "w"
                    ; build pane
                    :run "r"

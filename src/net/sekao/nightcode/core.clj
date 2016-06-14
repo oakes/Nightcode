@@ -23,7 +23,6 @@
               ;:redo
               :instarepl c/toggle-instarepl!
               :find c/focus-on-find!
-              :replace c/focus-on-replace!
               :close c/close!})
 
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]

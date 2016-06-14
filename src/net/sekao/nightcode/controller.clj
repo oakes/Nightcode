@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.controller
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
@@ -10,7 +11,7 @@
            [javafx.stage DirectoryChooser FileChooser StageStyle Window Modality]
            [javafx.application Platform]
            [javafx.scene Scene]
-           [javafx.scene.input KeyEvent])
+           [javafx.scene.input KeyEvent KeyCode])
   (:gen-class
    :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
@@ -22,7 +23,6 @@
              [onRedo [javafx.event.ActionEvent] void]
              [onInstaRepl [javafx.event.ActionEvent] void]
              [find [javafx.scene.input.KeyEvent] void]
-             [replace [javafx.scene.input.KeyEvent] void]
              [onClose [javafx.event.ActionEvent] void]]))
 
 ; new project
@@ -166,16 +166,21 @@
 ; find
 
 (defn focus-on-find! [^Scene scene]
-  (some-> (.lookup scene "#find") .requestFocus))
+  (when-let [find (.lookup scene "#find")]
+    (doto find .requestFocus .selectAll)))
 
-(defn -find [this ^KeyEvent event])
-
-; replace
-
-(defn focus-on-replace! [^Scene scene]
-  (some-> (.lookup scene "#replace") .requestFocus))
-
-(defn -replace [this ^KeyEvent event])
+(defn -find [this ^KeyEvent event]
+  (when (= KeyCode/ENTER (.getCode event))
+    (when-let [path (:selection @pref-state)]
+      (when-let [pane (get (:editor-panes @runtime-state) path)]
+        (let [editor (.lookup pane "#editor")
+              engine (.getEngine editor)
+              find (.lookup pane "#find")
+              find-text (.getText find)]
+          (.executeScript engine
+            (format "window.find('%s', true, %b)"
+              (str/escape find-text {\' "\\'"})
+              (.isShiftDown event))))))))
 
 ; close
 
