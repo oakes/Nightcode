@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<VBox fx:id="sidebar" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
+<VBox fx:id="editor" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <children>
       <HBox fx:id="editor_buttons">
          <children>
@@ -22,6 +22,6 @@
             <Button fx:id="close" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClose" text="X" />
          </children>
       </HBox>
-      <WebView fx:id="editor" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+      <WebView fx:id="webview" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
    </children>
 </VBox>
