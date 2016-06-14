@@ -60,8 +60,8 @@
 (defn add-tooltip! [^Node control ^String text]
   (.setTooltip control
     (doto (Tooltip.)
-      (.setText text)
-      (.setAutoHide false))))
+      (.setOpacity 0)
+      (.setText text))))
 
 (fdef add-tooltips!
   :args (s/alt
@@ -91,9 +91,11 @@
                         (/ (.getWidth tooltip) 4))
           half-height (- (/ (.getHeight control) 2)
                          (/ (.getHeight tooltip) 4))]
-      (.show tooltip stage
-        (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
-        (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height))))))
+      (doto tooltip
+        (.setOpacity 1)
+        (.show stage
+          (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
+          (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height)))))))
 
 (fdef show-tooltips!
   :args (s/cat :stage spec/stage?))
@@ -106,7 +108,10 @@
 (fdef hide-tooltip!
   :args (s/cat :control spec/node?))
 (defn hide-tooltip! [^Node control]
-  (some-> control .getTooltip .hide))
+  (when-let [tooltip (.getTooltip control)]
+    (doto tooltip
+      (.setOpacity 0)
+      (.hide))))
 
 (fdef hide-tooltips!
   :args (s/cat :node (s/or :node spec/node? :stage spec/scene?)))
