@@ -98,13 +98,11 @@
   (onchange []))
 
 (fdef update-editor-buttons!
-  :args (s/cat :pane spec/pane? :engine :clojure.spec/any :clojure? spec/boolean?))
-(defn update-editor-buttons! [pane ^WebEngine engine clojure?]
-  (let [save (.lookup pane "#save")
-        instarepl (.lookup pane "#instarepl")
-        clean? (.executeScript engine "isClean()")]
-    (.setDisable save clean?)
-    (.setManaged instarepl clojure?)))
+  :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
+(defn update-editor-buttons! [pane ^WebEngine engine]
+  (.setDisable (.lookup pane "#save") (.executeScript engine "isClean()"))
+  (.setDisable (.lookup pane "#undo") (not (.executeScript engine "canUndo()")))
+  (.setDisable (.lookup pane "#redo") (not (.executeScript engine "canRedo()"))))
 
 (fdef onload
   :args (s/cat :engine :clojure.spec/any :file spec/file?))
@@ -132,10 +130,11 @@
             (onload []
               (try
                 (onload engine file)
+                (-> pane (.lookup "#instarepl") (.setManaged clojure?))
                 (catch Exception e (.printStackTrace e))))
             (onchange []
               (try
-                (update-editor-buttons! pane engine clojure?)
+                (update-editor-buttons! pane engine)
                 (catch Exception e (.printStackTrace e)))))))
     (.load engine (str "http://localhost:"
                     (:web-port runtime-state)

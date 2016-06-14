@@ -19,8 +19,8 @@
               :remove c/remove!
               :up c/up!
               :save c/save!
-              ;:undo
-              ;:redo
+              :undo c/undo!
+              :redo c/redo!
               :instarepl c/toggle-instarepl!
               :find c/focus-on-find!
               :close c/close!})

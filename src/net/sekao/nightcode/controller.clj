@@ -142,11 +142,29 @@
 
 ; undo
 
-(defn -onUndo [this ^ActionEvent event])
+(defn undo! [^Scene scene]
+  (when-let [path (:selection @pref-state)]
+    (when-let [pane (get (:editor-panes @runtime-state) path)]
+      (let [editor (.lookup pane "#editor")
+            engine (.getEngine editor)]
+        (.executeScript engine "undo()")
+        (e/update-editor-buttons! pane engine)))))
+
+(defn -onUndo [this ^ActionEvent event]
+  (-> event .getSource .getScene undo!))
 
 ; redo
 
-(defn -onRedo [this ^ActionEvent event])
+(defn redo! [^Scene scene]
+  (when-let [path (:selection @pref-state)]
+    (when-let [pane (get (:editor-panes @runtime-state) path)]
+      (let [editor (.lookup pane "#editor")
+            engine (.getEngine editor)]
+        (.executeScript engine "redo()")
+        (e/update-editor-buttons! pane engine)))))
+
+(defn -onRedo [this ^ActionEvent event]
+  (-> event .getSource .getScene redo!))
 
 ; instaREPL
 
