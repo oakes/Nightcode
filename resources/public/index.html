@@ -37,10 +37,13 @@
 		
 			function init() {
 				var parent = document.getElementById('paren-soup');
-				editor = paren_soup.core.init(parent, function(e) {
-					if (window.java) {
-						window.java.onchange();
-					}
+				editor = paren_soup.core.init(parent, {
+					"change-callback": function(e) {
+						if (window.java) {
+							window.java.onchange();
+						}
+					},
+					"disable-undo-redo?": true
 				});
 			}
 
