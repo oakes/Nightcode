@@ -139,7 +139,8 @@
     (add-tooltip! "")))
 
 (fdef get-tabs
-  :args (s/cat :runtime-state map?))
+  :args (s/cat :runtime-state map?)
+  :ret (s/coll-of map? []))
 (defn get-tabs [runtime-state]
   (->> (-> runtime-state :editor-panes keys)
        (map (fn [path]
