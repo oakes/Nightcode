@@ -201,6 +201,20 @@
     (when-let [item (.getSelectedItem selection-model)]
       (.setExpanded item (not (.isExpanded item))))))
 
+(defn move-tab-selection!
+  [scene pref-state-atom runtime-state-atom diff]
+  (let [paths (map :path (shortcuts/get-tabs @runtime-state-atom))
+        index (.indexOf paths (:selection @pref-state-atom))
+        max-index (dec (count paths))
+        new-index (+ index diff)
+        new-index (cond
+                    (neg? new-index) max-index
+                    (> new-index max-index) 0
+                    :else new-index)
+        project-tree (.lookup scene "#project_tree")]
+    (when (pos? (count paths))
+      (update-project-tree! pref-state-atom project-tree (nth paths new-index)))))
+
 (fdef set-selection-listener!
   :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom?
           :stage spec/stage? :tree spec/pane? :content spec/pane?))
@@ -211,7 +225,10 @@
       (reify ChangeListener
         (changed [this observable old-value new-value]
           (let [parent-path (u/get-project-root-path @pref-state-atom)]
-            (some-> old-value (.getPane runtime-state-atom parent-path) shortcuts/hide-tooltips!)
+            (some->> old-value
+                     .getPath
+                     (get (:editor-panes @runtime-state-atom))
+                     shortcuts/hide-tooltips!)
             (when new-value
               (-> (swap! pref-state-atom assoc :selection (.getPath new-value))
                   (update-project-buttons! scene))
@@ -238,8 +255,8 @@
       (u/delete-parents-recursively! project-set path))))
 
 (fdef set-project-key-listener!
-  :args (s/cat :stage spec/stage?))
-(defn set-project-key-listener! [^Stage stage]
+  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?))
+(defn set-project-key-listener! [^Stage stage pref-state-atom runtime-state-atom]
   (let [^Scene scene (.getScene stage)]
     (.addEventHandler scene KeyEvent/KEY_RELEASED
       (reify EventHandler
@@ -251,4 +268,8 @@
               (= (.getCode e) KeyCode/DOWN)
               (move-project-tree-selection! scene 1)
               (= (.getCode e) KeyCode/ENTER)
-              (toggle-project-tree-selection! scene))))))))
+              (toggle-project-tree-selection! scene)
+              (= (.getCode e) KeyCode/PAGE_UP)
+              (move-tab-selection! scene pref-state-atom runtime-state-atom -1)
+              (= (.getCode e) KeyCode/PAGE_DOWN)
+              (move-tab-selection! scene pref-state-atom runtime-state-atom 1))))))))

@@ -35,12 +35,16 @@
       (.setScene scene)
       (.show))
     (swap! runtime-state assoc :web-port (e/start-web-server!))
+    (shortcuts/init-tabs! scene)
+    (add-watch runtime-state :runtime-state-changed
+      (fn [_ _ _ new-runtime-state]
+        (shortcuts/update-tabs! scene @pref-state new-runtime-state)))
     (-> content .getChildren .clear)
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)
     (p/set-selection-listener! pref-state runtime-state stage project-tree content)
     (p/set-focused-listener! pref-state stage project-tree)
-    (p/set-project-key-listener! stage)
+    (p/set-project-key-listener! stage pref-state runtime-state)
     (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
     (shortcuts/set-shortcut-listeners! stage actions)))
 

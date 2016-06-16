@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -22,6 +23,7 @@
                   <Button fx:id="import_project" minWidth="-Infinity" mnemonicParsing="false" onAction="#onImport" text="Import" />
                   <Button fx:id="rename" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRename" text="Rename" />
                   <Button fx:id="remove" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRemove" text="Remove" />
+                  <Separator fx:id="tabs" orientation="VERTICAL" HBox.hgrow="NEVER" />
                </children>
             </HBox>
             <TreeView fx:id="project_tree" prefHeight="519.0" prefWidth="324.0" VBox.vgrow="ALWAYS" />

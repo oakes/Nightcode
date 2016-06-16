@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.shortcuts
   (:require [clojure.string :as str]
             [clojure.set :as set]
+            [clojure.java.io :as io]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
   (:import [javafx.scene Node]
@@ -82,21 +83,27 @@
          (add-tooltip! node text))))))
 
 (fdef show-tooltip!
-  :args (s/cat :stage spec/stage? :node spec/node?))
-(defn show-tooltip! [^Stage stage ^Node node]
-  (when-let [^Tooltip tooltip (.getTooltip node)]
-    (let [point (.localToScene node (double 0) (double 0))
-          scene (.getScene stage)
-          _ (.show tooltip stage (double 0) (double 0))
-          half-width (- (/ (.getWidth node) 2)
-                        (/ (.getWidth tooltip) 4))
-          half-height (- (/ (.getHeight node) 2)
-                         (/ (.getHeight tooltip) 4))]
-      (doto tooltip
-        (.setOpacity 1)
-        (.show stage
-          (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
-          (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height)))))))
+  :args (s/alt
+          :two-args (s/cat :stage spec/stage? :node spec/node?)
+          :three-args (s/cat :stage spec/stage? :node spec/node? :relative-node (s/nilable spec/node?))))
+(defn show-tooltip!
+  ([^Stage stage ^Node node]
+   (show-tooltip! stage node nil))
+  ([^Stage stage ^Node node ^Node relative-node]
+   (when-let [^Tooltip tooltip (.getTooltip node)]
+     (let [node (or relative-node node)
+           point (.localToScene node (double 0) (double 0))
+           scene (.getScene stage)
+           _ (.show tooltip stage (double 0) (double 0))
+           half-width (- (/ (.getWidth node) 2)
+                         (/ (.getWidth tooltip) 4))
+           half-height (- (/ (.getHeight node) 2)
+                          (/ (.getHeight tooltip) 4))]
+       (doto tooltip
+         (.setOpacity 1)
+         (.show stage
+           (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
+           (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height))))))))
 
 (fdef show-tooltips!
   :args (s/cat :stage spec/stage?))
@@ -104,7 +111,8 @@
   (let [scene (.getScene stage)]
     (doseq [id (keys id->key-char)]
       (when-let [node (.lookup scene (keyword->fx-id id))]
-        (show-tooltip! stage node)))))
+        (show-tooltip! stage node)))
+    (show-tooltip! stage (.lookup scene "#tabs") (.lookup scene "#content"))))
 
 (fdef hide-tooltip!
   :args (s/cat :node spec/node?))
@@ -119,7 +127,32 @@
 (defn hide-tooltips! [node]
   (doseq [id (keys id->key-char)]
     (when-let [node (.lookup node (keyword->fx-id id))]
-      (hide-tooltip! node))))
+      (hide-tooltip! node)))
+  (when (spec/scene? node)
+    (hide-tooltip! (.lookup node "#tabs"))))
+
+(defn init-tabs! [^Scene scene]
+  (doto (.lookup scene "#tabs")
+    (.setManaged false)
+    (add-tooltip! "")))
+
+(defn get-tabs [runtime-state]
+  (->> (-> runtime-state :editor-panes keys)
+       (map (fn [path]
+              {:path path :file (io/file path)}))
+       (filter #(-> % :file .isFile))))
+
+(defn update-tabs! [^Scene scene pref-state runtime-state]
+  (let [tabs (.lookup scene "#tabs")
+        tooltip (.getTooltip tabs)
+        selected-path (:selection pref-state)
+        names (map (fn [m]
+                     (let [format-str (if (= (:path m) selected-path) "*%s*" "%s")
+                           file-name (-> m :file .getName)]
+                       (format format-str file-name)))
+                (get-tabs runtime-state))
+        names (str/join "\n" names)]
+    (.setText tooltip (str "PgUp PgDn\n\n" names))))
 
 (fdef run-shortcut!
   :args (s/cat :scene spec/scene? :actions map? :text string? :shift? boolean?))
@@ -150,7 +183,7 @@
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
             (hide-tooltips! scene)
             (.isShortcutDown e)
-            (if (#{KeyCode/UP KeyCode/DOWN} (.getCode e))
+            (if (#{KeyCode/UP KeyCode/DOWN KeyCode/PAGE_UP KeyCode/PAGE_DOWN} (.getCode e))
               ; if any new nodes have appeared, make sure their tooltips are showing
               (Platform/runLater
                 (fn []
