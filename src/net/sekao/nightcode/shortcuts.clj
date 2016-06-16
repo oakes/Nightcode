@@ -131,17 +131,23 @@
   (when (spec/scene? node)
     (hide-tooltip! (.lookup node "#tabs"))))
 
+(fdef init-tabs!
+  :args (s/cat :scene spec/scene?))
 (defn init-tabs! [^Scene scene]
   (doto (.lookup scene "#tabs")
     (.setManaged false)
     (add-tooltip! "")))
 
+(fdef get-tabs
+  :args (s/cat :runtime-state map?))
 (defn get-tabs [runtime-state]
   (->> (-> runtime-state :editor-panes keys)
        (map (fn [path]
               {:path path :file (io/file path)}))
        (filter #(-> % :file .isFile))))
 
+(fdef update-tabs!
+  :args (s/cat :scene spec/scene? :pref-state map? :runtime-state map?))
 (defn update-tabs! [^Scene scene pref-state runtime-state]
   (let [tabs (.lookup scene "#tabs")
         tooltip (.getTooltip tabs)

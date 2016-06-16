@@ -201,6 +201,8 @@
     (when-let [item (.getSelectedItem selection-model)]
       (.setExpanded item (not (.isExpanded item))))))
 
+(fdef move-tab-selection!
+  :args (s/cat :scene spec/scene? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :diff integer?))
 (defn move-tab-selection!
   [scene pref-state-atom runtime-state-atom diff]
   (let [paths (map :path (shortcuts/get-tabs @runtime-state-atom))
