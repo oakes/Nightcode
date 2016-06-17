@@ -17,6 +17,7 @@
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 (def ^:const wrap-exts #{"md" "txt"})
+(def ^:const max-file-size (* 1024 1024 2))
 
 (fdef eval-form-safely
   :args (s/cat :form :clojure.spec/any :nspace spec/ns?)
@@ -112,34 +113,41 @@
       (.getElementById "content")
       (.setTextContent (slurp file))))
 
+(fdef should-open?
+  :args (s/cat :file spec/file?)
+  :ret boolean?)
+(defn should-open? [file]
+  (-> file .length (< max-file-size)))
+
 (fdef editor-pane
   :args (s/cat :runtime-state map? :file spec/file?)
   :ret spec/pane?)
 (defn editor-pane [runtime-state file]
-  (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
-        buttons (-> pane .getChildren (.get 0) .getChildren seq)
-        webview (-> pane .getChildren (.get 1))
-        engine (.getEngine webview)
-        clojure? (-> file .getName u/get-extension clojure-exts some?)]
-    (.setContextMenuEnabled webview false)
-    (-> (filter #(= "instarepl" (.getId %)) buttons)
-        first
-        (.lookup "#instarepl")
-        (.setManaged clojure?))
-    (shortcuts/add-tooltips! buttons)
-    (-> engine
-        (.executeScript "window")
-        (.setMember "java"
-          (proxy [Bridge] []
-            (onload []
-              (try
-                (onload engine file)
-                (catch Exception e (.printStackTrace e))))
-            (onchange []
-              (try
-                (update-editor-buttons! pane engine)
-                (catch Exception e (.printStackTrace e)))))))
-    (.load engine (str "http://localhost:"
-                    (:web-port runtime-state)
-                    (if clojure? "/index.html" "/index2.html")))
-    pane))
+  (when (should-open? file)
+    (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
+          buttons (-> pane .getChildren (.get 0) .getChildren seq)
+          webview (-> pane .getChildren (.get 1))
+          engine (.getEngine webview)
+          clojure? (-> file .getName u/get-extension clojure-exts some?)]
+      (.setContextMenuEnabled webview false)
+      (-> (filter #(= "instarepl" (.getId %)) buttons)
+          first
+          (.lookup "#instarepl")
+          (.setManaged clojure?))
+      (shortcuts/add-tooltips! buttons)
+      (-> engine
+          (.executeScript "window")
+          (.setMember "java"
+            (proxy [Bridge] []
+              (onload []
+                (try
+                  (onload engine file)
+                  (catch Exception e (.printStackTrace e))))
+              (onchange []
+                (try
+                  (update-editor-buttons! pane engine)
+                  (catch Exception e (.printStackTrace e)))))))
+      (.load engine (str "http://localhost:"
+                      (:web-port runtime-state)
+                      (if clojure? "/index.html" "/index2.html")))
+      pane)))

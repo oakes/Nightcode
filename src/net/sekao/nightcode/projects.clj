@@ -69,16 +69,15 @@
           (let [state @runtime-state-atom
                 project-pane (or (get-in state [:project-panes parent-path])
                                  (project-pane))
-                pane (if (.isDirectory file)
-                       (dir-pane)
-                       (or (get-in state [:editor-panes path])
-                           (e/editor-pane state file)))
                 editors (-> project-pane .getItems (.get 0))]
-            (doto (.getChildren editors)
-              (.clear)
-              (.add pane))
-            (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
-            (swap! runtime-state-atom update :editor-panes assoc path pane)
+            (-> editors .getChildren .clear)
+            (when-let [pane (if (.isDirectory file)
+                              (dir-pane)
+                              (or (get-in state [:editor-panes path])
+                                  (e/editor-pane state file)))]
+              (-> editors .getChildren (.add pane))
+              (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
+              (swap! runtime-state-atom update :editor-panes assoc path pane))
             project-pane))))))
 
 (fdef home-node
