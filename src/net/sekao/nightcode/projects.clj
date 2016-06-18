@@ -29,7 +29,7 @@
 (defn project-pane [runtime-state path]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
         builder (-> pane .getItems (.get 1))]
-    (b/init-builder! builder runtime-state path)
+    (b/init-console! builder runtime-state path)
     pane))
 
 (fdef dir-pane

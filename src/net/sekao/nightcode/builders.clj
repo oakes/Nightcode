@@ -38,9 +38,9 @@
                     *in* (LineNumberingPushbackReader. in)]
             (clojure.main/repl)))))))
 
-(fdef init-builder!
+(fdef init-console!
   :args (s/cat :pane spec/pane? :runtime-state map? :path string?)) 
-(defn init-builder! [pane runtime-state path]
+(defn init-console! [pane runtime-state path]
   (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
         build-webview (-> pane .getChildren (.get 1))
         engine (.getEngine build-webview)]
