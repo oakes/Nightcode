@@ -32,6 +32,7 @@
                    :run-with-repl "X"
                    :reload "S"
                    :build "b"
+                   :clean "L"
                    :stop "i"
                    ; directory pane
                    :new-file "n"

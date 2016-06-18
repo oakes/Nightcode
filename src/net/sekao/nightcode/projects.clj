@@ -27,7 +27,9 @@
   :ret spec/pane?)
 (defn project-pane [path]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
-        builder (-> pane .getItems (.get 1))]
+        builder (-> pane .getItems (.get 1))
+        buttons (-> builder .getChildren (.get 0) .getChildren seq)]
+    (shortcuts/add-tooltips! buttons)
     pane))
 
 (fdef dir-pane
