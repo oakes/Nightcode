@@ -90,6 +90,7 @@
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file)
           (u/delete-parents-recursively! (:project-set @pref-state) selected-path)
+          (e/remove-editors! selected-path runtime-state)
           (p/update-project-tree! pref-state project-tree new-path))))))
 
 (defn -onRename [this ^ActionEvent event]
