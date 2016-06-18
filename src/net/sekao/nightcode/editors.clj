@@ -116,13 +116,13 @@
 (fdef should-open?
   :args (s/cat :file spec/file?)
   :ret boolean?)
-(defn should-open? [file]
+(defn should-open? [^File file]
   (-> file .length (< max-file-size)))
 
 (fdef editor-pane
   :args (s/cat :runtime-state map? :file spec/file?)
   :ret spec/pane?)
-(defn editor-pane [runtime-state file]
+(defn editor-pane [runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
           buttons (-> pane .getChildren (.get 0) .getChildren seq)
