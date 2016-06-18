@@ -99,6 +99,11 @@
 				init();
 			}
 			
+			function append(str) {
+				var text = document.createTextNode(str);
+				document.getElementById('content').appendChild(text);
+			}
+			
 			window.onload = function() {
 				if (window.java) {
 					window.java.onload();

@@ -1,5 +1,6 @@
 (ns net.sekao.nightcode.projects
   (:require [clojure.java.io :as io]
+            [net.sekao.nightcode.builders :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.spec :as spec]
@@ -23,13 +24,12 @@
 (declare get-children)
 
 (fdef project-pane
-  :args (s/cat :path string?)
+  :args (s/cat :runtime-state map? :path string?)
   :ret spec/pane?)
-(defn project-pane [path]
+(defn project-pane [runtime-state path]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
-        builder (-> pane .getItems (.get 1))
-        buttons (-> builder .getChildren (.get 0) .getChildren seq)]
-    (shortcuts/add-tooltips! buttons)
+        builder (-> pane .getItems (.get 1))]
+    (b/init-builder! builder runtime-state path)
     pane))
 
 (fdef dir-pane
@@ -72,7 +72,7 @@
         (when parent-path
           (let [state @runtime-state-atom
                 project-pane (or (get-in state [:project-panes parent-path])
-                                 (project-pane parent-path))
+                                 (project-pane @runtime-state-atom parent-path))
                 editors (-> project-pane .getItems (.get 0))]
             (-> editors .getChildren .clear)
             (when-let [pane (if (.isDirectory file)
