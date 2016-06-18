@@ -171,6 +171,20 @@
      (when (= -1 (.getSelectedIndex selection-model))
        (.select selection-model (int 0))))))
 
+(fdef update-project-tree-selection!
+  :args (s/cat :tree spec/pane? :selection string?))
+(defn update-project-tree-selection! [tree new-selection]
+  (let [selection-model (.getSelectionModel tree)]
+    (loop [tree-items (-> tree .getRoot .getChildren seq)]
+      (when-let [tree-item (first tree-items)]
+        (cond
+          (= new-selection (.getPath tree-item))
+          (.select selection-model tree-item)
+          (u/parent-path? (.getPath tree-item) new-selection)
+          (recur (-> tree-item .getChildren seq))
+          :else
+          (recur (rest tree-items)))))))
+
 (fdef update-project-buttons!
   :args (s/cat :pref-state map? :scene spec/scene?))
 (defn update-project-buttons! [pref-state ^Scene scene]
@@ -181,7 +195,7 @@
       (.setDisable rename-button (not (.isFile file)))
       (.setDisable remove-button
         (and (not (contains? (:project-set pref-state) path))
-          (not (.isFile file)))))))
+             (not (.isFile file)))))))
 
 (fdef move-project-tree-selection!
   :args (s/cat :scene spec/scene? :diff integer?))
@@ -214,7 +228,7 @@
                     :else new-index)
         project-tree (.lookup scene "#project_tree")]
     (when (pos? (count paths))
-      (update-project-tree! pref-state-atom project-tree (nth paths new-index)))))
+      (update-project-tree-selection! project-tree (nth paths new-index)))))
 
 (fdef set-selection-listener!
   :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom?
