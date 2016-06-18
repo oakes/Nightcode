@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
 
-<SplitPane dividerPositions="0.75" orientation="VERTICAL" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="414.0" prefWidth="485.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <items>
       <StackPane />
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" />
+      <VBox>
+         <children>
+            <HBox VBox.vgrow="NEVER">
+               <children>
+                  <Button fx:id="run" mnemonicParsing="false" text="Run" />
+                  <Button fx:id="run_with_repl" mnemonicParsing="false" text="Run with REPL" />
+                  <Button fx:id="reload" mnemonicParsing="false" text="Reload" />
+                  <Button fx:id="build" mnemonicParsing="false" text="Build" />
+                  <Button fx:id="clean" mnemonicParsing="false" text="Clean" />
+                  <Button fx:id="stop" mnemonicParsing="false" text="Stop" />
+               </children>
+            </HBox>
+            <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+         </children>
+      </VBox>
    </items>
 </SplitPane>

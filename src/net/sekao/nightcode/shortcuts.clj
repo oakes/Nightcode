@@ -29,17 +29,14 @@
                    :close "w"
                    ; build pane
                    :run "r"
-                   :run-repl "X"
+                   :run-with-repl "X"
                    :reload "S"
-                   :eval "e"
                    :build "b"
-                   :test "t"
                    :stop "i"
-                   :build-console "A"
                    ; directory pane
                    :new-file "n"
-                   :edit "M"
                    :open-in-browser "F"
+                   :edit "M"
                    :cancel "C"})
 
 (def key-char->id (set/map-invert id->key-char))
