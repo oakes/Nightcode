@@ -10,14 +10,23 @@
            [net.sekao.nightcode.editors Bridge]))
 
 (fdef onload
-  :args (s/cat :engine :clojure.spec/any))
-(defn onload [^WebEngine engine]
+  :args (s/cat :engine :clojure.spec/any :work-fn fn?))
+(defn onload [^WebEngine engine work-fn]
   (let [out-pipe (PipedWriter.)
         in (PipedReader. out-pipe)
         pout (PipedWriter.)
         out (PrintWriter. pout)
         in-pipe (PipedReader. pout)
         ca (char-array 256)]
+    ; thread that runs the work fn
+    (.start
+      (Thread.
+        (fn []
+          (binding [*out* out
+                    *err* out
+                    *in* (LineNumberingPushbackReader. in)]
+            (work-fn)))))
+    ; thread that pipes the work fn's output into the webview
     (.start
       (Thread.
         (fn []
@@ -29,18 +38,11 @@
                 (Platform/runLater
                   (fn []
                     (.executeScript engine cmd)))
-                (recur (.read in-pipe ca))))))))
-    (.start
-      (Thread.
-        (fn []
-          (binding [*out* out
-                    *err* out
-                    *in* (LineNumberingPushbackReader. in)]
-            (clojure.main/repl)))))))
+                (recur (.read in-pipe ca))))))))))
 
 (fdef init-console!
-  :args (s/cat :webview spec/node? :runtime-state map?))
-(defn init-console! [webview runtime-state]
+  :args (s/cat :webview spec/node? :runtime-state map? :work-fn fn?))
+(defn init-console! [webview runtime-state work-fn]
   (let [engine (.getEngine webview)]
     (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
@@ -51,7 +53,7 @@
           (proxy [Bridge] []
             (onload []
               (try
-                (onload engine)
+                (onload engine work-fn)
                 (catch Exception e (.printStackTrace e)))))))))
 
 (fdef init-builder!
@@ -60,4 +62,4 @@
   (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))]
     (shortcuts/add-tooltips! buttons)
-    (init-console! webview runtime-state)))
+    (init-console! webview runtime-state clojure.main/repl)))
