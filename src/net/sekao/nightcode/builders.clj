@@ -13,7 +13,7 @@
   :args (s/cat :engine :clojure.spec/any :work-fn fn?))
 (defn onload [^WebEngine engine work-fn]
   (let [out-pipe (PipedWriter.)
-        in (PipedReader. out-pipe)
+        in (LineNumberingPushbackReader. (PipedReader. out-pipe))
         pout (PipedWriter.)
         out (PrintWriter. pout)
         in-pipe (PipedReader. pout)
@@ -24,7 +24,7 @@
         (fn []
           (binding [*out* out
                     *err* out
-                    *in* (LineNumberingPushbackReader. in)]
+                    *in* in]
             (work-fn)))))
     ; thread that pipes the work fn's output into the webview
     (.start
