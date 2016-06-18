@@ -206,7 +206,7 @@
                      (.getCanonicalPath (.getParentFile file)))
           project-tree (.lookup scene "#project_tree")]
       (e/remove-editors! path runtime-state)
-      (p/update-project-tree! pref-state project-tree new-path))))
+      (p/update-project-tree-selection! project-tree new-path))))
 
 (defn -onClose [this ^ActionEvent event]
   (-> event .getSource .getScene close!))
