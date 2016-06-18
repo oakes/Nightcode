@@ -39,12 +39,9 @@
             (clojure.main/repl)))))))
 
 (fdef init-console!
-  :args (s/cat :pane spec/pane? :runtime-state map? :path string?)) 
-(defn init-console! [pane runtime-state path]
-  (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
-        build-webview (-> pane .getChildren (.get 1))
-        engine (.getEngine build-webview)]
-    (shortcuts/add-tooltips! buttons)
+  :args (s/cat :webview spec/node? :runtime-state map?))
+(defn init-console! [webview runtime-state]
+  (let [engine (.getEngine webview)]
     (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
                       "/paren-soup.html"))
@@ -56,3 +53,11 @@
               (try
                 (onload engine)
                 (catch Exception e (.printStackTrace e)))))))))
+
+(fdef init-builder!
+  :args (s/cat :pane spec/pane? :runtime-state map? :path string?))
+(defn init-builder! [pane runtime-state path]
+  (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
+        webview (-> pane .getChildren (.get 1))]
+    (shortcuts/add-tooltips! buttons)
+    (init-console! webview runtime-state)))
