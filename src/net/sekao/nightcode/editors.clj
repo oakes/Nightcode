@@ -62,7 +62,7 @@
   :ret (s/nilable map?))
 (defn handler [request]
   (case (:uri request)
-    "/" (redirect "/index.html")
+    "/" (redirect "/paren-soup.html")
     "/eval" {:status 200
              :headers {"Content-Type" "text/plain"}
              :body (pr-str (eval-forms (body-string request)))}
@@ -149,5 +149,5 @@
                   (catch Exception e (.printStackTrace e)))))))
       (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
-                      (if clojure? "/index.html" "/index2.html")))
+                      (if clojure? "/paren-soup.html" "/codemirror.html")))
       pane)))
