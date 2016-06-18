@@ -169,7 +169,9 @@
            (.select selection-model item))))
      ; select the first project if there is nothing selected
      (when (= -1 (.getSelectedIndex selection-model))
-       (.select selection-model (int 0))))))
+       (.select selection-model (int 0)))
+     ; update scroll position
+     (.scrollTo tree (.getSelectedIndex selection-model)))))
 
 (fdef update-project-tree-selection!
   :args (s/cat :tree spec/pane? :selection string?))
