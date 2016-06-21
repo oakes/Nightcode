@@ -39,11 +39,13 @@
       (fn [_ _ _ new-runtime-state]
         (shortcuts/update-tabs! scene @pref-state new-runtime-state)))
     (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
-    (shortcuts/set-shortcut-listeners! stage actions)
     (-> content .getChildren .clear)
+    ; create listeners
     (p/set-selection-listener! pref-state runtime-state stage project-tree content)
     (p/set-focused-listener! pref-state stage project-tree)
     (p/set-project-key-listener! stage pref-state runtime-state)
+    (shortcuts/set-shortcut-listeners! stage actions)
+    ; update the ui
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)))
 

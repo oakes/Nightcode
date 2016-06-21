@@ -245,10 +245,8 @@
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
-          (some->> old-value
-                   .getPath
-                   (get (:editor-panes @runtime-state-atom))
-                   shortcuts/hide-tooltips!)
+          (when (-> content .getChildren .size (> 0))
+            (-> content .getChildren (.get 0) shortcuts/hide-tooltips!))
           (when new-value
             (-> (swap! pref-state-atom assoc :selection (.getPath new-value))
                 (update-project-buttons! scene))
