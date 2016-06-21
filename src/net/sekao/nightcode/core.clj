@@ -41,10 +41,10 @@
     (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
     (-> content .getChildren .clear)
     ; create listeners
-    (p/set-selection-listener! pref-state runtime-state stage project-tree content)
+    (p/set-selection-listener! pref-state runtime-state stage)
     (p/set-focused-listener! pref-state stage project-tree)
     (p/set-project-key-listener! stage pref-state runtime-state)
-    (shortcuts/set-shortcut-listeners! stage actions)
+    (shortcuts/set-shortcut-listeners! stage runtime-state actions)
     ; update the ui
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)))

@@ -237,16 +237,15 @@
       (update-project-tree-selection! project-tree (nth paths new-index)))))
 
 (fdef set-selection-listener!
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom?
-          :stage spec/stage? :tree spec/pane? :content spec/pane?))
-(defn set-selection-listener! [pref-state-atom runtime-state-atom ^Stage stage tree content]
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage?))
+(defn set-selection-listener! [pref-state-atom runtime-state-atom ^Stage stage]
   (let [scene (.getScene stage)
-        selection-model (.getSelectionModel tree)]
+        project-tree (.lookup scene "#project_tree")
+        content (.lookup scene "#content")
+        selection-model (.getSelectionModel project-tree)]
     (.addListener (.selectedItemProperty selection-model)
       (reify ChangeListener
         (changed [this observable old-value new-value]
-          (when (-> content .getChildren .size (> 0))
-            (-> content .getChildren (.get 0) shortcuts/hide-tooltips!))
           (when new-value
             (-> (swap! pref-state-atom assoc :selection (.getPath new-value))
                 (update-project-buttons! scene))

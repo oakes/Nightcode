@@ -171,8 +171,8 @@
               (action scene))))))))
 
 (fdef set-shortcut-listeners!
-  :args (s/cat :stage spec/stage? :actions map?))
-(defn set-shortcut-listeners! [^Stage stage actions]
+  :args (s/cat :stage spec/stage? :runtime-state-atom spec/atom? :actions map?))
+(defn set-shortcut-listeners! [^Stage stage runtime-state-atom actions]
   (let [^Scene scene (.getScene stage)]
     ; show tooltips on key pressed
     (.addEventHandler scene KeyEvent/KEY_PRESSED
@@ -200,4 +200,23 @@
       (reify ChangeListener
         (changed [this observable old-value new-value]
           (when new-value
-            (hide-tooltips! scene)))))))
+            (hide-tooltips! scene)))))
+    ; hide tooltips on selection change
+    (let [scene (.getScene stage)
+          project-tree (.lookup scene "#project_tree")
+          content (.lookup scene "#content")
+          selection-model (.getSelectionModel project-tree)]
+      (.addListener (.selectedItemProperty selection-model)
+        (reify ChangeListener
+          (changed [this observable old-value new-value]
+            ; hide tooltips in project panes that aren't in focus
+            (when (-> content .getChildren .size (> 0))
+              (let [new-project-pane (-> content .getChildren (.get 0))]
+                (doseq [project-pane (-> @runtime-state-atom :project-panes vals)]
+                  (when (not= new-project-pane project-pane)
+                    (hide-tooltips! project-pane)))))
+            ; hide tooltips in editor panes that aren't in focus
+            (let [new-editor-pane (some->> new-value .getPath (get (:editor-panes @runtime-state-atom)))]
+              (doseq [editor-pane (-> @runtime-state-atom :editor-panes vals)]
+                (when (not= new-editor-pane editor-pane)
+                  (hide-tooltips! editor-pane))))))))))
