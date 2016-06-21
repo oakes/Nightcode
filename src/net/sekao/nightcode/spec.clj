@@ -33,6 +33,9 @@
 (defn ns? [x]
   (instance? clojure.lang.Namespace x))
 
+(defn writer? [x]
+  (instance? java.io.Writer x))
+
 (s/def ::files
   (s/or :primitive-array file-array?
         :collection (s/coll-of file? [])))

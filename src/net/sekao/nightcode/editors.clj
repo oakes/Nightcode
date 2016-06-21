@@ -96,7 +96,9 @@
 
 (definterface Bridge
   (onload [])
-  (onchange []))
+  (onchange [event])
+  (onenter [text])
+  (isConsole []))
 
 (fdef update-editor-buttons!
   :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
@@ -143,10 +145,12 @@
                 (try
                   (onload engine file)
                   (catch Exception e (.printStackTrace e))))
-              (onchange []
+              (onchange [_]
                 (try
                   (update-editor-buttons! pane engine)
-                  (catch Exception e (.printStackTrace e)))))))
+                  (catch Exception e (.printStackTrace e))))
+              (isConsole []
+                false))))
       (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
                       (if clojure? "/paren-soup.html" "/codemirror.html")))

@@ -34,21 +34,21 @@
       (.setTitle "Nightcode 2.0.0-SNAPSHOT")
       (.setScene scene)
       (.show))
-    (swap! runtime-state assoc :web-port (e/start-web-server!))
     (shortcuts/init-tabs! scene)
     (add-watch runtime-state :runtime-state-changed
       (fn [_ _ _ new-runtime-state]
         (shortcuts/update-tabs! scene @pref-state new-runtime-state)))
+    (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
+    (shortcuts/set-shortcut-listeners! stage actions)
     (-> content .getChildren .clear)
     (p/set-selection-listener! pref-state runtime-state stage project-tree content)
     (p/set-focused-listener! pref-state stage project-tree)
     (p/set-project-key-listener! stage pref-state runtime-state)
     (p/update-project-tree! pref-state project-tree)
-    (p/update-project-buttons! @pref-state scene)
-    (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
-    (shortcuts/set-shortcut-listeners! stage actions)))
+    (p/update-project-buttons! @pref-state scene)))
 
 (defn -main [& args]
+  (swap! runtime-state assoc :web-port (e/start-web-server!))
   (Application/launch net.sekao.nightcode.core (into-array String args)))
 
 (defn dev-main [& args]

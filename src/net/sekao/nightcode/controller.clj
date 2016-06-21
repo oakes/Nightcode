@@ -1,6 +1,5 @@
 (ns net.sekao.nightcode.controller
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]
             [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
@@ -191,7 +190,7 @@
             find-text (.getText find)]
         (.executeScript engine
           (format "window.find('%s', true, %b)"
-            (str/escape find-text {\' "\\'"})
+            (u/escape-js find-text)
             (.isShiftDown event)))))))
 
 (defn -find [this ^KeyEvent event]

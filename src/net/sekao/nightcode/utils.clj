@@ -88,3 +88,9 @@
        (+ 1)
        (subs path)
        str/lower-case))
+
+(fdef escape-js
+  :args (s/cat :s string?)
+  :ret string?)
+(defn escape-js [s]
+  (str/escape s {\' "\\'", \newline "\\n"}))

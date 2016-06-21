@@ -1,7 +1,7 @@
 (ns net.sekao.nightcode.builders
-  (:require [clojure.string :as str]
-            [net.sekao.nightcode.shortcuts :as shortcuts]
+  (:require [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.spec :as spec]
+            [net.sekao.nightcode.utils :as u]
             [clojure.spec :as s :refer [fdef]])
   (:import [clojure.lang LineNumberingPushbackReader]
            [javafx.scene.web WebEngine]
@@ -10,10 +10,9 @@
            [net.sekao.nightcode.editors Bridge]))
 
 (fdef onload
-  :args (s/cat :engine :clojure.spec/any :work-fn fn?))
-(defn onload [^WebEngine engine work-fn]
-  (let [out-pipe (PipedWriter.)
-        in (LineNumberingPushbackReader. (PipedReader. out-pipe))
+  :args (s/cat :engine :clojure.spec/any :out-pipe spec/writer? :work-fn fn?))
+(defn onload [^WebEngine engine out-pipe work-fn]
+  (let [in (LineNumberingPushbackReader. (PipedReader. out-pipe))
         pout (PipedWriter.)
         out (PrintWriter. pout)
         in-pipe (PipedReader. pout)
@@ -33,8 +32,7 @@
           (loop [read (.read in-pipe ca)]
             (when (pos? read)
               (let [s (String. ca 0 read)
-                    cmd (format "append('%s')"
-                          (str/escape s {\' "\\'"}))]
+                    cmd (format "append('%s')" (u/escape-js s))]
                 (Platform/runLater
                   (fn []
                     (.executeScript engine cmd)))
@@ -43,18 +41,26 @@
 (fdef init-console!
   :args (s/cat :webview spec/node? :runtime-state map? :work-fn fn?))
 (defn init-console! [webview runtime-state work-fn]
-  (let [engine (.getEngine webview)]
+  (.setContextMenuEnabled webview false)
+  (let [engine (.getEngine webview)
+        out-pipe (PipedWriter.)]
     (.load engine (str "http://localhost:"
-                      (:web-port runtime-state)
-                      "/paren-soup.html"))
+                       (:web-port runtime-state)
+                       "/paren-soup.html"))
     (-> engine
         (.executeScript "window")
         (.setMember "java"
           (proxy [Bridge] []
             (onload []
               (try
-                (onload engine work-fn)
-                (catch Exception e (.printStackTrace e)))))))))
+                (onload engine out-pipe work-fn)
+                (catch Exception e (.printStackTrace e))))
+            (onchange [_])
+            (onenter [text]
+              (.write out-pipe (str text "\n"))
+              (.flush out-pipe))
+            (isConsole []
+              true))))))
 
 (fdef init-builder!
   :args (s/cat :pane spec/pane? :runtime-state map? :path string?))
