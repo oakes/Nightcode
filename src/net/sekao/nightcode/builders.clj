@@ -55,7 +55,7 @@
               (try
                 (onload engine out-pipe work-fn)
                 (catch Exception e (.printStackTrace e))))
-            (onchange [_])
+            (onchange [])
             (onenter [text]
               (.write out-pipe (str text "\n"))
               (.flush out-pipe))

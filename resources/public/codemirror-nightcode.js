@@ -9,7 +9,7 @@ function init() {
     });
     if (window.java) {
         editor.on("change", function(editor, change) {
-            window.java.onchange(change);
+            window.java.onchange();
         });
     }
     document.body.removeChild(content);
@@ -55,6 +55,7 @@ window.onload = function() {
         window.java.onload();
         init();
         markClean();
+        window.java.onchange();
     }
     else {
         init();

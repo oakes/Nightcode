@@ -6,7 +6,7 @@ function init() {
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
             if (window.java) {
-                window.java.onchange(e);
+                window.java.onchange();
             }
         },
         "disable-undo-redo?": true
@@ -18,7 +18,7 @@ function initConsole() {
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
             if (window.java) {
-                window.java.onchange(e);
+                window.java.onchange();
             }
             if (e.type == "keyup") {
             	parent.scrollTop = parent.scrollHeight;

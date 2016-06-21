@@ -96,7 +96,7 @@
 
 (definterface Bridge
   (onload [])
-  (onchange [event])
+  (onchange [])
   (onenter [text])
   (isConsole []))
 
@@ -145,7 +145,7 @@
                 (try
                   (onload engine file)
                   (catch Exception e (.printStackTrace e))))
-              (onchange [_]
+              (onchange []
                 (try
                   (update-editor-buttons! pane engine)
                   (catch Exception e (.printStackTrace e))))
