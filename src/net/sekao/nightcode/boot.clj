@@ -6,7 +6,9 @@
             [net.sekao.nightcode.utils :as u]
             [boot.core]
             [boot.main]
-            [boot.aether])
+            [boot.aether]
+            [boot.watcher]
+            [boot.pod])
   (:import [boot.App])
   (:gen-class))
 
