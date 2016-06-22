@@ -24,12 +24,12 @@
 (declare get-children)
 
 (fdef project-pane
-  :args (s/cat :runtime-state map? :path string?)
+  :args (s/cat :runtime-state-atom spec/atom? :path string?)
   :ret spec/pane?)
-(defn project-pane [runtime-state path]
+(defn project-pane [runtime-state-atom path]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
         builder (-> pane .getItems (.get 1))]
-    (b/init-builder! builder runtime-state path)
+    (b/init-builder! builder runtime-state-atom path)
     pane))
 
 (fdef dir-pane
@@ -72,7 +72,7 @@
         (when parent-path
           (let [state @runtime-state-atom
                 project-pane (or (get-in state [:project-panes parent-path])
-                                 (project-pane @runtime-state-atom parent-path))
+                                 (project-pane runtime-state-atom parent-path))
                 editors (-> project-pane .getItems (.get 0))]
             (-> editors .getChildren .clear)
             (when-let [pane (if (.isDirectory file)

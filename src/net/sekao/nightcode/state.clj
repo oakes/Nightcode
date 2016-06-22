@@ -46,7 +46,8 @@
 
 (defonce runtime-state (atom {:web-port nil
                               :project-panes {}
-                              :editor-panes {}}))
+                              :editor-panes {}
+                              :processes {}}))
 
 (add-watch pref-state :write-prefs
   (fn [_ _ old-state new-state]

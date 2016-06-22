@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [net.sekao.nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
-  (:import [java.io File]))
+  (:import [java.io File]
+           [java.nio.file Paths]))
 
 (defmacro with-security [body]
   `(do
@@ -94,3 +95,24 @@
   :ret string?)
 (defn escape-js [s]
   (str/escape s {\' "\\'", \newline "\\n"}))
+
+(fdef uri->str
+  :args (s/cat :uri #(instance? java.net.URI %))
+  :ret string?)
+(defn uri->str
+  "Converts a java.net.URI to a String."
+  [uri]
+  (-> uri Paths/get .normalize .toString))
+
+(fdef get-exec-uri
+  :args (s/cat :class-name string?)
+  :ret #(instance? java.net.URI %))
+(defn get-exec-uri
+  "Returns the executable as a java.net.URI."
+  [class-name]
+  (-> (Class/forName class-name)
+      .getProtectionDomain
+      .getCodeSource
+      .getLocation
+      .toURI))
+

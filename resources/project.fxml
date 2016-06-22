@@ -7,19 +7,19 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="414.0" prefWidth="485.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="414.0" prefWidth="485.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <items>
       <StackPane />
       <VBox>
          <children>
             <HBox VBox.vgrow="NEVER">
                <children>
-                  <Button fx:id="run" mnemonicParsing="false" text="Run" />
-                  <Button fx:id="run_with_repl" mnemonicParsing="false" text="Run with REPL" />
-                  <Button fx:id="reload" mnemonicParsing="false" text="Reload" />
-                  <Button fx:id="build" mnemonicParsing="false" text="Build" />
-                  <Button fx:id="clean" mnemonicParsing="false" text="Clean" />
-                  <Button fx:id="stop" mnemonicParsing="false" text="Stop" />
+                  <Button fx:id="run" mnemonicParsing="false" onAction="#onRun" text="Run" />
+                  <Button fx:id="run_with_repl" mnemonicParsing="false" onAction="#onRunWithRepl" text="Run with REPL" />
+                  <Button fx:id="reload" mnemonicParsing="false" onAction="#onReload" text="Reload" />
+                  <Button fx:id="build" mnemonicParsing="false" onAction="#onBuild" text="Build" />
+                  <Button fx:id="clean" mnemonicParsing="false" onAction="#onClean" text="Clean" />
+                  <Button fx:id="stop" mnemonicParsing="false" onAction="#onStop" text="Stop" />
                </children>
             </HBox>
             <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />

@@ -23,7 +23,13 @@
               :redo c/redo!
               :instarepl c/toggle-instarepl!
               :find c/focus-on-find!
-              :close c/close!})
+              :close c/close!
+              :run c/run-normal!
+              :run-with-repl c/run-with-repl!
+              :reload c/reload!
+              :build c/build!
+              :clean c/clean!
+              :stop c/stop!})
 
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))

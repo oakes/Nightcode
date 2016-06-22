@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.controller
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.boot :as b]
+            [net.sekao.nightcode.boot :as boot]
+            [net.sekao.nightcode.builders :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [pref-state runtime-state]]
@@ -22,7 +23,13 @@
              [onRedo [javafx.event.ActionEvent] void]
              [onInstaRepl [javafx.event.ActionEvent] void]
              [find [javafx.scene.input.KeyEvent] void]
-             [onClose [javafx.event.ActionEvent] void]]))
+             [onClose [javafx.event.ActionEvent] void]
+             [onRun [javafx.event.ActionEvent] void]
+             [onRunWithRepl [javafx.event.ActionEvent] void]
+             [onReload [javafx.event.ActionEvent] void]
+             [onBuild [javafx.event.ActionEvent] void]
+             [onClean [javafx.event.ActionEvent] void]
+             [onStop [javafx.event.ActionEvent] void]]))
 
 ; new project
 
@@ -43,7 +50,7 @@
         (.show dialog)
         (future
           (try
-            (b/new-project! file (name project-type))
+            (boot/new-project! file (name project-type))
             (catch Exception e (.printStackTrace e)))
           (Platform/runLater
             (fn []
@@ -210,3 +217,50 @@
 
 (defn -onClose [this ^ActionEvent event]
   (-> event .getSource .getScene close!))
+
+; run
+
+(defn run-normal! [^Scene scene]
+  (when-let [project-path (u/get-project-root-path @pref-state)]
+    (b/start-worker-process! runtime-state project-path "run" "Running...")))
+
+(defn -onRun [this ^ActionEvent event]
+  (-> event .getSource .getScene run-normal!))
+
+; run with repl
+
+(defn run-with-repl! [^Scene scene])
+
+(defn -onRunWithRepl [this ^ActionEvent event]
+  (-> event .getSource .getScene run-with-repl!))
+
+; reload
+
+(defn reload! [^Scene scene])
+
+(defn -onReload [this ^ActionEvent event]
+  (-> event .getSource .getScene reload!))
+
+; build
+
+(defn build! [^Scene scene])
+
+(defn -onBuild [this ^ActionEvent event]
+  (-> event .getSource .getScene build!))
+
+; clean
+
+(defn clean! [^Scene scene])
+
+(defn -onClean [this ^ActionEvent event]
+  (-> event .getSource .getScene clean!))
+
+; stop
+
+(defn stop! [^Scene scene]
+  (when-let [project-path (u/get-project-root-path @pref-state)]
+    (b/stop-worker-process! runtime-state project-path)))
+
+(defn -onStop [this ^ActionEvent event]
+  (-> event .getSource .getScene stop!))
+
