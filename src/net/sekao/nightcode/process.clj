@@ -9,10 +9,12 @@
 
 (defonce class-name (str *ns*))
 
+(fdef start-process!
+  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string? [])))
 (defn start-process!
-  [process path & args]
+  [process path args]
   (reset! process (.exec (Runtime/getRuntime)
-                         (into-array (flatten args))
+                         (into-array args)
                          nil
                          (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
@@ -28,19 +30,22 @@
       (.waitFor @process)
       (reset! process nil))))
 
+(fdef start-java-process!
+  :args (s/cat :process spec/atom? :path string? :args (s/* string?)))
 (defn start-java-process!
   [process path & args]
   (let [java-cmd (or (System/getenv "JAVA_CMD") "java")
         jar-uri (u/get-exec-uri class-name)]
-    (start-process! process
-                    path
-                    java-cmd
-                    "-cp"
-                    (if (.isDirectory (io/file jar-uri))
-                      (System/getProperty "java.class.path")
-                      (u/uri->str jar-uri))
-                    args)))
+    (start-process! process path
+      (flatten [java-cmd
+                "-cp"
+                (if (.isDirectory (io/file jar-uri))
+                  (System/getProperty "java.class.path")
+                  (u/uri->str jar-uri))
+                args]))))
 
+(fdef stop-process!
+  :args (s/cat :process spec/atom?))
 (defn stop-process!
   [process]
   (when @process
