@@ -27,7 +27,8 @@ function initConsole() {
         "disable-undo-redo?": true,
         "console-callback": function(text) {
             window.java.onenter(text);
-        }
+        },
+        "not-clj?": true
     });
 }
 
