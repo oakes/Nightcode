@@ -13,7 +13,7 @@ function init() {
     });
 }
 
-function initConsole() {
+function initConsole(isRepl) {
 	var parent = document.getElementById('paren-soup');
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
@@ -26,9 +26,9 @@ function initConsole() {
         },
         "disable-undo-redo?": true,
         "console-callback": function(text) {
-            window.java.onenter(text);
+            window.java.onenter(text + "\n");
         },
-        "not-clj?": true
+        "disable-clj?": !isRepl
     });
 }
 
@@ -98,7 +98,7 @@ window.onload = function() {
         	var parent = document.getElementById('paren-soup');
         	var numbers = document.getElementById('numbers');
             parent.removeChild(numbers);
-            initConsole();
+            initConsole(false);
         }
         else {
             init();

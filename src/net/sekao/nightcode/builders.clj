@@ -25,7 +25,7 @@
                       (.executeScript engine cmd)))
                   (recur))))))))))
 
-(defn start-worker! [runtime-state-atom project-path work-fn]
+(defn start-builder! [runtime-state-atom project-path work-fn]
   (let [project-pane (get-in @runtime-state-atom [:project-panes project-path])
         webview (.lookup project-pane "#build_webview")
         engine (.getEngine webview)
@@ -53,18 +53,25 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "\n=== Finished ===")))))))))
 
-(defn start-worker-process! [runtime-state-atom project-path command print-str]
+(defn start-builder-process! [runtime-state-atom project-path command print-str]
   (let [process (get-in @runtime-state-atom [:processes project-path :process] (atom nil))]
     (proc/stop-process! process)
     (swap! runtime-state-atom assoc-in [:processes project-path :process] process)
-    (start-worker! runtime-state-atom project-path
+    (start-builder! runtime-state-atom project-path
       (fn []
         (println print-str)
         (proc/start-java-process! process project-path proc/class-name command)))))
 
-(defn stop-worker-process! [runtime-state-atom project-path]
+(defn stop-builder-process! [runtime-state-atom project-path]
   (let [process (get-in @runtime-state-atom [:processes project-path :process])]
     (proc/stop-process! process)))
+
+(defn refresh-builder! [runtime-state project-path repl?]
+  (some-> runtime-state
+          (get-in [:project-panes project-path])
+          (.lookup "#build_webview")
+          .getEngine
+          (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))))
 
 (definterface Bridge
   (onload [])
@@ -86,7 +93,7 @@
             (onchange [])
             (onenter [text]
               (when-let [out-pipe (get-in @runtime-state-atom [:processes path :out-pipe])]
-                (.write out-pipe (str text "\n"))
+                (.write out-pipe text)
                 (.flush out-pipe)))
             (isConsole []
               true))))))
@@ -102,14 +109,17 @@
 (fdef pipe-into-console!
   :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
 
-(fdef start-worker!
+(fdef start-builder!
   :args (s/cat :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
 
-(fdef start-worker-process!
+(fdef start-builder-process!
   :args (s/cat :runtime-state-atom spec/atom? :project-path string? :command string? :print-str string?))
 
-(fdef stop-worker-process!
+(fdef stop-builder-process!
   :args (s/cat :runtime-state-atom spec/atom? :project-path string?))
+
+(fdef refresh-builder!
+  :args (s/cat :runtime-state map? :project-path string? :repl? boolean?))
 
 (fdef init-console!
   :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :path string?))
