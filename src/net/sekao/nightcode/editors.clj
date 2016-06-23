@@ -19,9 +19,6 @@
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const max-file-size (* 1024 1024 2))
 
-(fdef eval-form-safely
-  :args (s/cat :form :clojure.spec/any :nspace spec/ns?)
-  :ret :clojure.spec/any)
 (defn eval-form-safely [form nspace]
   (u/with-security
     (clojail/thunk-timeout
@@ -35,18 +32,12 @@
              *ns*)]))
       1000)))
 
-(fdef eval-form
-  :args (s/cat :form-str string? :nspace spec/ns?)
-  :ret vector?)
 (defn eval-form [form-str nspace]
   (binding [*read-eval* false]
     (try
       (eval-form-safely (read-string form-str) nspace)
       (catch Exception e [e nspace]))))
 
-(fdef eval-forms
-  :args (s/cat :forms-str string?)
-  :ret vector?)
 (defn eval-forms [forms-str]
   (loop [forms (edn/read-string forms-str)
          results []
@@ -57,9 +48,6 @@
         (recur (rest forms) (conj results result-str) current-ns))
       results)))
 
-(fdef handler
-  :args (s/cat :request map?)
-  :ret (s/nilable map?))
 (defn handler [request]
   (case (:uri request)
     "/" (redirect "/paren-soup.html")
@@ -68,9 +56,6 @@
              :body (pr-str (eval-forms (body-string request)))}
     nil))
 
-(fdef start-web-server!
-  :args (s/cat)
-  :ret integer?)
 (defn start-web-server! []
   (-> handler
       (wrap-resource "public")
@@ -80,8 +65,6 @@
       (aget 0)
       .getLocalPort))
 
-(fdef remove-editors!
-  :args (s/cat :path string? :runtime-state-atom spec/atom?))
 (defn remove-editors! [^String path runtime-state-atom]
   (doseq [[editor-path pane] (:editor-panes @runtime-state-atom)]
     (when (u/parent-path? path editor-path)
@@ -100,30 +83,20 @@
   (onenter [text])
   (isConsole []))
 
-(fdef update-editor-buttons!
-  :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
 (defn update-editor-buttons! [pane ^WebEngine engine]
   (.setDisable (.lookup pane "#save") (.executeScript engine "isClean()"))
   (.setDisable (.lookup pane "#undo") (not (.executeScript engine "canUndo()")))
   (.setDisable (.lookup pane "#redo") (not (.executeScript engine "canRedo()"))))
 
-(fdef onload
-  :args (s/cat :engine :clojure.spec/any :file spec/file?))
 (defn onload [^WebEngine engine ^File file]
   (-> engine
       .getDocument
       (.getElementById "content")
       (.setTextContent (slurp file))))
 
-(fdef should-open?
-  :args (s/cat :file spec/file?)
-  :ret boolean?)
 (defn should-open? [^File file]
   (-> file .length (< max-file-size)))
 
-(fdef editor-pane
-  :args (s/cat :runtime-state map? :file spec/file?)
-  :ret spec/pane?)
 (defn editor-pane [runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
@@ -155,3 +128,46 @@
                       (:web-port runtime-state)
                       (if clojure? "/paren-soup.html" "/codemirror.html")))
       pane)))
+
+; specs
+
+(fdef eval-form-safely
+  :args (s/cat :form :clojure.spec/any :nspace spec/ns?)
+  :ret :clojure.spec/any)
+
+(fdef eval-form
+  :args (s/cat :form-str string? :nspace spec/ns?)
+  :ret vector?)
+
+(fdef eval-forms
+  :args (s/cat :forms-str string?)
+  :ret vector?)
+
+(fdef handler
+  :args (s/cat :request map?)
+  :ret (s/nilable map?))
+
+(fdef start-web-server!
+  :args (s/cat)
+  :ret integer?)
+
+(fdef remove-editors!
+  :args (s/cat :path string? :runtime-state-atom spec/atom?))
+
+(fdef toggle-instarepl!
+  :args (s/cat :engine :clojure.spec/any :selected? boolean?))
+
+(fdef update-editor-buttons!
+  :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
+
+(fdef onload
+  :args (s/cat :engine :clojure.spec/any :file spec/file?))
+
+(fdef should-open?
+  :args (s/cat :file spec/file?)
+  :ret boolean?)
+
+(fdef editor-pane
+  :args (s/cat :runtime-state map? :file spec/file?)
+  :ret spec/pane?)
+

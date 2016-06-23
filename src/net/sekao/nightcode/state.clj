@@ -7,8 +7,6 @@
 
 (def ^Preferences prefs (.node (Preferences/userRoot) "nightcode"))
 
-(fdef write-pref!
-  :args (s/cat :key keyword? :val identity))
 (defn write-pref!
   "Writes a key-value pair to the preference file."
   [k v]
@@ -16,8 +14,6 @@
     (.put (name k) (pr-str v))
     .flush))
 
-(fdef remove-pref!
-  :args (s/cat :key keyword?))
 (defn remove-pref!
   "Removes a key-value pair from the preference file."
   [k]
@@ -25,10 +21,6 @@
     (.remove (name k))
     .flush))
 
-(fdef read-pref
-  :args (s/alt
-          :key-only (s/cat :key keyword?)
-          :key-and-val (s/cat :key keyword? :default-val identity)))
 (defn read-pref
   "Reads value from the given key in the preference file."
   ([k]
@@ -63,3 +55,17 @@
         (write-pref! :expansion-set new-expansions))
       (when (not= old-selection new-selection)
         (write-pref! :selection new-selection)))))
+
+; specs
+
+(fdef write-pref!
+  :args (s/cat :key keyword? :val identity))
+
+(fdef remove-pref!
+  :args (s/cat :key keyword?))
+
+(fdef read-pref
+  :args (s/alt
+          :key-only (s/cat :key keyword?)
+          :key-and-val (s/cat :key keyword? :default-val identity)))
+

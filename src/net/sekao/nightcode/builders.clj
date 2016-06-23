@@ -9,8 +9,6 @@
            [java.io PipedWriter PipedReader PrintWriter]
            [javafx.application Platform]))
 
-(fdef pipe-into-console!
-  :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
 (defn pipe-into-console! [^WebEngine engine in-pipe]
   (let [ca (char-array 256)]
     (.start
@@ -27,8 +25,6 @@
                       (.executeScript engine cmd)))
                   (recur))))))))))
 
-(fdef start-worker!
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
 (defn start-worker! [runtime-state-atom project-path work-fn]
   (let [project-pane (get-in @runtime-state-atom [:project-panes project-path])
         webview (.lookup project-pane "#build_webview")
@@ -57,8 +53,6 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "\n=== Finished ===")))))))))
 
-(fdef start-worker-process!
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string? :command string? :print-str string?))
 (defn start-worker-process! [runtime-state-atom project-path command print-str]
   (let [process (get-in @runtime-state-atom [:processes project-path :process] (atom nil))]
     (proc/stop-process! process)
@@ -68,8 +62,6 @@
         (println print-str)
         (proc/start-java-process! process project-path proc/class-name command)))))
 
-(fdef stop-worker-process!
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string?))
 (defn stop-worker-process! [runtime-state-atom project-path]
   (let [process (get-in @runtime-state-atom [:processes project-path :process])]
     (proc/stop-process! process)))
@@ -80,8 +72,6 @@
   (onenter [text])
   (isConsole []))
 
-(fdef init-console!
-  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :path string?))
 (defn init-console! [webview runtime-state-atom path]
   (.setContextMenuEnabled webview false)
   (let [engine (.getEngine webview)]
@@ -101,11 +91,29 @@
             (isConsole []
               true))))))
 
-(fdef init-builder!
-  :args (s/cat :pane spec/pane? :runtime-state-atom spec/atom? :path string?))
 (defn init-builder! [pane runtime-state-atom path]
   (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))]
     (shortcuts/add-tooltips! buttons)
     (init-console! webview runtime-state-atom path)))
+
+; specs
+
+(fdef pipe-into-console!
+  :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
+
+(fdef start-worker!
+  :args (s/cat :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
+
+(fdef start-worker-process!
+  :args (s/cat :runtime-state-atom spec/atom? :project-path string? :command string? :print-str string?))
+
+(fdef stop-worker-process!
+  :args (s/cat :runtime-state-atom spec/atom? :project-path string?))
+
+(fdef init-console!
+  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :path string?))
+
+(fdef init-builder!
+  :args (s/cat :pane spec/pane? :runtime-state-atom spec/atom? :path string?))
 
