@@ -3,13 +3,17 @@
             [clojure.string :as str]
             [clojure.spec :as s :refer [fdef]]
             [net.sekao.nightcode.spec :as spec]
-            [net.sekao.nightcode.utils :as u]))
+            [net.sekao.nightcode.utils :as u]
+            [boot.core]
+            [boot.main]
+            [boot.aether]
+            [boot.watcher]
+            [boot.pod])
+  (:import [boot.App])
+  (:gen-class))
 
 (defn boot! [args]
-  (let [c (Class/forName "boot.App")
-        m (->> c .getMethods (filter #(= "main" (.getName %))) first)
-        args (into-array String args)]
-    (.invoke m nil (into-array Object [args]))))
+  (boot.App/main (into-array String args)))
 
 (defn boot-in-process! [dir & args]
   (let [old-dir (System/getProperty "user.dir")]
