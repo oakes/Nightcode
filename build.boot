@@ -21,7 +21,6 @@
        :version "2.0.0-SNAPSHOT"}
   aot {:namespace '#{net.sekao.nightcode.core
                      net.sekao.nightcode.controller
-                     net.sekao.nightcode.boot
                      net.sekao.nightcode.process}}
   jar {:main 'net.sekao.nightcode.core
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
