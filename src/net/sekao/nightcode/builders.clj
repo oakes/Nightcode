@@ -60,7 +60,7 @@
     (start-builder! runtime-state-atom project-path
       (fn []
         (println print-str)
-        (proc/start-java-process! process project-path proc/class-name command)))))
+        (proc/start-java-process! process project-path "Boot" command)))))
 
 (defn stop-builder-process! [runtime-state-atom project-path]
   (let [process (get-in @runtime-state-atom [:processes project-path :process])]

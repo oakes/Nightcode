@@ -1,6 +1,5 @@
 (ns net.sekao.nightcode.core
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.boot]
             [net.sekao.nightcode.controller :as c]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]

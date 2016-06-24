@@ -1,8 +1,9 @@
 (ns net.sekao.nightcode.controller
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.boot :as boot]
+            [clojure.string :as str]
             [net.sekao.nightcode.builders :as b]
             [net.sekao.nightcode.editors :as e]
+            [net.sekao.nightcode.process :as proc]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [pref-state runtime-state]]
             [net.sekao.nightcode.utils :as u])
@@ -45,12 +46,19 @@
                      (.setHeaderText "Creating project...")
                      (.setGraphic nil)
                      (.initOwner (.getWindow scene))
-                     (.initStyle StageStyle/UNDECORATED))]
+                     (.initStyle StageStyle/UNDECORATED))
+            process (atom nil)
+            dir (-> file .getParentFile .getCanonicalPath)
+            project-name (-> file .getName str/lower-case)]
         (-> dialog .getDialogPane (.lookupButton ButtonType/OK) (.setDisable true))
         (.show dialog)
         (future
           (try
-            (boot/new-project! file (name project-type))
+            (proc/start-java-process! process dir "Boot"
+              "--no-boot-script"
+              "-d" "seancorfield/boot-new:0.4.4" "new"
+              "-t" (name project-type)
+              "-n" project-name)
             (catch Exception e (.printStackTrace e)))
           (Platform/runLater
             (fn []

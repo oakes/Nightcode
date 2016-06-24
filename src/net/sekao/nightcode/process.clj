@@ -1,13 +1,9 @@
 (ns net.sekao.nightcode.process
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.boot :as b]
             [net.sekao.nightcode.spec :as spec]
             [net.sekao.nightcode.utils :as u]
             [clojure.spec :as s :refer [fdef]])
-  (:import [com.hypirion.io ClosingPipe Pipe])
-  (:gen-class))
-
-(defonce class-name (str *ns*))
+  (:import [com.hypirion.io ClosingPipe Pipe]))
 
 (defn start-process!
   [process path args]
@@ -31,7 +27,7 @@
 (defn start-java-process!
   [process path & args]
   (let [java-cmd (or (System/getenv "JAVA_CMD") "java")
-        jar-uri (u/get-exec-uri class-name)]
+        jar-uri (u/get-exec-uri "net.sekao.nightcode.core")]
     (start-process! process path
       (flatten [java-cmd
                 "-cp"
@@ -45,9 +41,6 @@
   (when @process
     (.destroy @process))
   (reset! process nil))
-
-(defn -main [& args]
-  (b/boot! args))
 
 ; specs
 

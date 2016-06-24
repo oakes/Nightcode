@@ -1,5 +1,5 @@
 (set-env!
-  :source-paths #{"src"}
+  :source-paths #{"src" "src-java"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
@@ -10,8 +10,6 @@
                   [boot/worker "2.6.0"]
                   [boot/pod "2.6.0"]
                   [adzerk/boot-test "1.1.1"]
-                  [seancorfield/boot-new "0.4.4"]
-                  [stencil "0.5.0" :exclusions [org.clojure/clojure]] ; for boot-new
                   [leiningen "2.6.1" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [clojail "1.0.6"]])
@@ -20,15 +18,14 @@
   pom {:project 'nightcode
        :version "2.0.0-SNAPSHOT"}
   aot {:namespace '#{net.sekao.nightcode.core
-                     net.sekao.nightcode.controller
-                     net.sekao.nightcode.boot
-                     net.sekao.nightcode.process}}
+                     net.sekao.nightcode.controller}}
   jar {:main 'net.sekao.nightcode.core
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
                   "Url" "https://github.com/oakes/Nightcode"}})
 
 (deftask run []
   (comp
+    (javac)
     (aot)
     (with-pre-wrap fileset
       (require '[net.sekao.nightcode.core :refer [dev-main]])
@@ -37,8 +34,9 @@
 
 (deftask run-repl []
   (comp
+    (javac)
     (aot)
     (repl :init-ns 'net.sekao.nightcode.core)))
 
 (deftask build []
-  (comp (aot) (pom) (uber) (jar) (target)))
+  (comp (javac) (aot) (pom) (uber) (jar) (target)))
