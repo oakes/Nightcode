@@ -4,12 +4,6 @@
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
                   [org.clojure/clojure "1.9.0-alpha7"]
-                  [boot/core "2.6.0"]
-                  [boot/base "2.6.0"]
-                  [boot/aether "2.6.0"]
-                  [boot/worker "2.6.0"]
-                  [boot/pod "2.6.0"]
-                  [adzerk/boot-test "1.1.1"]
                   [leiningen "2.6.1" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [clojail "1.0.6"]])
