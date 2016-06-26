@@ -109,7 +109,7 @@
     (.setSelected (.lookup pane "#lein") true)))
 
 (defn get-selected-build-system [runtime-state ^String project-path]
-  (when-let [pane (get-in @runtime-state [:project-panes project-path])]
+  (when-let [pane (get-in runtime-state [:project-panes project-path])]
     (cond
       (.isSelected (.lookup pane "#boot")) :boot
       (.isSelected (.lookup pane "#lein")) :lein)))
@@ -146,7 +146,7 @@
   :args (s/cat :pane spec/pane? :systems (s/coll-of keyword? #{})))
 
 (fdef get-selected-build-system
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string?)
+  :args (s/cat :runtime-state map? :project-path string?)
   :ret (s/nilable keyword?))
 
 (fdef init-builder!
