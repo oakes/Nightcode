@@ -70,11 +70,11 @@
 
 (defn show-tooltip!
   ([^Stage stage ^Node node]
-   (show-tooltip! stage node nil))
+   (show-tooltip! stage node node))
   ([^Stage stage ^Node node ^Node relative-node]
-   (when (.isManaged node)
+   (when (.isManaged relative-node)
      (when-let [^Tooltip tooltip (.getTooltip node)]
-       (let [node (or relative-node node)
+       (let [node relative-node
              point (.localToScene node (double 0) (double 0))
              scene (.getScene stage)
              _ (.show tooltip stage (double 0) (double 0))
