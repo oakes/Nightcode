@@ -12,7 +12,7 @@
    <children>
       <HBox fx:id="editor_buttons">
          <children>
-            <Button fx:id="up" mnemonicParsing="false" onAction="#onUp" text="↑" />
+            <Button fx:id="up" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUp" text="↑" />
             <Button fx:id="save" minWidth="-Infinity" mnemonicParsing="false" onAction="#onSave" text="Save" />
             <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
             <Button fx:id="redo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRedo" text="Redo" />
