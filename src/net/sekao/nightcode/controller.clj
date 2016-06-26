@@ -84,13 +84,13 @@
                  (.setGraphic nil)
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
-        project-path (u/get-project-root-path @pref-state)
+        project-root-path (u/get-project-root-path @pref-state)
         selected-path (:selection @pref-state)
-        relative-path (u/get-relative-path project-path selected-path)]
+        relative-path (u/get-relative-path project-root-path selected-path)]
     (-> dialog .getEditor (.setText relative-path))
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
       (when (not= relative-path new-relative-path)
-        (let [new-file (io/file project-path new-relative-path)
+        (let [new-file (io/file project-root-path new-relative-path)
               new-path (.getCanonicalPath new-file)
               project-tree (.lookup scene "#project_tree")]
           (.mkdirs (.getParentFile new-file))
@@ -221,7 +221,7 @@
 ; run
 
 (defn run-normal! [^Scene scene]
-  (when-let [project-path (u/get-project-root-path @pref-state)]
+  (when-let [project-path (u/get-project-path @pref-state)]
     (b/refresh-builder! @runtime-state project-path false)
     (when-let [system (b/get-selected-build-system @runtime-state project-path)]
       (b/start-builder-process! runtime-state project-path "Running..." [(name system) "run"]))))
@@ -260,7 +260,7 @@
 ; stop
 
 (defn stop! [^Scene scene]
-  (when-let [project-path (u/get-project-root-path @pref-state)]
+  (when-let [project-path (u/get-project-path @pref-state)]
     (b/stop-builder-process! runtime-state project-path)))
 
 (defn -onStop [this ^ActionEvent event]
