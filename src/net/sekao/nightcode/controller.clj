@@ -92,13 +92,13 @@
                  (.setGraphic nil)
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
-        project-path (u/get-project-root-path @pref-state)
+        project-root-path (u/get-project-root-path @pref-state)
         selected-path (:selection @pref-state)
-        relative-path (u/get-relative-path project-path selected-path)]
+        relative-path (u/get-relative-path project-root-path selected-path)]
     (-> dialog .getEditor (.setText relative-path))
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
       (when (not= relative-path new-relative-path)
-        (let [new-file (io/file project-path new-relative-path)
+        (let [new-file (io/file project-root-path new-relative-path)
               new-path (.getCanonicalPath new-file)
               project-tree (.lookup scene "#project_tree")]
           (.mkdirs (.getParentFile new-file))
@@ -229,16 +229,15 @@
 ; run
 
 (defn run-normal! [^Scene scene]
-  (when-let [project-path (u/get-project-root-path @pref-state)]
-    (b/refresh-builder! @runtime-state project-path false)
-    (b/start-builder-process! runtime-state project-path "run" "Running...")))
+  (b/start-builder! @pref-state runtime-state "Running..." "run"))
 
 (defn -onRun [this ^ActionEvent event]
   (-> event .getSource .getScene run-normal!))
 
 ; run with repl
 
-(defn run-with-repl! [^Scene scene])
+(defn run-with-repl! [^Scene scene]
+  (b/start-builder! @pref-state runtime-state "Running with REPL..." "repl"))
 
 (defn -onRunWithRepl [this ^ActionEvent event]
   (-> event .getSource .getScene run-with-repl!))
@@ -252,14 +251,16 @@
 
 ; build
 
-(defn build! [^Scene scene])
+(defn build! [^Scene scene]
+  (b/start-builder! @pref-state runtime-state "Building..." "build"))
 
 (defn -onBuild [this ^ActionEvent event]
   (-> event .getSource .getScene build!))
 
 ; clean
 
-(defn clean! [^Scene scene])
+(defn clean! [^Scene scene]
+  (b/start-builder! @pref-state runtime-state "Cleaning..." "clean"))
 
 (defn -onClean [this ^ActionEvent event]
   (-> event .getSource .getScene clean!))
@@ -267,8 +268,7 @@
 ; stop
 
 (defn stop! [^Scene scene]
-  (when-let [project-path (u/get-project-root-path @pref-state)]
-    (b/stop-builder-process! runtime-state project-path)))
+  (b/stop-builder! @pref-state runtime-state))
 
 (defn -onStop [this ^ActionEvent event]
   (-> event .getSource .getScene stop!))

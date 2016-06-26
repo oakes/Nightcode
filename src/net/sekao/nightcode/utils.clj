@@ -56,6 +56,35 @@
         (filter (:project-set pref-state))
         first)))
 
+(defn build-systems
+  "Returns a set containing :boot and/or :lein if the given path contains the
+requisite project files, or empty if neither exists."
+  [^String path]
+  (let [file (io/file path)
+        dir? (.isDirectory file)
+        types #{}
+        types (if (and dir? (.exists (io/file file "build.boot")))
+                (conj types :boot)
+                types)
+        types (if (and dir? (.exists (io/file file "project.clj")))
+                (conj types :lein)
+                types)]
+    types))
+
+(defn get-project-path
+  "Returns the project path that the given path is contained within."
+  ([pref-state]
+   (when-let [^String selected-path (:selection pref-state)]
+     (get-project-path selected-path pref-state)))
+  ([path pref-state]
+   (let [file (io/file path)
+         path (.getCanonicalPath file)]
+     (if (or (-> path build-systems count pos?)
+             (contains? (:project-set pref-state) path))
+       path
+       (when-let [parent-file (.getParentFile file)]
+         (get-project-path (.getCanonicalPath parent-file) pref-state))))))
+
 (defn parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
   [^String parent-path ^String child-path]
@@ -105,6 +134,16 @@
 
 (fdef get-project-root-path
   :args (s/cat :pref-state map?)
+  :ret (s/nilable string?))
+
+(fdef build-systems
+  :args (s/cat :path string?)
+  :ret (s/coll-of keyword? #{}))
+
+(fdef get-project-path
+  :args (s/alt
+          :one-arg (s/cat :pref-state map?)
+          :two-args (s/cat :path string? :pref-state map?))
   :ret (s/nilable string?))
 
 (fdef parent-path?

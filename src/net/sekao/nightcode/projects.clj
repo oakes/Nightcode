@@ -210,7 +210,7 @@
           (when new-value
             (-> (swap! pref-state-atom assoc :selection (.getPath new-value))
                 (update-project-buttons! scene))
-            (let [parent-path (u/get-project-root-path @pref-state-atom)]
+            (let [parent-path (u/get-project-path @pref-state-atom)]
               (when-let [new-pane (.getPane new-value runtime-state-atom parent-path)]
                 (doto (.getChildren content)
                   (.clear)

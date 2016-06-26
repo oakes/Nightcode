@@ -12,7 +12,8 @@
   pom {:project 'nightcode
        :version "2.0.0-SNAPSHOT"}
   aot {:namespace '#{net.sekao.nightcode.core
-                     net.sekao.nightcode.controller}}
+                     net.sekao.nightcode.controller
+                     net.sekao.nightcode.lein}}
   jar {:main 'net.sekao.nightcode.core
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
                   "Url" "https://github.com/oakes/Nightcode"}})
