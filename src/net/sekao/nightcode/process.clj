@@ -1,6 +1,7 @@
 (ns net.sekao.nightcode.process
   (:require [clojure.java.io :as io]
             [net.sekao.nightcode.boot :as b]
+            [net.sekao.nightcode.lein :as l]
             [net.sekao.nightcode.spec :as spec]
             [net.sekao.nightcode.utils :as u]
             [clojure.spec :as s :refer [fdef]])
@@ -47,9 +48,11 @@
   (reset! process nil))
 
 (defn -main [build-system & args]
+  (System/setProperty "jline.terminal" "dumb")
   (case build-system
     "boot" (b/boot! args)
-    "lein" (println "Lein:" args)))
+    "lein" (l/lein! args))
+  (System/exit 0))
 
 ; specs
 

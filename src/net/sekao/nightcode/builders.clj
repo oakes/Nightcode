@@ -25,7 +25,7 @@
                       (.executeScript engine cmd)))
                   (recur))))))))))
 
-(defn start-builder! [runtime-state-atom project-path work-fn]
+(defn start-builder-thread! [runtime-state-atom project-path work-fn]
   (let [project-pane (get-in @runtime-state-atom [:project-panes project-path])
         webview (.lookup project-pane "#build_webview")
         engine (.getEngine webview)
@@ -57,7 +57,7 @@
   (let [process (get-in @runtime-state-atom [:processes project-path :process] (atom nil))]
     (proc/stop-process! process)
     (swap! runtime-state-atom assoc-in [:processes project-path :process] process)
-    (start-builder! runtime-state-atom project-path
+    (start-builder-thread! runtime-state-atom project-path
       (fn []
         (println print-str)
         (proc/start-java-process! process project-path (cons proc/class-name args))))))
@@ -114,6 +114,16 @@
       (.isSelected (.lookup pane "#boot")) :boot
       (.isSelected (.lookup pane "#lein")) :lein)))
 
+(defn start-builder! [pref-state runtime-state-atom print-str cmd]
+  (when-let [project-path (u/get-project-path pref-state)]
+    (refresh-builder! @runtime-state-atom project-path (= cmd "repl"))
+    (when-let [system (get-selected-build-system @runtime-state-atom project-path)]
+      (start-builder-process! runtime-state-atom project-path print-str [(name system) cmd]))))
+
+(defn stop-builder! [pref-state runtime-state-atom]
+  (when-let [project-path (u/get-project-path pref-state)]
+    (stop-builder-process! runtime-state-atom project-path)))
+
 (defn init-builder! [pane runtime-state-atom path]
   (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
         webview (-> pane .getChildren (.get 1))
@@ -127,7 +137,7 @@
 (fdef pipe-into-console!
   :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
 
-(fdef start-builder!
+(fdef start-builder-thread!
   :args (s/cat :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
 
 (fdef start-builder-process!
@@ -148,6 +158,12 @@
 (fdef get-selected-build-system
   :args (s/cat :runtime-state map? :project-path string?)
   :ret (s/nilable keyword?))
+
+(fdef start-builder!
+  :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :print-str string? :cmd string?))
+
+(fdef stop-builder!
+  :args (s/cat :pref-state map? :runtime-state-atom spec/atom?))
 
 (fdef init-builder!
   :args (s/cat :pane spec/pane? :runtime-state-atom spec/atom? :path string?))
