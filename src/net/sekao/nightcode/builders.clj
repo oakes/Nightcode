@@ -7,7 +7,8 @@
   (:import [clojure.lang LineNumberingPushbackReader]
            [javafx.scene.web WebEngine]
            [java.io PipedWriter PipedReader PrintWriter]
-           [javafx.application Platform]))
+           [javafx.application Platform]
+           [javafx.beans.value ChangeListener]))
 
 (defn pipe-into-console! [^WebEngine engine in-pipe]
   (let [ca (char-array 256)]
@@ -98,27 +99,34 @@
             (isConsole []
               true))))))
 
+(defn get-selected-build-system [pane]
+  (cond
+    (.isSelected (.lookup pane "#boot")) :boot
+    (.isSelected (.lookup pane "#lein")) :lein))
+
 (defn update-builder-buttons! [pane systems]
   (when (< (count systems) 2)
     (.setManaged (.lookup pane "#boot") false)
     (.setManaged (.lookup pane "#lein") false))
+  (.addListener (-> (.lookup pane "#boot") .getToggleGroup .selectedToggleProperty)
+    (reify ChangeListener
+      (changed [this observable old-value new-value]
+        (let [show? (-> pane get-selected-build-system (= :lein))]
+          (doto (.lookup pane "#clean")
+            (.setManaged show?)
+            (.setVisible show?))))))
   (cond
     (:boot systems)
     (.setSelected (.lookup pane "#boot") true)
     (:lein systems)
     (.setSelected (.lookup pane "#lein") true)))
 
-(defn get-selected-build-system [runtime-state ^String project-path]
-  (when-let [pane (get-in runtime-state [:project-panes project-path])]
-    (cond
-      (.isSelected (.lookup pane "#boot")) :boot
-      (.isSelected (.lookup pane "#lein")) :lein)))
-
 (defn start-builder! [pref-state runtime-state-atom print-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
     (refresh-builder! @runtime-state-atom project-path (= cmd "repl"))
-    (when-let [system (get-selected-build-system @runtime-state-atom project-path)]
-      (start-builder-process! runtime-state-atom project-path print-str [(name system) cmd]))))
+    (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
+      (when-let [system (get-selected-build-system pane)]
+        (start-builder-process! runtime-state-atom project-path print-str [(name system) cmd])))))
 
 (defn stop-builder! [pref-state runtime-state-atom]
   (when-let [project-path (u/get-project-path pref-state)]
@@ -156,7 +164,7 @@
   :args (s/cat :pane spec/pane? :systems (s/coll-of keyword? #{})))
 
 (fdef get-selected-build-system
-  :args (s/cat :runtime-state map? :project-path string?)
+  :args (s/cat :pane spec/pane?)
   :ret (s/nilable keyword?))
 
 (fdef start-builder!
