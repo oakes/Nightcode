@@ -65,27 +65,28 @@
    (doseq [id ids]
      (let [node (.lookup scene (keyword->fx-id id))
            text (get id->key-char id)]
-       (when (and node text (.isManaged node))
+       (when (and node text)
          (add-tooltip! node text))))))
 
 (defn show-tooltip!
   ([^Stage stage ^Node node]
    (show-tooltip! stage node nil))
   ([^Stage stage ^Node node ^Node relative-node]
-   (when-let [^Tooltip tooltip (.getTooltip node)]
-     (let [node (or relative-node node)
-           point (.localToScene node (double 0) (double 0))
-           scene (.getScene stage)
-           _ (.show tooltip stage (double 0) (double 0))
-           half-width (- (/ (.getWidth node) 2)
-                         (/ (.getWidth tooltip) 4))
-           half-height (- (/ (.getHeight node) 2)
-                          (/ (.getHeight tooltip) 4))]
-       (doto tooltip
-         (.setOpacity 1)
-         (.show stage
-           (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
-           (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height))))))))
+   (when (.isManaged node)
+     (when-let [^Tooltip tooltip (.getTooltip node)]
+       (let [node (or relative-node node)
+             point (.localToScene node (double 0) (double 0))
+             scene (.getScene stage)
+             _ (.show tooltip stage (double 0) (double 0))
+             half-width (- (/ (.getWidth node) 2)
+                           (/ (.getWidth tooltip) 4))
+             half-height (- (/ (.getHeight node) 2)
+                            (/ (.getHeight tooltip) 4))]
+         (doto tooltip
+           (.setOpacity 1)
+           (.show stage
+             (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
+             (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height)))))))))
 
 (defn show-tooltips! [^Stage stage]
   (let [scene (.getScene stage)]
