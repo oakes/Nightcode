@@ -223,7 +223,8 @@
 (defn run-normal! [^Scene scene]
   (when-let [project-path (u/get-project-root-path @pref-state)]
     (b/refresh-builder! @runtime-state project-path false)
-    (b/start-builder-process! runtime-state project-path "run" "Running...")))
+    (when-let [system (b/get-selected-build-system runtime-state project-path)]
+      (b/start-builder-process! runtime-state project-path "Running..." [(name system) "run"]))))
 
 (defn -onRun [this ^ActionEvent event]
   (-> event .getSource .getScene run-normal!))

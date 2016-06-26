@@ -29,7 +29,7 @@
       (reset! process nil))))
 
 (defn start-java-process!
-  [process path & args]
+  [process path args]
   (let [java-cmd (or (System/getenv "JAVA_CMD") "java")
         jar-uri (u/get-exec-uri class-name)]
     (start-process! process path
@@ -46,8 +46,10 @@
     (.destroy @process))
   (reset! process nil))
 
-(defn -main [& args]
-  (b/boot! args))
+(defn -main [build-system & args]
+  (case build-system
+    "boot" (b/boot! args)
+    "lein" (println "Lein:" args)))
 
 ; specs
 
@@ -55,7 +57,7 @@
   :args (s/cat :process spec/atom? :path string? :args (s/coll-of string? [])))
 
 (fdef start-java-process!
-  :args (s/cat :process spec/atom? :path string? :args (s/* string?)))
+  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string? [])))
 
 (fdef stop-process!
   :args (s/cat :process spec/atom?))
