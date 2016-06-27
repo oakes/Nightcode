@@ -1,39 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="414.0" prefWidth="485.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
+<SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="446.0" prefWidth="506.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <items>
       <StackPane />
-      <VBox>
-         <children>
-            <HBox VBox.vgrow="NEVER">
-               <children>
-                  <Button fx:id="run" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" text="Run" />
-                  <Button fx:id="run_with_repl" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" text="Run with REPL" />
-                  <Button fx:id="reload" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" text="Reload" />
-                  <Button fx:id="build" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" text="Build" />
-                  <Button fx:id="clean" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" text="Clean" />
-                  <Button fx:id="stop" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" />
-                  <Separator HBox.hgrow="ALWAYS" />
-                  <ToggleButton fx:id="boot" minWidth="-Infinity" mnemonicParsing="false" text="Boot">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="build_tools" />
-                     </toggleGroup>
-                  </ToggleButton>
-                  <ToggleButton fx:id="lein" minWidth="-Infinity" mnemonicParsing="false" text="Lein" toggleGroup="$build_tools" />
-               </children>
-            </HBox>
-            <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-         </children>
-      </VBox>
+      <TabPane fx:id="build_tabs" prefHeight="200.0" prefWidth="200.0" side="RIGHT" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab fx:id="boot_tab" text="Boot">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox VBox.vgrow="NEVER">
+                           <children>
+                              <Button fx:id="run" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" text="Run" />
+                              <Button fx:id="run_with_repl" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" text="Run with REPL" />
+                              <Button fx:id="reload" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" text="Reload" />
+                              <Button fx:id="build" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" text="Build" />
+                              <Button fx:id="stop" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" />
+                           </children>
+                        </HBox>
+                        <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+               </content>
+          </Tab>
+          <Tab fx:id="lein_tab" text="Lein">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox>
+                           <children>
+                              <Button fx:id="run1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" text="Run" />
+                              <Button fx:id="run_with_repl1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" text="Run with REPL" />
+                              <Button fx:id="reload1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" text="Reload" />
+                              <Button fx:id="build1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" text="Build" />
+                              <Button fx:id="clean" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" text="Clean" />
+                              <Button fx:id="stop1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" />
+                           </children>
+                        </HBox>
+                        <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+               </content>
+          </Tab>
+        </tabs>
+      </TabPane>
    </items>
 </SplitPane>

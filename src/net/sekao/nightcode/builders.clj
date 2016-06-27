@@ -4,7 +4,8 @@
             [net.sekao.nightcode.spec :as spec]
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.process :as proc]
-            [clojure.spec :as s :refer [fdef]])
+            [clojure.spec :as s :refer [fdef]]
+            [clojure.set :as set])
   (:import [clojure.lang LineNumberingPushbackReader]
            [javafx.scene.web WebEngine]
            [java.io PipedWriter PipedReader PrintWriter]
@@ -27,9 +28,8 @@
                       (.executeScript engine cmd)))
                   (recur))))))))))
 
-(defn start-builder-thread! [runtime-state-atom project-path work-fn]
-  (let [project-pane (get-in @runtime-state-atom [:project-panes project-path])
-        webview (.lookup project-pane "#build_webview")
+(defn start-builder-thread! [tab-content runtime-state-atom project-path work-fn]
+  (let [webview (.lookup tab-content "#build_webview")
         engine (.getEngine webview)
         out-pipe (PipedWriter.)
         in (LineNumberingPushbackReader. (PipedReader. out-pipe))
@@ -55,11 +55,11 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "\n=== Finished ===")))))))))
 
-(defn start-builder-process! [runtime-state-atom project-path print-str args]
+(defn start-builder-process! [tab-content runtime-state-atom project-path print-str args]
   (let [process (get-in @runtime-state-atom [:processes project-path :process] (atom nil))]
     (proc/stop-process! process)
     (swap! runtime-state-atom assoc-in [:processes project-path :process] process)
-    (start-builder-thread! runtime-state-atom project-path
+    (start-builder-thread! tab-content runtime-state-atom project-path
       (fn []
         (println print-str)
         (proc/start-java-process! process project-path args)))))
@@ -67,13 +67,6 @@
 (defn stop-builder-process! [runtime-state-atom project-path]
   (let [process (get-in @runtime-state-atom [:processes project-path :process])]
     (proc/stop-process! process)))
-
-(defn refresh-builder! [runtime-state project-path repl?]
-  (some-> runtime-state
-          (get-in [:project-panes project-path])
-          (.lookup "#build_webview")
-          .getEngine
-          (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))))
 
 (definterface Bridge
   (onload [])
@@ -100,51 +93,63 @@
             (isConsole []
               true))))))
 
-(defn get-selected-build-system [pane]
-  (cond
-    (.isSelected (.lookup pane "#boot")) :boot
-    (.isSelected (.lookup pane "#lein")) :lein))
+(def index->system {0 :boot 1 :lein})
+(def system->index (set/map-invert index->system))
 
-(defn build-system->class-name [build-system]
-  (case build-system
+(defn get-selected-build-system [pane]
+  (-> (.lookup pane "#build_tabs") .getSelectionModel .getSelectedIndex index->system))
+
+(defn select-build-system! [pane system]
+  (-> (.lookup pane "#build_tabs") .getSelectionModel (.select (system->index system))))
+
+(defn get-tab [pane system]
+  (-> (.lookup pane "#build_tabs")
+      .getTabs
+      (.get (system->index system))))
+
+(defn get-tab-content [pane system]
+  (.getContent (get-tab pane system)))
+
+(defn refresh-builder! [tab repl?]
+  (some-> tab
+          (.lookup "#build_webview")
+          .getEngine
+          (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))))
+
+(defn build-system->class-name [system]
+  (case system
     :boot "Boot"
     :lein l/class-name))
 
-(defn update-builder-buttons! [pane systems]
-  (when (< (count systems) 2)
-    (.setManaged (.lookup pane "#boot") false)
-    (.setManaged (.lookup pane "#lein") false))
-  (.addListener (-> (.lookup pane "#boot") .getToggleGroup .selectedToggleProperty)
-    (reify ChangeListener
-      (changed [this observable old-value new-value]
-        (let [show? (-> pane get-selected-build-system (= :lein))]
-          (doto (.lookup pane "#clean")
-            (.setManaged show?)
-            (.setVisible show?))))))
-  (cond
-    (:boot systems)
-    (.setSelected (.lookup pane "#boot") true)
-    (:lein systems)
-    (.setSelected (.lookup pane "#lein") true)))
-
 (defn start-builder! [pref-state runtime-state-atom print-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
-    (refresh-builder! @runtime-state-atom project-path (= cmd "repl"))
     (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
       (when-let [system (get-selected-build-system pane)]
-        (start-builder-process! runtime-state-atom project-path print-str [(build-system->class-name system) cmd])))))
+        (let [tab-content (get-tab-content pane system)]
+          (refresh-builder! tab-content (= cmd "repl"))
+          (start-builder-process! tab-content runtime-state-atom project-path print-str [(build-system->class-name system) cmd]))))))
 
 (defn stop-builder! [pref-state runtime-state-atom]
   (when-let [project-path (u/get-project-path pref-state)]
     (stop-builder-process! runtime-state-atom project-path)))
 
 (defn init-builder! [pane runtime-state-atom path]
-  (let [buttons (-> pane .getChildren (.get 0) .getChildren seq)
-        webview (-> pane .getChildren (.get 1))
-        systems (u/build-systems path)]
-    (shortcuts/add-tooltips! buttons)
-    (update-builder-buttons! pane systems)
-    (init-console! webview runtime-state-atom path)))
+  (let [systems (u/build-systems path)]
+    ; select/disable build tabs
+    (cond
+      (:boot systems) (select-build-system! pane :boot)
+      (:lein systems) (select-build-system! pane :lein))
+    (.setDisable (get-tab pane :boot) (not (:boot systems)))
+    (.setDisable (get-tab pane :lein) (not (:lein systems)))
+    ; init the tabs
+    (doseq [system systems]
+      (let [tab (doto (get-tab pane system)
+                  (.setDisable false))
+            tab-content (.getContent tab)
+            buttons (-> tab-content .getChildren (.get 0) .getChildren seq)
+            webview (-> tab-content .getChildren (.get 1))]
+        (shortcuts/add-tooltips! buttons)
+        (init-console! webview runtime-state-atom path)))))
 
 ; specs
 
@@ -152,26 +157,38 @@
   :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
 
 (fdef start-builder-thread!
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
+  :args (s/cat :tab-content spec/pane? :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
+  :args (s/cat :tab-content spec/pane? :runtime-state-atom spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
 
 (fdef stop-builder-process!
   :args (s/cat :runtime-state-atom spec/atom? :project-path string?))
 
-(fdef refresh-builder!
-  :args (s/cat :runtime-state map? :project-path string? :repl? boolean?))
-
 (fdef init-console!
   :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :path string?))
-
-(fdef update-builder-buttons!
-  :args (s/cat :pane spec/pane? :systems (s/coll-of keyword? #{})))
 
 (fdef get-selected-build-system
   :args (s/cat :pane spec/pane?)
   :ret (s/nilable keyword?))
+
+(fdef select-build-system!
+  :args (s/cat :pane spec/pane? :system keyword?))
+
+(fdef get-tab
+  :args (s/cat :pane spec/pane? :system keyword?)
+  :ret #(instance? javafx.scene.control.Tab %))
+
+(fdef get-tab-content
+  :args (s/cat :pane spec/pane? :system keyword?)
+  :ret spec/pane?)
+
+(fdef refresh-builder!
+  :args (s/cat :tab-content spec/pane? :repl? boolean?))
+
+(fdef build-system->class-name
+  :args (s/cat :system keyword?)
+  :ret string?)
 
 (fdef start-builder!
   :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :print-str string? :cmd string?))
