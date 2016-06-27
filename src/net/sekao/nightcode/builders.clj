@@ -132,6 +132,7 @@
     (.addListener (-> (.lookup pane "#build_tabs") .getSelectionModel .selectedItemProperty)
       (reify ChangeListener
         (changed [this observable old-value new-value]
+          (some-> old-value .getContent shortcuts/hide-tooltips!)
           (some-> old-value .getContent (shortcuts/remove-tooltips! ids))
           (some-> new-value .getContent (shortcuts/add-tooltips! ids)))))
     ; select/disable build tabs
