@@ -12,23 +12,23 @@
            [javafx.scene Scene])
   (:gen-class :extends javafx.application.Application))
 
-(def actions {:start c/show-start-menu!
-              :import-project c/import!
-              :rename c/rename!
-              :remove c/remove!
-              :up c/up!
-              :save c/save!
-              :undo c/undo!
-              :redo c/redo!
-              :instarepl c/toggle-instarepl!
-              :find c/focus-on-find!
-              :close c/close!
-              :run c/run-normal!
-              :run-with-repl c/run-with-repl!
-              :reload c/reload!
-              :build c/build!
-              :clean c/clean!
-              :stop c/stop!})
+(def actions {:#start c/show-start-menu!
+              :#import_project c/import!
+              :#rename c/rename!
+              :#remove c/remove!
+              :#up c/up!
+              :#save c/save!
+              :#undo c/undo!
+              :#redo c/redo!
+              :#instarepl c/toggle-instarepl!
+              :#find c/focus-on-find!
+              :#close c/close!
+              :.run c/run-normal!
+              :.run-with-repl c/run-with-repl!
+              :.reload c/reload!
+              :.build c/build!
+              :.clean c/clean!
+              :.stop c/stop!})
 
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))
@@ -43,7 +43,7 @@
     (add-watch runtime-state :runtime-state-changed
       (fn [_ _ _ new-runtime-state]
         (shortcuts/update-tabs! scene @pref-state new-runtime-state)))
-    (shortcuts/add-tooltips! scene [:project-tree :start :import-project :rename :remove])
+    (shortcuts/add-tooltips! scene [:#project_tree :#start :#import_project :#rename :#remove])
     (-> content .getChildren .clear)
     ; create listeners
     (p/set-selection-listener! pref-state runtime-state stage)

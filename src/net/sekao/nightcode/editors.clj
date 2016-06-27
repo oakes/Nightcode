@@ -100,16 +100,12 @@
 (defn editor-pane [runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
-          buttons (-> pane .getChildren (.get 0) .getChildren seq)
           webview (-> pane .getChildren (.get 1))
           engine (.getEngine webview)
           clojure? (-> file .getName u/get-extension clojure-exts some?)]
       (.setContextMenuEnabled webview false)
-      (-> (filter #(= "instarepl" (.getId %)) buttons)
-          first
-          (.lookup "#instarepl")
-          (.setManaged clojure?))
-      (shortcuts/add-tooltips! buttons)
+      (-> pane (.lookup "#instarepl") (.setManaged clojure?))
+      (shortcuts/add-tooltips! pane [:#up :#save :#undo :#redo :#instarepl :#find :#close])
       (-> engine
           (.executeScript "window")
           (.setMember "java"
