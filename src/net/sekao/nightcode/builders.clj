@@ -27,9 +27,8 @@
                       (.executeScript engine cmd)))
                   (recur))))))))))
 
-(defn start-builder-thread! [tab-content runtime-state-atom project-path work-fn]
-  (let [webview (.lookup tab-content "#build_webview")
-        engine (.getEngine webview)
+(defn start-builder-thread! [webview runtime-state-atom project-path work-fn]
+  (let [engine (.getEngine webview)
         out-pipe (PipedWriter.)
         in (LineNumberingPushbackReader. (PipedReader. out-pipe))
         pout (PipedWriter.)
@@ -54,11 +53,11 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "\n=== Finished ===")))))))))
 
-(defn start-builder-process! [tab-content runtime-state-atom project-path print-str args]
+(defn start-builder-process! [webview runtime-state-atom project-path print-str args]
   (let [process (get-in @runtime-state-atom [:processes project-path :process] (atom nil))]
     (proc/stop-process! process)
     (swap! runtime-state-atom assoc-in [:processes project-path :process] process)
-    (start-builder-thread! tab-content runtime-state-atom project-path
+    (start-builder-thread! webview runtime-state-atom project-path
       (fn []
         (println print-str)
         (proc/start-java-process! process project-path (cons proc/class-name args))))))
@@ -107,9 +106,8 @@
   (-> (.lookup pane "#build_tabs") .getSelectionModel (.select (system->index system)))
   (-> (get-tab pane system) .getContent (shortcuts/add-tooltips! ids)))
 
-(defn refresh-builder! [tab-content repl?]
-  (some-> tab-content
-          (.lookup "#build_webview")
+(defn refresh-builder! [webview repl?]
+  (some-> webview
           .getEngine
           (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))))
 
@@ -117,9 +115,10 @@
   (when-let [project-path (u/get-project-path pref-state)]
     (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
       (when-let [system (get-selected-build-system pane)]
-        (let [tab-content (.getContent (get-tab pane system))]
-          (refresh-builder! tab-content (= cmd "repl"))
-          (start-builder-process! tab-content runtime-state-atom project-path print-str [(name system) cmd]))))))
+        (let [tab-content (.getContent (get-tab pane system))
+              webview (.lookup tab-content "#build_webview")]
+          (refresh-builder! webview (= cmd "repl"))
+          (start-builder-process! webview runtime-state-atom project-path print-str [(name system) cmd]))))))
 
 (defn stop-builder! [pref-state runtime-state-atom]
   (when-let [project-path (u/get-project-path pref-state)]
@@ -155,10 +154,10 @@
   :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
 
 (fdef start-builder-thread!
-  :args (s/cat :tab-content spec/pane? :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
+  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :tab-content spec/pane? :runtime-state-atom spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
+  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
 
 (fdef stop-builder-process!
   :args (s/cat :runtime-state-atom spec/atom? :project-path string?))
@@ -178,7 +177,7 @@
   :args (s/cat :pane spec/pane? :system keyword? :ids (s/coll-of keyword? [])))
 
 (fdef refresh-builder!
-  :args (s/cat :tab-content spec/pane? :repl? boolean?))
+  :args (s/cat :webview spec/node? :repl? boolean?))
 
 (fdef start-builder!
   :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :print-str string? :cmd string?))
