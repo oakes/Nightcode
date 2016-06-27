@@ -20,11 +20,11 @@
                      <children>
                         <HBox VBox.vgrow="NEVER">
                            <children>
-                              <Button fx:id="run" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" text="Run" />
-                              <Button fx:id="run_with_repl" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" text="Run with REPL" />
-                              <Button fx:id="reload" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" text="Reload" />
-                              <Button fx:id="build" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" text="Build" />
-                              <Button fx:id="stop" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" styleClass="run" text="Run" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" styleClass="reload" text="Reload" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" styleClass="build" text="Build" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
                         </HBox>
                         <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
@@ -38,12 +38,12 @@
                      <children>
                         <HBox>
                            <children>
-                              <Button fx:id="run1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" text="Run" />
-                              <Button fx:id="run_with_repl1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" text="Run with REPL" />
-                              <Button fx:id="reload1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" text="Reload" />
-                              <Button fx:id="build1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" text="Build" />
-                              <Button fx:id="clean" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" text="Clean" />
-                              <Button fx:id="stop1" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" styleClass="run" text="Run" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" styleClass="reload" text="Reload" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" styleClass="build" text="Build" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" styleClass="clean" text="Clean" />
+                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
                         </HBox>
                         <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" />

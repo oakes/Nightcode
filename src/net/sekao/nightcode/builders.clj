@@ -95,22 +95,20 @@
 (def index->system {0 :boot 1 :lein})
 (def system->index (set/map-invert index->system))
 
-(defn get-selected-build-system [pane]
-  (-> (.lookup pane "#build_tabs") .getSelectionModel .getSelectedIndex index->system))
-
-(defn select-build-system! [pane system]
-  (-> (.lookup pane "#build_tabs") .getSelectionModel (.select (system->index system))))
-
 (defn get-tab [pane system]
   (-> (.lookup pane "#build_tabs")
       .getTabs
       (.get (system->index system))))
 
-(defn get-tab-content [pane system]
-  (.getContent (get-tab pane system)))
+(defn get-selected-build-system [pane]
+  (-> (.lookup pane "#build_tabs") .getSelectionModel .getSelectedIndex index->system))
 
-(defn refresh-builder! [tab repl?]
-  (some-> tab
+(defn select-build-system! [pane system ids]
+  (-> (.lookup pane "#build_tabs") .getSelectionModel (.select (system->index system)))
+  (-> (get-tab pane system) .getContent (shortcuts/add-tooltips! ids)))
+
+(defn refresh-builder! [tab-content repl?]
+  (some-> tab-content
           (.lookup "#build_webview")
           .getEngine
           (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))))
@@ -119,7 +117,7 @@
   (when-let [project-path (u/get-project-path pref-state)]
     (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
       (when-let [system (get-selected-build-system pane)]
-        (let [tab-content (get-tab-content pane system)]
+        (let [tab-content (.getContent (get-tab pane system))]
           (refresh-builder! tab-content (= cmd "repl"))
           (start-builder-process! tab-content runtime-state-atom project-path print-str [(name system) cmd]))))))
 
@@ -128,11 +126,18 @@
     (stop-builder-process! runtime-state-atom project-path)))
 
 (defn init-builder! [pane runtime-state-atom path]
-  (let [systems (u/build-systems path)]
+  (let [systems (u/build-systems path)
+        ids [:.run :.run-with-repl :.reload :.build :.clean :.stop]]
+    ; add/remove tooltips
+    (.addListener (-> (.lookup pane "#build_tabs") .getSelectionModel .selectedItemProperty)
+      (reify ChangeListener
+        (changed [this observable old-value new-value]
+          (some-> old-value .getContent (shortcuts/remove-tooltips! ids))
+          (some-> new-value .getContent (shortcuts/add-tooltips! ids)))))
     ; select/disable build tabs
     (cond
-      (:boot systems) (select-build-system! pane :boot)
-      (:lein systems) (select-build-system! pane :lein))
+      (:boot systems) (select-build-system! pane :boot ids)
+      (:lein systems) (select-build-system! pane :lein ids))
     (.setDisable (get-tab pane :boot) (not (:boot systems)))
     (.setDisable (get-tab pane :lein) (not (:lein systems)))
     ; init the tabs
@@ -140,9 +145,7 @@
       (let [tab (doto (get-tab pane system)
                   (.setDisable false))
             tab-content (.getContent tab)
-            buttons (-> tab-content .getChildren (.get 0) .getChildren seq)
             webview (-> tab-content .getChildren (.get 1))]
-        (shortcuts/add-tooltips! buttons)
         (init-console! webview runtime-state-atom path)))))
 
 ; specs
@@ -162,20 +165,16 @@
 (fdef init-console!
   :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :path string?))
 
+(fdef get-tab
+  :args (s/cat :pane spec/pane? :system keyword?)
+  :ret #(instance? javafx.scene.control.Tab %))
+
 (fdef get-selected-build-system
   :args (s/cat :pane spec/pane?)
   :ret (s/nilable keyword?))
 
 (fdef select-build-system!
-  :args (s/cat :pane spec/pane? :system keyword?))
-
-(fdef get-tab
-  :args (s/cat :pane spec/pane? :system keyword?)
-  :ret #(instance? javafx.scene.control.Tab %))
-
-(fdef get-tab-content
-  :args (s/cat :pane spec/pane? :system keyword?)
-  :ret spec/pane?)
+  :args (s/cat :pane spec/pane? :system keyword? :ids (s/coll-of keyword? [])))
 
 (fdef refresh-builder!
   :args (s/cat :tab-content spec/pane? :repl? boolean?))
