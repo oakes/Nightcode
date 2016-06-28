@@ -13,6 +13,7 @@ function init() {
         });
     }
     document.body.removeChild(content);
+    markClean();
 }
 
 function undo() {
@@ -42,8 +43,10 @@ function getTextContent() {
 }
 
 function markClean() {
-    lastTextContent = getTextContent();
-    window.java.onchange();
+    if (window.java) {
+    	lastTextContent = getTextContent();
+    	window.java.onchange();
+    }
 }
 
 function isClean() {
@@ -51,10 +54,12 @@ function isClean() {
 }
 
 window.onload = function() {
+    // hack thanks to http://stackoverflow.com/a/28414332/1663009
+    window.status = "MY-MAGIC-VALUE";
+    window.status = "";
+    
     if (window.java) {
         window.java.onload();
-        init();
-        markClean();
         window.java.onchange();
     }
     else {

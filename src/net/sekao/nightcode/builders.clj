@@ -9,7 +9,8 @@
            [javafx.scene.web WebEngine]
            [java.io PipedWriter PipedReader PrintWriter]
            [javafx.application Platform]
-           [javafx.beans.value ChangeListener]))
+           [javafx.beans.value ChangeListener]
+           [javafx.event EventHandler]))
 
 (defn pipe-into-console! [^WebEngine engine in-pipe]
   (let [ca (char-array 256)]
@@ -27,20 +28,17 @@
                       (.executeScript engine cmd)))
                   (recur))))))))))
 
-(defn start-builder-thread! [webview runtime-state-atom project-path work-fn]
-  (let [engine (.getEngine webview)
-        out-pipe (PipedWriter.)
+(defn create-pipes []
+  (let [out-pipe (PipedWriter.)
         in (LineNumberingPushbackReader. (PipedReader. out-pipe))
         pout (PipedWriter.)
         out (PrintWriter. pout)
         in-pipe (PipedReader. pout)]
-    (swap! runtime-state-atom
-      (fn [runtime-state]
-        (-> runtime-state
-            (assoc-in [:processes project-path :in] in)
-            (assoc-in [:processes project-path :out] out)
-            (assoc-in [:processes project-path :in-pipe] in-pipe)
-            (assoc-in [:processes project-path :out-pipe] out-pipe))))
+    {:in in :out out :in-pipe in-pipe :out-pipe out-pipe}))
+
+(defn start-builder-thread! [webview pipes work-fn]
+  (let [engine (.getEngine webview)
+        {:keys [in-pipe in out]} pipes]
     (pipe-into-console! engine in-pipe)
     (.start
       (Thread.
@@ -53,43 +51,43 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (println "\n=== Finished ===")))))))))
 
-(defn start-builder-process! [webview runtime-state-atom project-path print-str args]
-  (let [process (get-in @runtime-state-atom [:processes project-path :process] (atom nil))]
-    (proc/stop-process! process)
-    (swap! runtime-state-atom assoc-in [:processes project-path :process] process)
-    (start-builder-thread! webview runtime-state-atom project-path
-      (fn []
-        (println print-str)
-        (proc/start-java-process! process project-path (cons proc/class-name args))))))
+(defn start-builder-process! [webview pipes process project-path print-str args]
+  (proc/stop-process! process)
+  (start-builder-thread! webview pipes
+    (fn []
+      (println print-str)
+      (proc/start-java-process! process project-path (cons proc/class-name args)))))
 
-(defn stop-builder-process! [runtime-state-atom project-path]
-  (let [process (get-in @runtime-state-atom [:processes project-path :process])]
+(defn stop-builder-process! [runtime-state project-path]
+  (when-let [process (get-in runtime-state [:processes project-path])]
     (proc/stop-process! process)))
 
 (definterface Bridge
   (onload [])
   (onchange [])
-  (onenter [text])
-  (isConsole []))
+  (onenter [text]))
 
-(defn init-console! [webview runtime-state-atom path]
+(defn init-console! [webview pipes web-port cb]
   (.setContextMenuEnabled webview false)
   (let [engine (.getEngine webview)]
-    (.load engine (str "http://localhost:"
-                       (:web-port @runtime-state-atom)
-                       "/paren-soup.html"))
     (-> engine
-        (.executeScript "window")
-        (.setMember "java"
-          (proxy [Bridge] []
-            (onload [])
-            (onchange [])
-            (onenter [text]
-              (when-let [out-pipe (get-in @runtime-state-atom [:processes path :out-pipe])]
-                (.write out-pipe text)
-                (.flush out-pipe)))
-            (isConsole []
-              true))))))
+        (.setOnStatusChanged
+          (reify EventHandler
+            (handle [this event]
+              (-> engine
+                  (.executeScript "window")
+                  (.setMember "java"
+                    (proxy [Bridge] []
+                      (onload []
+                        (try
+                          (cb)
+                          (catch Exception e (.printStackTrace e))))
+                      (onchange [])
+                      (onenter [text]
+                        (doto (:out-pipe pipes)
+                          (.write text)
+                          (.flush))))))))))
+    (.load engine (str "http://localhost:" web-port "/paren-soup.html"))))
 
 (def index->system {0 :boot 1 :lein})
 (def system->index (set/map-invert index->system))
@@ -116,15 +114,20 @@
     (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
       (when-let [system (get-selected-build-system pane)]
         (let [tab-content (.getContent (get-tab pane system))
-              webview (.lookup tab-content "#build_webview")]
-          (refresh-builder! webview (= cmd "repl"))
-          (start-builder-process! webview runtime-state-atom project-path print-str [(name system) cmd]))))))
+              webview (.lookup tab-content "#build_webview")
+              pipes (create-pipes)
+              process (get-in @runtime-state-atom [:processes project-path] (atom nil))]
+          (init-console! webview pipes (:web-port @runtime-state-atom)
+            (fn []
+              (refresh-builder! webview (= cmd "repl"))
+              (start-builder-process! webview pipes process project-path print-str [(name system) cmd])))
+          (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
-(defn stop-builder! [pref-state runtime-state-atom]
+(defn stop-builder! [pref-state runtime-state]
   (when-let [project-path (u/get-project-path pref-state)]
-    (stop-builder-process! runtime-state-atom project-path)))
+    (stop-builder-process! runtime-state project-path)))
 
-(defn init-builder! [pane runtime-state-atom path]
+(defn init-builder! [pane path]
   (let [systems (u/build-systems path)
         ids [:.run :.run-with-repl :.reload :.build :.clean :.stop]]
     ; add/remove tooltips
@@ -142,28 +145,28 @@
     (.setDisable (get-tab pane :lein) (not (:lein systems)))
     ; init the tabs
     (doseq [system systems]
-      (let [tab (doto (get-tab pane system)
-                  (.setDisable false))
-            tab-content (.getContent tab)
-            webview (-> tab-content .getChildren (.get 1))]
-        (init-console! webview runtime-state-atom path)))))
+      (.setDisable (get-tab pane system) false))))
 
 ; specs
 
 (fdef pipe-into-console!
   :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
 
+(fdef create-pipes
+  :args (s/cat)
+  :ret map?)
+
 (fdef start-builder-thread!
-  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :project-path string? :work-fn fn?))
+  :args (s/cat :webview spec/node? :pipes map? :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
+  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
 
 (fdef stop-builder-process!
-  :args (s/cat :runtime-state-atom spec/atom? :project-path string?))
+  :args (s/cat :runtime-state map? :project-path string?))
 
 (fdef init-console!
-  :args (s/cat :webview spec/node? :runtime-state-atom spec/atom? :path string?))
+  :args (s/cat :webview spec/node? :pipes map? :web-port number? :callback fn?))
 
 (fdef get-tab
   :args (s/cat :pane spec/pane? :system keyword?)
@@ -183,8 +186,8 @@
   :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :print-str string? :cmd string?))
 
 (fdef stop-builder!
-  :args (s/cat :pref-state map? :runtime-state-atom spec/atom?))
+  :args (s/cat :pref-state map? :runtime-state map?))
 
 (fdef init-builder!
-  :args (s/cat :pane spec/pane? :runtime-state-atom spec/atom? :path string?))
+  :args (s/cat :pane spec/pane? :path string?))
 

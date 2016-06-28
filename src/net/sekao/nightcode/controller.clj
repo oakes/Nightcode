@@ -260,7 +260,7 @@
 ; stop
 
 (defn stop! [^Scene scene]
-  (b/stop-builder! @pref-state runtime-state))
+  (b/stop-builder! @pref-state @runtime-state))
 
 (defn -onStop [this ^ActionEvent event]
   (-> event .getSource .getScene stop!))

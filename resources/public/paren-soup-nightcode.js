@@ -2,6 +2,7 @@ var editor = null;
 var lastTextContent = "";
 
 function init() {
+    markClean();
     var parent = document.getElementById('paren-soup');
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
@@ -14,7 +15,7 @@ function init() {
 }
 
 function initConsole(isRepl) {
-	var parent = document.getElementById('paren-soup');
+    var parent = document.getElementById('paren-soup');
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
             if (window.java) {
@@ -59,8 +60,10 @@ function getTextContent() {
 }
 
 function markClean() {
-    lastTextContent = getTextContent();
-    window.java.onchange();
+    if (window.java) {
+    	lastTextContent = getTextContent();
+    	window.java.onchange();
+    }
 }
 
 function isClean() {
@@ -91,18 +94,12 @@ function append(text) {
 }
 
 window.onload = function() {
+    // hack thanks to http://stackoverflow.com/a/28414332/1663009
+    window.status = "MY-MAGIC-VALUE";
+    window.status = "";
+    
     if (window.java) {
         window.java.onload();
-        markClean();
-        if (window.java.isConsole()) {
-        	var parent = document.getElementById('paren-soup');
-        	var numbers = document.getElementById('numbers');
-            parent.removeChild(numbers);
-            initConsole(false);
-        }
-        else {
-            init();
-        }
         window.java.onchange();
     }
     else {
