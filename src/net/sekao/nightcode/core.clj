@@ -40,16 +40,13 @@
       (.setScene scene)
       (.show))
     (shortcuts/init-tabs! scene)
-    (add-watch runtime-state :runtime-state-changed
-      (fn [_ _ _ new-runtime-state]
-        (shortcuts/update-tabs! scene @pref-state new-runtime-state)))
     (shortcuts/add-tooltips! scene [:#project_tree :#start :#import_project :#rename :#remove])
     (-> content .getChildren .clear)
     ; create listeners
     (p/set-selection-listener! pref-state runtime-state stage)
     (p/set-focused-listener! pref-state stage project-tree)
     (p/set-project-key-listener! stage pref-state runtime-state)
-    (shortcuts/set-shortcut-listeners! stage runtime-state actions)
+    (shortcuts/set-shortcut-listeners! stage pref-state runtime-state actions)
     ; update the ui
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)))

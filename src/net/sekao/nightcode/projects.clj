@@ -30,7 +30,9 @@
     pane))
 
 (defn dir-pane []
-  (FXMLLoader/load (io/resource "dir.fxml")))
+  (let [pane (FXMLLoader/load (io/resource "dir.fxml"))]
+    (shortcuts/add-tooltips! pane [:#up :#close])
+    pane))
 
 (defn home-pane [runtime-state]
   (let [pane (FXMLLoader/load (io/resource "home.fxml"))
@@ -102,13 +104,13 @@
                                  (project-pane parent-path))
                 editors (-> project-pane .getItems (.get 0))]
             (-> editors .getChildren .clear)
-            (when-let [pane (if (.isDirectory file)
-                              (dir-pane)
-                              (or (get-in state [:editor-panes path])
-                                  (e/editor-pane state file)))]
-              (-> editors .getChildren (.add pane))
-              (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
-              (swap! runtime-state-atom update :editor-panes assoc path pane))
+            (if (.isDirectory file)
+              (-> editors .getChildren (.add (dir-pane)))
+              (when-let [pane (or (get-in state [:editor-panes path])
+                                  (e/editor-pane state file))]
+                (-> editors .getChildren (.add pane))
+                (swap! runtime-state-atom update :editor-panes assoc path pane)))
+            (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
             project-pane))))))
 
 (defn home-node []
@@ -226,7 +228,7 @@
 
 (defn move-tab-selection!
   [scene pref-state-atom runtime-state-atom diff]
-  (let [paths (map :path (shortcuts/get-tabs @runtime-state-atom))
+  (let [paths (-> @runtime-state-atom :editor-panes keys)
         index (.indexOf paths (:selection @pref-state-atom))
         max-index (dec (count paths))
         new-index (+ index diff)
@@ -250,6 +252,8 @@
             (-> (swap! pref-state-atom assoc :selection (.getPath new-value))
                 (update-project-buttons! scene))
             (let [parent-path (u/get-project-path @pref-state-atom)]
+              (shortcuts/hide-tooltips! content)
+              (shortcuts/update-tabs! scene @pref-state-atom @runtime-state-atom)
               (when-let [new-pane (.getPane new-value runtime-state-atom parent-path)]
                 (doto (.getChildren content)
                   (.clear)

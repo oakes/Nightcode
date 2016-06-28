@@ -3,7 +3,8 @@
             [clojure.set :as set]
             [clojure.java.io :as io]
             [net.sekao.nightcode.spec :as spec]
-            [clojure.spec :as s :refer [fdef]])
+            [clojure.spec :as s :refer [fdef]]
+            [net.sekao.nightcode.utils :as u])
   (:import [javafx.scene Node]
            [javafx.scene Scene]
            [javafx.scene.control Tooltip]
@@ -85,11 +86,7 @@
 (defn show-tooltips! [^Stage stage ^Node node]
   (doseq [id (keys id->key-char)]
     (doseq [node (.lookupAll node (name id))]
-      (show-tooltip! stage node)))
-  (let [tabs (.lookup node "#tabs")
-        content (.lookup node "#content")]
-    (when (and tabs content)
-      (show-tooltip! stage tabs content))))
+      (show-tooltip! stage node))))
 
 (defn hide-tooltip! [^Node node]
   (when-let [tooltip (.getTooltip node)]
@@ -100,31 +97,32 @@
 (defn hide-tooltips! [^Node node]
   (doseq [id (keys id->key-char)]
     (doseq [node (.lookupAll node (name id))]
-      (hide-tooltip! node)))
-  (some-> (.lookup node "#tabs") hide-tooltip!))
+      (hide-tooltip! node))))
 
 (defn init-tabs! [^Scene scene]
   (doto (.lookup scene "#tabs")
     (.setManaged false)
     (add-tooltip! "")))
 
-(defn get-tabs [runtime-state]
-  (->> (-> runtime-state :editor-panes keys)
-       (map (fn [path]
-              {:path path :file (io/file path)}))
-       (filter #(-> % :file .isFile))))
-
 (defn update-tabs! [^Scene scene pref-state runtime-state]
   (let [tabs (.lookup scene "#tabs")
         tooltip (.getTooltip tabs)
         selected-path (:selection pref-state)
-        names (map (fn [m]
-                     (let [format-str (if (= (:path m) selected-path) "*%s*" "%s")
-                           file-name (-> m :file .getName)]
+        names (map (fn [path]
+                     (let [format-str (if (u/parent-path? selected-path path) "*%s*" "%s")
+                           file-name (-> path io/file .getName)]
                        (format format-str file-name)))
-                (get-tabs runtime-state))
+                (-> runtime-state :editor-panes keys))
         names (str/join "\n" names)]
     (.setText tooltip (str "PgUp PgDn\n\n" names))))
+
+(defn show-tabs! [^Stage stage ^Node node]
+  (let [tabs (.lookup node "#tabs")
+        content (.lookup node "#content")]
+    (show-tooltip! stage tabs content)))
+
+(defn hide-tabs! [^Node node]
+  (hide-tooltip! (.lookup node "#tabs")))
 
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (key-char->id (if shift? (.toUpperCase text) text))]
@@ -138,27 +136,35 @@
           (fn []
             (action scene)))))))
 
-(defn set-shortcut-listeners! [^Stage stage runtime-state-atom actions]
+(defn set-shortcut-listeners! [^Stage stage pref-state-atom runtime-state-atom actions]
   (let [^Scene scene (.getScene stage)]
+    ; update tabs when editor panes change
+    (add-watch runtime-state-atom :runtime-state-changed
+      (fn [_ _ _ new-runtime-state]
+        (update-tabs! scene @pref-state-atom new-runtime-state)))
     ; show tooltips on key pressed
     (.addEventHandler scene KeyEvent/KEY_PRESSED
       (reify EventHandler
         (handle [this e]
           (when (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (show-tooltips! stage (.getRoot scene))))))
+            (show-tooltips! stage (.getRoot scene))
+            (show-tabs! stage (.getRoot scene))))))
     ; hide tooltips and run shortcut on key released
     (.addEventHandler scene KeyEvent/KEY_RELEASED
       (reify EventHandler
         (handle [this e]
           (cond
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (hide-tooltips! (.getRoot scene))
+            (doto (.getRoot scene)
+              hide-tooltips!
+              hide-tabs!)
             (.isShortcutDown e)
             (if (#{KeyCode/UP KeyCode/DOWN KeyCode/PAGE_UP KeyCode/PAGE_DOWN} (.getCode e))
               ; if any new nodes have appeared, make sure their tooltips are showing
               (Platform/runLater
                 (fn []
-                  (show-tooltips! stage (.getRoot scene))))
+                  (show-tooltips! stage (.getRoot scene))
+                  (show-tabs! stage (.getRoot scene))))
               ; run the action for the given key
               (run-shortcut! scene actions (.getText e) (.isShiftDown e)))))))
     ; hide tooltips on window focus
@@ -166,26 +172,9 @@
       (reify ChangeListener
         (changed [this observable old-value new-value]
           (when new-value
-            (hide-tooltips! (.getRoot scene))))))
-    ; hide tooltips on selection change
-    (let [scene (.getScene stage)
-          project-tree (.lookup scene "#project_tree")
-          content (.lookup scene "#content")
-          selection-model (.getSelectionModel project-tree)]
-      (.addListener (.selectedItemProperty selection-model)
-        (reify ChangeListener
-          (changed [this observable old-value new-value]
-            ; hide tooltips in project panes that aren't in focus
-            (when (-> content .getChildren .size (> 0))
-              (let [new-project-pane (-> content .getChildren (.get 0))]
-                (doseq [project-pane (-> @runtime-state-atom :project-panes vals)]
-                  (when (not= new-project-pane project-pane)
-                    (hide-tooltips! project-pane)))))
-            ; hide tooltips in editor panes that aren't in focus
-            (let [new-editor-pane (some->> new-value .getPath (get (:editor-panes @runtime-state-atom)))]
-              (doseq [editor-pane (-> @runtime-state-atom :editor-panes vals)]
-                (when (not= new-editor-pane editor-pane)
-                  (hide-tooltips! editor-pane))))))))))
+            (doto (.getRoot scene)
+              hide-tooltips!
+              hide-tabs!)))))))
 
 ; specs
 
@@ -215,16 +204,18 @@
 (fdef init-tabs!
   :args (s/cat :scene spec/scene?))
 
-(fdef get-tabs
-  :args (s/cat :runtime-state map?)
-  :ret (s/coll-of map? []))
-
 (fdef update-tabs!
   :args (s/cat :scene spec/scene? :pref-state map? :runtime-state map?))
+
+(fdef show-tabs!
+  :args (s/cat :stage spec/stage? :node spec/node?))
+
+(fdef hide-tabs!
+  :args (s/cat :node spec/node?))
 
 (fdef run-shortcut!
   :args (s/cat :scene spec/scene? :actions map? :text string? :shift? boolean?))
 
 (fdef set-shortcut-listeners!
-  :args (s/cat :stage spec/stage? :runtime-state-atom spec/atom? :actions map?))
+  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :actions map?))
 

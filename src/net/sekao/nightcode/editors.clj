@@ -70,7 +70,7 @@
     (when (u/parent-path? path editor-path)
       (swap! runtime-state-atom update :editor-panes dissoc editor-path)
       (shortcuts/hide-tooltips! pane)
-      (-> pane .getParent .getChildren (.remove pane)))))
+      (some-> pane .getParent .getChildren (.remove pane)))))
 
 (defn toggle-instarepl! [^WebEngine engine selected?]
   (if selected?
