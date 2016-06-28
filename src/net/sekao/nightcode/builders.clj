@@ -37,7 +37,7 @@
         in-pipe (PipedReader. pout)]
     {:in in :out out :in-pipe in-pipe :out-pipe out-pipe}))
 
-(defn start-builder-thread! [webview pipes work-fn]
+(defn start-builder-thread! [webview pipes finish-str work-fn]
   (let [engine (.getEngine webview)
         {:keys [in-pipe in out]} pipes]
     (pipe-into-console! engine in-pipe)
@@ -50,13 +50,13 @@
             (try
               (work-fn)
               (catch Exception e (some-> (.getMessage e) println))
-              (finally (println "\n=== Finished ===")))))))))
+              (finally (some-> finish-str println)))))))))
 
-(defn start-builder-process! [webview pipes process project-path print-str args]
+(defn start-builder-process! [webview pipes process project-path start-str args]
   (proc/stop-process! process)
-  (start-builder-thread! webview pipes
+  (start-builder-thread! webview pipes (when start-str "\n=== Finished ===")
     (fn []
-      (println print-str)
+      (some-> start-str println)
       (proc/start-java-process! process project-path args))))
 
 (defn stop-builder-process! [runtime-state project-path]
@@ -71,23 +71,22 @@
 (defn init-console! [webview pipes web-port cb]
   (.setContextMenuEnabled webview false)
   (let [engine (.getEngine webview)]
-    (-> engine
-        (.setOnStatusChanged
-          (reify EventHandler
-            (handle [this event]
-              (-> engine
-                  (.executeScript "window")
-                  (.setMember "java"
-                    (proxy [Bridge] []
-                      (onload []
-                        (try
-                          (cb)
-                          (catch Exception e (.printStackTrace e))))
-                      (onchange [])
-                      (onenter [text]
-                        (doto (:out-pipe pipes)
-                          (.write text)
-                          (.flush))))))))))
+    (.setOnStatusChanged engine
+      (reify EventHandler
+        (handle [this event]
+          (-> engine
+              (.executeScript "window")
+              (.setMember "java"
+                (proxy [Bridge] []
+                  (onload []
+                    (try
+                      (cb)
+                      (catch Exception e (.printStackTrace e))))
+                  (onchange [])
+                  (onenter [text]
+                    (doto (:out-pipe pipes)
+                      (.write text)
+                      (.flush)))))))))
     (.load engine (str "http://localhost:" web-port "/paren-soup.html"))))
 
 (def index->system {0 :boot 1 :lein})
@@ -115,7 +114,7 @@
     :boot "Boot"
     :lein l/class-name))
 
-(defn start-builder! [pref-state runtime-state-atom print-str cmd]
+(defn start-builder! [pref-state runtime-state-atom start-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
     (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
       (when-let [system (get-selected-build-system pane)]
@@ -126,7 +125,7 @@
           (init-console! webview pipes (:web-port @runtime-state-atom)
             (fn []
               (refresh-builder! webview (= cmd "repl"))
-              (start-builder-process! webview pipes process project-path print-str [(build-system->class-name system) cmd])))
+              (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
           (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
 (defn stop-builder! [pref-state runtime-state]
@@ -163,10 +162,10 @@
   :ret map?)
 
 (fdef start-builder-thread!
-  :args (s/cat :webview spec/node? :pipes map? :work-fn fn?))
+  :args (s/cat :webview spec/node? :pipes map? :finish-str (s/nilable string?) :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :project-path string? :print-str string? :args (s/coll-of string? [])))
+  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :project-path string? :start-str (s/nilable string?) :args (s/coll-of string? [])))
 
 (fdef stop-builder-process!
   :args (s/cat :runtime-state map? :project-path string?))
@@ -193,7 +192,7 @@
   :ret string?)
 
 (fdef start-builder!
-  :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :print-str string? :cmd string?))
+  :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :start-str string? :cmd string?))
 
 (fdef stop-builder!
   :args (s/cat :pref-state map? :runtime-state map?))

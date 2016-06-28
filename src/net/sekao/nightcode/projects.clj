@@ -32,8 +32,24 @@
 (defn dir-pane []
   (FXMLLoader/load (io/resource "dir.fxml")))
 
-(defn home-pane []
-  (FXMLLoader/load (io/resource "home.fxml")))
+(defn home-pane [runtime-state]
+  (let [pane (FXMLLoader/load (io/resource "home.fxml"))
+        repl (-> pane .getChildren (.get 1) .getItems (.get 1))
+        process (atom nil)
+        init! (fn []
+                (let [pipes (b/create-pipes)]
+                  (b/init-console! repl pipes (:web-port runtime-state)
+                    (fn []
+                      (b/refresh-builder! repl true)
+                      (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
+    (init!)
+    (-> pane
+        (.lookup "#restart")
+        (.setOnAction
+          (reify EventHandler
+            (handle [this event]
+              (init!)))))
+    pane))
 
 (defn file-node [file]
   (let [path (.getCanonicalPath file)
@@ -84,7 +100,7 @@
         path)
       (getPane [runtime-state-atom _]
         (let [pane (or (get-in @runtime-state-atom [:editor-panes path])
-                       (home-pane))]
+                       (home-pane @runtime-state-atom))]
           (swap! runtime-state-atom update :editor-panes assoc path pane)
           pane)))))
 
@@ -258,7 +274,7 @@
   :ret spec/pane?)
 
 (fdef home-pane
-  :args (s/cat)
+  :args (s/cat :runtime-state map?)
   :ret spec/pane?)
 
 (fdef file-node

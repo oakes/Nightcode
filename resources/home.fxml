@@ -1,31 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="RIGHT_TO_LEFT" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
-  <tabs>
-    <Tab fx:id="cljs" closable="false" text="ClojureScript">
-         <content>
-            <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
-               <items>
-                  <WebView fx:id="docs" prefHeight="200.0" prefWidth="200.0" />
-                  <WebView fx:id="repl" prefHeight="200.0" prefWidth="200.0" />
-               </items>
-            </SplitPane>
-         </content>
-    </Tab>
-    <Tab fx:id="clj" closable="false" text="Clojure">
-         <content>
-            <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
-              <items>
-                  <WebView fx:id="docs" prefHeight="200.0" prefWidth="200.0" />
-                  <WebView fx:id="repl" prefHeight="200.0" prefWidth="200.0" />
-              </items>
-            </SplitPane>
-         </content>
-    </Tab>
-  </tabs>
-</TabPane>
+<VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox prefHeight="0.0" prefWidth="200.0">
+         <children>
+            <Separator prefWidth="200.0" HBox.hgrow="ALWAYS" />
+            <Button fx:id="restart" minWidth="-Infinity" mnemonicParsing="false" text="Restart" />
+         </children>
+      </HBox>
+      <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+         <items>
+            <WebView fx:id="docs" prefHeight="200.0" prefWidth="200.0" />
+            <WebView fx:id="repl" prefHeight="200.0" prefWidth="200.0" />
+         </items>
+      </SplitPane>
+   </children>
+</VBox>
