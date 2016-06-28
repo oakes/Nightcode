@@ -7,22 +7,22 @@
 
 <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" nodeOrientation="RIGHT_TO_LEFT" prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
   <tabs>
-    <Tab closable="false" text="ClojureScript">
+    <Tab fx:id="cljs" closable="false" text="ClojureScript">
          <content>
             <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
                <items>
-                  <WebView prefHeight="200.0" prefWidth="200.0" />
-                  <WebView prefHeight="200.0" prefWidth="200.0" />
+                  <WebView fx:id="docs" prefHeight="200.0" prefWidth="200.0" />
+                  <WebView fx:id="repl" prefHeight="200.0" prefWidth="200.0" />
                </items>
             </SplitPane>
          </content>
     </Tab>
-    <Tab closable="false" text="Clojure">
+    <Tab fx:id="clj" closable="false" text="Clojure">
          <content>
             <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
               <items>
-                  <WebView prefHeight="200.0" prefWidth="200.0" />
-                  <WebView prefHeight="200.0" prefWidth="200.0" />
+                  <WebView fx:id="docs" prefHeight="200.0" prefWidth="200.0" />
+                  <WebView fx:id="repl" prefHeight="200.0" prefWidth="200.0" />
               </items>
             </SplitPane>
          </content>

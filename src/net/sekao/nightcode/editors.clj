@@ -80,8 +80,7 @@
 (definterface Bridge
   (onload [])
   (onchange [])
-  (onenter [text])
-  (isConsole []))
+  (onenter [text]))
 
 (defn update-editor-buttons! [pane ^WebEngine engine]
   (.setDisable (.lookup pane "#save") (.executeScript engine "isClean()"))
@@ -92,7 +91,8 @@
   (-> engine
       .getDocument
       (.getElementById "content")
-      (.setTextContent (slurp file))))
+      (.setTextContent (slurp file)))
+  (.executeScript engine "init()"))
 
 (defn should-open? [^File file]
   (-> file .length (< max-file-size)))
@@ -118,8 +118,7 @@
                 (try
                   (update-editor-buttons! pane engine)
                   (catch Exception e (.printStackTrace e))))
-              (isConsole []
-                false))))
+              (onenter [text]))))
       (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
                       (if clojure? "/paren-soup.html" "/codemirror.html")))
