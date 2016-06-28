@@ -34,21 +34,44 @@
 
 (defn home-pane [runtime-state]
   (let [pane (FXMLLoader/load (io/resource "home.fxml"))
+        docs (-> pane .getChildren (.get 1) .getItems (.get 0))
         repl (-> pane .getChildren (.get 1) .getItems (.get 1))
         process (atom nil)
-        init! (fn []
-                (let [pipes (b/create-pipes)]
-                  (b/init-console! repl pipes (:web-port runtime-state)
-                    (fn []
-                      (b/refresh-builder! repl true)
-                      (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
-    (init!)
-    (-> pane
-        (.lookup "#restart")
-        (.setOnAction
-          (reify EventHandler
-            (handle [this event]
-              (init!)))))
+        web-port (:web-port runtime-state)
+        load-repl! (fn []
+                     (let [pipes (b/create-pipes)]
+                       (b/init-console! repl pipes web-port
+                         (fn []
+                           (b/refresh-builder! repl true)
+                           (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
+    ; load the panes
+    (.load (.getEngine docs) (str "http://localhost:" web-port "/cheatsheet-full.html"))
+    (load-repl!)
+    ; set button actions
+    (let [back-btn (doto (.lookup pane "#back") (.setDisable true))
+          forward-btn (doto (.lookup pane "#forward") (.setDisable true))
+          restart-btn (.lookup pane "#restart")
+          history (-> docs .getEngine .getHistory)]
+      (.setOnAction back-btn
+        (reify EventHandler
+          (handle [this event]
+            (.go history -1))))
+      (.setOnAction forward-btn
+        (reify EventHandler
+          (handle [this event]
+            (.go history 1))))
+      (.setOnAction restart-btn
+        (reify EventHandler
+          (handle [this event]
+            (load-repl!))))
+      (-> history
+          .currentIndexProperty
+          (.addListener
+            (reify ChangeListener
+              (changed [this observable old-value new-value]
+                (.setDisable back-btn (= 0 (.getCurrentIndex history)))
+                (.setDisable forward-btn (-> history .getEntries count dec (= (.getCurrentIndex history)))))))))
+    ; return the pane
     pane))
 
 (defn file-node [file]

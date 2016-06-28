@@ -7,15 +7,17 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="382.0" prefWidth="422.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox prefHeight="0.0" prefWidth="200.0">
          <children>
+            <Button fx:id="back" mnemonicParsing="false" text="&lt;" />
+            <Button fx:id="forward" mnemonicParsing="false" text="&gt;" />
             <Separator prefWidth="200.0" HBox.hgrow="ALWAYS" />
-            <Button fx:id="restart" minWidth="-Infinity" mnemonicParsing="false" text="Restart" />
+            <Button fx:id="restart" minWidth="-Infinity" mnemonicParsing="false" text="Restart REPL" />
          </children>
       </HBox>
-      <SplitPane dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+      <SplitPane dividerPositions="0.75" orientation="VERTICAL" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
          <items>
             <WebView fx:id="docs" prefHeight="200.0" prefWidth="200.0" />
             <WebView fx:id="repl" prefHeight="200.0" prefWidth="200.0" />
