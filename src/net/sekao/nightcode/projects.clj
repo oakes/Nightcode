@@ -290,6 +290,12 @@
               (= (.getCode e) KeyCode/PAGE_DOWN)
               (move-tab-selection! scene pref-state-atom runtime-state-atom 1))))))))
 
+(defn remove-project! [^String path runtime-state-atom]
+  (when-let [pane (get-in @runtime-state-atom [:project-panes path])]
+    (swap! runtime-state-atom update :project-panes dissoc path)
+    (shortcuts/hide-tooltips! pane)
+    (-> pane .getParent .getChildren (.remove pane))))
+
 ; specs
 
 (fdef project-pane
@@ -354,4 +360,7 @@
 
 (fdef set-project-key-listener!
   :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?))
+
+(fdef remove-project!
+  :args (s/cat :path string? :runtime-state-atom spec/atom?))
 
