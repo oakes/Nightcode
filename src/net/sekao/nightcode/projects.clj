@@ -3,6 +3,7 @@
             [net.sekao.nightcode.builders :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.shortcuts :as shortcuts]
+            [net.sekao.nightcode.process :as proc]
             [net.sekao.nightcode.spec :as spec]
             [net.sekao.nightcode.utils :as u]
             [clojure.spec :as s :refer [fdef]])
@@ -294,7 +295,10 @@
   (when-let [pane (get-in @runtime-state-atom [:project-panes path])]
     (swap! runtime-state-atom update :project-panes dissoc path)
     (shortcuts/hide-tooltips! pane)
-    (-> pane .getParent .getChildren (.remove pane))))
+    (-> pane .getParent .getChildren (.remove pane)))
+  (when-let [process (get-in @runtime-state-atom [:processes path])]
+    (proc/stop-process! process)
+    (swap! runtime-state-atom update :processes dissoc path)))
 
 ; specs
 
