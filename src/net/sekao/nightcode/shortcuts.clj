@@ -109,12 +109,12 @@
         tooltip (.getTooltip tabs)
         selected-path (:selection pref-state)
         names (map (fn [path]
-                     (let [format-str (if (u/parent-path? selected-path path) "*%s*" "%s")
+                     (let [format-str (if (u/parent-path? selected-path path) "-> %s <-" "   %s   ")
                            file-name (-> path io/file .getName)]
                        (format format-str file-name)))
                 (-> runtime-state :editor-panes keys))
         names (str/join "\n" names)]
-    (.setText tooltip (str "PgUp PgDn\n\n" names))))
+    (.setText tooltip (str "   PgUp PgDn   \n\n" names))))
 
 (defn show-tabs! [^Stage stage ^Node node]
   (let [tabs (.lookup node "#tabs")

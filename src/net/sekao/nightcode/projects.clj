@@ -114,7 +114,7 @@
             project-pane))))))
 
 (defn home-node []
-  (let [path "**Home**"
+  (let [path "*Home*"
         value (proxy [Object] []
                 (toString []
                   "Home"))]
