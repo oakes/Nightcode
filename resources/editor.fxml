@@ -17,7 +17,7 @@
             <Button fx:id="undo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUndo" text="Undo" />
             <Button fx:id="redo" minWidth="-Infinity" mnemonicParsing="false" onAction="#onRedo" text="Redo" />
             <ToggleButton fx:id="instarepl" minWidth="-Infinity" mnemonicParsing="false" onAction="#onInstaRepl" text="InstaREPL" />
-            <TextField fx:id="find" onKeyPressed="#find" promptText="Find" />
+            <TextField fx:id="find" onKeyPressed="#onFind" promptText="Find" />
             <Separator HBox.hgrow="ALWAYS" />
             <Button fx:id="close" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClose" text="X" />
          </children>

@@ -23,7 +23,7 @@
              [onUndo [javafx.event.ActionEvent] void]
              [onRedo [javafx.event.ActionEvent] void]
              [onInstaRepl [javafx.event.ActionEvent] void]
-             [find [javafx.scene.input.KeyEvent] void]
+             [onFind [javafx.scene.input.KeyEvent] void]
              [onClose [javafx.event.ActionEvent] void]
              [onRun [javafx.event.ActionEvent] void]
              [onRunWithRepl [javafx.event.ActionEvent] void]
@@ -208,7 +208,7 @@
             (u/escape-js find-text)
             (.isShiftDown event)))))))
 
-(defn -find [this ^KeyEvent event]
+(defn -onFind [this ^KeyEvent event]
   (-> event .getSource .getScene (find! event)))
 
 ; close
