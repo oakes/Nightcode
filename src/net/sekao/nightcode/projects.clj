@@ -124,9 +124,9 @@
       (getPath []
         path)
       (getPane [runtime-state-atom _]
-        (let [pane (or (get-in @runtime-state-atom [:editor-panes path])
+        (let [pane (or (get-in @runtime-state-atom [:project-panes path])
                        (home-pane @runtime-state-atom))]
-          (swap! runtime-state-atom update :editor-panes assoc path pane)
+          (swap! runtime-state-atom update :project-panes assoc path pane)
           pane)))))
 
 (defn root-node [pref-state]
