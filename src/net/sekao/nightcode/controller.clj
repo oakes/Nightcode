@@ -128,6 +128,7 @@
         project-tree (.lookup scene "#project_tree")]
     (when (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
       (p/remove-from-project-tree! pref-state selection)
+      (e/remove-editors! selection runtime-state)
       (p/update-project-tree! pref-state project-tree))))
 
 (defn -onRemove [this ^ActionEvent event]
