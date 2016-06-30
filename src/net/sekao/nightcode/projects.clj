@@ -126,7 +126,7 @@
         path)
       (getPane [pref-state-atom runtime-state-atom _]
         (let [pane (or (get-in @runtime-state-atom [:project-panes path])
-                       (home-pane @pref-state-atom))]
+                       (home-pane @pref-state-atom @runtime-state-atom))]
           (swap! runtime-state-atom update :project-panes assoc path pane)
           pane)))))
 
