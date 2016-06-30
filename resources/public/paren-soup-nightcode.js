@@ -93,6 +93,15 @@ function append(text) {
     parent.scrollTop = parent.scrollHeight;
 }
 
+function changeTheme(isDark) {
+	var oldlink = document.getElementsByTagName("link").item(0);
+	var newlink = document.createElement("link");
+	newlink.setAttribute("rel", "stylesheet");
+	newlink.setAttribute("type", "text/css");
+	newlink.setAttribute("href", isDark ? "paren-soup-dark.css" : "paren-soup-light.css");
+	document.getElementsByTagName("head").item(0).replaceChild(newlink, oldlink);
+}
+
 window.onload = function() {
     // hack thanks to http://stackoverflow.com/a/28414332/1663009
     window.status = "MY-MAGIC-VALUE";

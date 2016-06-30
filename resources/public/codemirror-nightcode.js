@@ -53,6 +53,10 @@ function isClean() {
     return lastTextContent == getTextContent();
 }
 
+function changeTheme(isDark) {
+	editor.setOption("theme", isDark ? "lesser-dark" : "default");
+}
+
 window.onload = function() {
     // hack thanks to http://stackoverflow.com/a/28414332/1663009
     window.status = "MY-MAGIC-VALUE";

@@ -30,7 +30,9 @@
              [onReload [javafx.event.ActionEvent] void]
              [onBuild [javafx.event.ActionEvent] void]
              [onClean [javafx.event.ActionEvent] void]
-             [onStop [javafx.event.ActionEvent] void]]))
+             [onStop [javafx.event.ActionEvent] void]
+             [onDarkTheme [javafx.event.ActionEvent] void]
+             [onLightTheme [javafx.event.ActionEvent] void]]))
 
 ; new project
 
@@ -273,4 +275,22 @@
 
 (defn -onStop [this ^ActionEvent event]
   (-> event .getSource .getScene stop!))
+
+; dark
+
+(defn dark-theme! [^Scene scene]
+  (-> scene .getRoot .getStylesheets (.add "dark.css"))
+  (p/theme-webviews! (swap! runtime-state assoc :theme :dark)))
+
+(defn -onDarkTheme [this ^ActionEvent event]
+  (-> @runtime-state :stage .getScene dark-theme!))
+
+; light
+
+(defn light-theme! [^Scene scene]
+  (-> scene .getRoot .getStylesheets .clear)
+  (p/theme-webviews! (swap! runtime-state assoc :theme :light)))
+
+(defn -onLightTheme [this ^ActionEvent event]
+  (-> @runtime-state :stage .getScene light-theme!))
 

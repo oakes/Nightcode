@@ -35,6 +35,8 @@
         scene (Scene. root 1242 768)
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
+    (swap! runtime-state assoc :stage stage)
+    (c/dark-theme! scene)
     (doto stage
       (.setTitle "Nightcode 2.0.0-SNAPSHOT")
       (.setScene scene)

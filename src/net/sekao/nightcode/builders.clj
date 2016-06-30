@@ -69,7 +69,9 @@
   (onenter [text]))
 
 (defn init-console! [webview pipes web-port cb]
-  (.setContextMenuEnabled webview false)
+  (doto webview
+    (.setVisible true)
+    (.setContextMenuEnabled false))
   (let [engine (.getEngine webview)]
     (.setOnStatusChanged engine
       (reify EventHandler
@@ -104,10 +106,10 @@
   (-> (.lookup pane "#build_tabs") .getSelectionModel (.select (system->index system)))
   (-> (get-tab pane system) .getContent (shortcuts/add-tooltips! ids)))
 
-(defn refresh-builder! [webview repl?]
-  (some-> webview
-          .getEngine
-          (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))))
+(defn refresh-builder! [webview repl? theme]
+  (let [engine (.getEngine webview)]
+    (.executeScript engine (if repl? "initConsole(true)" "initConsole(false)"))
+    (.executeScript engine (u/theme->script theme))))
 
 (defn build-system->class-name [system]
   (case system
@@ -124,7 +126,7 @@
               process (get-in @runtime-state-atom [:processes project-path] (atom nil))]
           (init-console! webview pipes (:web-port @runtime-state-atom)
             (fn []
-              (refresh-builder! webview (= cmd "repl"))
+              (refresh-builder! webview (= cmd "repl") (:theme @runtime-state-atom))
               (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
           (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
@@ -185,7 +187,7 @@
   :args (s/cat :pane spec/pane? :system keyword? :ids (s/coll-of keyword? [])))
 
 (fdef refresh-builder!
-  :args (s/cat :webview spec/node? :repl? boolean?))
+  :args (s/cat :webview spec/node? :repl? boolean? :theme keyword?))
 
 (fdef build-system->class-name
   :args (s/cat :system keyword?)
