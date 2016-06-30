@@ -280,7 +280,7 @@
 ; dark
 
 (defn dark-theme! [^Scene scene]
-  (-> scene .getRoot .getStylesheets (.add "dark.css"))
+  (-> scene .getStylesheets (.add "dark.css"))
   (p/theme-webviews! (swap! runtime-state assoc :theme :dark)))
 
 (defn -onDarkTheme [this ^ActionEvent event]
@@ -289,7 +289,7 @@
 ; light
 
 (defn light-theme! [^Scene scene]
-  (-> scene .getRoot .getStylesheets .clear)
+  (-> scene .getStylesheets .clear)
   (p/theme-webviews! (swap! runtime-state assoc :theme :light)))
 
 (defn -onLightTheme [this ^ActionEvent event]
