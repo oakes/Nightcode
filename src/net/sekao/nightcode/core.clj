@@ -36,7 +36,6 @@
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
     (swap! runtime-state assoc :stage stage)
-    (c/dark-theme! scene)
     (doto stage
       (.setTitle "Nightcode 2.0.0-SNAPSHOT")
       (.setScene scene)
@@ -51,7 +50,18 @@
     (shortcuts/set-shortcut-listeners! stage pref-state runtime-state actions)
     ; update the ui
     (p/update-project-tree! pref-state project-tree)
-    (p/update-project-buttons! @pref-state scene)))
+    (p/update-project-buttons! @pref-state scene)
+    ; set the theme
+    (let [theme-buttons (->> (.lookup scene "#start")
+                             .getItems
+                             (filter #(= "theme_buttons" (.getId %)))
+                             first
+                             .getContent
+                             .getChildren)]
+      (case (:theme @pref-state)
+        :dark (.fire (.get theme-buttons 0))
+        :light (.fire (.get theme-buttons 1))
+        nil))))
 
 (defn -main [& args]
   (swap! runtime-state assoc :web-port (e/start-web-server!))

@@ -20,7 +20,7 @@
 
 (definterface ProjectTreeItem
   (getPath [] "Unique path representing this item")
-  (getPane [runtime-state-atom parent-path] "The pane for the given item"))
+  (getPane [pref-state-atom runtime-state-atom parent-path] "The pane for the given item"))
 
 (declare get-children)
 
@@ -35,7 +35,7 @@
     (shortcuts/add-tooltips! pane [:#up :#close])
     pane))
 
-(defn home-pane [runtime-state]
+(defn home-pane [pref-state runtime-state]
   (let [pane (FXMLLoader/load (io/resource "home.fxml"))
         docs (-> pane .getChildren (.get 1) .getItems (.get 0))
         repl (-> pane .getChildren (.get 1) .getItems (.get 1))
@@ -45,7 +45,7 @@
                      (let [pipes (b/create-pipes)]
                        (b/init-console! repl pipes web-port
                          (fn []
-                           (b/refresh-builder! repl true (:theme runtime-state))
+                           (b/refresh-builder! repl true (:theme pref-state))
                            (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
     ; load the panes
     (.load (.getEngine docs) (str "http://localhost:" web-port "/cheatsheet-full.html"))
@@ -98,17 +98,17 @@
         (not (.isDirectory file)))
       (getPath []
         path)
-      (getPane [runtime-state-atom parent-path]
+      (getPane [pref-state-atom runtime-state-atom parent-path]
         (when parent-path
-          (let [state @runtime-state-atom
-                project-pane (or (get-in state [:project-panes parent-path])
+          (let [runtime-state @runtime-state-atom
+                project-pane (or (get-in runtime-state [:project-panes parent-path])
                                  (project-pane parent-path))
                 editors (-> project-pane .getItems (.get 0))]
             (-> editors .getChildren .clear)
             (if (.isDirectory file)
               (-> editors .getChildren (.add (dir-pane)))
-              (when-let [pane (or (get-in state [:editor-panes path])
-                                  (e/editor-pane state file))]
+              (when-let [pane (or (get-in runtime-state [:editor-panes path])
+                                  (e/editor-pane @pref-state-atom runtime-state file))]
                 (-> editors .getChildren (.add pane))
                 (swap! runtime-state-atom update :editor-panes assoc path pane)))
             (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
@@ -124,9 +124,9 @@
         true)
       (getPath []
         path)
-      (getPane [runtime-state-atom _]
+      (getPane [pref-state-atom runtime-state-atom _]
         (let [pane (or (get-in @runtime-state-atom [:project-panes path])
-                       (home-pane @runtime-state-atom))]
+                       (home-pane @pref-state-atom))]
           (swap! runtime-state-atom update :project-panes assoc path pane)
           pane)))))
 
@@ -255,7 +255,7 @@
             (let [parent-path (u/get-project-path @pref-state-atom)]
               (shortcuts/hide-tooltips! content)
               (shortcuts/update-tabs! scene @pref-state-atom @runtime-state-atom)
-              (when-let [new-pane (.getPane new-value runtime-state-atom parent-path)]
+              (when-let [new-pane (.getPane new-value pref-state-atom runtime-state-atom parent-path)]
                 (doto (.getChildren content)
                   (.clear)
                   (.add new-pane))))))))))
@@ -300,7 +300,7 @@
     (proc/stop-process! process)
     (swap! runtime-state-atom update :processes dissoc path)))
 
-(defn theme-webviews! [{:keys [editor-panes project-panes theme]}]
+(defn theme-webviews! [{:keys [editor-panes project-panes]} theme]
   (doseq [pane (concat (vals editor-panes) (vals project-panes))]
     (doseq [webview (.lookupAll pane "WebView")]
       (try
@@ -376,5 +376,5 @@
   :args (s/cat :path string? :runtime-state-atom spec/atom?))
 
 (fdef theme-webviews!
-  :args (s/cat :runtime-state map?))
+  :args (s/cat :runtime-state map? :theme keyword?))
 

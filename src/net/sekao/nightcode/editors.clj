@@ -98,7 +98,7 @@
 (defn should-open? [^File file]
   (-> file .length (< max-file-size)))
 
-(defn editor-pane [runtime-state ^File file]
+(defn editor-pane [pref-state runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
@@ -113,7 +113,7 @@
             (proxy [Bridge] []
               (onload []
                 (try
-                  (onload engine file (:theme runtime-state))
+                  (onload engine file (:theme pref-state))
                   (catch Exception e (.printStackTrace e))))
               (onchange []
                 (try
@@ -164,6 +164,6 @@
   :ret boolean?)
 
 (fdef editor-pane
-  :args (s/cat :runtime-state map? :file spec/file?)
+  :args (s/cat :pref-state map? :runtime-state map? :file spec/file?)
   :ret spec/pane?)
 

@@ -126,7 +126,7 @@
               process (get-in @runtime-state-atom [:processes project-path] (atom nil))]
           (init-console! webview pipes (:web-port @runtime-state-atom)
             (fn []
-              (refresh-builder! webview (= cmd "repl") (:theme @runtime-state-atom))
+              (refresh-builder! webview (= cmd "repl") (:theme pref-state))
               (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
           (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
