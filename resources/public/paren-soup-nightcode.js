@@ -102,6 +102,10 @@ function changeTheme(isDark) {
 	document.getElementsByTagName("head").item(0).replaceChild(newlink, oldlink);
 }
 
+function setTextSize(size) {
+	document.getElementById('paren-soup').style.fontSize = size + 'px';
+}
+
 window.onload = function() {
     // hack thanks to http://stackoverflow.com/a/28414332/1663009
     window.status = "MY-MAGIC-VALUE";

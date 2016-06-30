@@ -35,7 +35,8 @@
 (defonce pref-state (atom {:project-set (read-pref :project-set #{})
                            :expansion-set (read-pref :expansion-set #{})
                            :selection (read-pref :selection)
-                           :theme (read-pref :theme :dark)}))
+                           :theme (read-pref :theme :dark)
+                           :text-size (read-pref :text-size 14)}))
 
 (defonce runtime-state (atom {:web-port nil
                               :project-panes {}
@@ -52,15 +53,17 @@
           old-selection (:selection old-state)
           new-selection (:selection new-state)
           old-theme (:theme old-state)
-          new-theme (:theme new-state)]
+          new-theme (:theme new-state)
+          old-text-size (:text-size old-state)
+          new-text-size (:text-size new-state)]
       (when (not= old-projects new-projects)
         (write-pref! :project-set new-projects))
       (when (not= old-expansions new-expansions)
         (write-pref! :expansion-set new-expansions))
       (when (not= old-selection new-selection)
         (write-pref! :selection new-selection))
-      (when (not= old-theme new-theme)
-        (write-pref! :theme new-theme)))))
+      (when (not= old-text-size new-text-size)
+        (write-pref! :text-size new-text-size)))))
 
 ; specs
 

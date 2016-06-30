@@ -57,6 +57,10 @@ function changeTheme(isDark) {
 	editor.setOption("theme", isDark ? "lesser-dark" : "default");
 }
 
+function setTextSize(size) {
+	document.querySelector(".CodeMirror").style.fontSize = size + 'px';
+}
+
 window.onload = function() {
     // hack thanks to http://stackoverflow.com/a/28414332/1663009
     window.status = "MY-MAGIC-VALUE";

@@ -45,7 +45,7 @@
                      (let [pipes (b/create-pipes)]
                        (b/init-console! repl pipes web-port
                          (fn []
-                           (b/refresh-builder! repl true (:theme pref-state))
+                           (b/refresh-builder! repl true pref-state)
                            (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
     ; load the panes
     (.load (.getEngine docs) (str "http://localhost:" web-port "/cheatsheet-full.html"))
@@ -300,11 +300,15 @@
     (proc/stop-process! process)
     (swap! runtime-state-atom update :processes dissoc path)))
 
-(defn theme-webviews! [{:keys [editor-panes project-panes]} theme]
+(defn update-webviews! [pref-state {:keys [editor-panes project-panes]}]
   (doseq [pane (concat (vals editor-panes) (vals project-panes))]
     (doseq [webview (.lookupAll pane "WebView")]
       (try
-        (-> webview .getEngine (.executeScript (u/theme->script theme)))
+        (doto (.getEngine webview)
+          (.executeScript (case (:theme pref-state)
+                            :dark "changeTheme(true)"
+                            :light "changeTheme(false)"))
+          (.executeScript (format "setTextSize(%s)" (:text-size pref-state))))
         (catch Exception _)))))
 
 ; specs
@@ -375,6 +379,6 @@
 (fdef remove-project!
   :args (s/cat :path string? :runtime-state-atom spec/atom?))
 
-(fdef theme-webviews!
-  :args (s/cat :runtime-state map? :theme keyword?))
+(fdef update-webviews!
+  :args (s/cat :pref-state map? :runtime-state map?))
 

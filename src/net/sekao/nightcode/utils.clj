@@ -120,11 +120,6 @@ requisite project files, or empty if neither exists."
       .getLocation
       .toURI))
 
-(defn theme->script [theme]
-  (case theme
-    :dark "changeTheme(true)"
-    :light "changeTheme(false)"))
-
 ; specs
 
 (fdef get-relative-path
@@ -170,8 +165,4 @@ requisite project files, or empty if neither exists."
 (fdef get-exec-uri
   :args (s/cat :class-name string?)
   :ret #(instance? java.net.URI %))
-
-(fdef theme->script
-  :args (s/cat :theme keyword?)
-  :ret string?)
 

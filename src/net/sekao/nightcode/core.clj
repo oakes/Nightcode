@@ -51,7 +51,7 @@
     ; update the ui
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)
-    ; set the theme
+    ; set the theme and font size
     (let [theme-buttons (->> (.lookup scene "#start")
                              .getItems
                              (filter #(= "theme_buttons" (.getId %)))
@@ -61,7 +61,8 @@
       (case (:theme @pref-state)
         :dark (.fire (.get theme-buttons 0))
         :light (.fire (.get theme-buttons 1))
-        nil))))
+        nil))
+    (c/font! scene)))
 
 (defn -main [& args]
   (swap! runtime-state assoc :web-port (e/start-web-server!))

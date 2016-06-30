@@ -87,13 +87,17 @@
   (.setDisable (.lookup pane "#undo") (not (.executeScript engine "canUndo()")))
   (.setDisable (.lookup pane "#redo") (not (.executeScript engine "canRedo()"))))
 
-(defn onload [^WebEngine engine ^File file theme]
+(defn onload [^WebEngine engine ^File file pref-state]
   (-> engine
       .getDocument
       (.getElementById "content")
       (.setTextContent (slurp file)))
-  (.executeScript engine "init()")
-  (.executeScript engine (u/theme->script theme)))
+  (doto engine
+    (.executeScript "init()")
+    (.executeScript (case (:theme pref-state)
+                      :dark "changeTheme(true)"
+                      :light "changeTheme(false)"))
+    (.executeScript (format "setTextSize(%s)" (:text-size pref-state)))))
 
 (defn should-open? [^File file]
   (-> file .length (< max-file-size)))
@@ -113,7 +117,7 @@
             (proxy [Bridge] []
               (onload []
                 (try
-                  (onload engine file (:theme pref-state))
+                  (onload engine file pref-state)
                   (catch Exception e (.printStackTrace e))))
               (onchange []
                 (try
@@ -157,7 +161,7 @@
   :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
 
 (fdef onload
-  :args (s/cat :engine :clojure.spec/any :file spec/file? :theme keyword?))
+  :args (s/cat :engine :clojure.spec/any :file spec/file? :pref-state map?))
 
 (fdef should-open?
   :args (s/cat :file spec/file?)

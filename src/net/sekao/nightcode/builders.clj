@@ -106,10 +106,13 @@
   (-> (.lookup pane "#build_tabs") .getSelectionModel (.select (system->index system)))
   (-> (get-tab pane system) .getContent (shortcuts/add-tooltips! ids)))
 
-(defn refresh-builder! [webview repl? theme]
-  (let [engine (.getEngine webview)]
-    (.executeScript engine (if repl? "initConsole(true)" "initConsole(false)"))
-    (.executeScript engine (u/theme->script theme))))
+(defn refresh-builder! [webview repl? pref-state]
+  (doto (.getEngine webview)
+    (.executeScript (if repl? "initConsole(true)" "initConsole(false)"))
+    (.executeScript (case (:theme pref-state)
+                      :dark "changeTheme(true)"
+                      :light "changeTheme(false)"))
+    (.executeScript (format "setTextSize(%s)" (:text-size pref-state)))))
 
 (defn build-system->class-name [system]
   (case system
@@ -126,7 +129,7 @@
               process (get-in @runtime-state-atom [:processes project-path] (atom nil))]
           (init-console! webview pipes (:web-port @runtime-state-atom)
             (fn []
-              (refresh-builder! webview (= cmd "repl") (:theme pref-state))
+              (refresh-builder! webview (= cmd "repl") pref-state)
               (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
           (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
@@ -187,7 +190,7 @@
   :args (s/cat :pane spec/pane? :system keyword? :ids (s/coll-of keyword? [])))
 
 (fdef refresh-builder!
-  :args (s/cat :webview spec/node? :repl? boolean? :theme keyword?))
+  :args (s/cat :webview spec/node? :repl? boolean? :pref-state map?))
 
 (fdef build-system->class-name
   :args (s/cat :system keyword?)

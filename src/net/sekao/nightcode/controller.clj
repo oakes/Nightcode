@@ -32,7 +32,9 @@
              [onClean [javafx.event.ActionEvent] void]
              [onStop [javafx.event.ActionEvent] void]
              [onDarkTheme [javafx.event.ActionEvent] void]
-             [onLightTheme [javafx.event.ActionEvent] void]]))
+             [onLightTheme [javafx.event.ActionEvent] void]
+             [onFontDec [javafx.event.ActionEvent] void]
+             [onFontInc [javafx.event.ActionEvent] void]]))
 
 ; new project
 
@@ -277,23 +279,41 @@
 (defn -onStop [this ^ActionEvent event]
   (-> event .getSource .getScene stop!))
 
-; dark
+; theme
 
 (defn dark-theme! [^Scene scene]
-  (-> scene .getStylesheets (.add "dark.css"))
   (swap! pref-state assoc :theme :dark)
-  (p/theme-webviews! @runtime-state :dark))
+  (-> scene .getStylesheets (.add "dark.css"))
+  (p/update-webviews! @pref-state @runtime-state))
 
 (defn -onDarkTheme [this ^ActionEvent event]
   (-> @runtime-state :stage .getScene dark-theme!))
 
-; light
-
 (defn light-theme! [^Scene scene]
-  (-> scene .getStylesheets .clear)
   (swap! pref-state assoc :theme :light)
-  (p/theme-webviews! @runtime-state :light))
+  (-> scene .getStylesheets .clear)
+  (p/update-webviews! @pref-state @runtime-state))
 
 (defn -onLightTheme [this ^ActionEvent event]
   (-> @runtime-state :stage .getScene light-theme!))
+
+; font
+
+(defn font! [^Scene scene]
+  (-> scene .getRoot (.setStyle (str "-fx-font-size: " (:text-size @pref-state))))
+  (p/update-webviews! @pref-state @runtime-state))
+
+(defn font-dec! [^Scene scene]
+  (swap! pref-state update :text-size dec)
+  (font! scene))
+
+(defn -onFontDec [this ^ActionEvent event]
+  (-> @runtime-state :stage .getScene font-dec!))
+
+(defn font-inc! [^Scene scene]
+  (swap! pref-state update :text-size inc)
+  (font! scene))
+
+(defn -onFontInc [this ^ActionEvent event]
+  (-> @runtime-state :stage .getScene font-inc!))
 
