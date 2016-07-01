@@ -122,7 +122,7 @@ body {margin: 0;padding:0;}
 }
 
 .column {
-	min-width: 30em;
+	min-width: 25em;
 }
 
 @media only screen and (min-width: 801px) {
