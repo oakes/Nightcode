@@ -323,7 +323,7 @@
   :ret spec/pane?)
 
 (fdef home-pane
-  :args (s/cat :runtime-state map?)
+  :args (s/cat :pref-state map? :runtime-state map?)
   :ret spec/pane?)
 
 (fdef file-node
