@@ -107,8 +107,10 @@
                                  (project-pane parent-path))
                 editors (-> project-pane .getItems (.get 0))]
             (-> editors .getChildren .clear)
-            (if (.isDirectory file)
+            (cond
+              (.isDirectory file)
               (-> editors .getChildren (.add (dir-pane)))
+              (.isFile file)
               (when-let [pane (or (get-in runtime-state [:editor-panes path])
                                   (e/editor-pane @pref-state-atom runtime-state file))]
                 (-> editors .getChildren (.add pane))
