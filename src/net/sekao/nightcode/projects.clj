@@ -16,11 +16,13 @@
            [javafx.concurrent Worker$State]
            [javafx.scene Scene]
            [javafx.stage Stage]
-           [javafx.scene.input KeyEvent KeyCode]))
+           [javafx.scene.input KeyEvent KeyCode]
+           [javafx.application Platform]))
 
 (definterface ProjectTreeItem
   (getPath [] "Unique path representing this item")
-  (getPane [pref-state-atom runtime-state-atom parent-path] "The pane for the given item"))
+  (getPane [pref-state-atom runtime-state-atom parent-path] "The pane for the given item")
+  (focus [pane] "Focuses on something inside the pane"))
 
 (declare get-children)
 
@@ -112,7 +114,9 @@
                 (-> editors .getChildren (.add pane))
                 (swap! runtime-state-atom update :editor-panes assoc path pane)))
             (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
-            project-pane))))))
+            project-pane)))
+      (focus [pane]
+        (some-> (.lookup pane "#webview") .requestFocus)))))
 
 (defn home-node []
   (let [path "*Home*"
@@ -128,7 +132,9 @@
         (let [pane (or (get-in @runtime-state-atom [:project-panes path])
                        (home-pane @pref-state-atom @runtime-state-atom))]
           (swap! runtime-state-atom update :project-panes assoc path pane)
-          pane)))))
+          pane))
+      (focus [pane]
+        (some-> (.lookup pane "#repl") .requestFocus)))))
 
 (defn root-node [pref-state]
   (let [project-files (->> (:project-set pref-state)
@@ -259,7 +265,10 @@
               (when-let [new-pane (.getPane new-value pref-state-atom runtime-state-atom parent-path)]
                 (doto (.getChildren content)
                   (.clear)
-                  (.add new-pane))))))))))
+                  (.add new-pane))
+                (Platform/runLater
+                  (fn []
+                    (.focus new-value new-pane)))))))))))
 
 (defn set-focused-listener! [pref-state-atom ^Stage stage project-tree]
   (.addListener (.focusedProperty stage)
