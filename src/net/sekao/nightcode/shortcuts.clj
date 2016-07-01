@@ -147,17 +147,21 @@
       (reify EventHandler
         (handle [this e]
           (when (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (show-tooltips! stage (.getRoot scene))
-            (show-tabs! stage (.getRoot scene))))))
+            (Platform/runLater
+              (fn []
+                (show-tooltips! stage (.getRoot scene))
+                (show-tabs! stage (.getRoot scene))))))))
     ; hide tooltips and run shortcut on key released
     (.addEventHandler scene KeyEvent/KEY_RELEASED
       (reify EventHandler
         (handle [this e]
           (cond
             (#{KeyCode/COMMAND KeyCode/CONTROL} (.getCode e))
-            (doto (.getRoot scene)
-              hide-tooltips!
-              hide-tabs!)
+            (Platform/runLater
+              (fn []
+                (doto (.getRoot scene)
+                  hide-tooltips!
+                  hide-tabs!)))
             (.isShortcutDown e)
             (if (#{KeyCode/UP KeyCode/DOWN KeyCode/PAGE_UP KeyCode/PAGE_DOWN} (.getCode e))
               ; if any new nodes have appeared, make sure their tooltips are showing
