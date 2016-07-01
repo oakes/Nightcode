@@ -98,7 +98,7 @@
 }
 
 .paren-soup .content .rainbow-1 {
-	color: brown;
+	color: orange;
 }
 
 .paren-soup .content .rainbow-2 {
@@ -110,25 +110,25 @@
 }
 
 .paren-soup .content .rainbow-4 {
-	color: orange;
-}
-
-.paren-soup .content .rainbow-5 {
-	color: hotpink;
-}
-
-.paren-soup .content .rainbow-6 {
 	color: lime;
 }
 
+.paren-soup .content .rainbow-5 {
+	color: steelblue;
+}
+
+.paren-soup .content .rainbow-6 {
+	color: olivedrab;
+}
+
 .paren-soup .content .rainbow-7 {
-	color: orange;
+	color: deeppink;
 }
 
 .paren-soup .content .rainbow-8 {
-	color: plum;
+	color: indigo;
 }
 
 .paren-soup .content .rainbow-9 {
-	color: tomato;
+	color: darkcyan;
 }
