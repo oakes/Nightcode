@@ -1,6 +1,12 @@
 var editor = null;
 var lastTextContent = "";
 
+window.onkeydown = function(e) {
+    if ((e.metaKey || e.ctrlKey) && (e.keyCode == 38 || e.keyCode == 40)) {
+        e.preventDefault();
+    }
+};
+
 function init() {
     markClean();
     var parent = document.getElementById('paren-soup');
