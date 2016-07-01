@@ -58,11 +58,12 @@
         (.show dialog)
         (future
           (try
-            (proc/start-java-process! process dir "Boot"
-              "--no-boot-script"
-              "-d" "seancorfield/boot-new:0.4.4" "new"
-              "-t" (name project-type)
-              "-n" project-name)
+            (proc/start-java-process! process dir
+              ["Boot"
+               "--no-boot-script"
+               "-d" "seancorfield/boot-new:0.4.4" "new"
+               "-t" (name project-type)
+               "-n" project-name])
             (catch Exception e (.printStackTrace e)))
           (Platform/runLater
             (fn []
