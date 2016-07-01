@@ -229,17 +229,18 @@
 
 (defn move-tab-selection!
   [scene pref-state-atom runtime-state-atom diff]
-  (let [paths (-> @runtime-state-atom :editor-panes keys)
-        index (.indexOf paths (:selection @pref-state-atom))
-        max-index (dec (count paths))
-        new-index (+ index diff)
-        new-index (cond
-                    (neg? new-index) max-index
-                    (> new-index max-index) 0
-                    :else new-index)
-        project-tree (.lookup scene "#project_tree")]
-    (when (pos? (count paths))
-      (update-project-tree-selection! project-tree (nth paths new-index)))))
+  (when-let [selection (:selection @pref-state-atom)]
+    (let [paths (-> @runtime-state-atom :editor-panes keys)
+          index (.indexOf paths selection)
+          max-index (dec (count paths))
+          new-index (+ index diff)
+          new-index (cond
+                      (neg? new-index) max-index
+                      (> new-index max-index) 0
+                      :else new-index)
+          project-tree (.lookup scene "#project_tree")]
+      (when (pos? (count paths))
+        (update-project-tree-selection! project-tree (nth paths new-index))))))
 
 (defn set-selection-listener! [pref-state-atom runtime-state-atom ^Stage stage]
   (let [scene (.getScene stage)
