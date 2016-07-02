@@ -77,13 +77,13 @@ requisite project files, or empty if neither exists."
    (when-let [^String selected-path (:selection pref-state)]
      (get-project-path selected-path pref-state)))
   ([path pref-state]
-   (let [file (io/file path)
-         path (.getCanonicalPath file)]
+   (if-let [file (try (io/file path) (catch Exception _))]
      (if (or (-> path build-systems count pos?)
              (contains? (:project-set pref-state) path))
        path
        (when-let [parent-file (.getParentFile file)]
-         (get-project-path (.getCanonicalPath parent-file) pref-state))))))
+         (get-project-path (.getCanonicalPath parent-file) pref-state)))
+     path)))
 
 (defn parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
@@ -104,7 +104,7 @@ requisite project files, or empty if neither exists."
        str/lower-case))
 
 (defn escape-js [s]
-  (str/escape s {\' "\\'", \newline "\\n"}))
+  (str/escape s {\' "\\'", \newline "\\n", \return ""}))
 
 (defn uri->str
   "Converts a java.net.URI to a String."
