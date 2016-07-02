@@ -62,6 +62,8 @@
         (write-pref! :expansion-set new-expansions))
       (when (not= old-selection new-selection)
         (write-pref! :selection new-selection))
+      (when (not= old-theme new-theme)
+        (write-pref! :theme new-theme))
       (when (not= old-text-size new-text-size)
         (write-pref! :text-size new-text-size)))))
 
