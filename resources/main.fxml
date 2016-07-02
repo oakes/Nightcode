@@ -20,7 +20,7 @@
                <children>
                   <MenuButton fx:id="start" minWidth="-Infinity" mnemonicParsing="false" text="Start">
                      <items>
-                        <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console" />
+                        <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console" visible="false" />
                         <CustomMenuItem fx:id="theme_buttons" hideOnClick="false" mnemonicParsing="false" text="Unspecified Action">
                            <content>
                               <HBox>
