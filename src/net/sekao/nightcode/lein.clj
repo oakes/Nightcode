@@ -5,6 +5,7 @@
             [leiningen.repl]
             [leiningen.run]
             [leiningen.uberjar]
+            [leiningen.new]
             [clojure.spec :as s :refer [fdef]]
             [net.sekao.nightcode.spec :as spec])
   (:gen-class))
@@ -33,6 +34,10 @@
   (lein! args)
   (System/exit 0))
 
+(defn new! [parent-path project-type project-name]
+  (System/setProperty "leiningen.original.pwd" parent-path)
+  (leiningen.new/new {} (name project-type) project-name (str project-name ".core")))
+
 ; specs
 
 (fdef get-project-clj-path
@@ -45,4 +50,7 @@
 
 (fdef lein!
   :args (s/cat :args (s/coll-of string? [])))
+
+(fdef new!
+  :args (s/cat :parent-path string? :project-type keyword? :project-name string?))
 

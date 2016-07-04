@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [net.sekao.nightcode.builders :as b]
             [net.sekao.nightcode.editors :as e]
+            [net.sekao.nightcode.lein :as lein]
             [net.sekao.nightcode.process :as proc]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [pref-state runtime-state]]
@@ -14,7 +15,10 @@
            [javafx.scene Scene]
            [javafx.scene.input KeyEvent KeyCode])
   (:gen-class
-   :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
+   :methods [[onNewConsoleApp [javafx.event.ActionEvent] void]
+             [onNewWebApp [javafx.event.ActionEvent] void]
+             [onNewGraphicsApp [javafx.event.ActionEvent] void]
+             [onNewAudioApp [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]
@@ -58,6 +62,8 @@
         (.show dialog)
         (future
           (try
+            (lein/new! dir project-type project-name)
+            #_
             (proc/start-java-process! process dir
               ["Boot"
                "--no-boot-script"
@@ -71,8 +77,17 @@
               (swap! pref-state update :project-set conj (.getCanonicalPath file))
               (p/update-project-tree! pref-state project-tree))))))))
 
-(defn -onNewConsoleProject [this ^ActionEvent event]
-  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :app)))
+(defn -onNewConsoleApp [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
+
+(defn -onNewWebApp [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :web)))
+
+(defn -onNewGraphicsApp [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :graphics)))
+
+(defn -onNewAudioApp [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :audio)))
 
 ; import
 

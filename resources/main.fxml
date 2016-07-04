@@ -20,7 +20,10 @@
                <children>
                   <MenuButton fx:id="start" minWidth="-Infinity" mnemonicParsing="false" text="Start">
                      <items>
-                        <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console" visible="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#onNewConsoleApp" text="Console App" />
+                        <MenuItem mnemonicParsing="false" onAction="#onNewWebApp" text="Web App" />
+                        <MenuItem mnemonicParsing="false" onAction="#onNewGraphicsApp" text="Graphics App" />
+                        <MenuItem mnemonicParsing="false" onAction="#onNewAudioApp" text="Audio App" />
                         <CustomMenuItem fx:id="theme_buttons" hideOnClick="false" mnemonicParsing="false" text="Unspecified Action">
                            <content>
                               <HBox>
