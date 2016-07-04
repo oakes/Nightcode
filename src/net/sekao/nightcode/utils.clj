@@ -63,7 +63,7 @@ requisite project files, or empty if neither exists."
   (let [file (io/file path)
         dir? (.isDirectory file)
         types #{}
-        types (if (and dir? (.exists (io/file file "build.boot")))
+        types (if false ;(and dir? (.exists (io/file file "build.boot")))
                 (conj types :boot)
                 types)
         types (if (and dir? (.exists (io/file file "project.clj")))
