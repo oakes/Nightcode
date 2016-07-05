@@ -7,6 +7,8 @@
                  [hiccup "1.0.5"]]
   :source-paths ["src/clj"]
   :javac-options ["-target" "1.6" "-source" "1.6" "-Xlint:-options"]
+  :plugins [[lein-cljsbuild "1.1.3"]]
+  :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds [{:source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/cljs.js"
                                    :optimizations :advanced
