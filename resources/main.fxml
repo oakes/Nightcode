@@ -5,6 +5,7 @@
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.TreeView?>
@@ -24,6 +25,7 @@
                         <MenuItem mnemonicParsing="false" onAction="#onNewWebApp" text="Web App" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewGraphicsApp" text="Graphics App" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewAudioApp" text="Audio App" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
                         <CustomMenuItem fx:id="theme_buttons" hideOnClick="false" mnemonicParsing="false" text="Unspecified Action">
                            <content>
                               <HBox>
