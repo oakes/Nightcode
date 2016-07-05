@@ -75,7 +75,7 @@
             (fn []
               (.hide dialog)
               (swap! pref-state update :project-set conj (.getCanonicalPath file))
-              (p/update-project-tree! pref-state project-tree))))))))
+              (p/update-project-tree! pref-state project-tree (.getCanonicalPath file)))))))))
 
 (defn -onNewConsoleApp [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
