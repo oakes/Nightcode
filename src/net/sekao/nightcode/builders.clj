@@ -119,6 +119,18 @@
     :boot "Boot"
     :lein l/class-name))
 
+(def ^:const ids [:.run :.run-with-repl :.reload :.build :.clean :.stop])
+(def ^:const disable-when-running [:.run :.run-with-repl :.reload :.build :.clean])
+(def ^:const disable-when-not-running [:.stop])
+
+(defn update-when-process-changes! [pane process-running?]
+  (doseq [id disable-when-running]
+    (doseq [node (.lookupAll pane (name id))]
+      (.setDisable node process-running?)))
+  (doseq [id disable-when-not-running]
+    (doseq [node (.lookupAll pane (name id))]
+      (.setDisable node (not process-running?)))))
+
 (defn start-builder! [pref-state runtime-state-atom start-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
     (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
@@ -126,7 +138,11 @@
         (let [tab-content (.getContent (get-tab pane system))
               webview (.lookup tab-content "#build_webview")
               pipes (create-pipes)
-              process (get-in @runtime-state-atom [:processes project-path] (atom nil))]
+              process (or (get-in @runtime-state-atom [:processes project-path])
+                          (doto (atom nil)
+                            (add-watch :process-changed
+                              (fn [_ _ _ new-process]
+                                (update-when-process-changes! pane (some? new-process))))))]
           (init-console! webview pipes (:web-port @runtime-state-atom)
             (fn []
               (refresh-builder! webview (= cmd "repl") pref-state)
@@ -138,8 +154,7 @@
     (stop-builder-process! runtime-state project-path)))
 
 (defn init-builder! [pane path]
-  (let [systems (u/build-systems path)
-        ids [:.run :.run-with-repl :.reload :.build :.clean :.stop]]
+  (let [systems (u/build-systems path)]
     ; add/remove tooltips
     (.addListener (-> (.lookup pane "#build_tabs") .getSelectionModel .selectedItemProperty)
       (reify ChangeListener
@@ -195,6 +210,9 @@
 (fdef build-system->class-name
   :args (s/cat :system keyword?)
   :ret string?)
+
+(fdef update-when-process-changes!
+  :args (s/cat :pane spec/pane? :process-running? boolean?))
 
 (fdef start-builder!
   :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :start-str string? :cmd string?))

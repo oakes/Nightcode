@@ -24,7 +24,7 @@
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" styleClass="reload" text="Reload" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" styleClass="build" text="Build" />
-                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
+                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
                         </HBox>
                         <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" visible="false" VBox.vgrow="ALWAYS" />
@@ -43,7 +43,7 @@
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" styleClass="reload" text="Reload" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" styleClass="build" text="Build" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" styleClass="clean" text="Clean" />
-                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
+                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
                         </HBox>
                         <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" visible="false" />
