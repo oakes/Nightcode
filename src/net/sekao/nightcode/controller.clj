@@ -38,7 +38,8 @@
              [onDarkTheme [javafx.event.ActionEvent] void]
              [onLightTheme [javafx.event.ActionEvent] void]
              [onFontDec [javafx.event.ActionEvent] void]
-             [onFontInc [javafx.event.ActionEvent] void]]))
+             [onFontInc [javafx.event.ActionEvent] void]
+             [onAutoSave [javafx.event.ActionEvent] void]]))
 
 ; new project
 
@@ -340,4 +341,9 @@
 
 (defn -onFontInc [this ^ActionEvent event]
   (-> @runtime-state :stage .getScene font-inc!))
+
+; auto save
+
+(defn -onAutoSave [this ^ActionEvent event]
+  (swap! pref-state assoc :auto-save? (-> event .getTarget .isSelected)))
 

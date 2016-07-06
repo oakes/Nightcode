@@ -112,7 +112,7 @@
               (-> editors .getChildren (.add (dir-pane)))
               (.isFile file)
               (when-let [pane (or (get-in runtime-state [:editor-panes path])
-                                  (e/editor-pane @pref-state-atom runtime-state file))]
+                                  (e/editor-pane pref-state-atom runtime-state file))]
                 (-> editors .getChildren (.add pane))
                 (swap! runtime-state-atom update :editor-panes assoc path pane)))
             (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)

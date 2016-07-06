@@ -79,7 +79,7 @@
 
 (definterface Bridge
   (onload [])
-  (onchange [])
+  (onchange [should-save?])
   (onenter [text]))
 
 (defn update-editor-buttons! [pane ^WebEngine engine]
@@ -104,7 +104,7 @@
 
 (def ^:const ids [:#up :#save :#undo :#redo :#instarepl :#find :#close])
 
-(defn editor-pane [pref-state runtime-state ^File file]
+(defn editor-pane [pref-state-atom runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
@@ -119,10 +119,14 @@
             (proxy [Bridge] []
               (onload []
                 (try
-                  (onload engine file pref-state)
+                  (onload engine file @pref-state-atom)
                   (catch Exception e (.printStackTrace e))))
-              (onchange []
+              (onchange [should-save?]
                 (try
+                  (when (and should-save? (:auto-save? @pref-state-atom))
+                    (doto (.lookup pane "#save")
+                      (.setDisable false)
+                      .fire))
                   (update-editor-buttons! pane engine)
                   (catch Exception e (.printStackTrace e))))
               (onenter [text]))))
@@ -170,6 +174,6 @@
   :ret boolean?)
 
 (fdef editor-pane
-  :args (s/cat :pref-state map? :runtime-state map? :file spec/file?)
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state map? :file spec/file?)
   :ret spec/pane?)
 

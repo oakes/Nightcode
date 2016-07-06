@@ -9,7 +9,7 @@ function init() {
     });
     if (window.java) {
         editor.on("change", function(editor, change) {
-            window.java.onchange();
+            window.java.onchange(true);
         });
     }
     document.body.removeChild(content);
@@ -45,7 +45,7 @@ function getTextContent() {
 function markClean() {
     if (window.java) {
     	lastTextContent = getTextContent();
-    	window.java.onchange();
+    	window.java.onchange(false);
     }
 }
 
@@ -68,7 +68,7 @@ window.onload = function() {
     
     if (window.java) {
         window.java.onload();
-        window.java.onchange();
+        window.java.onchange(false);
     }
     else {
         init();

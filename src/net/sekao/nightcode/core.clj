@@ -51,7 +51,7 @@
     ; update the ui
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)
-    ; set the theme and font size
+    ; apply the prefs
     (let [theme-buttons (->> (.lookup scene "#start")
                              .getItems
                              (filter #(= "theme_buttons" (.getId %)))
@@ -62,7 +62,12 @@
         :dark (.fire (.get theme-buttons 0))
         :light (.fire (.get theme-buttons 1))
         nil))
-    (c/font! scene)))
+    (c/font! scene)
+    (let [auto-save-button (->> (.lookup scene "#start")
+                                .getItems
+                                (filter #(= "auto_save" (.getId %)))
+                                first)]
+      (.setSelected auto-save-button (:auto-save? @pref-state)))))
 
 (defn -main [& args]
   (swap! runtime-state assoc :web-port (e/start-web-server!))

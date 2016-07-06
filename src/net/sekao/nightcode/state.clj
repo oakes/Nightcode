@@ -36,7 +36,8 @@
                            :expansion-set (read-pref :expansion-set #{})
                            :selection (read-pref :selection)
                            :theme (read-pref :theme :dark)
-                           :text-size (read-pref :text-size 15)}))
+                           :text-size (read-pref :text-size 15)
+                           :auto-save? (read-pref :auto-save? true)}))
 
 (defonce runtime-state (atom {:web-port nil
                               :project-panes {}
@@ -46,31 +47,16 @@
 
 (add-watch pref-state :write-prefs
   (fn [_ _ old-state new-state]
-    (let [old-projects (:project-set old-state)
-          new-projects (:project-set new-state)
-          old-expansions (:expansion-set old-state)
-          new-expansions (:expansion-set new-state)
-          old-selection (:selection old-state)
-          new-selection (:selection new-state)
-          old-theme (:theme old-state)
-          new-theme (:theme new-state)
-          old-text-size (:text-size old-state)
-          new-text-size (:text-size new-state)]
-      (when (not= old-projects new-projects)
-        (write-pref! :project-set new-projects))
-      (when (not= old-expansions new-expansions)
-        (write-pref! :expansion-set new-expansions))
-      (when (not= old-selection new-selection)
-        (write-pref! :selection new-selection))
-      (when (not= old-theme new-theme)
-        (write-pref! :theme new-theme))
-      (when (not= old-text-size new-text-size)
-        (write-pref! :text-size new-text-size)))))
+    (doseq [key [:project-set :expansion-set :selection :theme :text-size :auto-save?]]
+      (let [old-val (get old-state key)
+            new-val (get new-state key)]
+        (when (not= old-val new-val)
+          (write-pref! key new-val))))))
 
 ; specs
 
 (fdef write-pref!
-  :args (s/cat :key keyword? :val identity))
+  :args (s/cat :key keyword? :val :clojure.spec/any))
 
 (fdef remove-pref!
   :args (s/cat :key keyword?))

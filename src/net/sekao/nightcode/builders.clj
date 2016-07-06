@@ -65,7 +65,7 @@
 
 (definterface Bridge
   (onload [])
-  (onchange [])
+  (onchange [should-save?])
   (onenter [text]))
 
 (defn init-console! [webview pipes web-port cb]
@@ -84,7 +84,7 @@
                     (try
                       (cb)
                       (catch Exception e (.printStackTrace e))))
-                  (onchange [])
+                  (onchange [_])
                   (onenter [text]
                     (doto (:out-pipe pipes)
                       (.write text)
