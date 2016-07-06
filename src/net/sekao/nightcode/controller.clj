@@ -168,8 +168,7 @@
 
 (defn save! [^Scene scene]
   (when-let [path (:selection @pref-state)]
-    (let [webview (.lookup scene "#webview")
-          engine (.getEngine webview)]
+    (when-let [engine (some-> scene (.lookup "#webview") .getEngine)]
       (spit (io/file path) (.executeScript engine "getTextContent()"))
       (.executeScript engine "markClean()"))))
 
