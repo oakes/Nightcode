@@ -18,7 +18,10 @@
 
 (defn read-project-clj
   [path]
-  (-> path get-project-clj-path leiningen.core.project/read-raw))
+  (-> path
+      get-project-clj-path
+      leiningen.core.project/read-raw
+      (assoc-in [:repl-options :subsequent-prompt] (fn [ns] ""))))
 
 (defn lein! [[cmd & args]]
   (let [path "."

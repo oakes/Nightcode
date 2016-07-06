@@ -120,8 +120,8 @@
     :lein l/class-name))
 
 (def ^:const ids [:.run :.run-with-repl :.reload :.build :.clean :.stop])
-(def ^:const disable-when-running [:.run :.run-with-repl :.reload :.build :.clean])
-(def ^:const disable-when-not-running [:.stop])
+(def ^:const disable-when-running [:.run :.run-with-repl :.build :.clean])
+(def ^:const disable-when-not-running [:.reload :.stop])
 
 (defn update-when-process-changes! [pane process-running?]
   (doseq [id disable-when-running]
@@ -130,6 +130,14 @@
   (doseq [id disable-when-not-running]
     (doseq [node (.lookupAll pane (name id))]
       (.setDisable node (not process-running?)))))
+
+(defn run-script-in-builder! [pref-state runtime-state script-str]
+  (when-let [project-path (u/get-project-path pref-state)]
+    (when-let [pane (get-in runtime-state [:project-panes project-path])]
+      (when-let [system (get-selected-build-system pane)]
+        (let [tab-content (.getContent (get-tab pane system))
+              webview (.lookup tab-content "#build_webview")]
+          (.executeScript (.getEngine webview) script-str))))))
 
 (defn start-builder! [pref-state runtime-state-atom start-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
@@ -213,6 +221,9 @@
 
 (fdef update-when-process-changes!
   :args (s/cat :pane spec/pane? :process-running? boolean?))
+
+(fdef run-script-in-builder!
+  :args (s/cat :pref-state map? :runtime-state map? :script-str string?))
 
 (fdef start-builder!
   :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :start-str string? :cmd string?))

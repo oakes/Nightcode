@@ -266,7 +266,15 @@
 
 ; reload
 
-(defn reload! [^Scene scene])
+(defn sanitize-code [code])
+
+(defn reload! [^Scene scene]
+  (when-let [webview (.lookup scene "#webview")]
+    (some->> (.executeScript (.getEngine webview) "getTextContent()")
+             (#(str "(do" \newline % \newline ")"))
+             u/escape-js
+             (format "window.java.onenter('%s\\n')")
+             (b/run-script-in-builder! @pref-state @runtime-state))))
 
 (defn -onReload [this ^ActionEvent event]
   (-> event .getSource .getScene reload!))

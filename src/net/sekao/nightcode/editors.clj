@@ -102,6 +102,8 @@
 (defn should-open? [^File file]
   (-> file .length (< max-file-size)))
 
+(def ^:const ids [:#up :#save :#undo :#redo :#instarepl :#find :#close])
+
 (defn editor-pane [pref-state runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
@@ -110,7 +112,7 @@
           clojure? (-> file .getName u/get-extension clojure-exts some?)]
       (.setContextMenuEnabled webview false)
       (-> pane (.lookup "#instarepl") (.setManaged clojure?))
-      (shortcuts/add-tooltips! pane [:#up :#save :#undo :#redo :#instarepl :#find :#close])
+      (shortcuts/add-tooltips! pane ids)
       (-> engine
           (.executeScript "window")
           (.setMember "java"
