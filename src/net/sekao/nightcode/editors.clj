@@ -79,7 +79,8 @@
 
 (definterface Bridge
   (onload [])
-  (onchange [should-save?])
+  (onautosave [])
+  (onchange [])
   (onenter [text]))
 
 (defn update-editor-buttons! [pane ^WebEngine engine]
@@ -121,12 +122,15 @@
                 (try
                   (onload engine file @pref-state-atom)
                   (catch Exception e (.printStackTrace e))))
-              (onchange [should-save?]
+              (onautosave []
                 (try
-                  (when (and should-save? (:auto-save? @pref-state-atom))
+                  (when (:auto-save? @pref-state-atom)
                     (doto (.lookup pane "#save")
                       (.setDisable false)
                       .fire))
+                  (catch Exception e (.printStackTrace e))))
+              (onchange []
+                (try
                   (update-editor-buttons! pane engine)
                   (catch Exception e (.printStackTrace e))))
               (onenter [text]))))

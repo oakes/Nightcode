@@ -13,7 +13,10 @@ function init() {
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
             if (window.java) {
-                window.java.onchange(e.type == "keyup");
+                if (e.type == "keyup") {
+                    window.java.onautosave();
+                }
+                window.java.onchange();
             }
         },
         "disable-undo-redo?": true
@@ -25,7 +28,7 @@ function initConsole(isRepl) {
     editor = paren_soup.core.init(parent, {
         "change-callback": function(e) {
             if (window.java) {
-                window.java.onchange(false);
+                window.java.onchange();
             }
             if (e.type == "keyup") {
             	parent.scrollTop = parent.scrollHeight;
@@ -68,7 +71,7 @@ function getTextContent() {
 function markClean() {
     if (window.java) {
     	lastTextContent = getTextContent();
-    	window.java.onchange(false);
+    	window.java.onchange();
     }
 }
 
@@ -119,7 +122,7 @@ window.onload = function() {
     
     if (window.java) {
         window.java.onload();
-        window.java.onchange(false);
+        window.java.onchange();
     }
     else {
         init();
