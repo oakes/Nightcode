@@ -133,6 +133,29 @@
 
 ; remove
 
+(defn show-remove-editors-warning! [^Scene scene unsaved-paths]
+  (let [names (map #(-> % io/file .getName) unsaved-paths)
+        message (str "The below files are not saved. Proceed?"
+                  \newline
+                  \newline
+                  (str/join \newline names))
+        dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
+                 (.setTitle "Unsaved Files")
+                 (.setHeaderText message)
+                 (.setGraphic nil)
+                 (.initOwner (.getWindow scene))
+                 (.initModality Modality/WINDOW_MODAL))]
+    (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
+
+(defn should-remove? [^Scene scene ^String path]
+  (let [paths-to-delete (->> @runtime-state :editor-panes keys (filter #(u/parent-path? path %)))
+        get-pane #(get-in @runtime-state [:editor-panes %])
+        get-engine #(-> % get-pane (.lookup "#webview") .getEngine)
+        unsaved? #(-> % get-engine (.executeScript "isClean()") not)
+        unsaved-paths (filter unsaved? paths-to-delete)]
+    (or (empty? unsaved-paths)
+        (show-remove-editors-warning! scene unsaved-paths))))
+
 (defn remove! [^Scene scene]
   (let [{:keys [project-set selection]} @pref-state
         message (if (contains? project-set selection)
@@ -145,7 +168,8 @@
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
         project-tree (.lookup scene "#project_tree")]
-    (when (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
+    (when (and (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
+               (should-remove? scene selection))
       (p/remove-from-project-tree! pref-state selection)
       (e/remove-editors! selection runtime-state)
       (p/update-project-tree! pref-state project-tree))))
@@ -236,14 +260,15 @@
 
 (defn close! [^Scene scene]
   (when-let [path (:selection @pref-state)]
-    (let [file (io/file path)
-          new-path (if (.isDirectory file)
-                     path
-                     (.getCanonicalPath (.getParentFile file)))
-          project-tree (.lookup scene "#project_tree")]
-      (e/remove-editors! path runtime-state)
-      (p/update-project-tree-selection! project-tree new-path))
-    (p/remove-project! path runtime-state)))
+    (when (should-remove? scene path)
+      (let [file (io/file path)
+            new-path (if (.isDirectory file)
+                       path
+                       (.getCanonicalPath (.getParentFile file)))
+            project-tree (.lookup scene "#project_tree")]
+        (e/remove-editors! path runtime-state)
+        (p/update-project-tree-selection! project-tree new-path))
+      (p/remove-project! path runtime-state))))
 
 (defn -onClose [this ^ActionEvent event]
   (-> event .getSource .getScene close!))
