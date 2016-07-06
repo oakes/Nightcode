@@ -44,10 +44,16 @@ function initConsole(isRepl) {
 
 function undo() {
     paren_soup.core.undo(editor);
+    if (window.java) {
+        window.java.onautosave();
+    }
 }
 
 function redo() {
     paren_soup.core.redo(editor);
+    if (window.java) {
+        window.java.onautosave();
+    }
 }
 
 function canUndo() {
