@@ -103,9 +103,6 @@ requisite project files, or empty if neither exists."
        (subs path)
        str/lower-case))
 
-(defn escape-js [s]
-  (str/escape s {\' "\\'", \newline "\\n", \return ""}))
-
 (defn uri->str
   "Converts a java.net.URI to a String."
   [uri]
@@ -152,10 +149,6 @@ requisite project files, or empty if neither exists."
 
 (fdef get-extension
   :args (s/cat :path string?)
-  :ret string?)
-
-(fdef escape-js
-  :args (s/cat :s string?)
   :ret string?)
 
 (fdef uri->str

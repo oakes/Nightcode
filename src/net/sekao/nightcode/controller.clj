@@ -248,10 +248,9 @@
             engine (.getEngine webview)
             find (.lookup scene "#find")
             find-text (.getText find)]
-        (.executeScript engine
-          (format "window.find('%s', true, %b)"
-            (u/escape-js find-text)
-            (.isShiftDown event)))))))
+        (-> engine
+            (.executeScript "window")
+            (.call "find" (into-array Object [find-text true (.isShiftDown event)])))))))
 
 (defn -onFind [this ^KeyEvent event]
   (-> event .getSource .getScene (find! event)))
@@ -296,9 +295,10 @@
 (defn reload! [^Scene scene]
   (when-let [webview (.lookup scene "#webview")]
     (some->> (.executeScript (.getEngine webview) "getTextContent()")
-             (#(str "(do" \newline % \newline ")"))
-             u/escape-js
-             (format "window.java.onenter('%s\\n')")
+             (#(str "(do" \newline % \newline ")\n"))
+             vector
+             into-array
+             (.call (.executeScript (.getEngine webview) "window") "java.onenter")
              (b/run-script-in-builder! @pref-state @runtime-state))))
 
 (defn -onReload [this ^ActionEvent event]

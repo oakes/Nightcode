@@ -22,11 +22,12 @@
             (when-let [read (try (.read in-pipe ca)
                               (catch Exception _))]
               (when (pos? read)
-                (let [s (String. ca 0 read)
-                      cmd (format "append('%s')" (u/escape-js s))]
+                (let [s (String. ca 0 read)]
                   (Platform/runLater
                     (fn []
-                      (.executeScript engine cmd)))
+                      (-> engine
+                          (.executeScript "window")
+                          (.call "append" (into-array [s])))))
                   (recur))))))))))
 
 (defn create-pipes []
