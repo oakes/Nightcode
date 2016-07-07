@@ -290,16 +290,13 @@
 
 ; reload
 
-(defn sanitize-code [code])
-
 (defn reload! [^Scene scene]
   (when-let [webview (.lookup scene "#webview")]
-    (some->> (.executeScript (.getEngine webview) "getTextContent()")
-             (#(str "(do" \newline % \newline ")\n"))
-             vector
-             into-array
-             (.call (.executeScript (.getEngine webview) "window") "java.onenter")
-             (b/run-script-in-builder! @pref-state @runtime-state))))
+    (let [text (.executeScript (.getEngine webview) "getTextContent()")
+          text (str "(do" \newline text \newline ")" \newline "nil")
+          builder-webview (b/get-builder-webview @pref-state @runtime-state)
+          builder-bridge (-> (.getEngine builder-webview) (.executeScript "window") (.getMember "java"))]
+      (.onenter builder-bridge text))))
 
 (defn -onReload [this ^ActionEvent event]
   (-> event .getSource .getScene reload!))
