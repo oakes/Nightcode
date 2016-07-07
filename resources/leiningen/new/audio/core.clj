@@ -1,26 +1,17 @@
 (ns {{namespace}}
-  (:require [pink.oscillators :refer [sine]]
-            [pink.simple :refer :all]
-            [pink.space :refer [pan]]))
-
-(defn play []
-  ; start audio engine
-  (start-engine)
-  
-  ; create panned, sine audio function
-  (def audio-fn (pan (sine 340.0) 0.0))
-  
-  ; add audio function to engine
-  (add-afunc audio-fn)
-  
-  ; sleep for a bit
-  (Thread/sleep 2000)
-  
-  ; remove audio function from engine
-  (remove-afunc audio-fn)
-  
-  ; stop audio engine
-  (stop-engine))
+  (:require [alda.lisp :refer :all]
+            [alda.now :as now]))
 
 (defn -main [& args]
-  (play))
+  (now/play!
+    (part "accordion"
+      (note (pitch :c) (duration (note-length 8)))
+      (note (pitch :d))
+      (note (pitch :e :flat))
+      (note (pitch :f))
+      (note (pitch :g))
+      (note (pitch :a :flat))
+      (note (pitch :b))
+      (octave :up)
+      (note (pitch :c)))))
+
