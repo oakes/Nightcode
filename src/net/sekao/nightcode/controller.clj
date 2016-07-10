@@ -136,20 +136,6 @@
 
 ; remove
 
-(defn show-remove-editors-warning! [^Scene scene unsaved-paths]
-  (let [names (map #(-> % io/file .getName) unsaved-paths)
-        message (str "The below files are not saved. Proceed?"
-                  \newline
-                  \newline
-                  (str/join \newline names))
-        dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
-                 (.setTitle "Unsaved Files")
-                 (.setHeaderText message)
-                 (.setGraphic nil)
-                 (.initOwner (.getWindow scene))
-                 (.initModality Modality/WINDOW_MODAL))]
-    (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
-
 (defn should-remove? [^Scene scene ^String path]
   (let [paths-to-delete (->> @runtime-state :editor-panes keys (filter #(u/parent-path? path %)))
         get-pane #(get-in @runtime-state [:editor-panes %])
@@ -157,7 +143,10 @@
         unsaved? #(-> % get-engine (.executeScript "isClean()") not)
         unsaved-paths (filter unsaved? paths-to-delete)]
     (or (empty? unsaved-paths)
-        (show-remove-editors-warning! scene unsaved-paths))))
+        (->> (map #(-> % io/file .getName) unsaved-paths)
+             (str/join \newline)
+             (str "The below files are not saved. Proceed?" \newline \newline)
+             (p/show-warning! scene "Unsaved Files")))))
 
 (defn remove! [^Scene scene]
   (let [{:keys [project-set selection]} @pref-state

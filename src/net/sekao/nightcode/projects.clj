@@ -8,14 +8,14 @@
             [net.sekao.nightcode.utils :as u]
             [clojure.spec :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
-           [javafx.scene.control TreeItem TreeCell]
+           [javafx.scene.control TreeItem TreeCell ButtonType Alert Alert$AlertType]
            [javafx.collections FXCollections]
            [javafx.beans.value ChangeListener]
            [javafx.event EventHandler]
            [javafx.fxml FXMLLoader]
            [javafx.concurrent Worker$State]
            [javafx.scene Scene]
-           [javafx.stage Stage]
+           [javafx.stage Stage Modality]
            [javafx.scene.input KeyEvent KeyCode]
            [javafx.application Platform]))
 
@@ -303,12 +303,24 @@
               (= (.getCode e) KeyCode/PAGE_DOWN)
               (move-tab-selection! scene pref-state-atom runtime-state-atom 1))))))))
 
+(defn show-warning! [^Scene scene ^String title ^String header-text]
+  (let [dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
+                 (.setTitle title)
+                 (.setHeaderText header-text)
+                 (.setGraphic nil)
+                 (.initOwner (.getWindow scene))
+                 (.initModality Modality/WINDOW_MODAL))]
+    (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
+
 (defn set-close-listener! [^Stage stage]
   (.setOnCloseRequest stage
     (reify EventHandler
       (handle [this e]
-        (Platform/exit)
-        (System/exit 0)))))
+        (if (show-warning! (.getScene stage) "Quit" "Are you sure you want to quit?")
+          (do
+            (Platform/exit)
+            (System/exit 0))
+          (.consume e))))))
 
 (defn remove-project! [^String path runtime-state-atom]
   (when-let [pane (get-in @runtime-state-atom [:project-panes path])]
@@ -394,6 +406,10 @@
 
 (fdef set-project-key-listener!
   :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?))
+
+(fdef show-warning!
+  :args (s/cat :scene spec/scene? :title string? :header-text string?)
+  :ret boolean?)
 
 (fdef set-close-listener!
   :args (s/cat :stage spec/stage?))
