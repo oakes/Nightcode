@@ -9,6 +9,7 @@
                   [clojail "1.0.6"]])
 
 (task-options!
+  sift {:include #{#"\.jar$"}}
   pom {:project 'nightcode
        :version "2.0.0-SNAPSHOT"}
   aot {:namespace '#{net.sekao.nightcode.core
@@ -33,4 +34,4 @@
     (repl :init-ns 'net.sekao.nightcode.core)))
 
 (deftask build []
-  (comp (javac) (aot) (pom) (uber) (jar) (target)))
+  (comp (javac) (aot) (pom) (uber) (jar) (sift) (target)))
