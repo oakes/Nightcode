@@ -303,6 +303,13 @@
               (= (.getCode e) KeyCode/PAGE_DOWN)
               (move-tab-selection! scene pref-state-atom runtime-state-atom 1))))))))
 
+(defn set-close-listener! [^Stage stage]
+  (.setOnCloseRequest stage
+    (reify EventHandler
+      (handle [this e]
+        (Platform/exit)
+        (System/exit 0)))))
+
 (defn remove-project! [^String path runtime-state-atom]
   (when-let [pane (get-in @runtime-state-atom [:project-panes path])]
     (swap! runtime-state-atom update :project-panes dissoc path)
@@ -387,6 +394,9 @@
 
 (fdef set-project-key-listener!
   :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?))
+
+(fdef set-close-listener!
+  :args (s/cat :stage spec/stage?))
 
 (fdef remove-project!
   :args (s/cat :path string? :runtime-state-atom spec/atom?))
