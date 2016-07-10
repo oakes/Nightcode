@@ -117,6 +117,9 @@ requisite project files, or empty if neither exists."
       .getLocation
       .toURI))
 
+(defn remove-returns [^String s]
+  (str/escape s {\return ""}))
+
 ; specs
 
 (fdef get-relative-path
@@ -158,4 +161,8 @@ requisite project files, or empty if neither exists."
 (fdef get-exec-uri
   :args (s/cat :class-name string?)
   :ret #(instance? java.net.URI %))
+
+(fdef remove-returns
+  :args (s/cat :s string?)
+  :ret string?)
 

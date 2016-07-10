@@ -5,8 +5,7 @@
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.process :as proc]
             [clojure.spec :as s :refer [fdef]]
-            [clojure.set :as set]
-            [clojure.string :as str])
+            [clojure.set :as set])
   (:import [clojure.lang LineNumberingPushbackReader]
            [javafx.scene.web WebEngine]
            [java.io PipedWriter PipedReader PrintWriter]
@@ -23,8 +22,7 @@
             (when-let [read (try (.read in-pipe ca)
                               (catch Exception _))]
               (when (pos? read)
-                (let [s (String. ca 0 read)
-                      s (str/escape s {\return ""})]
+                (let [s (u/remove-returns (String. ca 0 read))]
                   (Platform/runLater
                     (fn []
                       (-> engine

@@ -1,7 +1,6 @@
 (ns net.sekao.nightcode.editors
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
-            [clojure.string :as str]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
@@ -93,7 +92,7 @@
   (-> engine
       .getDocument
       (.getElementById "content")
-      (.setTextContent (str/escape (slurp file) {\return ""})))
+      (.setTextContent (u/remove-returns (slurp file))))
   (doto engine
     (.executeScript "init()")
     (.executeScript (case (:theme pref-state)
