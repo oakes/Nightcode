@@ -21,6 +21,7 @@ function init() {
         },
         "disable-undo-redo?": true
     });
+    document.getElementById('content').focus();
 }
 
 function initConsole(isRepl) {
