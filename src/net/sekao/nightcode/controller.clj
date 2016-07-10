@@ -13,7 +13,8 @@
            [javafx.stage DirectoryChooser FileChooser StageStyle Window Modality]
            [javafx.application Platform]
            [javafx.scene Scene]
-           [javafx.scene.input KeyEvent KeyCode])
+           [javafx.scene.input KeyEvent KeyCode]
+           [java.awt Desktop])
   (:gen-class
    :methods [[onNewConsoleApp [javafx.event.ActionEvent] void]
              [onNewWebApp [javafx.event.ActionEvent] void]
@@ -39,7 +40,9 @@
              [onLightTheme [javafx.event.ActionEvent] void]
              [onFontDec [javafx.event.ActionEvent] void]
              [onFontInc [javafx.event.ActionEvent] void]
-             [onAutoSave [javafx.event.ActionEvent] void]]))
+             [onAutoSave [javafx.event.ActionEvent] void]
+             [onNewFile [javafx.event.ActionEvent] void]
+             [onOpenInFileBrowser [javafx.event.ActionEvent] void]]))
 
 ; new project
 
@@ -367,4 +370,35 @@
 
 (defn -onAutoSave [this ^ActionEvent event]
   (swap! pref-state assoc :auto-save? (-> event .getTarget .isSelected)))
+
+; new file
+
+(defn new-file! [^Scene scene]
+  (let [dialog (doto (TextInputDialog.)
+                 (.setTitle "New File")
+                 (.setHeaderText "Enter a path relative to the selected directory.")
+                 (.setGraphic nil)
+                 (.initOwner (.getWindow scene))
+                 (.initModality Modality/WINDOW_MODAL))
+        selected-path (:selection @pref-state)]
+    (-> dialog .getEditor (.setText "example.clj"))
+    (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
+      (let [new-file (io/file selected-path new-relative-path)
+            new-path (.getCanonicalPath new-file)
+            project-tree (.lookup scene "#project_tree")]
+        (.mkdirs (.getParentFile new-file))
+        (.createNewFile new-file)
+        (p/update-project-tree! pref-state project-tree new-path)))))
+
+(defn -onNewFile [this ^ActionEvent event]
+  (-> event .getSource .getScene new-file!))
+
+; open in file browser
+
+(defn open-in-file-browser! [^Scene scene]
+  (when-let [path (:selection @pref-state)]
+    (.open (Desktop/getDesktop) (io/file path))))
+
+(defn -onOpenInFileBrowser [this ^ActionEvent event]
+  (-> event .getSource .getScene open-in-file-browser!))
 

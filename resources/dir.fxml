@@ -6,12 +6,13 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-
 <VBox prefHeight="224.0" prefWidth="303.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.sekao.nightcode.controller">
    <children>
       <HBox prefHeight="3.0" prefWidth="303.0">
          <children>
             <Button fx:id="up" minWidth="-Infinity" mnemonicParsing="false" onAction="#onUp" text="↑" />
+            <Button fx:id="new_file" minWidth="-Infinity" mnemonicParsing="false" onAction="#onNewFile" text="New File" />
+            <Button fx:id="open_in_file_browser" minWidth="-Infinity" mnemonicParsing="false" onAction="#onOpenInFileBrowser" text="Open in File Browser" />
             <Separator prefWidth="200.0" HBox.hgrow="ALWAYS" />
             <Button fx:id="close" minWidth="-Infinity" mnemonicParsing="false" onAction="#onClose" text="X" />
          </children>

@@ -37,9 +37,7 @@
                    :.stop "i"
                    ; directory pane
                    :#new_file "n"
-                   :#open_in_browser "F"
-                   :#edit "M"
-                   :#cancel "C"})
+                   :#open_in_file_browser "F"})
 
 (def key-char->id (set/map-invert id->key-char))
 

@@ -28,7 +28,9 @@
               :.reload c/reload!
               :.build c/build!
               :.clean c/clean!
-              :.stop c/stop!})
+              :.stop c/stop!
+              :#new_file c/new-file!
+              :#open_in_file_browser c/open-in-file-browser!})
 
 (defn -start [^net.sekao.nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))

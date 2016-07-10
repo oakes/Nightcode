@@ -34,7 +34,7 @@
 
 (defn dir-pane []
   (let [pane (FXMLLoader/load (io/resource "dir.fxml"))]
-    (shortcuts/add-tooltips! pane [:#up :#close])
+    (shortcuts/add-tooltips! pane [:#up :#new_file :#open_in_file_browser :#close])
     pane))
 
 (defn home-pane [pref-state runtime-state]
