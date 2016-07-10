@@ -52,7 +52,7 @@
   :ret map?)
 
 (fdef lein!
-  :args (s/cat :args (s/coll-of string? [])))
+  :args (s/cat :args (s/coll-of string?)))
 
 (fdef new!
   :args (s/cat :parent-path string? :project-type keyword? :project-name string?))

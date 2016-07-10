@@ -197,7 +197,7 @@
   :args (s/cat :webview spec/node? :pipes map? :finish-str (s/nilable string?) :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :project-path string? :start-str (s/nilable string?) :args (s/coll-of string? [])))
+  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :project-path string? :start-str (s/nilable string?) :args (s/coll-of string?)))
 
 (fdef stop-builder-process!
   :args (s/cat :runtime-state map? :project-path string?))
@@ -214,7 +214,7 @@
   :ret (s/nilable keyword?))
 
 (fdef select-build-system!
-  :args (s/cat :pane spec/pane? :system keyword? :ids (s/coll-of keyword? [])))
+  :args (s/cat :pane spec/pane? :system keyword? :ids (s/coll-of keyword?)))
 
 (fdef refresh-builder!
   :args (s/cat :webview spec/node? :repl? boolean? :pref-state map?))

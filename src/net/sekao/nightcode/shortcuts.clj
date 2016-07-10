@@ -184,10 +184,10 @@
   :args (s/cat :node spec/node? :text string?))
 
 (fdef add-tooltips!
-  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :ids (s/coll-of keyword? [])))
+  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :ids (s/coll-of keyword?)))
 
 (fdef remove-tooltips!
-  :args (s/cat :node spec/node? :ids (s/coll-of keyword? [])))
+  :args (s/cat :node spec/node? :ids (s/coll-of keyword?)))
 
 (fdef show-tooltip!
   :args (s/alt

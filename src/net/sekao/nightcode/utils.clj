@@ -135,7 +135,7 @@ requisite project files, or empty if neither exists."
 
 (fdef build-systems
   :args (s/cat :path string?)
-  :ret (s/coll-of keyword? #{}))
+  :ret (s/coll-of keyword?))
 
 (fdef get-project-path
   :args (s/alt

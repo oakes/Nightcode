@@ -5,7 +5,7 @@
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.state :refer [pref-state runtime-state]]
-            [clojure.spec :as s])
+            [clojure.spec.test :refer [instrument]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage StageBuilder]
@@ -77,6 +77,6 @@
   (Application/launch net.sekao.nightcode.core (into-array String args)))
 
 (defn dev-main [& args]
-  (s/instrument-all)
+  (instrument)
   (apply -main args))
 

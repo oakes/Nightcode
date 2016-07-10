@@ -35,4 +35,4 @@
 
 (s/def ::files
   (s/or :primitive-array file-array?
-        :collection (s/coll-of file? [])))
+        :collection (s/coll-of file?)))

@@ -45,10 +45,10 @@
 ; specs
 
 (fdef start-process!
-  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string? [])))
+  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string?)))
 
 (fdef start-java-process!
-  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string? [])))
+  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string?)))
 
 (fdef stop-process!
   :args (s/cat :process spec/atom?))
