@@ -15,6 +15,5 @@
                ["project.clj" (render "project.clj" data)]
                ["README.md" (render "README.md" data)]
                [".gitignore" (render "gitignore" data)]
-               ["src/clj/{{path}}.clj" (render "server.clj" data)]
-               ["src/cljs/{{path}}.cljs" (render "client.cljs" data)]
-               ["resources/public/index.html" (render "index.html" data)])))
+               ["src/{{path}}.clj" (render "core.clj" data)]
+               "resources")))
