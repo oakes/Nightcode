@@ -46,7 +46,7 @@
                               <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
                         </HBox>
-                        <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" visible="false" />
+                        <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" visible="false" VBox.vgrow="ALWAYS" />
                      </children>
                   </VBox>
                </content>
