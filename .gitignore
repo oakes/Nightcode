@@ -6,3 +6,4 @@ pom.xml.asc
 **/target
 .*
 !.gitignore
+package/
