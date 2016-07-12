@@ -285,7 +285,7 @@
 (defn reload! [^Scene scene]
   (when-let [webview (.lookup scene "#webview")]
     (let [text (.executeScript (.getEngine webview) "getTextContent()")
-          text (str "(do" \newline text \newline ")" \newline "nil")
+          text (str "(do" \newline text \newline ")")
           builder-webview (b/get-builder-webview @pref-state @runtime-state)
           builder-bridge (-> (.getEngine builder-webview) (.executeScript "window") (.getMember "java"))]
       (.onenter builder-bridge text))))
