@@ -1,3 +1,5 @@
+![screenshot](screenshot.png)
+
 ## Introduction
 
 Nightcode is a simple IDE for Clojure and ClojureScript. Do `boot run` for development and `boot build` to make a jar file.
