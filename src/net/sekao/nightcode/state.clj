@@ -56,7 +56,7 @@
 ; specs
 
 (fdef write-pref!
-  :args (s/cat :key keyword? :val :clojure.spec/any))
+  :args (s/cat :key keyword? :val any?))
 
 (fdef remove-pref!
   :args (s/cat :key keyword?))

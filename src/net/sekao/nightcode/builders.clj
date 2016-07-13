@@ -185,7 +185,7 @@
 ; specs
 
 (fdef pipe-into-console!
-  :args (s/cat :engine :clojure.spec/any :in-pipe #(instance? java.io.Reader %)))
+  :args (s/cat :engine any? :in-pipe #(instance? java.io.Reader %)))
 
 (fdef create-pipes
   :args (s/cat)

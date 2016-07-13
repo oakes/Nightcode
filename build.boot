@@ -3,7 +3,7 @@
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
-                  [org.clojure/clojure "1.9.0-alpha9"]
+                  [org.clojure/clojure "1.9.0-alpha10"]
                   [leiningen "2.6.1" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [clojail "1.0.6"]])

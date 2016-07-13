@@ -142,8 +142,8 @@
 ; specs
 
 (fdef eval-form-safely
-  :args (s/cat :form :clojure.spec/any :nspace spec/ns?)
-  :ret :clojure.spec/any)
+  :args (s/cat :form any? :nspace spec/ns?)
+  :ret any?)
 
 (fdef eval-form
   :args (s/cat :form-str string? :nspace spec/ns?)
@@ -165,13 +165,13 @@
   :args (s/cat :path string? :runtime-state-atom spec/atom?))
 
 (fdef toggle-instarepl!
-  :args (s/cat :engine :clojure.spec/any :selected? boolean?))
+  :args (s/cat :engine any? :selected? boolean?))
 
 (fdef update-editor-buttons!
-  :args (s/cat :pane spec/pane? :engine :clojure.spec/any))
+  :args (s/cat :pane spec/pane? :engine any?))
 
 (fdef onload
-  :args (s/cat :engine :clojure.spec/any :file spec/file? :pref-state map?))
+  :args (s/cat :engine any? :file spec/file? :pref-state map?))
 
 (fdef should-open?
   :args (s/cat :file spec/file?)
