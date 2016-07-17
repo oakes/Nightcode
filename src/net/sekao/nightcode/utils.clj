@@ -6,7 +6,7 @@
   (:import [java.io File]
            [java.nio.file Paths]))
 
-(defmacro with-security [body]
+(defmacro with-security [& body]
   `(do
      (System/setProperty "java.security.policy"
                         (-> "java.policy" io/resource .toString))
@@ -14,7 +14,7 @@
        (proxy [SecurityManager] []
          (checkExit [status#]
            (throw (SecurityException. "Exit not allowed.")))))
-     (try ~body
+     (try ~@body
        (finally (System/setSecurityManager nil)))))
 
 (defn get-relative-path

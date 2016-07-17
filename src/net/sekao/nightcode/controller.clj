@@ -54,32 +54,16 @@
                   (.setTitle "New Project"))
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showSaveDialog chooser (.getWindow scene))]
-      (let [dialog (doto (Alert. Alert$AlertType/INFORMATION)
-                     (.setHeaderText "Creating project...")
-                     (.setGraphic nil)
-                     (.initOwner (.getWindow scene))
-                     (.initStyle StageStyle/UNDECORATED))
-            process (atom nil)
-            dir (-> file .getParentFile .getCanonicalPath)
-            project-name (-> file .getName str/lower-case)]
-        (-> dialog .getDialogPane (.lookupButton ButtonType/OK) (.setDisable true))
-        (.show dialog)
-        (future
-          (try
+      (let [dir (-> file .getParentFile .getCanonicalPath)
+            project-name (-> file .getName str/lower-case)
+            file (io/file dir project-name)]
+        (try
+          (u/with-security
             (lein/new! dir project-type project-name)
-            #_
-            (proc/start-java-process! process dir
-              ["Boot"
-               "--no-boot-script"
-               "-d" "seancorfield/boot-new:0.4.4" "new"
-               "-t" (name project-type)
-               "-n" project-name])
-            (catch Exception e (.printStackTrace e)))
-          (Platform/runLater
-            (fn []
-              (.hide dialog)
+            (when (.exists file)
               (swap! pref-state update :project-set conj (.getCanonicalPath file))
-              (p/update-project-tree! pref-state project-tree (.getCanonicalPath file)))))))))
+              (p/update-project-tree! pref-state project-tree (.getCanonicalPath file))))
+          (catch Exception _))))))
 
 (defn -onNewConsoleApp [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
