@@ -28,6 +28,7 @@
                       (-> engine
                           (.executeScript "window")
                           (.call "append" (into-array [s])))))
+                  (Thread/sleep 100) ; prevent application thread from being flooded
                   (recur))))))))))
 
 (defn create-pipes []
