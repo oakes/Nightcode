@@ -21,7 +21,9 @@ function init() {
         },
         "disable-undo-redo?": true
     });
-    document.getElementById('content').focus();
+    var content = document.getElementById('content');
+    content.style.whiteSpace = "pre";
+    content.focus();
 }
 
 function initConsole(isRepl) {
@@ -41,6 +43,8 @@ function initConsole(isRepl) {
         },
         "disable-clj?": !isRepl
     });
+    var content = document.getElementById('content');
+    content.style.whiteSpace = "pre-wrap";
 }
 
 function undo() {
