@@ -123,7 +123,7 @@
   (hide-tooltip! (.lookup node "#tabs")))
 
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
-  (when-let [id (key-char->id (if shift? (.toUpperCase text) text))]
+  (when-let [id (key-char->id (if shift? text (.toLowerCase text)))]
     (when-let [action (get actions id)]
       (when (->> (.lookupAll (.getRoot scene) (name id))
                  (filter #(and (not (.isDisabled %))
@@ -168,7 +168,7 @@
                   (show-tooltips! stage (.getRoot scene))
                   (show-tabs! stage (.getRoot scene))))
               ; run the action for the given key
-              (run-shortcut! scene actions (.getText e) (.isShiftDown e)))))))
+              (run-shortcut! scene actions (-> e .getCode .getName) (.isShiftDown e)))))))
     ; hide tooltips on window focus
     (.addListener (.focusedProperty stage)
       (reify ChangeListener
