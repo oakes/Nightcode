@@ -37,7 +37,7 @@
     (shortcuts/add-tooltips! pane [:#up :#new_file :#open_in_file_browser :#close])
     pane))
 
-(defn home-pane [pref-state runtime-state]
+(defn home-pane [pref-state-atom runtime-state]
   (let [pane (FXMLLoader/load (io/resource "home.fxml"))
         docs (-> pane .getChildren (.get 1) .getItems (.get 0))
         repl (-> pane .getChildren (.get 1) .getItems (.get 1))
@@ -47,7 +47,7 @@
                      (let [pipes (b/create-pipes)]
                        (b/init-console! repl pipes web-port
                          (fn []
-                           (b/refresh-builder! repl true pref-state)
+                           (b/refresh-builder! repl true @pref-state-atom)
                            (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
     ; load the panes
     (.load (.getEngine docs) (str "http://localhost:" web-port "/cheatsheet-full.html"))
@@ -132,7 +132,7 @@
         path)
       (getPane [pref-state-atom runtime-state-atom _]
         (let [pane (or (get-in @runtime-state-atom [:project-panes path])
-                       (home-pane @pref-state-atom @runtime-state-atom))]
+                       (home-pane pref-state-atom @runtime-state-atom))]
           (swap! runtime-state-atom update :project-panes assoc path pane)
           pane))
       (focus [pane]
@@ -353,7 +353,7 @@
   :ret spec/pane?)
 
 (fdef home-pane
-  :args (s/cat :pref-state map? :runtime-state map?)
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state map?)
   :ret spec/pane?)
 
 (fdef file-node
