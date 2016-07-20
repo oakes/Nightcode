@@ -11,7 +11,7 @@
 (task-options!
   sift {:include #{#"\.jar$"}}
   pom {:project 'nightcode
-       :version "2.0.1"}
+       :version "2.0.2"}
   aot {:namespace '#{net.sekao.nightcode.core
                      net.sekao.nightcode.lein}}
   jar {:main 'net.sekao.nightcode.core
