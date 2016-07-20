@@ -370,7 +370,10 @@
 
 (defn open-in-file-browser! [^Scene scene]
   (when-let [path (:selection @pref-state)]
-    (.open (Desktop/getDesktop) (io/file path))))
+    (javax.swing.SwingUtilities/invokeLater
+      (fn []
+        (when (Desktop/isDesktopSupported)
+          (.open (Desktop/getDesktop) (io/file path)))))))
 
 (defn -onOpenInFileBrowser [this ^ActionEvent event]
   (-> event .getSource .getScene open-in-file-browser!))
