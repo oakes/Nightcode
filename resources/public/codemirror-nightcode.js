@@ -1,6 +1,8 @@
 var editor = null;
 var lastTextContent = "";
 
+var autosave = paren_soup.core.debounce_function(function() {window.java.onautosave();}, 1000);
+
 function init() {
     var content = document.getElementById("content");
     editor = CodeMirror(document.body, {
@@ -9,7 +11,7 @@ function init() {
     });
     if (window.java) {
         editor.on("change", function(editor, change) {
-            window.java.onautosave();
+            autosave();
             window.java.onchange();
         });
     }

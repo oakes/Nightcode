@@ -7,6 +7,8 @@ window.onkeydown = function(e) {
     }
 };
 
+var autosave = paren_soup.core.debounce_function(function() {window.java.onautosave();}, 1000);
+
 function init() {
     markClean();
     var parent = document.getElementById('paren-soup');
@@ -14,7 +16,7 @@ function init() {
         "change-callback": function(e) {
             if (window.java) {
                 if (e.type == "keyup") {
-                    window.java.onautosave();
+                    autosave();
                 }
                 window.java.onchange();
             }
