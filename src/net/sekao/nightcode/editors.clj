@@ -90,9 +90,8 @@
 
 (defn onload [^WebEngine engine ^File file pref-state]
   (-> engine
-      .getDocument
-      (.getElementById "content")
-      (.setTextContent (u/remove-returns (slurp file))))
+      (.executeScript "window")
+      (.call "setTextContent" (into-array [(u/remove-returns (slurp file))])))
   (doto engine
     (.executeScript "init()")
     (.executeScript (case (:theme pref-state)

@@ -41,6 +41,10 @@ function canRedo() {
     return editor.historySize().redo > 0;
 }
 
+function setTextContent(content) {
+    document.getElementById('content').textContent = content;
+}
+
 function getTextContent() {
     return editor.getValue();
 }

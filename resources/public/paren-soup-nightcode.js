@@ -77,6 +77,10 @@ function canRedo() {
     return paren_soup.core.can_redo(editor);
 }
 
+function setTextContent(content) {
+    document.getElementById('content').textContent = content;
+}
+
 function getTextContent() {
     return document.getElementById('content').textContent;
 }
