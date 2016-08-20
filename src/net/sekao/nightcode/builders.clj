@@ -5,8 +5,7 @@
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.process :as proc]
             [clojure.spec :as s :refer [fdef]]
-            [clojure.set :as set]
-            [kezban.core :as kez])
+            [clojure.set :as set])
   (:import [clojure.lang LineNumberingPushbackReader]
            [javafx.scene.web WebEngine]
            [java.io PipedWriter PipedReader PrintWriter]

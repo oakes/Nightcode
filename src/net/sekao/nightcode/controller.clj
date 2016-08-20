@@ -1,7 +1,6 @@
 (ns net.sekao.nightcode.controller
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [kezban.core :as kez]
             [net.sekao.nightcode.builders :as b]
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.lein :as lein]
@@ -168,7 +167,7 @@
 ; save
 
 (defn save! [^Scene scene]
-      (kez/when-let* [path (:selection @pref-state)
+      (u/when-let* [path (:selection @pref-state)
                       engine (some-> scene (.lookup "#webview") .getEngine)]
                      (spit (io/file path) (.executeScript engine "getTextContent()"))
                      (.executeScript engine "markClean()")))
