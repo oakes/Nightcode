@@ -137,14 +137,14 @@
       (.setDisable node (not process-running?)))))
 
 (defn get-builder-webview [pref-state runtime-state]
-      (kez/when-let* [project-path (u/get-project-path pref-state)
+      (u/when-let* [project-path (u/get-project-path pref-state)
                       pane (get-in runtime-state [:project-panes project-path])
                       system (get-selected-build-system pane)]
                      (let [tab-content (.getContent (get-tab pane system))]
                           (.lookup tab-content "#build_webview"))))
 
 (defn start-builder! [pref-state runtime-state-atom start-str cmd]
-      (kez/when-let* [project-path (u/get-project-path pref-state)
+      (u/when-let* [project-path (u/get-project-path pref-state)
                       pane (get-in @runtime-state-atom [:project-panes project-path])
                       system (get-selected-build-system pane)]
                      (let [tab-content (.getContent (get-tab pane system))

@@ -6,6 +6,42 @@
   (:import [java.io File]
            [java.nio.file Paths]))
 
+(defmacro assert-all
+          [& pairs]
+          `(do (when-not ~(first pairs)
+                         (throw (IllegalArgumentException.
+                                  (str (first ~'&form) " requires " ~(second pairs) " in " ~'*ns* ":" (:line (meta ~'&form))))))
+               ~(let [more (nnext pairs)]
+                     (when more
+                           (list* `assert-all more)))))
+
+(defmacro when-let*
+          "Multiple binding version of when-let"
+          [bindings & body]
+          (when (seq bindings)
+                (assert-all
+                  (vector? bindings) "a vector for its binding"
+                  (even? (count bindings)) "exactly even forms in binding vector"))
+          (if (seq bindings)
+            `(when-let [~(first bindings) ~(second bindings)]
+                       (when-let* ~(vec (drop 2 bindings)) ~@body))
+            `(do ~@body)))
+
+(defmacro if-let*
+          "Multiple binding version of if-let"
+          ([bindings then]
+            `(if-let* ~bindings ~then nil))
+          ([bindings then else]
+            (when (seq bindings)
+                  (assert-all
+                    (vector? bindings) "a vector for its binding"
+                    (even? (count bindings)) "exactly even forms in binding vector"))
+            (if (seq bindings)
+              `(if-let [~(first bindings) ~(second bindings)]
+                       (if-let* ~(vec (drop 2 bindings)) ~then ~else)
+                       ~(if-not (second bindings) else))
+              then)))
+
 (defmacro with-security [& body]
   `(do
      (System/setProperty "java.security.policy"
