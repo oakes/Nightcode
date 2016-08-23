@@ -40,7 +40,7 @@
         content (.lookup scene "#content")]
     (swap! runtime-state assoc :stage stage)
     (doto stage
-      (.setTitle "Nightcode 2.0.4")
+      (.setTitle "Nightcode 2.0.5-SNAPSHOT")
       (.setScene scene)
       (.show))
     (shortcuts/init-tabs! scene)
