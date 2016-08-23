@@ -7,3 +7,5 @@ pom.xml.asc
 .*
 !.gitignore
 package/
+*.iml
+

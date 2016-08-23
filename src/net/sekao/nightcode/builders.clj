@@ -136,29 +136,29 @@
       (.setDisable node (not process-running?)))))
 
 (defn get-builder-webview [pref-state runtime-state]
-  (when-let [project-path (u/get-project-path pref-state)]
-    (when-let [pane (get-in runtime-state [:project-panes project-path])]
-      (when-let [system (get-selected-build-system pane)]
-        (let [tab-content (.getContent (get-tab pane system))]
-          (.lookup tab-content "#build_webview"))))))
+      (u/when-let* [project-path (u/get-project-path pref-state)
+                      pane (get-in runtime-state [:project-panes project-path])
+                      system (get-selected-build-system pane)]
+                     (let [tab-content (.getContent (get-tab pane system))]
+                          (.lookup tab-content "#build_webview"))))
 
 (defn start-builder! [pref-state runtime-state-atom start-str cmd]
-  (when-let [project-path (u/get-project-path pref-state)]
-    (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
-      (when-let [system (get-selected-build-system pane)]
-        (let [tab-content (.getContent (get-tab pane system))
-              webview (.lookup tab-content "#build_webview")
-              pipes (create-pipes)
-              process (or (get-in @runtime-state-atom [:processes project-path])
-                          (doto (atom nil)
-                            (add-watch :process-changed
-                              (fn [_ _ _ new-process]
-                                (update-when-process-changes! pane (some? new-process))))))]
-          (init-console! webview pipes (:web-port @runtime-state-atom)
-            (fn []
-              (refresh-builder! webview (= cmd "repl") pref-state)
-              (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
-          (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
+      (u/when-let* [project-path (u/get-project-path pref-state)
+                      pane (get-in @runtime-state-atom [:project-panes project-path])
+                      system (get-selected-build-system pane)]
+                     (let [tab-content (.getContent (get-tab pane system))
+                           webview (.lookup tab-content "#build_webview")
+                           pipes (create-pipes)
+                           process (or (get-in @runtime-state-atom [:processes project-path])
+                                       (doto (atom nil)
+                                             (add-watch :process-changed
+                                                        (fn [_ _ _ new-process]
+                                                            (update-when-process-changes! pane (some? new-process))))))]
+                          (init-console! webview pipes (:web-port @runtime-state-atom)
+                                         (fn []
+                                             (refresh-builder! webview (= cmd "repl") pref-state)
+                                             (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
+                          (swap! runtime-state-atom assoc-in [:processes project-path] process))))
 
 (defn stop-builder! [pref-state runtime-state]
   (when-let [project-path (u/get-project-path pref-state)]
