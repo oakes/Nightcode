@@ -22,7 +22,8 @@
                            <children>
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" styleClass="run" text="Run" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
-                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" styleClass="reload" text="Reload" />
+                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadFile" styleClass="reload-file" text="Reload File" />
+                              <Button disable="true" layoutX="159.0" layoutY="10.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadSelection" styleClass="reload-selection" text="Reload Selection" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" styleClass="build" text="Build" />
                               <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
@@ -40,7 +41,8 @@
                            <children>
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRun" styleClass="run" text="Run" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
-                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReload" styleClass="reload" text="Reload" />
+                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadFile" styleClass="reload-file" text="Reload File" />
+                              <Button disable="true" layoutX="159.0" layoutY="10.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadSelection" styleClass="reload-selection" text="Reload Selection" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onBuild" styleClass="build" text="Build" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" styleClass="clean" text="Clean" />
                               <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />

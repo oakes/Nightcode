@@ -49,6 +49,10 @@ function getTextContent() {
     return editor.getValue();
 }
 
+function getSelectedText() {
+	return null;
+}
+
 function markClean() {
     if (window.java) {
     	lastTextContent = getTextContent();

@@ -123,9 +123,9 @@
     :boot "Boot"
     :lein l/class-name))
 
-(def ^:const ids [:.run :.run-with-repl :.reload :.build :.clean :.stop])
+(def ^:const ids [:.run :.run-with-repl :.reload-file :.reload-selection :.build :.clean :.stop])
 (def ^:const disable-when-running [:.run :.run-with-repl :.build :.clean])
-(def ^:const disable-when-not-running [:.reload :.stop])
+(def ^:const disable-when-not-running [:.reload-file :.reload-selection :.stop])
 
 (defn update-when-process-changes! [pane process-running?]
   (doseq [id disable-when-running]

@@ -25,7 +25,8 @@
               :#close c/close!
               :.run c/run-normal!
               :.run-with-repl c/run-with-repl!
-              :.reload c/reload!
+              :.reload-file c/reload-file!
+              :.reload-selection c/reload-selection!
               :.build c/build!
               :.clean c/clean!
               :.stop c/stop!

@@ -31,7 +31,8 @@
                    ; build pane
                    :.run "r"
                    :.run-with-repl "X"
-                   :.reload "S"
+                   :.reload-file "S"
+                   :.reload-selection "R"
                    :.build "b"
                    :.clean "L"
                    :.stop "i"

@@ -85,6 +85,15 @@ function getTextContent() {
     return document.getElementById('content').textContent;
 }
 
+function getSelectedText() {
+	var text = paren_soup.core.selected_text() || paren_soup.core.focused_text();
+    if (text) {
+    	text = parinfer.parenMode(text, {}).text;
+    	text = parinfer.indentMode(text, {}).text;
+    }
+    return text;
+}
+
 function markClean() {
     if (window.java) {
     	lastTextContent = getTextContent();

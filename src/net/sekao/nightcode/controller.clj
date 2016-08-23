@@ -32,7 +32,8 @@
              [onClose [javafx.event.ActionEvent] void]
              [onRun [javafx.event.ActionEvent] void]
              [onRunWithRepl [javafx.event.ActionEvent] void]
-             [onReload [javafx.event.ActionEvent] void]
+             [onReloadFile [javafx.event.ActionEvent] void]
+             [onReloadSelection [javafx.event.ActionEvent] void]
              [onBuild [javafx.event.ActionEvent] void]
              [onClean [javafx.event.ActionEvent] void]
              [onStop [javafx.event.ActionEvent] void]
@@ -264,9 +265,9 @@
 (defn -onRunWithRepl [this ^ActionEvent event]
   (-> event .getSource .getScene run-with-repl!))
 
-; reload
+; reload file
 
-(defn reload! [^Scene scene]
+(defn reload-file! [^Scene scene]
   (when-let [webview (.lookup scene "#webview")]
     (let [text (.executeScript (.getEngine webview) "getTextContent()")
           text (str "(do" \newline text \newline ")" \newline)
@@ -274,8 +275,21 @@
           builder-bridge (-> (.getEngine builder-webview) (.executeScript "window") (.getMember "java"))]
       (.onenter builder-bridge text))))
 
-(defn -onReload [this ^ActionEvent event]
-  (-> event .getSource .getScene reload!))
+(defn -onReloadFile [this ^ActionEvent event]
+  (-> event .getSource .getScene reload-file!))
+
+; reload selection
+
+(defn reload-selection! [^Scene scene]
+  (when-let [webview (.lookup scene "#webview")]
+    (when-let [text (.executeScript (.getEngine webview) "getSelectedText()")]
+      (let [text (str "(do" \newline text \newline ")" \newline)
+            builder-webview (b/get-builder-webview @pref-state @runtime-state)
+            builder-bridge (-> (.getEngine builder-webview) (.executeScript "window") (.getMember "java"))]
+        (.onenter builder-bridge text)))))
+
+(defn -onReloadSelection [this ^ActionEvent event]
+  (-> event .getSource .getScene reload-selection!))
 
 ; build
 
