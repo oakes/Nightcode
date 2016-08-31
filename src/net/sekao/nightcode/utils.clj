@@ -136,7 +136,7 @@ requisite project files, or empty if neither exists."
                     "boot.sh")
         file (io/file (System/getProperty "user.home") (str ".nightcode-" file-name))]
     (when-not (.exists file)
-      (-> "boot.sh" io/resource io/input-stream (io/copy file)))
+      (-> file-name io/resource io/input-stream (io/copy file)))
     (.getCanonicalPath file)))
 
 ; specs
