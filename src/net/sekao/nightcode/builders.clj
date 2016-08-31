@@ -22,7 +22,9 @@
             (when-let [read (try (.read in-pipe ca)
                               (catch Exception _))]
               (when (pos? read)
-                (let [s (u/remove-returns (String. ca 0 read))]
+                (let [s (-> (String. ca 0 read)
+                            u/remove-returns
+                            u/remove-ansi)]
                   (Platform/runLater
                     (fn []
                       (-> engine
@@ -54,12 +56,12 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (some-> finish-str println)))))))))
 
-(defn start-builder-process! [webview pipes process project-path start-str args]
+(defn start-builder-process! [webview pipes process start-str start-fn]
   (proc/stop-process! process)
   (start-builder-thread! webview pipes (when start-str "\n=== Finished ===")
     (fn []
       (some-> start-str println)
-      (proc/start-java-process! process project-path args))))
+      (start-fn))))
 
 (defn stop-builder-process! [runtime-state project-path]
   (when-let [process (get-in runtime-state [:processes project-path])]
@@ -118,11 +120,6 @@
                       :light "changeTheme(false)"))
     (.executeScript (format "setTextSize(%s)" (:text-size pref-state)))))
 
-(defn build-system->class-name [system]
-  (case system
-    :boot "Boot"
-    :lein l/class-name))
-
 (def ^:const ids [:.run :.run-with-repl :.reload-file :.reload-selection :.build :.clean :.stop])
 (def ^:const disable-when-running [:.run :.run-with-repl :.build :.clean])
 (def ^:const disable-when-not-running [:.reload-file :.reload-selection :.stop])
@@ -157,7 +154,10 @@
           (init-console! webview pipes (:web-port @runtime-state-atom)
             (fn []
               (refresh-builder! webview (= cmd "repl") pref-state)
-              (start-builder-process! webview pipes process project-path start-str [(build-system->class-name system) cmd])))
+              (start-builder-process! webview pipes process start-str
+                (case system
+                  :lein #(proc/start-java-process! process project-path [l/class-name cmd])
+                  :boot #(proc/start-process! process project-path ["boot" cmd])))))
           (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
 (defn stop-builder! [pref-state runtime-state]
@@ -196,7 +196,7 @@
   :args (s/cat :webview spec/node? :pipes map? :finish-str (s/nilable string?) :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :project-path string? :start-str (s/nilable string?) :args (s/coll-of string?)))
+  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :start-str (s/nilable string?) :start-fn fn?))
 
 (fdef stop-builder-process!
   :args (s/cat :runtime-state map? :project-path string?))

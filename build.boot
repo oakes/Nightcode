@@ -1,5 +1,5 @@
 (set-env!
-  :source-paths #{"src" "src-java"}
+  :source-paths #{"src"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
@@ -20,7 +20,6 @@
 
 (deftask run []
   (comp
-    (javac)
     (aot)
     (with-pre-wrap fileset
       (require '[net.sekao.nightcode.core :refer [dev-main]])
@@ -29,9 +28,8 @@
 
 (deftask run-repl []
   (comp
-    (javac)
     (aot)
     (repl :init-ns 'net.sekao.nightcode.core)))
 
 (deftask build []
-  (comp (javac) (aot) (pom) (uber) (jar) (sift) (target)))
+  (comp (aot) (pom) (uber) (jar) (sift) (target)))

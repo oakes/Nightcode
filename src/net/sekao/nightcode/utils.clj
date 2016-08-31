@@ -63,7 +63,7 @@ requisite project files, or empty if neither exists."
   (let [file (io/file path)
         dir? (.isDirectory file)
         types #{}
-        types (if false ;(and dir? (.exists (io/file file "build.boot")))
+        types (if (and dir? (.exists (io/file file "build.boot")))
                 (conj types :boot)
                 types)
         types (if (and dir? (.exists (io/file file "project.clj")))
@@ -120,6 +120,9 @@ requisite project files, or empty if neither exists."
 (defn remove-returns [^String s]
   (str/escape s {\return ""}))
 
+(defn remove-ansi [^String s]
+  (str/replace s #"\e\[\d*m" ""))
+
 ; specs
 
 (fdef get-relative-path
@@ -163,6 +166,10 @@ requisite project files, or empty if neither exists."
   :ret #(instance? java.net.URI %))
 
 (fdef remove-returns
+  :args (s/cat :s string?)
+  :ret string?)
+
+(fdef remove-ansi
   :args (s/cat :s string?)
   :ret string?)
 
