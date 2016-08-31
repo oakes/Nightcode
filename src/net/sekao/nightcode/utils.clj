@@ -123,6 +123,22 @@ requisite project files, or empty if neither exists."
 (defn remove-ansi [^String s]
   (str/replace s #"\e\[\d*m" ""))
 
+(defn windows? []
+  (.startsWith (System/getProperty "os.name") "Windows"))
+
+(defn get-shell []
+  (when-not (windows?)
+    "sh"))
+
+(defn get-boot-path []
+  (let [file-name (if (windows?)
+                    "boot.exe"
+                    "boot.sh")
+        file (io/file (System/getProperty "user.home") (str ".nightcode-" file-name))]
+    (when-not (.exists file)
+      (-> "boot.sh" io/resource io/input-stream (io/copy file)))
+    (.getCanonicalPath file)))
+
 ; specs
 
 (fdef get-relative-path
@@ -171,5 +187,17 @@ requisite project files, or empty if neither exists."
 
 (fdef remove-ansi
   :args (s/cat :s string?)
+  :ret string?)
+
+(fdef windows?
+  :args (s/cat)
+  :ret boolean?)
+
+(fdef get-shell
+  :args (s/cat)
+  :ret (s/nilable string?))
+
+(fdef get-boot-path
+  :args (s/cat)
   :ret string?)
 
