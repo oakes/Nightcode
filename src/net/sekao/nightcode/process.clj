@@ -8,7 +8,7 @@
 (defn start-process!
   [process path args]
   (reset! process (.exec (Runtime/getRuntime)
-                         (into-array (remove nil? args))
+                         (into-array args)
                          nil
                          (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
