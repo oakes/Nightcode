@@ -1,7 +1,8 @@
 (set-env!
   :source-paths #{"src"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.8.0"]])
+  :dependencies '[[org.clojure/clojure "1.8.0"]
+                  [alda "1.0.0-rc34"]])
 
 (task-options!
   pom {:project '{{app-name}}

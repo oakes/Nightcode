@@ -1,6 +1,7 @@
 (ns {{namespace}}
   (:require [alda.lisp :refer :all]
-            [alda.now :as now]))
+            [alda.now :as now])
+  (:gen-class))
 
 (defn -main [& args]
   (now/play!
