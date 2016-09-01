@@ -127,7 +127,7 @@
     (.executeScript (format "setTextSize(%s)" (:text-size pref-state)))))
 
 (def ^:const ids [:.run :.build :.run-with-repl :.reload-file :.reload-selection :.clean :.stop])
-(def ^:const disable-when-running [:.run :.build :.run-with-repl :.clean])
+(def ^:const disable-when-running [:.run :.build :.run-with-repl :.clean :#tasks])
 (def ^:const disable-when-not-running [:.reload-file :.reload-selection :.stop])
 (def ^:const custom-task-ids [:.run :.build])
 
