@@ -123,20 +123,19 @@ requisite project files, or empty if neither exists."
 (defn remove-ansi [^String s]
   (str/replace s #"\e\[\d*m" ""))
 
-(defn windows? []
-  (.startsWith (System/getProperty "os.name") "Windows"))
-
-(defn get-shell []
-  (when-not (windows?)
-    "sh"))
-
 (defn get-boot-path []
-  (let [file-name (if (windows?)
-                    "boot.exe"
-                    "boot.sh")
+  (let [windows? (.startsWith (System/getProperty "os.name") "Windows")
+        file-name (if windows? "boot.exe" "boot.sh")
         file (io/file (System/getProperty "user.home") (str ".nightcode-" file-name))]
     (when-not (.exists file)
       (-> file-name io/resource io/input-stream (io/copy file)))
+    (when-not windows?
+      (-> file
+          .toPath
+          (java.nio.file.Files/setPosixFilePermissions
+            (-> (java.nio.file.attribute.PosixFilePermission/values)
+                (java.util.Arrays/asList)
+                (java.util.HashSet.)))))
     (.getCanonicalPath file)))
 
 (defn get-boot-tasks [project-path]
