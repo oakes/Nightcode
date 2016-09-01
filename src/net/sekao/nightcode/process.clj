@@ -38,8 +38,8 @@
 
 (defn stop-process!
   [process]
-  (when @process
-    (.destroy @process))
+  (when-let [p @process]
+    (doto p .destroy .waitFor))
   (reset! process nil))
 
 ; specs
