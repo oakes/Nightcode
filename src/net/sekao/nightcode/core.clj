@@ -4,8 +4,7 @@
             [net.sekao.nightcode.editors :as e]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.shortcuts :as shortcuts]
-            [net.sekao.nightcode.state :refer [pref-state runtime-state]]
-            [clojure.spec.test :refer [instrument]])
+            [net.sekao.nightcode.state :refer [pref-state runtime-state]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage StageBuilder]
@@ -77,7 +76,5 @@
   (swap! runtime-state assoc :web-port (e/start-web-server!))
   (Application/launch net.sekao.nightcode.core (into-array String args)))
 
-(defn dev-main [& args]
-  (instrument)
-  (apply -main args))
+(defn dev-main [] (-main))
 

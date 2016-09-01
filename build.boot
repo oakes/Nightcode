@@ -22,7 +22,10 @@
   (comp
     (aot)
     (with-pre-wrap fileset
-      (require '[net.sekao.nightcode.core :refer [dev-main]])
+      (require
+        '[clojure.spec.test :refer [instrument]]
+        '[net.sekao.nightcode.core :refer [dev-main]])
+      ((resolve 'instrument))
       ((resolve 'dev-main))
       fileset)))
 
