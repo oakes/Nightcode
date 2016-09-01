@@ -58,12 +58,16 @@
               (catch Exception e (some-> (.getMessage e) println))
               (finally (some-> finish-str println)))))))))
 
-(defn start-builder-process! [webview pipes process start-str start-fn]
-  (proc/stop-process! process)
-  (start-builder-thread! webview pipes (when start-str "\n=== Finished ===")
-    (fn []
-      (some-> start-str println)
-      (start-fn))))
+(defn start-builder-process!
+  ([webview pipes process start-str project-path args]
+   (start-builder-process! webview pipes process start-str
+     #(proc/start-java-process! process project-path args)))
+  ([webview pipes process start-str start-fn]
+   (proc/stop-process! process)
+   (start-builder-thread! webview pipes "\n=== Finished ==="
+     (fn []
+       (some-> start-str println)
+       (start-fn)))))
 
 (defn stop-builder-process! [runtime-state project-path]
   (when-let [process (get-in runtime-state [:processes project-path])]
@@ -122,8 +126,8 @@
                       :light "changeTheme(false)"))
     (.executeScript (format "setTextSize(%s)" (:text-size pref-state)))))
 
-(def ^:const ids [:.run :.run-with-repl :.reload-file :.reload-selection :.build :.clean :.stop])
-(def ^:const disable-when-running [:.run :.run-with-repl :.build :.clean])
+(def ^:const ids [:.run :.build :.run-with-repl :.reload-file :.reload-selection :.clean :.stop])
+(def ^:const disable-when-running [:.run :.build :.run-with-repl :.clean])
 (def ^:const disable-when-not-running [:.reload-file :.reload-selection :.stop])
 
 (defn update-when-process-changes! [pane process-running?]
@@ -170,15 +174,19 @@
   (when-let [task-buttons (some-> (get-tab pane :boot) .getContent (.lookup "#tasks"))]
     (-> task-buttons .getChildren .clear)
     (doseq [task-name (u/get-boot-tasks path)]
-      (.add (.getChildren task-buttons)
-        (doto (Button.)
+      (let [btn (Button.)]
+        (-> btn .getStyleClass (.add task-name))
+        (doto btn
           (.setText (->> (str/split task-name #"-")
                          (map str/capitalize)
                          (str/join " ")))
           (.setOnAction
             (reify EventHandler
               (handle [this event]
-                (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))))))
+                (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))
+        (-> task-buttons .getChildren (.add btn))))
+    ; for certain custom tasks, add tooltips
+    (shortcuts/add-tooltips! task-buttons [:.run :.build])))
 
 (defn init-builder! [pane path pref-state runtime-state-atom]
   (let [systems (u/build-systems path)]
@@ -214,7 +222,9 @@
   :args (s/cat :webview spec/node? :pipes map? :finish-str (s/nilable string?) :work-fn fn?))
 
 (fdef start-builder-process!
-  :args (s/cat :webview spec/node? :pipes map? :process spec/atom? :start-str (s/nilable string?) :start-fn fn?))
+  :args (s/alt
+          :args (s/cat  :webview spec/node? :pipes map? :process spec/atom? :start-str (s/nilable string?) :project-path string? :args (s/coll-of string?))
+          :start-fn (s/cat :webview spec/node? :pipes map? :process spec/atom? :start-str (s/nilable string?) :start-fn fn?)))
 
 (fdef stop-builder-process!
   :args (s/cat :runtime-state map? :project-path string?))

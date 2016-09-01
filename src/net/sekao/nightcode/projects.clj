@@ -48,7 +48,7 @@
                        (b/init-console! repl pipes web-port
                          (fn []
                            (b/refresh-builder! repl true @pref-state-atom)
-                           (b/start-builder-process! repl pipes process "." nil ["clojure.main"])))))]
+                           (b/start-builder-process! repl pipes process "Starting REPL..." "." ["clojure.main"])))))]
     ; load the panes
     (.load (.getEngine docs) (str "http://localhost:" web-port "/cheatsheet-full.html"))
     (load-repl!)
