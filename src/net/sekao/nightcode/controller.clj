@@ -16,10 +16,10 @@
            [javafx.scene.input KeyEvent KeyCode]
            [java.awt Desktop])
   (:gen-class
-   :methods [[onNewConsoleApp [javafx.event.ActionEvent] void]
-             [onNewWebApp [javafx.event.ActionEvent] void]
-             [onNewGraphicsApp [javafx.event.ActionEvent] void]
-             [onNewAudioApp [javafx.event.ActionEvent] void]
+   :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
+             [onNewWebProject [javafx.event.ActionEvent] void]
+             [onNewGameProject [javafx.event.ActionEvent] void]
+             [onNewAudioProject [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]
@@ -66,16 +66,16 @@
               (p/update-project-tree! pref-state project-tree (.getCanonicalPath file))))
           (catch Exception _))))))
 
-(defn -onNewConsoleApp [this ^ActionEvent event]
+(defn -onNewConsoleProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
 
-(defn -onNewWebApp [this ^ActionEvent event]
+(defn -onNewWebProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :web)))
 
-(defn -onNewGraphicsApp [this ^ActionEvent event]
-  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :graphics)))
+(defn -onNewGameProject [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :play-cljs)))
 
-(defn -onNewAudioApp [this ^ActionEvent event]
+(defn -onNewAudioProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :audio)))
 
 ; import

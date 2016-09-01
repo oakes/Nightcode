@@ -9,11 +9,12 @@
         data {:app-name name
               :name (t/project-name name)
               :namespace main-ns
-              :path (t/name-to-path main-ns)
-              :year (t/year)}]
+              :path (t/name-to-path main-ns)}]
     (t/->files data
-               ["project.clj" (render "project.clj" data)]
-               ["README.md" (render "README.md" data)]
-               [".gitignore" (render "gitignore" data)]
-               ["src/{{path}}.clj" (render "core.clj" data)]
-               "resources")))
+      ["boot.properties" (render "boot.properties" data)]
+      ["build.boot" (render "build.boot" data)]
+      ["README.md" (render "README.md" data)]
+      [".gitignore" (render "gitignore" data)]
+      ["src/{{path}}.clj" (render "core.clj" data)]
+      "resources")))
+
