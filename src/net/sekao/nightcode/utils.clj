@@ -121,7 +121,7 @@ requisite project files, or empty if neither exists."
   (str/escape s {\return ""}))
 
 (defn remove-ansi [^String s]
-  (str/replace s #"\e\[\d*." ""))
+  (str/replace s #"\e\[\d*m" ""))
 
 (defn get-boot-path []
   (let [windows? (.startsWith (System/getProperty "os.name") "Windows")
