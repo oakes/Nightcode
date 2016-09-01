@@ -123,10 +123,10 @@
                   (catch Exception e (.printStackTrace e))))
               (onautosave []
                 (try
-                  (when (:auto-save? @pref-state-atom)
-                    (doto (.lookup pane "#save")
-                      (.setDisable false)
-                      .fire))
+                  (let [save-btn (.lookup pane "#save")]
+                    (when (and (:auto-save? @pref-state-atom)
+                               (not (.isDisabled save-btn)))
+                      (.fire save-btn)))
                   (catch Exception e (.printStackTrace e))))
               (onchange []
                 (try

@@ -172,6 +172,7 @@
     (when-let [engine (some-> scene (.lookup "#webview") .getEngine)]
       (spit (io/file path) (.executeScript engine "getTextContent()"))
       (.executeScript engine "markClean()"))
+    ; if saving a build.boot file, refresh the build buttons
     (let [file (io/file path)
           parent-path (-> file .getParentFile .getCanonicalPath)]
       (when (-> file .getName (= "build.boot"))

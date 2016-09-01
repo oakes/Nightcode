@@ -129,6 +129,7 @@
 (def ^:const ids [:.run :.build :.run-with-repl :.reload-file :.reload-selection :.clean :.stop])
 (def ^:const disable-when-running [:.run :.build :.run-with-repl :.clean])
 (def ^:const disable-when-not-running [:.reload-file :.reload-selection :.stop])
+(def ^:const custom-task-ids [:.run :.build])
 
 (defn update-when-process-changes! [pane process-running?]
   (doseq [id disable-when-running]
@@ -172,6 +173,9 @@
 
 (defn show-boot-buttons! [pane path pref-state runtime-state-atom]
   (when-let [task-buttons (some-> (get-tab pane :boot) .getContent (.lookup "#tasks"))]
+    (doto task-buttons
+      shortcuts/hide-tooltips!
+      (shortcuts/remove-tooltips! custom-task-ids))
     (-> task-buttons .getChildren .clear)
     (doseq [task-name (u/get-boot-tasks path)]
       (let [btn (Button.)]
@@ -186,7 +190,9 @@
                 (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))
         (-> task-buttons .getChildren (.add btn))))
     ; for certain custom tasks, add tooltips
-    (shortcuts/add-tooltips! task-buttons [:.run :.build])))
+    (doto task-buttons
+      (shortcuts/add-tooltips! custom-task-ids)
+      shortcuts/hide-tooltips!)))
 
 (defn init-builder! [pane path pref-state runtime-state-atom]
   (let [systems (u/build-systems path)]
