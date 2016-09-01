@@ -26,10 +26,6 @@
       ((resolve 'dev-main))
       fileset)))
 
-(deftask run-repl []
-  (comp
-    (aot)
-    (repl :init-ns 'net.sekao.nightcode.core)))
-
 (deftask build []
   (comp (aot) (pom) (uber) (jar) (sift) (target)))
+

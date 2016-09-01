@@ -5,9 +5,11 @@
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.process :as proc]
             [clojure.spec :as s :refer [fdef]]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            [clojure.string :as str])
   (:import [clojure.lang LineNumberingPushbackReader]
            [javafx.scene.web WebEngine]
+           [javafx.scene.control Button]
            [java.io PipedWriter PipedReader PrintWriter]
            [javafx.application Platform]
            [javafx.beans.value ChangeListener]
@@ -164,7 +166,21 @@
   (when-let [project-path (u/get-project-path pref-state)]
     (stop-builder-process! runtime-state project-path)))
 
-(defn init-builder! [pane path]
+(defn show-boot-buttons! [pane path pref-state runtime-state-atom]
+  (when-let [task-buttons (some-> (get-tab pane :boot) .getContent (.lookup "#tasks"))]
+    (-> task-buttons .getChildren .clear)
+    (doseq [task-name (u/get-boot-tasks path)]
+      (.add (.getChildren task-buttons)
+        (doto (Button.)
+          (.setText (->> (str/split task-name #"-")
+                         (map str/capitalize)
+                         (str/join " ")))
+          (.setOnAction
+            (reify EventHandler
+              (handle [this event]
+                (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))))))
+
+(defn init-builder! [pane path pref-state runtime-state-atom]
   (let [systems (u/build-systems path)]
     ; add/remove tooltips
     (.addListener (-> (.lookup pane "#build_tabs") .getSelectionModel .selectedItemProperty)
@@ -175,7 +191,9 @@
           (some-> new-value .getContent (shortcuts/add-tooltips! ids)))))
     ; select/disable build tabs
     (cond
-      (:boot systems) (select-build-system! pane :boot ids)
+      (:boot systems) (do
+                        (select-build-system! pane :boot ids)
+                        (show-boot-buttons! pane path pref-state runtime-state-atom))
       (:lein systems) (select-build-system! pane :lein ids))
     (.setDisable (get-tab pane :boot) (not (:boot systems)))
     (.setDisable (get-tab pane :lein) (not (:lein systems)))
@@ -235,6 +253,9 @@
 (fdef stop-builder!
   :args (s/cat :pref-state map? :runtime-state map?))
 
+(fdef show-boot-buttons!
+  :args (s/cat :pane spec/pane? :path string? :pref-state map? :runtime-state-atom spec/atom?))
+
 (fdef init-builder!
-  :args (s/cat :pane spec/pane? :path string?))
+  :args (s/cat :pane spec/pane? :path string? :pref-state map? :runtime-state-atom spec/atom?))
 

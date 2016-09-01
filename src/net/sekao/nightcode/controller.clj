@@ -171,7 +171,12 @@
   (when-let [path (:selection @pref-state)]
     (when-let [engine (some-> scene (.lookup "#webview") .getEngine)]
       (spit (io/file path) (.executeScript engine "getTextContent()"))
-      (.executeScript engine "markClean()"))))
+      (.executeScript engine "markClean()"))
+    (let [file (io/file path)
+          parent-path (-> file .getParentFile .getCanonicalPath)]
+      (when (-> file .getName (= "build.boot"))
+        (when-let [pane (.lookup scene "#content")]
+          (b/show-boot-buttons! pane parent-path @pref-state runtime-state))))))
 
 (defn -onSave [this ^ActionEvent event]
   (-> event .getSource .getScene save!))

@@ -139,6 +139,19 @@ requisite project files, or empty if neither exists."
       (-> file-name io/resource io/input-stream (io/copy file)))
     (.getCanonicalPath file)))
 
+(defn get-boot-tasks [project-path]
+  (try
+    (let [path (.getCanonicalPath (io/file project-path "build.boot"))
+          rdr (java.io.PushbackReader. (io/reader path))]
+      (loop [tasks []]
+        (if-let [form (try (read rdr)
+                        (catch Exception _))]
+          (if (= 'deftask (first form))
+            (recur (conj tasks (str (second form))))
+            (recur tasks))
+          tasks)))
+    (catch Exception _ [])))
+
 ; specs
 
 (fdef get-relative-path
@@ -200,4 +213,8 @@ requisite project files, or empty if neither exists."
 (fdef get-boot-path
   :args (s/cat)
   :ret string?)
+
+(fdef get-boot-tasks
+  :args (s/cat :project-path string?)
+  :ret (s/coll-of string?))
 
