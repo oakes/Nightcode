@@ -24,9 +24,7 @@
             (when-let [read (try (.read in-pipe ca)
                               (catch Exception _))]
               (when (pos? read)
-                (let [s (-> (String. ca 0 read)
-                            u/remove-returns
-                            u/remove-ansi)]
+                (let [s (u/remove-returns (String. ca 0 read))]
                   (Platform/runLater
                     (fn []
                       (-> engine
@@ -164,7 +162,7 @@
               (start-builder-process! webview pipes process start-str
                 (case system
                   :lein #(proc/start-java-process! process project-path [l/class-name cmd])
-                  :boot #(proc/start-process! process project-path [(u/get-boot-path) cmd])))))
+                  :boot #(proc/start-process! process project-path [(u/get-boot-path) "--no-colors" cmd])))))
           (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
 
 (defn stop-builder! [pref-state runtime-state]

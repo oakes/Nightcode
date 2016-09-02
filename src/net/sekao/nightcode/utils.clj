@@ -120,9 +120,6 @@ requisite project files, or empty if neither exists."
 (defn remove-returns [^String s]
   (str/escape s {\return ""}))
 
-(defn remove-ansi [^String s]
-  (str/replace s #"\e\[\d*m" ""))
-
 (defn get-boot-path []
   (let [windows? (.startsWith (System/getProperty "os.name") "Windows")
         file-name (if windows? "boot.exe" "boot.sh")
@@ -194,10 +191,6 @@ requisite project files, or empty if neither exists."
   :ret #(instance? java.net.URI %))
 
 (fdef remove-returns
-  :args (s/cat :s string?)
-  :ret string?)
-
-(fdef remove-ansi
   :args (s/cat :s string?)
   :ret string?)
 
