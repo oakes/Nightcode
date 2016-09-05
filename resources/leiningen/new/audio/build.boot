@@ -15,7 +15,7 @@
 
 (deftask run []
   (comp
-    (watch)
+    (wait)
     (with-pre-wrap fileset
       ({{namespace}}/-main)
       fileset)))
