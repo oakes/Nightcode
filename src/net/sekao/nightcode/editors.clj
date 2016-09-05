@@ -65,12 +65,20 @@
       (aget 0)
       .getLocalPort))
 
+(defn remove-editor! [^String path pane runtime-state-atom]
+  (swap! runtime-state-atom update :editor-panes dissoc path)
+  (shortcuts/hide-tooltips! pane)
+  (some-> pane .getParent .getChildren (.remove pane)))
+
 (defn remove-editors! [^String path runtime-state-atom]
   (doseq [[editor-path pane] (:editor-panes @runtime-state-atom)]
     (when (u/parent-path? path editor-path)
-      (swap! runtime-state-atom update :editor-panes dissoc editor-path)
-      (shortcuts/hide-tooltips! pane)
-      (some-> pane .getParent .getChildren (.remove pane)))))
+      (remove-editor! editor-path pane runtime-state-atom))))
+
+(defn remove-non-existing-editors! [runtime-state-atom]
+  (doseq [[editor-path pane] (:editor-panes @runtime-state-atom)]
+    (when-not (.exists (io/file editor-path))
+      (remove-editor! editor-path pane runtime-state-atom))))
 
 (defn toggle-instarepl! [^WebEngine engine selected?]
   (if selected?
@@ -160,8 +168,14 @@
   :args (s/cat)
   :ret integer?)
 
+(fdef remove-editor!
+  :args (s/cat :path string? :pane spec/pane? :runtime-state-atom spec/atom?))
+
 (fdef remove-editors!
   :args (s/cat :path string? :runtime-state-atom spec/atom?))
+
+(fdef remove-non-existing-editors!
+  :args (s/cat :runtime-state-atom spec/atom?))
 
 (fdef toggle-instarepl!
   :args (s/cat :engine any? :selected? boolean?))

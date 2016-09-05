@@ -272,11 +272,12 @@
                   (fn []
                     (.focus new-value new-pane)))))))))))
 
-(defn set-focused-listener! [pref-state-atom ^Stage stage project-tree]
+(defn set-focused-listener! [pref-state-atom runtime-state-atom ^Stage stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
       (changed [this observable old-value new-value]
         (when new-value
+          (e/remove-non-existing-editors! runtime-state-atom)
           (update-project-tree! pref-state-atom project-tree))))))
 
 (defn remove-from-project-tree! [pref-state-atom ^String path]
@@ -399,7 +400,7 @@
   :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage?))
 
 (fdef set-focused-listener!
-  :args (s/cat :pref-state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
 
 (fdef remove-from-project-tree!
   :args (s/cat :pref-state-atom spec/atom? :path string?))

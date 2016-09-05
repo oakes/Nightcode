@@ -47,7 +47,7 @@
     (-> content .getChildren .clear)
     ; create listeners
     (p/set-selection-listener! pref-state runtime-state stage)
-    (p/set-focused-listener! pref-state stage project-tree)
+    (p/set-focused-listener! pref-state runtime-state stage project-tree)
     (p/set-project-key-listener! stage pref-state runtime-state)
     (shortcuts/set-shortcut-listeners! stage pref-state runtime-state actions)
     (p/set-close-listener! stage)
