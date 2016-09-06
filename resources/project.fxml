@@ -4,6 +4,7 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -18,15 +19,18 @@
                <content>
                   <VBox prefHeight="200.0" prefWidth="100.0">
                      <children>
-                        <HBox VBox.vgrow="NEVER">
+                        <FlowPane fx:id="tasks" prefWrapLength="1200.0">
                            <children>
-                              <HBox fx:id="tasks" HBox.hgrow="NEVER" />
-                              <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
-                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadFile" styleClass="reload-file" text="Reload File" />
-                              <Button disable="true" layoutX="159.0" layoutY="10.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadSelection" styleClass="reload-selection" text="Reload Selection" />
-                              <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
+                              <HBox fx:id="permanent_tasks">
+                                 <children>
+                                    <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onRunWithRepl" styleClass="run-with-repl" text="Run with REPL" />
+                                    <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadFile" styleClass="reload-file" text="Reload File" />
+                                    <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadSelection" styleClass="reload-selection" text="Reload Selection" />
+                                    <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
+                                 </children>
+                              </HBox>
                            </children>
-                        </HBox>
+                        </FlowPane>
                         <WebView fx:id="build_webview" prefHeight="200.0" prefWidth="200.0" visible="false" VBox.vgrow="ALWAYS" />
                      </children>
                   </VBox>

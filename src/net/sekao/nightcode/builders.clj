@@ -125,7 +125,7 @@
     (.executeScript (format "setTextSize(%s)" (:text-size pref-state)))))
 
 (def ^:const ids [:.run :.build :.run-with-repl :.reload-file :.reload-selection :.clean :.stop])
-(def ^:const disable-when-running [:.run :.build :.run-with-repl :.clean :#tasks])
+(def ^:const disable-when-running [:.run :.build :.run-with-repl :.clean :.custom])
 (def ^:const disable-when-not-running [:.reload-file :.reload-selection :.stop])
 (def ^:const custom-task-ids [:.run :.build])
 
@@ -171,26 +171,30 @@
 
 (defn show-boot-buttons! [pane path pref-state runtime-state-atom]
   (when-let [task-buttons (some-> (get-tab pane :boot) .getContent (.lookup "#tasks"))]
-    (doto task-buttons
-      shortcuts/hide-tooltips!
-      (shortcuts/remove-tooltips! custom-task-ids))
-    (-> task-buttons .getChildren .clear)
-    (doseq [task-name (u/get-boot-tasks path)]
-      (let [btn (Button.)]
-        (-> btn .getStyleClass (.add task-name))
-        (doto btn
-          (.setText (->> (str/split task-name #"-")
-                         (map str/capitalize)
-                         (str/join " ")))
-          (.setOnAction
-            (reify EventHandler
-              (handle [this event]
-                (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))
-        (-> task-buttons .getChildren (.add btn))))
-    ; for certain custom tasks, add tooltips
-    (doto task-buttons
-      (shortcuts/add-tooltips! custom-task-ids)
-      shortcuts/hide-tooltips!)))
+    (when-let [perm-tasks (.lookup task-buttons "#permanent_tasks")]
+      (doto task-buttons
+        shortcuts/hide-tooltips!
+        (shortcuts/remove-tooltips! custom-task-ids))
+      (-> task-buttons .getChildren .clear)
+      (doseq [task-name (u/get-boot-tasks path)]
+        (let [btn (Button.)]
+          (doto (.getStyleClass btn)
+            (.add task-name)
+            (.add "custom"))
+          (doto btn
+            (.setText (->> (str/split task-name #"-")
+                           (map str/capitalize)
+                           (str/join " ")))
+            (.setOnAction
+              (reify EventHandler
+                (handle [this event]
+                  (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))
+          (-> task-buttons .getChildren (.add btn))))
+      (-> task-buttons .getChildren (.add perm-tasks))
+      ; for certain custom tasks, add tooltips
+      (doto task-buttons
+        (shortcuts/add-tooltips! custom-task-ids)
+        shortcuts/hide-tooltips!))))
 
 (defn init-builder! [pane path pref-state runtime-state-atom]
   (let [systems (u/build-systems path)]

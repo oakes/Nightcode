@@ -56,11 +56,13 @@
       (when (and node text)
         (add-tooltip! node text)))))
 
-(defn remove-tooltips!
-  [node ids]
+(defn remove-tooltip! [node]
+  (.setTooltip node nil))
+
+(defn remove-tooltips! [node ids]
   (doseq [id ids]
     (when-let [node (.lookup node (name id))]
-      (.setTooltip node nil))))
+      (remove-tooltip! node))))
 
 (defn show-tooltip!
   ([^Stage stage ^Node node]
@@ -186,6 +188,9 @@
 
 (fdef add-tooltips!
   :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :ids (s/coll-of keyword?)))
+
+(fdef remove-tooltip!
+  :args (s/cat :node spec/node?))
 
 (fdef remove-tooltips!
   :args (s/cat :node spec/node? :ids (s/coll-of keyword?)))
