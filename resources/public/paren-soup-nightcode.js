@@ -43,7 +43,8 @@ function initConsole(isRepl) {
         "console-callback": function(text) {
             window.java.onenter(text + "\n");
         },
-        "disable-clj?": !isRepl
+        "disable-clj?": !isRepl,
+        "append-limit": 2000
     });
     var content = document.getElementById('content');
     content.style.whiteSpace = "pre-wrap";
