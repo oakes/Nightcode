@@ -11,10 +11,8 @@
               :namespace main-ns
               :path (t/name-to-path main-ns)}]
     (t/->files data
-      ["boot.properties" (render "boot.properties" data)]
-      ["build.boot" (render "build.boot" data)]
-      ["README.md" (render "README.md" data)]
-      [".gitignore" (render "gitignore" data)]
-      ["src/{{path}}.clj" (render "core.clj" data)]
-      "resources")))
-
+               ["project.clj" (render "project.clj" data)]
+               ["README.md" (render "README.md" data)]
+               [".gitignore" (render "gitignore" data)]
+               ["src/{{path}}.clj" (render "core.clj" data)]
+               "resources")))
