@@ -346,14 +346,14 @@
   (p/update-webviews! @pref-state @runtime-state))
 
 (defn font-dec! [^Scene scene]
-  (swap! pref-state update :text-size dec)
+  (swap! pref-state update :text-size #(-> % (- 2) u/normalize-text-size))
   (font! scene))
 
 (defn -onFontDec [this ^ActionEvent event]
   (-> @runtime-state :stage .getScene font-dec!))
 
 (defn font-inc! [^Scene scene]
-  (swap! pref-state update :text-size inc)
+  (swap! pref-state update :text-size #(-> % (+ 2) u/normalize-text-size))
   (font! scene))
 
 (defn -onFontInc [this ^ActionEvent event]

@@ -148,6 +148,14 @@ requisite project files, or empty if neither exists."
           tasks)))
     (catch Exception _ [])))
 
+(defn normalize-text-size [n]
+  (-> n
+      (/ 2)
+      (* 2)
+      (Math/ceil)
+      (max 12)
+      (min 24)))
+
 ; specs
 
 (fdef get-relative-path
@@ -209,4 +217,8 @@ requisite project files, or empty if neither exists."
 (fdef get-boot-tasks
   :args (s/cat :project-path string?)
   :ret (s/coll-of string?))
+
+(fdef normalize-text-size
+  :args (s/cat :num number?)
+  :ret (s/and number? even?))
 
