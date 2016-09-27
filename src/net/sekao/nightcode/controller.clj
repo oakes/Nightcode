@@ -342,7 +342,7 @@
 ; font
 
 (defn font! [^Scene scene]
-  (-> scene .getRoot (.setStyle (str "-fx-font-size: " (:text-size @pref-state))))
+  (-> scene .getRoot (.setStyle (str "-fx-font-size: " (u/normalize-text-size (:text-size @pref-state)))))
   (p/update-webviews! @pref-state @runtime-state))
 
 (defn font-dec! [^Scene scene]
