@@ -151,8 +151,8 @@ requisite project files, or empty if neither exists."
 (defn normalize-text-size [n]
   (-> n
       (/ 2)
-      (* 2)
       (Math/ceil)
+      (* 2)
       (max 12)
       (min 24)))
 
