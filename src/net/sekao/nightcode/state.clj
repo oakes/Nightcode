@@ -36,7 +36,7 @@
                            :expansion-set (read-pref :expansion-set #{})
                            :selection (read-pref :selection)
                            :theme (read-pref :theme :dark)
-                           :text-size (read-pref :text-size 15)
+                           :text-size (read-pref :text-size 16)
                            :auto-save? (read-pref :auto-save? true)}))
 
 (defonce runtime-state (atom {:web-port nil
