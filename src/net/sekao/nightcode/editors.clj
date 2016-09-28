@@ -24,18 +24,17 @@
     [(.getMessage form)]
     (pr-str form)))
 
-(defn eval-forms [forms-str]
-  (->> forms-str
-       edn/read-string
-       es/code->results
-       (mapv form->serializable)))
-
 (defn handler [request]
   (case (:uri request)
     "/" (redirect "/paren-soup.html")
     "/eval" {:status 200
              :headers {"Content-Type" "text/plain"}
-             :body (pr-str (eval-forms (body-string request)))}
+             :body (->> request
+                        body-string
+                        edn/read-string
+                        es/code->results
+                        (mapv form->serializable)
+                        pr-str)}
     nil))
 
 (defn start-web-server! []
@@ -130,17 +129,9 @@
 
 ; specs
 
-(fdef eval-form-safely
-  :args (s/cat :form any? :nspace spec/ns?)
-  :ret any?)
-
-(fdef eval-form
-  :args (s/cat :form-str string? :nspace spec/ns?)
-  :ret vector?)
-
-(fdef eval-forms
-  :args (s/cat :forms-str string?)
-  :ret vector?)
+(fdef form->serializable
+  :args (s/cat :form any?)
+  :ret (s/or :error vector? :value string?))
 
 (fdef handler
   :args (s/cat :request map?)
