@@ -6,17 +6,6 @@
   (:import [java.io File]
            [java.nio.file Paths]))
 
-(defmacro with-security [& body]
-  `(do
-     (System/setProperty "java.security.policy"
-                        (-> "java.policy" io/resource .toString))
-     (System/setSecurityManager
-       (proxy [SecurityManager] []
-         (checkExit [status#]
-           (throw (SecurityException. "Exit not allowed.")))))
-     (try ~@body
-       (finally (System/setSecurityManager nil)))))
-
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
   [project-path selected-path]

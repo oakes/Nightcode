@@ -6,8 +6,8 @@
                   [org.clojure/clojure "1.9.0-alpha13"]
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
-                  [clojail "1.0.6"]
-                  [play-cljs/lein-template "0.6.4"]])
+                  [play-cljs/lein-template "0.6.4"]
+                  [eval-soup "1.0.0"]])
 
 (task-options!
   sift {:include #{#"\.jar$"}}

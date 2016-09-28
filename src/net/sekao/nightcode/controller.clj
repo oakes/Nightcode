@@ -7,7 +7,8 @@
             [net.sekao.nightcode.process :as proc]
             [net.sekao.nightcode.projects :as p]
             [net.sekao.nightcode.state :refer [pref-state runtime-state]]
-            [net.sekao.nightcode.utils :as u])
+            [net.sekao.nightcode.utils :as u]
+            [eval-soup.core :as es])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]
            [javafx.stage DirectoryChooser FileChooser StageStyle Window Modality]
@@ -59,7 +60,7 @@
             project-name (-> file .getName str/lower-case)
             file (io/file dir project-name)]
         (try
-          (u/with-security
+          (es/with-security
             (lein/new! dir project-type project-name)
             (when (.exists file)
               (swap! pref-state update :project-set conj (.getCanonicalPath file))

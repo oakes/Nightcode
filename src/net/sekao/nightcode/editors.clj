@@ -10,43 +10,25 @@
             [net.sekao.nightcode.shortcuts :as shortcuts]
             [net.sekao.nightcode.utils :as u]
             [net.sekao.nightcode.spec :as spec]
-            [clojail.core :as clojail])
+            [eval-soup.core :as es])
   (:import [javafx.fxml FXMLLoader]
            [javafx.scene.web WebEngine]
-           [java.io File StringWriter]))
+           [java.io File]))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const max-file-size (* 1024 1024 2))
 
-(defn eval-form-safely [form nspace]
-  (u/with-security
-    (clojail/thunk-timeout
-      (fn []
-        (binding [*ns* nspace
-                  *out* (StringWriter.)]
-          (refer-clojure)
-          [(eval form)
-           (if (and (coll? form) (= 'ns (first form)))
-             (-> form second create-ns)
-             *ns*)]))
-      1000)))
-
-(defn eval-form [form-str nspace]
-  (binding [*read-eval* false]
-    (try
-      (eval-form-safely (read-string form-str) nspace)
-      (catch Exception e [e nspace]))))
+(defn form->serializable [form]
+  (if (instance? Exception form)
+    [(.getMessage form)]
+    (pr-str form)))
 
 (defn eval-forms [forms-str]
-  (loop [forms (edn/read-string forms-str)
-         results []
-         nspace (create-ns 'clj.user)]
-    (if-let [form (first forms)]
-      (let [[result current-ns] (eval-form form nspace)
-            result-str (if (instance? Exception result) [(.getMessage result)] (pr-str result))]
-        (recur (rest forms) (conj results result-str) current-ns))
-      results)))
+  (->> forms-str
+       edn/read-string
+       es/code->results
+       (mapv form->serializable)))
 
 (defn handler [request]
   (case (:uri request)
