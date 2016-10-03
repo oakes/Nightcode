@@ -16,6 +16,7 @@
            [java.io File]))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
+(def ^:const instarepl-exts #{"clj" "cljc"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const max-file-size (* 1024 1024 2))
 
@@ -98,9 +99,10 @@
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
           engine (.getEngine webview)
-          clojure? (-> file .getName u/get-extension clojure-exts some?)]
+          clojure? (-> file .getName u/get-extension clojure-exts some?)
+          instarepl? (-> file .getName u/get-extension instarepl-exts some?)]
       (.setContextMenuEnabled webview false)
-      (-> pane (.lookup "#instarepl") (.setManaged clojure?))
+      (-> pane (.lookup "#instarepl") (.setManaged instarepl?))
       (shortcuts/add-tooltips! pane ids)
       (-> engine
           (.executeScript "window")
