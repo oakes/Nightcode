@@ -107,19 +107,15 @@ function isClean() {
 }
 
 function showInstaRepl() {
-    var parent = document.getElementById('paren-soup');
-    var numbers = document.getElementById('numbers');
-    var instarepl = document.createElement('div');
-    instarepl.className = 'instarepl';
-    instarepl.id = 'instarepl';
-    parent.insertBefore(instarepl, numbers);
+    var instarepl = document.getElementById('instarepl');
+    instarepl.style.display = 'list-item';
     init();
 }
 
 function hideInstaRepl() {
-    var parent = document.getElementById('paren-soup');
     var instarepl = document.getElementById('instarepl');
-    parent.removeChild(instarepl);
+    instarepl.style.display = 'none';
+    instarepl.innerHTML = "";
     init();
 }
 
