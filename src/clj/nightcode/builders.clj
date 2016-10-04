@@ -1,9 +1,9 @@
-(ns net.sekao.nightcode.builders
-  (:require [net.sekao.nightcode.shortcuts :as shortcuts]
-            [net.sekao.nightcode.lein :as l]
-            [net.sekao.nightcode.spec :as spec]
-            [net.sekao.nightcode.utils :as u]
-            [net.sekao.nightcode.process :as proc]
+(ns nightcode.builders
+  (:require [nightcode.shortcuts :as shortcuts]
+            [nightcode.lein :as l]
+            [nightcode.spec :as spec]
+            [nightcode.utils :as u]
+            [nightcode.process :as proc]
             [clojure.spec :as s :refer [fdef]]
             [clojure.set :as set]
             [clojure.string :as str])

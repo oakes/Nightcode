@@ -1,4 +1,4 @@
-(ns net.sekao.nightcode.lein
+(ns nightcode.lein
   (:require [clojure.java.io :as io]
             [leiningen.core.project]
             [leiningen.clean]
@@ -7,7 +7,7 @@
             [leiningen.uberjar]
             [leiningen.new]
             [clojure.spec :as s :refer [fdef]]
-            [net.sekao.nightcode.spec :as spec])
+            [nightcode.spec :as spec])
   (:gen-class))
 
 (def class-name (str *ns*))

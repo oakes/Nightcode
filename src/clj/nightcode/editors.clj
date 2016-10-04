@@ -1,4 +1,4 @@
-(ns net.sekao.nightcode.editors
+(ns nightcode.editors
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
             [ring.adapter.jetty :refer [run-jetty]]
@@ -7,9 +7,9 @@
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
             [clojure.spec :as s :refer [fdef]]
-            [net.sekao.nightcode.shortcuts :as shortcuts]
-            [net.sekao.nightcode.utils :as u]
-            [net.sekao.nightcode.spec :as spec]
+            [nightcode.shortcuts :as shortcuts]
+            [nightcode.utils :as u]
+            [nightcode.spec :as spec]
             [eval-soup.core :as es])
   (:import [javafx.fxml FXMLLoader]
            [javafx.scene.web WebEngine]

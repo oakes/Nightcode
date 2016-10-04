@@ -1,4 +1,4 @@
-(ns net.sekao.nightcode.state
+(ns nightcode.state
   (:require [clojure.edn :as edn]
             [clojure.spec :as s :refer [fdef]])
   (:import [java.util.prefs Preferences]))

@@ -1,10 +1,10 @@
-(ns net.sekao.nightcode.shortcuts
+(ns nightcode.shortcuts
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [clojure.java.io :as io]
-            [net.sekao.nightcode.spec :as spec]
+            [nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]]
-            [net.sekao.nightcode.utils :as u])
+            [nightcode.utils :as u])
   (:import [javafx.scene Node]
            [javafx.scene Scene]
            [javafx.scene.control Tooltip]

@@ -1,10 +1,10 @@
-(ns net.sekao.nightcode.core
+(ns nightcode.core
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.controller :as c]
-            [net.sekao.nightcode.editors :as e]
-            [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.shortcuts :as shortcuts]
-            [net.sekao.nightcode.state :refer [pref-state runtime-state]])
+            [nightcode.controller :as c]
+            [nightcode.editors :as e]
+            [nightcode.projects :as p]
+            [nightcode.shortcuts :as shortcuts]
+            [nightcode.state :refer [pref-state runtime-state]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage StageBuilder]
@@ -32,7 +32,7 @@
               :#new_file c/new-file!
               :#open_in_file_browser c/open-in-file-browser!})
 
-(defn -start [^net.sekao.nightcode.core app ^Stage stage]
+(defn -start [^nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))
         scene (Scene. root 1242 768)
         project-tree (.lookup scene "#project_tree")
@@ -74,7 +74,7 @@
 
 (defn -main [& args]
   (swap! runtime-state assoc :web-port (e/start-web-server!))
-  (Application/launch net.sekao.nightcode.core (into-array String args)))
+  (Application/launch nightcode.core (into-array String args)))
 
 (defn dev-main [] (-main))
 

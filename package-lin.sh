@@ -1,1 +1,1 @@
-javapackager -deploy -native -outdir package -outfile Nightcode -srcdir . -srcfiles target/project.jar -appclass net.sekao.nightcode.core -name "Nightcode" -title "Nightcode"
+javapackager -deploy -native -outdir package -outfile Nightcode -srcdir . -srcfiles target/project.jar -appclass nightcode.core -name "Nightcode" -title "Nightcode"

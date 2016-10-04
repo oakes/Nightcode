@@ -1,5 +1,5 @@
 (set-env!
-  :source-paths #{"src"}
+  :source-paths #{"src/clj"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   ; project deps
@@ -13,9 +13,9 @@
   sift {:include #{#"\.jar$"}}
   pom {:project 'nightcode
        :version "2.1.5-SNAPSHOT"}
-  aot {:namespace '#{net.sekao.nightcode.core
-                     net.sekao.nightcode.lein}}
-  jar {:main 'net.sekao.nightcode.core
+  aot {:namespace '#{nightcode.core
+                     nightcode.lein}}
+  jar {:main 'nightcode.core
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
                   "Url" "https://github.com/oakes/Nightcode"}})
 
@@ -25,7 +25,7 @@
     (with-pre-wrap fileset
       (require
         '[clojure.spec.test :refer [instrument]]
-        '[net.sekao.nightcode.core :refer [dev-main]])
+        '[nightcode.core :refer [dev-main]])
       ((resolve 'instrument))
       ((resolve 'dev-main))
       fileset)))

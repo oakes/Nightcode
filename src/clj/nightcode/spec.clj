@@ -1,4 +1,4 @@
-(ns net.sekao.nightcode.spec
+(ns nightcode.spec
   (:require [clojure.spec :as s]))
 
 (defn file? [x]

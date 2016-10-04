@@ -1,11 +1,11 @@
-(ns net.sekao.nightcode.projects
+(ns nightcode.projects
   (:require [clojure.java.io :as io]
-            [net.sekao.nightcode.builders :as b]
-            [net.sekao.nightcode.editors :as e]
-            [net.sekao.nightcode.shortcuts :as shortcuts]
-            [net.sekao.nightcode.process :as proc]
-            [net.sekao.nightcode.spec :as spec]
-            [net.sekao.nightcode.utils :as u]
+            [nightcode.builders :as b]
+            [nightcode.editors :as e]
+            [nightcode.shortcuts :as shortcuts]
+            [nightcode.process :as proc]
+            [nightcode.spec :as spec]
+            [nightcode.utils :as u]
             [clojure.spec :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell ButtonType Alert Alert$AlertType]
@@ -370,7 +370,7 @@
   :ret spec/tree-item?)
 
 (fdef get-children
-  :args (s/cat :files :net.sekao.nightcode.spec/files)
+  :args (s/cat :files :nightcode.spec/files)
   :ret spec/obs-list?)
 
 (fdef set-expanded-listener!

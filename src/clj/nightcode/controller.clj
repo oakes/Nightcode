@@ -1,13 +1,13 @@
-(ns net.sekao.nightcode.controller
+(ns nightcode.controller
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [net.sekao.nightcode.builders :as b]
-            [net.sekao.nightcode.editors :as e]
-            [net.sekao.nightcode.lein :as lein]
-            [net.sekao.nightcode.process :as proc]
-            [net.sekao.nightcode.projects :as p]
-            [net.sekao.nightcode.state :refer [pref-state runtime-state]]
-            [net.sekao.nightcode.utils :as u]
+            [nightcode.builders :as b]
+            [nightcode.editors :as e]
+            [nightcode.lein :as lein]
+            [nightcode.process :as proc]
+            [nightcode.projects :as p]
+            [nightcode.state :refer [pref-state runtime-state]]
+            [nightcode.utils :as u]
             [eval-soup.core :as es])
   (:import [javafx.event ActionEvent]
            [javafx.scene.control Alert Alert$AlertType ButtonType TextInputDialog]

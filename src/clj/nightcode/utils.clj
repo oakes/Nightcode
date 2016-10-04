@@ -1,7 +1,7 @@
-(ns net.sekao.nightcode.utils
+(ns nightcode.utils
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [net.sekao.nightcode.spec :as spec]
+            [nightcode.spec :as spec]
             [clojure.spec :as s :refer [fdef]])
   (:import [java.io File]
            [java.nio.file Paths]))
