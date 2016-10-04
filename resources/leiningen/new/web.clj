@@ -18,5 +18,5 @@
       ["src/clj/{{path}}.clj" (render "core.clj" data)]
       ["src/cljs/{{path}}.cljs" (render "core.cljs" data)]
       ["resources/public/index.html" (render "index.html" data)]
-      ["resources/public/main.cljs.edn" (render "main.cljs.edn" data)])))
+      ["resources/public/main.cljs.edn" (render "main.cljs.edn.txt" data)])))
 

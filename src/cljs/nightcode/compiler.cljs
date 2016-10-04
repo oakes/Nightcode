@@ -1,4 +1,4 @@
-(ns paren-soup.compiler
+(ns nightcode.compiler
   (:require [cljs.reader :refer [read-string]])
   (:import goog.net.XhrIo))
 
@@ -24,3 +24,4 @@
             forms
             (fn [results]
               (.postMessage js/self (into-array results)))))))
+

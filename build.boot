@@ -1,13 +1,20 @@
 (set-env!
-  :source-paths #{"src/clj"}
+  :source-paths #{"src/clj" "src/cljs"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
+                  [adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   ; project deps
+                  [org.clojure/clojurescript "1.9.225"]
                   [org.clojure/clojure "1.9.0-alpha13"]
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [play-cljs/lein-template "0.6.4"]
-                  [eval-soup "1.0.0"]])
+                  [eval-soup "1.0.0"]
+                  [paren-soup "2.6.1"]
+                  [cljsjs/codemirror "5.19.0-0"]])
+
+(require
+  '[adzerk.boot-cljs :refer [cljs]])
 
 (task-options!
   sift {:include #{#"\.jar$"}}
@@ -32,4 +39,7 @@
 
 (deftask build []
   (comp (aot) (pom) (uber) (jar) (sift) (target)))
+
+(deftask build-cljs []
+  (comp (cljs :optimizations :advanced) (target)))
 
