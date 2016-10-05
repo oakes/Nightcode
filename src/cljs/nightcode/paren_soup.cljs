@@ -126,6 +126,9 @@
 
 (set! (.-onload js/window)
   (fn []
+    ; hack thanks to http://stackoverflow.com/a/28414332/1663009
+    (set! (.-status js/window) "MY-MAGIC-VALUE")
+    (set! (.-status js/window) "")
     (.onload js/window.java)
     (.onchange js/window.java)))
 
