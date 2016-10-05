@@ -92,7 +92,7 @@
                   (fn [text]
                     (.onenter js/window.java (str text "\n")))
                   :disable-clj? (not repl?)
-                  :append-limit 2000})))))
+                  :append-limit 5000})))))
 
 (defn show-instarepl []
   (-> (.querySelector js/document "#instarepl")
