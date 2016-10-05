@@ -59,7 +59,12 @@
         (.on "change"
           (fn [editor-object change]
             (auto-save)
-            (.onchange js/window.java)))))
+            (.onchange js/window.java)))
+        (.setOption "extraKeys"
+          (clj->js {"Ctrl-Z" false
+                    "Cmd-Z" false
+                    "Shift-Ctrl-Z" false
+                    "Shift-Cmd-Z" false}))))
     (.removeChild js/document.body content))
   (mark-clean))
 
