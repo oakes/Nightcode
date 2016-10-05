@@ -1,6 +1,7 @@
 (ns nightcode.state
   (:require [clojure.edn :as edn]
-            [clojure.spec :as s :refer [fdef]])
+            [clojure.spec :as s :refer [fdef]]
+            [nightcode.utils :as u])
   (:import [java.util.prefs Preferences]))
 
 ; preferences
@@ -33,7 +34,7 @@
 ; state
 
 (defonce pref-state (atom {:project-set (read-pref :project-set #{})
-                           :expansion-set (read-pref :expansion-set #{})
+                           :expansion-set (u/filter-paths (read-pref :expansion-set #{}))
                            :selection (read-pref :selection)
                            :theme (read-pref :theme :dark)
                            :text-size (read-pref :text-size 16)

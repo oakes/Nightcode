@@ -145,6 +145,12 @@ requisite project files, or empty if neither exists."
       (max 12)
       (min 24)))
 
+(defn filter-paths [paths]
+  (set (filter (fn [path]
+                 (try (-> path io/file .exists)
+                   (catch Exception _ false)))
+         paths)))
+
 ; specs
 
 (fdef get-relative-path
@@ -210,4 +216,8 @@ requisite project files, or empty if neither exists."
 (fdef normalize-text-size
   :args (s/cat :num number?)
   :ret (s/and number? even?))
+
+(fdef filter-paths
+  :args (s/cat :paths (s/coll-of string?))
+  :ret (s/coll-of string?))
 
