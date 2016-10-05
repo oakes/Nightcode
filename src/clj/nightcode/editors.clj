@@ -15,7 +15,7 @@
            [javafx.scene.web WebEngine]
            [java.io File]))
 
-(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi"})
+(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const instarepl-exts #{"clj" "cljc"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const max-file-size (* 1024 1024 2))
