@@ -43,7 +43,7 @@
   (set-env! :dependencies
     (conj (get-env :dependencies)
       '[org.clojure/clojurescript "1.9.225"]
-      '[paren-soup "2.6.4"]
+      '[paren-soup "2.6.5"]
       '[cljsjs/codemirror "5.19.0-0"]))
   (comp (cljs :optimizations :advanced) (target)))
 
