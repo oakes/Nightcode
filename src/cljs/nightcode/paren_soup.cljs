@@ -1,7 +1,9 @@
 (ns nightcode.paren-soup
   (:require [goog.functions :refer [debounce]]
             [paren-soup.core :as p]
-            [cross-parinfer.core :as cp]))
+            [cross-parinfer.core :as cp]
+            [cljs.reader :refer [read-string]])
+  (:import goog.net.XhrIo))
 
 (def state (atom {:text-content "" :editor nil}))
 
@@ -62,6 +64,21 @@
       .-style
       (aset "fontSize" (str size "px"))))
 
+(defn compiler-fn [forms cb]
+  (try
+    (.send XhrIo
+      "/eval"
+      (fn [e]
+        (if (.isSuccess (.-target e))
+          (->> (.. e -target getResponseText)
+               read-string
+               (mapv #(if (vector? %) (into-array %) %))
+               cb)
+          (cb [])))
+      "POST"
+      (pr-str (into [] forms)))
+    (catch js/Error _ (cb []))))
+
 (defn init []
   (mark-clean)
   (let [paren-soup (.querySelector js/document "#paren-soup")
@@ -73,7 +90,8 @@
                     (when (= (.-type e) "keyup")
                       (auto-save))
                     (.onchange js/window.java))
-                  :disable-undo-redo? true})))
+                  :disable-undo-redo? true
+                  :compiler-fn compiler-fn})))
     (-> content .-style (aset "whiteSpace" "pre"))
     (.focus content)))
 

@@ -5,7 +5,7 @@
                   [adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.225" :scope "test"]
-                  [paren-soup "2.6.6" :scope "test"]
+                  [paren-soup "2.6.7" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.9.0-alpha13"]
@@ -14,8 +14,7 @@
                   [play-cljs/lein-template "0.6.4"]
                   [eval-soup "1.0.2" :exclusions [org.clojure/core.async]]])
 
-(require
-  '[adzerk.boot-cljs :refer [cljs]])
+(require '[adzerk.boot-cljs :refer [cljs]])
 
 (task-options!
   sift {:include #{#"\.jar$"}}
