@@ -11,7 +11,7 @@
                   [org.clojure/clojure "1.9.0-alpha13"]
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
-                  [play-cljs/lein-template "0.6.4"]
+                  [play-cljs/lein-template "0.6.5"]
                   [eval-soup "1.1.1" :exclusions [org.clojure/core.async]]])
 
 (require '[adzerk.boot-cljs :refer [cljs]])
@@ -19,7 +19,7 @@
 (task-options!
   sift {:include #{#"\.jar$"}}
   pom {:project 'nightcode
-       :version "2.1.6-SNAPSHOT"}
+       :version "2.1.6"}
   aot {:namespace '#{nightcode.core
                      nightcode.lein}}
   jar {:main 'nightcode.core
