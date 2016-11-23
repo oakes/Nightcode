@@ -83,6 +83,7 @@
   (mark-clean)
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")]
+    (-> content .-style (aset "whiteSpace" "pre"))
     (swap! state assoc :editor
       (p/init paren-soup
         (clj->js {:change-callback
@@ -92,12 +93,12 @@
                     (.onchange js/window.java))
                   :disable-undo-redo? true
                   :compiler-fn compiler-fn})))
-    (-> content .-style (aset "whiteSpace" "pre"))
     (.focus content)))
 
 (defn init-console [repl?]
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")]
+    (-> content .-style (aset "whiteSpace" "pre-wrap"))
     (swap! state assoc :editor
       (p/init paren-soup
         (clj->js {:change-callback
