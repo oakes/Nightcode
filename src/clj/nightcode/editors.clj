@@ -94,6 +94,10 @@
 
 (def ^:const ids [:#up :#save :#undo :#redo :#instarepl :#find :#close])
 
+(defn save-file! [^String path ^WebEngine engine]
+  (spit (io/file path) (.executeScript engine "getTextContent()"))
+  (.executeScript engine "markClean()"))
+
 (defn editor-pane [pref-state-atom runtime-state ^File file]
   (when (should-open? file)
     (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
@@ -117,7 +121,7 @@
                   (let [save-btn (.lookup pane "#save")]
                     (when (and (:auto-save? @pref-state-atom)
                                (not (.isDisabled save-btn)))
-                      (.fire save-btn)))
+                      (-> file .getCanonicalPath (save-file! engine))))
                   (catch Exception e (.printStackTrace e))))
               (onchange []
                 (try
@@ -164,6 +168,9 @@
 (fdef should-open?
   :args (s/cat :file spec/file?)
   :ret boolean?)
+
+(fdef save-file!
+  :args (s/cat :path string? :engine any?))
 
 (fdef editor-pane
   :args (s/cat :pref-state-atom spec/atom? :runtime-state map? :file spec/file?)

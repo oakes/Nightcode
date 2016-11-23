@@ -171,8 +171,7 @@
 (defn save! [^Scene scene]
   (when-let [path (:selection @pref-state)]
     (when-let [engine (some-> scene (.lookup "#webview") .getEngine)]
-      (spit (io/file path) (.executeScript engine "getTextContent()"))
-      (.executeScript engine "markClean()"))
+      (e/save-file! path engine))
     ; if saving a build.boot file, refresh the build buttons
     (let [file (io/file path)
           parent-path (-> file .getParentFile .getCanonicalPath)]
