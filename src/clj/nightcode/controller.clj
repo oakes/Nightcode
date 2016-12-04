@@ -18,6 +18,7 @@
            [java.awt Desktop])
   (:gen-class
    :methods [[onNewConsoleProject [javafx.event.ActionEvent] void]
+             [onNewGraphicsProject [javafx.event.ActionEvent] void]
              [onNewWebProject [javafx.event.ActionEvent] void]
              [onNewGameProject [javafx.event.ActionEvent] void]
              [onNewAudioProject [javafx.event.ActionEvent] void]
@@ -69,6 +70,9 @@
 
 (defn -onNewConsoleProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
+
+(defn -onNewGraphicsProject [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :graphics)))
 
 (defn -onNewWebProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :web)))

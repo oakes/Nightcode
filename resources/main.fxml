@@ -23,6 +23,7 @@
                   <MenuButton fx:id="start" minWidth="-Infinity" mnemonicParsing="false" text="Start">
                      <items>
                         <MenuItem mnemonicParsing="false" onAction="#onNewConsoleProject" text="Console Project" />
+                        <MenuItem mnemonicParsing="false" onAction="#onNewGraphicsProject" text="Graphics Project" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewWebProject" text="Web Project" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewGameProject" text="Game Project" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewAudioProject" text="Audio Project" />
