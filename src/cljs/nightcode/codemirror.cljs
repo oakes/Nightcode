@@ -1,6 +1,24 @@
 (ns nightcode.codemirror
   (:require [goog.functions :refer [debounce]]
-            [cljsjs.codemirror]))
+            [cljsjs.codemirror]
+            [cljsjs.codemirror.mode.css]
+            [cljsjs.codemirror.mode.javascript]
+            [cljsjs.codemirror.mode.markdown]
+            [cljsjs.codemirror.mode.sass]
+            [cljsjs.codemirror.mode.shell]
+            [cljsjs.codemirror.mode.sql]
+            [cljsjs.codemirror.mode.xml]))
+
+(def ^:const extension->mode
+  {"css" "css"
+   "js" "javascript"
+   "md" "markdown"
+   "markdown" "markdown"
+   "sass" "sass"
+   "sh" "shell"
+   "sql" "sql"
+   "html" "xml"
+   "xml" "xml"})
 
 (def state (atom {:text-content "" :editor nil}))
 
@@ -48,14 +66,15 @@
       .-style
       (aset "fontSize" (str size "px"))))
 
-(defn init []
+(defn init [extension]
   (let [content (.querySelector js/document "#content")]
     (swap! state assoc :editor
       (doto
         (.CodeMirror js/window
           js/document.body
           (clj->js {:value (.-textContent content)
-                    :lineNumbers true}))
+                    :lineNumbers true
+                    :mode (extension->mode extension)}))
         (.on "change"
           (fn [editor-object change]
             (auto-save)

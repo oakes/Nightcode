@@ -83,7 +83,7 @@
       (.executeScript "window")
       (.call "setTextContent" (into-array [(u/remove-returns (slurp file))])))
   (doto engine
-    (.executeScript "init()")
+    (.executeScript (format "init('%s')" (-> file .getName u/get-extension)))
     (.executeScript (case (:theme pref-state)
                       :dark "changeTheme(true)"
                       :light "changeTheme(false)"))
