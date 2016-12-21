@@ -107,7 +107,9 @@ requisite project files, or empty if neither exists."
       .toURI))
 
 (defn remove-returns [^String s]
-  (str/escape s {\return ""}))
+  (-> s
+      (str/escape {\return ""})
+      (str/replace #"\u001b[^\n]*" "")))
 
 (defn get-boot-path []
   (let [windows? (.startsWith (System/getProperty "os.name") "Windows")
