@@ -4,15 +4,15 @@
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   [adzerk/boot-cljs "1.7.228-1" :scope "test"]
                   ; cljs deps
-                  [org.clojure/clojurescript "1.9.225" :scope "test"]
-                  [paren-soup "2.6.11" :scope "test"]
+                  [org.clojure/clojurescript "1.9.293" :scope "test"]
+                  [paren-soup "2.7.0" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.9.0-alpha14"]
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [play-cljs/lein-template "0.7.0"]
-                  [eval-soup "1.1.1" :exclusions [org.clojure/core.async]]])
+                  [eval-soup "1.2.0" :exclusions [org.clojure/core.async]]])
 
 (require '[adzerk.boot-cljs :refer [cljs]])
 
