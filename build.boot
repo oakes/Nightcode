@@ -11,7 +11,7 @@
                   [org.clojure/clojure "1.9.0-alpha14"]
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
-                  [play-cljs/lein-template "0.7.0"]
+                  [play-cljs/lein-template "0.8.0"]
                   [eval-soup "1.2.0" :exclusions [org.clojure/core.async]]])
 
 (require '[adzerk.boot-cljs :refer [cljs]])
