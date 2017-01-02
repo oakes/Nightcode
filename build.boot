@@ -24,7 +24,8 @@
                      nightcode.lein}}
   jar {:main 'nightcode.core
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
-                  "Url" "https://github.com/oakes/Nightcode"}})
+                  "Url" "https://github.com/oakes/Nightcode"}
+       :file "project.jar"})
 
 (deftask run []
   (comp
