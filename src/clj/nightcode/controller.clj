@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [nightcode.builders :as b]
             [nightcode.editors :as e]
+            [nightcode.git :as git]
             [nightcode.lein :as lein]
             [nightcode.process :as proc]
             [nightcode.projects :as p]
@@ -22,6 +23,7 @@
              [onNewWebProject [javafx.event.ActionEvent] void]
              [onNewGameProject [javafx.event.ActionEvent] void]
              [onNewAudioProject [javafx.event.ActionEvent] void]
+             [onCloneFromGit [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
              [onRemove [javafx.event.ActionEvent] void]
@@ -82,6 +84,16 @@
 
 (defn -onNewAudioProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :audio)))
+
+; clone from git
+
+(defn clone-from-git! [^Scene scene]
+  (when-let [path (git/clone-with-dialog! scene)]
+    (swap! pref-state update :project-set conj path)
+    (p/update-project-tree! pref-state (.lookup scene "#project_tree") path)))
+
+(defn -onCloneFromGit [this ^ActionEvent event]
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene clone-from-git!))
 
 ; import
 

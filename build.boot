@@ -12,7 +12,8 @@
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [play-cljs/lein-template "0.8.0"]
-                  [eval-soup "1.2.0" :exclusions [org.clojure/core.async]]])
+                  [eval-soup "1.2.0" :exclusions [org.clojure/core.async]]
+                  [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]])
 
 (require '[adzerk.boot-cljs :refer [cljs]])
 

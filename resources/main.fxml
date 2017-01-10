@@ -27,6 +27,7 @@
                         <MenuItem mnemonicParsing="false" onAction="#onNewWebProject" text="Web Project" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewGameProject" text="Game Project" />
                         <MenuItem mnemonicParsing="false" onAction="#onNewAudioProject" text="Audio Project" />
+                        <MenuItem mnemonicParsing="false" onAction="#onCloneFromGit" text="Clone from Git" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <CustomMenuItem fx:id="theme_buttons" hideOnClick="false" mnemonicParsing="false" text="Unspecified Action">
                            <content>
