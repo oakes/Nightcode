@@ -49,6 +49,7 @@
 
 (defn remove-editor! [^String path pane runtime-state-atom]
   (swap! runtime-state-atom update :editor-panes dissoc path)
+  (swap! runtime-state-atom update :bridges dissoc path)
   (shortcuts/hide-tooltips! pane)
   (some-> pane .getParent .getChildren (.remove pane)))
 
@@ -98,36 +99,40 @@
   (spit (io/file path) (.executeScript engine "getTextContent()"))
   (.executeScript engine "markClean()"))
 
-(defn editor-pane [pref-state-atom runtime-state ^File file]
+(defn editor-pane [pref-state-atom runtime-state-atom ^File file]
   (when (should-open? file)
-    (let [pane (FXMLLoader/load (io/resource "editor.fxml"))
+    (let [runtime-state @runtime-state-atom
+          pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
           engine (.getEngine webview)
           clojure? (-> file .getName u/get-extension clojure-exts some?)
-          instarepl? (-> file .getName u/get-extension instarepl-exts some?)]
+          instarepl? (-> file .getName u/get-extension instarepl-exts some?)
+          path (.getCanonicalPath file)
+          bridge (reify Bridge
+                   (onload [this]
+                     (try
+                       (onload engine file @pref-state-atom)
+                       (catch Exception e (.printStackTrace e))))
+                   (onautosave [this]
+                     (try
+                       (let [save-btn (.lookup pane "#save")]
+                         (when (and (:auto-save? @pref-state-atom)
+                                    (not (.isDisabled save-btn)))
+                           (save-file! path engine)))
+                       (catch Exception e (.printStackTrace e))))
+                   (onchange [this]
+                     (try
+                       (update-editor-buttons! pane engine)
+                       (catch Exception e (.printStackTrace e))))
+                   (onenter [this text]))]
       (.setContextMenuEnabled webview false)
       (-> pane (.lookup "#instarepl") (.setManaged instarepl?))
       (shortcuts/add-tooltips! pane ids)
+      ; prevent bridge from being GC'ed
+      (swap! runtime-state-atom update :bridges assoc path bridge)
       (-> engine
           (.executeScript "window")
-          (.setMember "java"
-            (proxy [Bridge] []
-              (onload []
-                (try
-                  (onload engine file @pref-state-atom)
-                  (catch Exception e (.printStackTrace e))))
-              (onautosave []
-                (try
-                  (let [save-btn (.lookup pane "#save")]
-                    (when (and (:auto-save? @pref-state-atom)
-                               (not (.isDisabled save-btn)))
-                      (-> file .getCanonicalPath (save-file! engine))))
-                  (catch Exception e (.printStackTrace e))))
-              (onchange []
-                (try
-                  (update-editor-buttons! pane engine)
-                  (catch Exception e (.printStackTrace e))))
-              (onenter [text]))))
+          (.setMember "java" bridge))
       (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
                       (if clojure? "/paren-soup.html" "/codemirror.html")))
@@ -173,6 +178,6 @@
   :args (s/cat :path string? :engine any?))
 
 (fdef editor-pane
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state map? :file spec/file?)
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file?)
   :ret spec/pane?)
 
