@@ -35,7 +35,7 @@
 
 (defn get-selected-text []
   (when-let [text (or (p/selected-text) (p/focused-text))]
-    (cp/mode :both text 0 0)))
+    (:text (cp/mode :both text 0 0))))
 
 (defn mark-clean []
   (swap! state assoc :text-content (get-text-content))
