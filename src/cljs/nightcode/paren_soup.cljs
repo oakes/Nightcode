@@ -2,7 +2,8 @@
   (:require [goog.functions :refer [debounce]]
             [paren-soup.core :as p]
             [cross-parinfer.core :as cp]
-            [cljs.reader :refer [read-string]])
+            [cljs.reader :refer [read-string]]
+            [goog.dom :as gdom])
   (:import goog.net.XhrIo))
 
 (def state (atom {:text-content "" :editor nil}))
@@ -27,8 +28,7 @@
   (some-> @state :editor p/can-redo?))
 
 (defn set-text-content [content]
-  (set! (.-textContent (.querySelector js/document "#content"))
-    content))
+  (gdom/setTextContent (.querySelector js/document "#content") content))
 
 (defn get-text-content []
   (.-textContent (.querySelector js/document "#content")))

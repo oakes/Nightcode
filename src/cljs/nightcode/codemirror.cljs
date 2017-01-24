@@ -7,7 +7,8 @@
             [cljsjs.codemirror.mode.sass]
             [cljsjs.codemirror.mode.shell]
             [cljsjs.codemirror.mode.sql]
-            [cljsjs.codemirror.mode.xml]))
+            [cljsjs.codemirror.mode.xml]
+            [goog.dom :as gdom]))
 
 (def ^:const extension->mode
   {"css" "css"
@@ -42,8 +43,7 @@
   (some-> @state :editor .historySize .-redo (> 0)))
 
 (defn set-text-content [content]
-  (set! (.-textContent (.querySelector js/document "#content"))
-    content))
+  (gdom/setTextContent (.querySelector js/document "#content") content))
 
 (defn get-text-content []
   (some-> @state :editor .getValue))
