@@ -15,7 +15,9 @@
                   [eval-soup "1.2.0" :exclusions [org.clojure/core.async]]
                   [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]])
 
-(require '[adzerk.boot-cljs :refer [cljs]])
+(require
+  '[adzerk.boot-cljs :refer [cljs]]
+  '[clojure.java.io :as io])
 
 (task-options!
   sift {:include #{#"\.jar$"}}
@@ -31,17 +33,21 @@
 (deftask run []
   (comp
     (aot)
-    (with-pre-wrap fileset
+    (with-pass-thru _
       (require
         '[clojure.spec.test :refer [instrument]]
         '[nightcode.core :refer [dev-main]])
       ((resolve 'instrument))
-      ((resolve 'dev-main))
-      fileset)))
+      ((resolve 'dev-main)))))
 
 (deftask build []
   (comp (aot) (pom) (uber) (jar) (sift) (target)))
 
 (deftask build-cljs []
-  (comp (cljs :optimizations :advanced) (target)))
+  (comp
+    (cljs :optimizations :advanced)
+    (target)
+    (with-pass-thru _
+      (.renameTo (io/file "target/public/paren-soup.js") (io/file "resources/public/paren-soup.js"))
+      (.renameTo (io/file "target/public/codemirror.js") (io/file "resources/public/codemirror.js")))))
 
