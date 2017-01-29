@@ -2,7 +2,7 @@
   :source-paths #{"src/clj" "src/cljs"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
-                  [adzerk/boot-cljs "1.7.228-1" :scope "test"]
+                  [adzerk/boot-cljs "1.7.228-2" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.456" :scope "test"]
                   [paren-soup "2.8.4" :scope "test"]
