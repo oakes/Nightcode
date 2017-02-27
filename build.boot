@@ -4,7 +4,7 @@
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   [adzerk/boot-cljs "1.7.228-2" :scope "test"]
                   ; cljs deps
-                  [org.clojure/clojurescript "1.9.456" :scope "test"]
+                  [org.clojure/clojurescript "1.9.473" :scope "test"]
                   [paren-soup "2.8.4" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
                   ; clj deps
