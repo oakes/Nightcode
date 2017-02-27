@@ -48,6 +48,7 @@
                               <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadFile" styleClass="reload-file" text="Reload File" />
                               <Button disable="true" layoutX="159.0" layoutY="10.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onReloadSelection" styleClass="reload-selection" text="Reload Selection" />
                               <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#onClean" styleClass="clean" text="Clean" />
+                              <Button layoutX="415.0" layoutY="10.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#onTest" styleClass="test" text="Test" />
                               <Button disable="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" styleClass="stop" text="Stop" />
                            </children>
                         </HBox>

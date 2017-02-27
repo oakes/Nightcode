@@ -5,6 +5,7 @@
             [leiningen.repl]
             [leiningen.run]
             [leiningen.uberjar]
+            [leiningen.test]
             [leiningen.new]
             [clojure.spec :as s :refer [fdef]]
             [nightcode.spec :as spec])
@@ -30,6 +31,7 @@
       "run" (leiningen.run/run project)
       "repl" (leiningen.repl/repl project)
       "build" (leiningen.uberjar/uberjar project)
+      "test" (leiningen.test/test project)
       "clean" (leiningen.clean/clean project))))
 
 (defn -main [& args]

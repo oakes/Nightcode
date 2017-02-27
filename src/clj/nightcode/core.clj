@@ -28,6 +28,7 @@
               :.reload-selection c/reload-selection!
               :.build c/build!
               :.clean c/clean!
+              :.test c/test!
               :.stop c/stop!
               :#new_file c/new-file!
               :#open_in_file_browser c/open-in-file-browser!})

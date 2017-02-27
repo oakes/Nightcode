@@ -40,6 +40,7 @@
              [onReloadSelection [javafx.event.ActionEvent] void]
              [onBuild [javafx.event.ActionEvent] void]
              [onClean [javafx.event.ActionEvent] void]
+             [onTest [javafx.event.ActionEvent] void]
              [onStop [javafx.event.ActionEvent] void]
              [onDarkTheme [javafx.event.ActionEvent] void]
              [onLightTheme [javafx.event.ActionEvent] void]
@@ -328,6 +329,14 @@
 
 (defn -onClean [this ^ActionEvent event]
   (-> event .getSource .getScene clean!))
+
+; test
+
+(defn test! [^Scene scene]
+  (b/start-builder! @pref-state runtime-state "Testing..." "test"))
+
+(defn -onTest [this ^ActionEvent event]
+  (-> event .getSource .getScene test!))
 
 ; stop
 

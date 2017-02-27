@@ -35,6 +35,7 @@
                    :.reload-selection "R"
                    :.build "b"
                    :.clean "L"
+                   :.test "t"
                    :.stop "i"
                    ; directory pane
                    :#new_file "n"
