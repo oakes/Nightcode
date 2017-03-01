@@ -86,7 +86,12 @@
     (-> content .-style (aset "whiteSpace" "pre"))
     (swap! state assoc :editor
       (p/init paren-soup
-        (clj->js {:change-callback
+        (clj->js {:before-change-callback
+                  (fn [e]
+                    ; don't refresh editor when this is true
+                    (and (= (.-type e) "keyup")
+                         (= (.-keyCode e) 0)))
+                  :change-callback
                   (fn [e]
                     (when (= (.-type e) "keyup")
                       (auto-save))
@@ -101,7 +106,12 @@
     (-> content .-style (aset "whiteSpace" "pre-wrap"))
     (swap! state assoc :editor
       (p/init paren-soup
-        (clj->js {:change-callback
+        (clj->js {:before-change-callback
+                  (fn [e]
+                    ; don't refresh editor when this is true
+                    (and (= (.-type e) "keyup")
+                         (= (.-keyCode e) 0)))
+                  :change-callback
                   (fn [e]
                     (when (= (.-type e) "keyup")
                       (set! (.-scrollTop paren-soup) (.-scrollHeight paren-soup)))
