@@ -8,7 +8,7 @@
                   [paren-soup "2.8.6" :scope "test"]
                   [cljsjs/codemirror "5.19.0-0" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.9.0-alpha14"]
+                  [org.clojure/clojure "1.9.0-alpha15"]
                   [leiningen "2.7.0" :exclusions [leiningen.search]]
                   [ring "1.4.0"]
                   [play-cljs/lein-template "0.10.1"]
