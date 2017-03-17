@@ -294,9 +294,11 @@
   (when-let [webview (.lookup scene "#webview")]
     (let [text (.executeScript (.getEngine webview) "getTextContent()")
           text (str "(do" \newline text \newline ")" \newline)
-          builder-webview (b/get-builder-webview @pref-state @runtime-state)
-          builder-bridge (-> (.getEngine builder-webview) (.executeScript "window") (.getMember "java"))]
-      (.onenter builder-bridge text))))
+          builder-webview (b/get-builder-webview @pref-state @runtime-state)]
+      (some-> (.getEngine builder-webview)
+              (.executeScript "window")
+              (.getMember "java")
+              (.onenter text)))))
 
 (defn -onReloadFile [this ^ActionEvent event]
   (-> event .getSource .getScene reload-file!))
@@ -307,9 +309,11 @@
   (when-let [webview (.lookup scene "#webview")]
     (when-let [text (.executeScript (.getEngine webview) "getSelectedText()")]
       (let [text (str "(do" \newline text \newline ")" \newline)
-            builder-webview (b/get-builder-webview @pref-state @runtime-state)
-            builder-bridge (-> (.getEngine builder-webview) (.executeScript "window") (.getMember "java"))]
-        (.onenter builder-bridge text)))))
+            builder-webview (b/get-builder-webview @pref-state @runtime-state)]
+        (some-> (.getEngine builder-webview)
+                (.executeScript "window")
+                (.getMember "java")
+                (.onenter text))))))
 
 (defn -onReloadSelection [this ^ActionEvent event]
   (-> event .getSource .getScene reload-selection!))
