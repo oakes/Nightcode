@@ -2,7 +2,7 @@
   :source-paths #{"src"}
   :resource-paths #{"resources"}
   :dependencies '[[org.clojure/clojure "1.8.0"]
-                  [alda "1.0.0-rc34"]])
+                  [alda "1.0.0-rc50"]])
 
 (task-options!
   pom {:project '{{app-name}}
