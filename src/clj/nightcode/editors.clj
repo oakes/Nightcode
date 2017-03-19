@@ -13,7 +13,8 @@
             [eval-soup.core :as es])
   (:import [javafx.fxml FXMLLoader]
            [javafx.scene.web WebEngine]
-           [java.io File]))
+           [java.io File]
+           [nightcode.utils Bridge]))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
 (def ^:const instarepl-exts #{"clj" "cljc"})
@@ -67,12 +68,6 @@
   (if selected?
     (.executeScript engine "showInstaRepl()")
     (.executeScript engine "hideInstaRepl()")))
-
-(definterface Bridge
-  (onload [])
-  (onautosave [])
-  (onchange [])
-  (onenter [text]))
 
 (defn update-editor-buttons! [pane ^WebEngine engine]
   (.setDisable (.lookup pane "#save") (.executeScript engine "isClean()"))
@@ -138,6 +133,10 @@
                       (if clojure? "/paren-soup.html" "/codemirror.html")))
       pane)))
 
+(defn get-bridge [pref-state runtime-state]
+  (when-let [project-path (u/get-project-path pref-state)]
+    (get-in runtime-state [:bridges project-path])))
+
 ; specs
 
 (fdef form->serializable
@@ -180,4 +179,8 @@
 (fdef editor-pane
   :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file?)
   :ret spec/pane?)
+
+(fdef get-bridge
+  :args (s/cat :pref-state map? :runtime-state map?)
+  :ret (s/nilable #(instance? Bridge %)))
 

@@ -6,6 +6,12 @@
   (:import [java.io File]
            [java.nio.file Paths]))
 
+(definterface Bridge
+  (onload [])
+  (onautosave [])
+  (onchange [])
+  (onenter [text]))
+
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
   [project-path selected-path]

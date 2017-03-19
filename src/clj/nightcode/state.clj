@@ -43,6 +43,7 @@
 (defonce runtime-state (atom {:web-port nil
                               :project-panes {}
                               :editor-panes {}
+                              :bridges {}
                               :processes {}
                               :stage nil}))
 

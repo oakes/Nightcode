@@ -13,7 +13,8 @@
            [java.io PipedWriter PipedReader PrintWriter]
            [javafx.application Platform]
            [javafx.beans.value ChangeListener]
-           [javafx.event EventHandler]))
+           [javafx.event EventHandler]
+           [nightcode.utils Bridge]))
 
 (defn pipe-into-console! [^WebEngine engine in-pipe]
   (let [ca (char-array 256)]
@@ -71,13 +72,7 @@
   (when-let [process (get-in runtime-state [:processes project-path])]
     (proc/stop-process! process)))
 
-(definterface Bridge
-  (onload [])
-  (onautosave [])
-  (onchange [])
-  (onenter [text]))
-
-(defn init-console! [webview pipes web-port cb]
+(defn init-console! [project-path runtime-state-atom webview pipes web-port cb]
   (doto webview
     (.setVisible true)
     (.setContextMenuEnabled false))
@@ -85,20 +80,22 @@
     (.setOnStatusChanged engine
       (reify EventHandler
         (handle [this event]
-          (-> engine
-              (.executeScript "window")
-              (.setMember "java"
-                (proxy [Bridge] []
-                  (onload []
-                    (try
-                      (cb)
-                      (catch Exception e (.printStackTrace e))))
-                  (onautosave [])
-                  (onchange [])
-                  (onenter [text]
-                    (doto (:out-pipe pipes)
-                      (.write text)
-                      (.flush)))))))))
+          (let [bridge (proxy [Bridge] []
+                         (onload []
+                           (try
+                             (cb)
+                             (catch Exception e (.printStackTrace e))))
+                         (onautosave [])
+                         (onchange [])
+                         (onenter [text]
+                           (doto (:out-pipe pipes)
+                             (.write text)
+                             (.flush))))]
+            ; prevent bridge from being GC'ed
+            (swap! runtime-state-atom update :bridges assoc project-path bridge)
+            (-> engine
+                (.executeScript "window")
+                (.setMember "java" bridge))))))
     (.load engine (str "http://localhost:" web-port "/paren-soup.html"))))
 
 (def index->system {0 :boot 1 :lein})
@@ -156,7 +153,7 @@
                             (add-watch :process-changed
                               (fn [_ _ _ new-process]
                                 (update-when-process-changes! pane (some? new-process))))))]
-          (init-console! webview pipes (:web-port @runtime-state-atom)
+          (init-console! project-path runtime-state-atom webview pipes (:web-port @runtime-state-atom)
             (fn []
               (refresh-builder! webview (= cmd "repl") pref-state)
               (start-builder-process! webview pipes process start-str
@@ -238,7 +235,7 @@
   :args (s/cat :runtime-state map? :project-path string?))
 
 (fdef init-console!
-  :args (s/cat :webview spec/node? :pipes map? :web-port number? :callback fn?))
+  :args (s/cat :project-path string? :runtime-state-atom spec/atom? :webview spec/node? :pipes map? :web-port number? :callback fn?))
 
 (fdef get-tab
   :args (s/cat :pane spec/pane? :system keyword?)
