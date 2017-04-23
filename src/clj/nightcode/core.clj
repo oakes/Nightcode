@@ -75,9 +75,8 @@
 
 (defn -main [& args]
   (when (= "Linux" (System/getProperty "os.name"))
-    (do 
-      (System/setProperty "prism.lcdtext" "false")
-      (System/setProperty "prism.text" "t2k")))
+    (System/setProperty "prism.lcdtext" "false")
+    (System/setProperty "prism.text" "t2k"))
   (swap! runtime-state assoc :web-port (e/start-web-server!))
   (Application/launch nightcode.core (into-array String args)))
 
