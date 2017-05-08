@@ -4,6 +4,7 @@
 	color: gray;
 	background-color: #f7f7f7;
 	outline: 1px solid;
+	caret-color: black;
 }
 
 .paren-soup .error-text {
