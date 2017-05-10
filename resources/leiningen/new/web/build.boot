@@ -28,7 +28,7 @@
     (cljs :source-map true :optimizations :none)
     (target)
     (with-pass-thru _
-      ({{namespace}}/-main))))
+      ({{namespace}}/dev-main))))
 
 (deftask build []
   (comp
