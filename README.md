@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Nightcode is a simple IDE for Clojure and ClojureScript. Do `boot run` for development and `boot build` to make a jar file.
+Nightcode is a simple IDE for Clojure and ClojureScript. Do `boot run` for development and `boot build` to make a jar file. To build, JDK 8 is required. On Linux, you'll also need to install the `openjfx` package.
 
 ## Licensing
 
