@@ -22,7 +22,7 @@
 (task-options!
   sift {:include #{#"\.jar$"}}
   pom {:project 'nightcode
-       :version "2.3.4"}
+       :version "2.3.5-SNAPSHOT"}
   aot {:namespace '#{nightcode.core
                      nightcode.lein}}
   jar {:main 'nightcode.core
