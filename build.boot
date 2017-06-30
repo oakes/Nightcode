@@ -4,15 +4,15 @@
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   [adzerk/boot-cljs "1.7.228-2" :scope "test"]
                   ; cljs deps
-                  [org.clojure/clojurescript "1.9.518" :scope "test"]
-                  [paren-soup "2.8.6" :scope "test"]
-                  [cljsjs/codemirror "5.19.0-0" :scope "test"]
+                  [org.clojure/clojurescript "1.9.660" :scope "test"]
+                  [paren-soup "2.8.7" :scope "test"]
+                  [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.9.0-alpha15"]
-                  [leiningen "2.7.0" :exclusions [leiningen.search]]
-                  [ring "1.4.0"]
-                  [play-cljs/lein-template "0.10.1-3"]
-                  [eval-soup "1.2.1" :exclusions [org.clojure/core.async]]
+                  [org.clojure/clojure "1.9.0-alpha17"]
+                  [leiningen "2.7.1" :exclusions [leiningen.search]]
+                  [ring "1.6.1"]
+                  [play-cljs/lein-template "0.10.1-4"]
+                  [eval-soup "1.2.2" :exclusions [org.clojure/core.async]]
                   [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]])
 
 (require
@@ -35,7 +35,7 @@
     (aot)
     (with-pass-thru _
       (require
-        '[clojure.spec.test :refer [instrument]]
+        '[clojure.spec.test.alpha :refer [instrument]]
         '[nightcode.core :refer [dev-main]])
       ((resolve 'instrument))
       ((resolve 'dev-main)))))

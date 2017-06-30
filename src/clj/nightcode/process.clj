@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [nightcode.spec :as spec]
             [nightcode.utils :as u]
-            [clojure.spec :as s :refer [fdef]])
+            [clojure.spec.alpha :as s :refer [fdef]])
   (:import [com.hypirion.io ClosingPipe Pipe]))
 
 (defn start-process!

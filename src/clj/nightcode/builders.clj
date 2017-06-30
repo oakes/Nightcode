@@ -4,7 +4,7 @@
             [nightcode.spec :as spec]
             [nightcode.utils :as u]
             [nightcode.process :as proc]
-            [clojure.spec :as s :refer [fdef]]
+            [clojure.spec.alpha :as s :refer [fdef]]
             [clojure.set :as set]
             [clojure.string :as str])
   (:import [clojure.lang LineNumberingPushbackReader]

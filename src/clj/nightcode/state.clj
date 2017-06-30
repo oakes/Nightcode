@@ -1,6 +1,6 @@
 (ns nightcode.state
   (:require [clojure.edn :as edn]
-            [clojure.spec :as s :refer [fdef]]
+            [clojure.spec.alpha :as s :refer [fdef]]
             [nightcode.utils :as u])
   (:import [java.util.prefs Preferences]))
 

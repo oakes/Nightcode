@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [nightcode.spec :as spec]
-            [clojure.spec :as s :refer [fdef]])
+            [clojure.spec.alpha :as s :refer [fdef]])
   (:import [java.io File]
            [java.nio.file Paths]))
 

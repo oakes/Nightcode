@@ -3,7 +3,7 @@
             [clojure.set :as set]
             [clojure.java.io :as io]
             [nightcode.spec :as spec]
-            [clojure.spec :as s :refer [fdef]]
+            [clojure.spec.alpha :as s :refer [fdef]]
             [nightcode.utils :as u])
   (:import [javafx.scene Node]
            [javafx.scene Scene]

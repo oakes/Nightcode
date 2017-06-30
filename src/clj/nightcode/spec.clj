@@ -1,5 +1,5 @@
 (ns nightcode.spec
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec.alpha :as s]))
 
 (defn file? [x]
   (instance? java.io.File x))

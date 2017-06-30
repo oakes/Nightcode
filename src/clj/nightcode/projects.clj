@@ -6,7 +6,7 @@
             [nightcode.process :as proc]
             [nightcode.spec :as spec]
             [nightcode.utils :as u]
-            [clojure.spec :as s :refer [fdef]])
+            [clojure.spec.alpha :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell ButtonType Alert Alert$AlertType]
            [javafx.collections FXCollections]

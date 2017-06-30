@@ -6,7 +6,7 @@
             [ring.middleware.content-type :refer [wrap-content-type]]
             [ring.util.response :refer [redirect]]
             [ring.util.request :refer [body-string]]
-            [clojure.spec :as s :refer [fdef]]
+            [clojure.spec.alpha :as s :refer [fdef]]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as u]
             [nightcode.spec :as spec]

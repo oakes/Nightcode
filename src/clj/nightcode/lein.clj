@@ -7,7 +7,7 @@
             [leiningen.uberjar]
             [leiningen.test]
             [leiningen.new]
-            [clojure.spec :as s :refer [fdef]]
+            [clojure.spec.alpha :as s :refer [fdef]]
             [nightcode.spec :as spec])
   (:gen-class))
 
