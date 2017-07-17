@@ -8,7 +8,8 @@
             [cljsjs.codemirror.mode.shell]
             [cljsjs.codemirror.mode.sql]
             [cljsjs.codemirror.mode.xml]
-            [goog.dom :as gdom]))
+            [goog.dom :as gdom]
+            [goog.object :as gobj]))
 
 (def ^:const extension->mode
   {"css" "css"
@@ -64,7 +65,8 @@
   (-> js/document
       (.querySelector ".CodeMirror")
       .-style
-      (aset "fontSize" (str size "px"))))
+      .-fontSize
+      (set! (str size "px"))))
 
 (defn init [extension]
   (let [content (.querySelector js/document "#content")]
@@ -88,18 +90,18 @@
   (mark-clean))
 
 (doto js/window
-  (aset "undo" undo)
-  (aset "redo" redo)
-  (aset "canUndo" can-undo?)
-  (aset "canRedo" can-redo?)
-  (aset "setTextContent" set-text-content)
-  (aset "getTextContent" get-text-content)
-  (aset "getSelectedText" get-selected-text)
-  (aset "markClean" mark-clean)
-  (aset "isClean" clean?)
-  (aset "changeTheme" change-theme)
-  (aset "setTextSize" set-text-size)
-  (aset "init" init))
+  (gobj/set "undo" undo)
+  (gobj/set "redo" redo)
+  (gobj/set "canUndo" can-undo?)
+  (gobj/set "canRedo" can-redo?)
+  (gobj/set "setTextContent" set-text-content)
+  (gobj/set "getTextContent" get-text-content)
+  (gobj/set "getSelectedText" get-selected-text)
+  (gobj/set "markClean" mark-clean)
+  (gobj/set "isClean" clean?)
+  (gobj/set "changeTheme" change-theme)
+  (gobj/set "setTextSize" set-text-size)
+  (gobj/set "init" init))
 
 (set! (.-onload js/window)
   (fn []

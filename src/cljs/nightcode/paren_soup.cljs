@@ -3,7 +3,8 @@
             [paren-soup.core :as p]
             [cross-parinfer.core :as cp]
             [cljs.reader :refer [read-string]]
-            [goog.dom :as gdom])
+            [goog.dom :as gdom]
+            [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
 (def state (atom {:text-content "" :editor nil}))
@@ -62,7 +63,8 @@
   (-> js/document
       (.querySelector "#paren-soup")
       .-style
-      (aset "fontSize" (str size "px"))))
+      .-fontSize
+      (set! (str size "px"))))
 
 (defn compiler-fn [forms cb]
   (try
@@ -83,7 +85,7 @@
   (mark-clean)
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")]
-    (-> content .-style (aset "whiteSpace" "pre"))
+    (-> content .-style .-whiteSpace (set! "pre"))
     (swap! state assoc :editor
       (p/init paren-soup
         (clj->js {:before-change-callback
@@ -103,7 +105,7 @@
 (defn init-console [repl?]
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")]
-    (-> content .-style (aset "whiteSpace" "pre-wrap"))
+    (-> content .-style .-whiteSpace (set! "pre-wrap"))
     (swap! state assoc :editor
       (p/init paren-soup
         (clj->js {:before-change-callback
@@ -126,32 +128,34 @@
 (defn show-instarepl []
   (-> (.querySelector js/document "#instarepl")
       .-style
-      (aset "display" "list-item"))
+      .-display
+      (set! "list-item"))
   (init))
 
 (defn hide-instarepl []
   (-> (.querySelector js/document "#instarepl")
       .-style
-      (aset "display" "none"))
+      .-display
+      (set! "none"))
   (init))
 
 (doto js/window
-  (aset "undo" undo)
-  (aset "redo" redo)
-  (aset "canUndo" can-undo?)
-  (aset "canRedo" can-redo?)
-  (aset "setTextContent" set-text-content)
-  (aset "getTextContent" get-text-content)
-  (aset "getSelectedText" get-selected-text)
-  (aset "markClean" mark-clean)
-  (aset "isClean" clean?)
-  (aset "append" append)
-  (aset "changeTheme" change-theme)
-  (aset "setTextSize" set-text-size)
-  (aset "init" init)
-  (aset "initConsole" init-console)
-  (aset "showInstaRepl" show-instarepl)
-  (aset "hideInstaRepl" hide-instarepl))
+  (gobj/set "undo" undo)
+  (gobj/set "redo" redo)
+  (gobj/set "canUndo" can-undo?)
+  (gobj/set "canRedo" can-redo?)
+  (gobj/set "setTextContent" set-text-content)
+  (gobj/set "getTextContent" get-text-content)
+  (gobj/set "getSelectedText" get-selected-text)
+  (gobj/set "markClean" mark-clean)
+  (gobj/set "isClean" clean?)
+  (gobj/set "append" append)
+  (gobj/set "changeTheme" change-theme)
+  (gobj/set "setTextSize" set-text-size)
+  (gobj/set "init" init)
+  (gobj/set "initConsole" init-console)
+  (gobj/set "showInstaRepl" show-instarepl)
+  (gobj/set "hideInstaRepl" hide-instarepl))
 
 (set! (.-onload js/window)
   (fn []
