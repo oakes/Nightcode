@@ -84,22 +84,31 @@
 (defn init []
   (mark-clean)
   (let [paren-soup (.querySelector js/document "#paren-soup")
-        content (.querySelector js/document "#content")]
-    (-> content .-style .-whiteSpace (set! "pre"))
-    (swap! state assoc :editor
-      (p/init paren-soup
-        (clj->js {:before-change-callback
-                  (fn [e]
-                    ; don't refresh editor when this is true
-                    (and (= (.-type e) "keyup")
-                         (= (.-keyCode e) 0)))
-                  :change-callback
-                  (fn [e]
-                    (when (= (.-type e) "keyup")
-                      (auto-save))
-                    (.onchange js/window.java))
-                  :disable-undo-redo? true
-                  :compiler-fn compiler-fn})))
+        content (.querySelector js/document "#content")
+        _ (-> content .-style .-whiteSpace (set! "pre"))
+        editor (p/init paren-soup
+                 (clj->js {:before-change-callback
+                           (fn [e]
+                             ; don't refresh editor when this is true
+                             (and (= (.-type e) "keyup")
+                                  (= (.-keyCode e) 0)))
+                           :change-callback
+                           (fn [e]
+                             (let [{:keys [text-after-parinfer]} @state]
+                               (when (and (= (.-type e) "keyup")
+                                          ; if parinfer changed the initial text,
+                                          ; don't autosave unless user changed
+                                          ; the text afterwards
+                                          (or (nil? text-after-parinfer)
+                                              (not= text-after-parinfer
+                                                    (get-text-content))))
+                                 (auto-save)))
+                             (.onchange js/window.java))
+                           :disable-undo-redo? true
+                           :compiler-fn compiler-fn}))
+        text-after-parinfer (when-not (clean?)
+                              (get-text-content))]
+    (swap! state assoc :editor editor :text-after-parinfer text-after-parinfer)
     (.focus content)))
 
 (defn init-console [repl?]
