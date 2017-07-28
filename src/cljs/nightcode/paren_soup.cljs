@@ -95,14 +95,17 @@
                            :change-callback
                            (fn [e]
                              (let [{:keys [text-after-parinfer]} @state]
-                               (when (and (= (.-type e) "keyup")
-                                          ; if parinfer changed the initial text,
-                                          ; don't autosave unless user changed
-                                          ; the text afterwards
-                                          (or (nil? text-after-parinfer)
-                                              (not= text-after-parinfer
-                                                    (get-text-content))))
-                                 (auto-save)))
+                               (when (= (.-type e) "keyup")
+                                 (cond
+                                   (nil? text-after-parinfer)
+                                   (auto-save)
+                                   ; if parinfer changed the initial text,
+                                   ; don't autosave unless user changed
+                                   ; the text afterwards
+                                   (not= text-after-parinfer (get-text-content))
+                                   (do
+                                     (swap! state dissoc :text-after-parinfer)
+                                     (auto-save)))))
                              (.onchange js/window.java))
                            :disable-undo-redo? true
                            :compiler-fn compiler-fn}))
