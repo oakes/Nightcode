@@ -5,7 +5,8 @@
                   [adzerk/boot-cljs "1.7.228-2" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.473" :scope "test"]
-                  [paren-soup "2.8.12" :scope "test"]
+                  [paren-soup "2.8.13" :scope "test"]
+                  [mistakes-were-made "1.7.3" :scope "test"]
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.9.0-alpha17"]

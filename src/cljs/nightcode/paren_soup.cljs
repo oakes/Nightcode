@@ -1,13 +1,14 @@
 (ns nightcode.paren-soup
   (:require [goog.functions :refer [debounce]]
             [paren-soup.core :as p]
+            [mistakes-were-made.core :as mwm]
             [cross-parinfer.core :as cp]
             [cljs.reader :refer [read-string]]
             [goog.dom :as gdom]
             [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
-(def state (atom {:text-content "" :editor nil}))
+(def state (atom {:text-content "" :editor nil :edit-history (mwm/create-edit-history)}))
 
 (def auto-save
   (debounce
@@ -108,7 +109,8 @@
                                      (auto-save)))))
                              (.onchange js/window.java))
                            :disable-undo-redo? true
-                           :compiler-fn compiler-fn}))
+                           :compiler-fn compiler-fn
+                           :edit-history (:edit-history @state)}))
         text-after-parinfer (when-not (clean?)
                               (get-text-content))]
     (swap! state assoc :editor editor :text-after-parinfer text-after-parinfer)
