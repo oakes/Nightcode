@@ -41,8 +41,15 @@
       ((resolve 'instrument))
       ((resolve 'dev-main)))))
 
+(def jar-exclusions
+  ;; the standard exclusions don't work on windows,
+  ;; because we need to use backslashes
+  (conj boot.pod/standard-jar-exclusions
+    #"(?i)^META-INF\\[^\\]*\.(MF|SF|RSA|DSA)$"
+    #"(?i)^META-INF\\INDEX.LIST$"))
+
 (deftask build []
-  (comp (aot) (pom) (uber) (jar) (sift) (target)))
+  (comp (aot) (pom) (uber :exclude jar-exclusions) (jar) (sift) (target)))
 
 (deftask build-cljs []
   (comp
