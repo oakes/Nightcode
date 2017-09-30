@@ -39,7 +39,9 @@
 (defn stop-process!
   [process]
   (when-let [p @process]
-    (doto p .destroy .waitFor))
+    (doseq [child (-> p .descendants .iterator iterator-seq)]
+      (.destroyForcibly child))
+    (.destroyForcibly p))
   (reset! process nil))
 
 ; specs
