@@ -39,8 +39,10 @@
 (defn stop-process!
   [process]
   (when-let [p @process]
-    (doseq [child (-> p .descendants .iterator iterator-seq)]
-      (.destroyForcibly child))
+    ; kill child processes if running on java 9 or later
+    (when (->> Process .getDeclaredMethods seq (some #(= (.getName %) "descendants")))
+      (doseq [child (-> p .descendants .iterator iterator-seq)]
+        (.destroyForcibly child)))
     (.destroyForcibly p))
   (reset! process nil))
 
