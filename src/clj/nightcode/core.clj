@@ -7,7 +7,7 @@
             [nightcode.state :refer [pref-state runtime-state]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
-           [javafx.stage Stage StageBuilder]
+           [javafx.stage Stage]
            [javafx.scene Scene])
   (:gen-class :extends javafx.application.Application))
 
