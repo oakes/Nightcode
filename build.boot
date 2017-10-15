@@ -10,7 +10,7 @@
                   [mistakes-were-made "1.7.3" :scope "test"]
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.9.0-beta1"]
+                  [org.clojure/clojure "1.9.0-beta2"]
                   [leiningen "2.7.1" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
                   [play-cljs/lein-template "0.10.1-5"]

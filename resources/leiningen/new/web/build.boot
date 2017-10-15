@@ -1,11 +1,11 @@
 (set-env!
   :source-paths #{"src/clj" "src/cljs"}
   :resource-paths #{"resources"}
-  :dependencies '[[adzerk/boot-cljs "1.7.228-2" :scope "test"]
-                  [adzerk/boot-reload "0.4.12" :scope "test"]
+  :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
+                  [adzerk/boot-reload "0.5.2" :scope "test"]
                   ; project deps
                   [org.clojure/clojure "1.8.0"]
-                  [org.clojure/clojurescript "1.9.908" :scope "test"]
+                  [org.clojure/clojurescript "1.9.946" :scope "test"]
                   [reagent "0.7.0" :scope "test"]
                   [ring "1.5.1"]])
 
@@ -25,7 +25,10 @@
   (comp
     (watch)
     (reload :asset-path "public")
-    (cljs :source-map true :optimizations :none)
+    (cljs
+      :source-map true
+      :optimizations :none
+      :compiler-options {:asset-path "main.out"})
     (target)
     (with-pass-thru _
       ({{namespace}}/dev-main))))
