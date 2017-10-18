@@ -11,7 +11,7 @@
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.9.0-beta2"]
-                  [leiningen "2.7.1" :exclusions [leiningen.search]]
+                  [leiningen "2.8.0" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
                   [play-cljs/lein-template "0.10.1-5"]
                   [eval-soup "1.2.3" :exclusions [org.clojure/core.async]]
