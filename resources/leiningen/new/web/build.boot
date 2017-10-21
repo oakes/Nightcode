@@ -23,15 +23,15 @@
 
 (deftask run []
   (comp
+    (with-pass-thru _
+      ({{namespace}}/dev-main))
     (watch)
     (reload :asset-path "public")
     (cljs
       :source-map true
       :optimizations :none
       :compiler-options {:asset-path "main.out"})
-    (target)
-    (with-pass-thru _
-      ({{namespace}}/dev-main))))
+    (target)))
 
 (deftask build []
   (comp
