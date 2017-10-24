@@ -14,7 +14,11 @@
                   [ring "1.6.1"]
                   [play-cljs/lein-template "0.10.1-5"]
                   [eval-soup "1.2.3" :exclusions [org.clojure/core.async]]
-                  [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]])
+                  [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]]
+  :repositories (conj (get-env :repositories)
+                  ["clojars" {:url "https://clojars.org/repo/"
+                              :username (System/getenv "CLOJARS_USER")
+                              :password (System/getenv "CLOJARS_PASS")}]))
 
 (require
   '[adzerk.boot-cljs :refer [cljs]]
@@ -58,4 +62,12 @@
     (with-pass-thru _
       (.renameTo (io/file "target/public/paren-soup.js") (io/file "resources/public/paren-soup.js"))
       (.renameTo (io/file "target/public/codemirror.js") (io/file "resources/public/codemirror.js")))))
+
+(deftask local []
+  (set-env! :resource-paths #{"src/clj" "src/cljs"})
+  (comp (pom) (jar) (install)))
+
+(deftask deploy []
+  (set-env! :resource-paths #{"src/clj" "src/cljs"})
+  (comp (pom) (jar) (push)))
 
