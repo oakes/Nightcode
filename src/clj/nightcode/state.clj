@@ -66,5 +66,5 @@
 (fdef read-pref
   :args (s/alt
           :key-only (s/cat :key keyword?)
-          :key-and-val (s/cat :key keyword? :default-val identity)))
+          :key-and-val (s/cat :key keyword? :default-val any?)))
 
