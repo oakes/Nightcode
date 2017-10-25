@@ -107,24 +107,25 @@
     (add-tooltip! "")))
 
 (defn update-tabs! [^Scene scene pref-state runtime-state]
-  (let [tabs (.lookup scene "#tabs")
-        tooltip (.getTooltip tabs)
-        selected-path (:selection pref-state)
-        names (map (fn [path]
-                     (let [format-str (if (u/parent-path? selected-path path) "-> %s <-" "   %s   ")
-                           file-name (-> path io/file .getName)]
-                       (format format-str file-name)))
-                (-> runtime-state :editor-panes keys))
-        names (str/join "\n" names)]
-    (.setText tooltip (str "   PgUp PgDn   \n\n" names))))
+  (when-let [tabs (.lookup scene "#tabs")]
+    (let [tooltip (.getTooltip tabs)
+          selected-path (:selection pref-state)
+          names (map (fn [path]
+                       (let [format-str (if (u/parent-path? selected-path path) "-> %s <-" "   %s   ")
+                             file-name (-> path io/file .getName)]
+                         (format format-str file-name)))
+                  (-> runtime-state :editor-panes keys))
+          names (str/join "\n" names)]
+      (.setText tooltip (str "   PgUp PgDn   \n\n" names)))))
 
 (defn show-tabs! [^Stage stage ^Node node]
-  (let [tabs (.lookup node "#tabs")
-        content (.lookup node "#content")]
-    (show-tooltip! stage tabs content)))
+  (when-let [tabs (.lookup node "#tabs")]
+    (when-let [content (.lookup node "#content")]
+      (show-tooltip! stage tabs content))))
 
 (defn hide-tabs! [^Node node]
-  (hide-tooltip! (.lookup node "#tabs")))
+  (when-let [tabs (.lookup node "#tabs")]
+    (hide-tooltip! tabs)))
 
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (key-char->id (if shift? text (.toLowerCase text)))]
