@@ -171,6 +171,17 @@ requisite project files, or empty if neither exists."
                  (.initModality Modality/WINDOW_MODAL))]
     (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
 
+(defn update-webviews! [pref-state {:keys [editor-panes project-panes]}]
+  (doseq [pane (concat (vals editor-panes) (vals project-panes))]
+    (doseq [webview (.lookupAll pane "WebView")]
+      (try
+        (doto (.getEngine webview)
+          (.executeScript (case (:theme pref-state)
+                            :dark "changeTheme(true)"
+                            :light "changeTheme(false)"))
+          (.executeScript (format "setTextSize(%s)" (:text-size pref-state))))
+        (catch Exception _)))))
+
 ; specs
 
 (fdef get-relative-path
@@ -244,4 +255,7 @@ requisite project files, or empty if neither exists."
 (fdef show-warning!
   :args (s/cat :scene spec/scene? :title string? :header-text string?)
   :ret boolean?)
+
+(fdef update-webviews!
+  :args (s/cat :pref-state map? :runtime-state map?))
 

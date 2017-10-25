@@ -313,17 +313,6 @@
     (proc/stop-process! process)
     (swap! runtime-state-atom update :processes dissoc path)))
 
-(defn update-webviews! [pref-state {:keys [editor-panes project-panes]}]
-  (doseq [pane (concat (vals editor-panes) (vals project-panes))]
-    (doseq [webview (.lookupAll pane "WebView")]
-      (try
-        (doto (.getEngine webview)
-          (.executeScript (case (:theme pref-state)
-                            :dark "changeTheme(true)"
-                            :light "changeTheme(false)"))
-          (.executeScript (format "setTextSize(%s)" (:text-size pref-state))))
-        (catch Exception _)))))
-
 ; specs
 
 (fdef project-pane
@@ -394,7 +383,4 @@
 
 (fdef remove-project!
   :args (s/cat :path string? :runtime-state-atom spec/atom?))
-
-(fdef update-webviews!
-  :args (s/cat :pref-state map? :runtime-state map?))
 
