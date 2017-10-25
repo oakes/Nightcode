@@ -18,9 +18,9 @@
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
   [project-path selected-path]
-  (-> (.toURI (io/file project-path))
-      (.relativize (.toURI (io/file selected-path)))
-      (.getPath)))
+  (-> (Paths/get (.toURI (io/file project-path)))
+      (.relativize (Paths/get (.toURI (io/file selected-path))))
+      (.toString)))
 
 (defn delete-parents-recursively!
   "Deletes the given file along with all empty parents unless they are in project-set."
