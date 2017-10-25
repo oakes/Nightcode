@@ -4,7 +4,10 @@
             [nightcode.spec :as spec]
             [clojure.spec.alpha :as s :refer [fdef]])
   (:import [java.io File]
-           [java.nio.file Paths]))
+           [java.nio.file Paths]
+           [javafx.scene.control Alert Alert$AlertType ButtonType]
+           [javafx.scene Scene]
+           [javafx.stage Modality]))
 
 (definterface Bridge
   (onload [])
@@ -159,6 +162,15 @@ requisite project files, or empty if neither exists."
                    (catch Exception _ false)))
          paths)))
 
+(defn show-warning! [^Scene scene ^String title ^String header-text]
+  (let [dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
+                 (.setTitle title)
+                 (.setHeaderText header-text)
+                 (.setGraphic nil)
+                 (.initOwner (.getWindow scene))
+                 (.initModality Modality/WINDOW_MODAL))]
+    (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
+
 ; specs
 
 (fdef get-relative-path
@@ -228,4 +240,8 @@ requisite project files, or empty if neither exists."
 (fdef filter-paths
   :args (s/cat :paths (s/coll-of string?))
   :ret (s/coll-of string?))
+
+(fdef show-warning!
+  :args (s/cat :scene spec/scene? :title string? :header-text string?)
+  :ret boolean?)
 

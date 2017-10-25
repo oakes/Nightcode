@@ -149,7 +149,7 @@
         (->> (map #(-> % io/file .getName) unsaved-paths)
              (str/join \newline)
              (str "The below files are not saved. Proceed?" \newline \newline)
-             (p/show-warning! scene "Unsaved Files")))))
+             (u/show-warning! scene "Unsaved Files")))))
 
 (defn remove! [^Scene scene]
   (let [{:keys [project-set selection]} @pref-state

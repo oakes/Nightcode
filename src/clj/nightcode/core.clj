@@ -51,7 +51,6 @@
     (p/set-focused-listener! pref-state runtime-state stage project-tree)
     (p/set-project-key-listener! stage pref-state runtime-state)
     (shortcuts/set-shortcut-listeners! stage pref-state runtime-state actions)
-    (p/set-close-listener! stage)
     ; update the ui
     (p/update-project-tree! pref-state project-tree)
     (p/update-project-buttons! @pref-state scene)

@@ -141,6 +141,15 @@
 
 (defn set-shortcut-listeners! [^Stage stage pref-state-atom runtime-state-atom actions]
   (let [^Scene scene (.getScene stage)]
+    ; show exit dialog
+    (.setOnCloseRequest stage
+      (reify EventHandler
+        (handle [this e]
+          (if (u/show-warning! (.getScene stage) "Quit" "Are you sure you want to quit?")
+            (do
+              (Platform/exit)
+              (System/exit 0))
+            (.consume e)))))
     ; update tabs when editor panes change
     (add-watch runtime-state-atom :runtime-state-changed
       (fn [_ _ _ new-runtime-state]
