@@ -6,6 +6,7 @@
             [nightcode.process :as proc]
             [nightcode.spec :as spec]
             [nightcode.utils :as u]
+            [hawk.core :as hawk]
             [clojure.spec.alpha :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
            [javafx.scene.control TreeItem TreeCell]
@@ -103,7 +104,7 @@
       (getPane [pref-state-atom runtime-state-atom parent-path]
         (when parent-path
           (let [runtime-state @runtime-state-atom
-                project-pane (or (get-in runtime-state [:project-panes parent-path])
+                project-pane (or (get-in runtime-state [:projects parent-path :pane])
                                  (project-pane parent-path @pref-state-atom runtime-state-atom))
                 editors (-> project-pane .getItems (.get 0))]
             (-> editors .getChildren .clear)
@@ -115,7 +116,12 @@
                                   (e/editor-pane pref-state-atom runtime-state-atom file))]
                 (-> editors .getChildren (.add pane))
                 (swap! runtime-state-atom update :editor-panes assoc path pane)))
-            (swap! runtime-state-atom update :project-panes assoc parent-path project-pane)
+            (swap! runtime-state-atom update-in [:projects parent-path]
+              (fn [project]
+                (assoc project
+                  :pane project-pane
+                  :file-watcher (or (:file-watcher project)
+                                    (e/create-file-watcher parent-path runtime-state-atom)))))
             project-pane)))
       (focus [pane]
         (some-> (.lookup pane "#webview") .requestFocus)))))
@@ -131,9 +137,9 @@
       (getPath []
         path)
       (getPane [pref-state-atom runtime-state-atom _]
-        (let [pane (or (get-in @runtime-state-atom [:project-panes path])
+        (let [pane (or (get-in @runtime-state-atom [:projects path :pane])
                        (home-pane pref-state-atom runtime-state-atom))]
-          (swap! runtime-state-atom update :project-panes assoc path pane)
+          (swap! runtime-state-atom assoc-in [:projects path :pane] pane)
           pane))
       (focus [pane]
         (some-> (.lookup pane "#repl") .requestFocus)))))
@@ -305,10 +311,11 @@
               (move-tab-selection! scene pref-state-atom runtime-state-atom 1))))))))
 
 (defn remove-project! [^String path runtime-state-atom]
-  (when-let [pane (get-in @runtime-state-atom [:project-panes path])]
-    (swap! runtime-state-atom update :project-panes dissoc path)
+  (when-let [{:keys [pane file-watcher]} (get-in @runtime-state-atom [:projects path])]
+    (swap! runtime-state-atom update :projects dissoc path)
     (shortcuts/hide-tooltips! pane)
-    (-> pane .getParent .getChildren (.remove pane)))
+    (-> pane .getParent .getChildren (.remove pane))
+    (hawk/stop! file-watcher))
   (when-let [process (get-in @runtime-state-atom [:processes path])]
     (proc/stop-process! process)
     (swap! runtime-state-atom update :processes dissoc path)))

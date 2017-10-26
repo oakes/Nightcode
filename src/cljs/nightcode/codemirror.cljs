@@ -24,6 +24,8 @@
 
 (def state (atom {:text-content "" :editor nil}))
 
+(def modal (.querySelector js/document "#modal"))
+
 (def auto-save
   (debounce
     #(.onautosave js/window.java)
@@ -68,25 +70,43 @@
       .-fontSize
       (set! (str size "px"))))
 
+(defn open-modal []
+  (-> modal
+      .-style
+      .-display
+      (set! "block")))
+
 (defn init [extension]
   (let [content (.querySelector js/document "#content")]
-    (swap! state assoc :editor
-      (doto
-        (.CodeMirror js/window
-          js/document.body
-          (clj->js {:value (.-textContent content)
-                    :lineNumbers true
-                    :mode (extension->mode extension)}))
-        (.on "change"
-          (fn [editor-object change]
-            (auto-save)
-            (.onchange js/window.java)))
-        (.setOption "extraKeys"
-          (clj->js {"Ctrl-Z" false
-                    "Cmd-Z" false
-                    "Shift-Ctrl-Z" false
-                    "Shift-Cmd-Z" false}))))
-    (.removeChild js/document.body content))
+    (swap! state update :editor
+      (fn [editor]
+        (when editor
+          (->> editor
+               .getWrapperElement
+               (.removeChild js/document.body)))
+        (doto
+          (.CodeMirror js/window
+            js/document.body
+            (clj->js {:value (.-textContent content)
+                      :lineNumbers true
+                      :mode (extension->mode extension)}))
+          (.on "change"
+            (fn [editor-object change]
+              (auto-save)
+              (.onchange js/window.java)))
+          (.on "beforeChange"
+            (fn [editor-object change]
+              (when (-> modal
+                        .-style
+                        .-display
+                        (= "block"))
+                (.cancel change))))
+          (.setOption "extraKeys"
+            (clj->js {"Ctrl-Z" false
+                      "Cmd-Z" false
+                      "Shift-Ctrl-Z" false
+                      "Shift-Cmd-Z" false})))))
+    (gdom/setTextContent content ""))
   (mark-clean))
 
 (doto js/window
@@ -101,6 +121,7 @@
   (gobj/set "isClean" clean?)
   (gobj/set "changeTheme" change-theme)
   (gobj/set "setTextSize" set-text-size)
+  (gobj/set "openModal" open-modal)
   (gobj/set "init" init))
 
 (set! (.-onload js/window)

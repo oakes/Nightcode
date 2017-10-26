@@ -167,6 +167,7 @@
                (should-remove? scene selection))
       (p/remove-from-project-tree! pref-state selection)
       (e/remove-editors! selection runtime-state)
+      (p/remove-project! selection runtime-state)
       (p/update-project-tree! pref-state project-tree))))
 
 (defn -onRemove [this ^ActionEvent event]

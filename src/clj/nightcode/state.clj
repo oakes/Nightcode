@@ -41,7 +41,7 @@
                            :auto-save? (read-pref :auto-save? true)}))
 
 (defonce runtime-state (atom {:web-port nil
-                              :project-panes {}
+                              :projects {}
                               :editor-panes {}
                               :bridges {}
                               :processes {}

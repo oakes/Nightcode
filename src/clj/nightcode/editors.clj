@@ -10,9 +10,11 @@
             [nightcode.shortcuts :as shortcuts]
             [nightcode.utils :as u]
             [nightcode.spec :as spec]
-            [eval-soup.core :as es])
+            [eval-soup.core :as es]
+            [hawk.core :as hawk])
   (:import [javafx.fxml FXMLLoader]
            [javafx.scene.web WebEngine]
+           [javafx.application Platform]
            [java.io File]
            [nightcode.utils Bridge]))
 
@@ -137,6 +139,20 @@
   (when-let [project-path (u/get-project-path pref-state)]
     (get-in runtime-state [:bridges project-path])))
 
+(defn create-file-watcher [project-dir runtime-state-atom]
+  (hawk/watch! [{:paths [project-dir]
+                 :handler (fn [ctx {:keys [file]}]
+                            (when-let [editor (get-in @runtime-state-atom [:editor-panes (.getCanonicalPath file)])]
+                              (Platform/runLater
+                                (fn []
+                                  (when-let [webview (.lookup editor "#webview")]
+                                    (when (-> (.getEngine webview)
+                                              (.executeScript "getTextContent()")
+                                              (not= (u/remove-returns (slurp file))))
+                                      (-> (.getEngine webview)
+                                          (.executeScript "openModal()")))))))
+                            ctx)}]))
+
 ; specs
 
 (fdef form->serializable
@@ -183,4 +199,7 @@
 (fdef get-bridge
   :args (s/cat :pref-state map? :runtime-state map?)
   :ret (s/nilable #(instance? Bridge %)))
+
+(fdef create-file-watcher
+  :args (s/cat :project-dir string? :runtime-state-atom spec/atom?))
 

@@ -8,7 +8,9 @@
             [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
-(def state (atom {:text-content "" :editor nil :edit-history (mwm/create-edit-history)}))
+(def state (atom {:text-content "" :editor nil}))
+
+(def modal (.querySelector js/document "#modal"))
 
 (def auto-save
   (debounce
@@ -67,6 +69,12 @@
       .-fontSize
       (set! (str size "px"))))
 
+(defn open-modal []
+  (-> modal
+      .-style
+      .-display
+      (set! "block")))
+
 (defn compiler-fn [forms cb]
   (try
     (.send XhrIo
@@ -113,7 +121,10 @@
                            :edit-history (:edit-history @state)}))
         text-after-parinfer (when-not (clean?)
                               (get-text-content))]
-    (swap! state assoc :editor editor :text-after-parinfer text-after-parinfer)
+    (swap! state assoc
+      :editor editor
+      :text-after-parinfer text-after-parinfer
+      :edit-history (mwm/create-edit-history))
     (.focus content)))
 
 (defn init-console [repl?]
@@ -166,6 +177,7 @@
   (gobj/set "append" append)
   (gobj/set "changeTheme" change-theme)
   (gobj/set "setTextSize" set-text-size)
+  (gobj/set "openModal" open-modal)
   (gobj/set "init" init)
   (gobj/set "initConsole" init-console)
   (gobj/set "showInstaRepl" show-instarepl)
@@ -181,7 +193,11 @@
 
 (set! (.-onkeydown js/window)
   (fn [e]
-    (when (and (or (.-metaKey e) (.-ctrlKey e))
-               (#{38 40} (.-keyCode e)))
+    (when (or (and (or (.-metaKey e) (.-ctrlKey e))
+                   (#{38 40} (.-keyCode e)))
+              (-> modal
+                  .-style
+                  .-display
+                  (= "block")))
       (.preventDefault e))))
 

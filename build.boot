@@ -12,6 +12,7 @@
                   [org.clojure/clojure "1.9.0-beta2"]
                   [leiningen "2.8.0" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
+                  [hawk "0.2.11"]
                   [play-cljs/lein-template "0.10.1-5"]
                   [eval-soup "1.2.3" :exclusions [org.clojure/core.async]]
                   [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]]

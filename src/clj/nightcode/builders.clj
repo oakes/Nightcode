@@ -136,14 +136,14 @@
 
 (defn get-builder-webview [pref-state runtime-state]
   (when-let [project-path (u/get-project-path pref-state)]
-    (when-let [pane (get-in runtime-state [:project-panes project-path])]
+    (when-let [pane (get-in runtime-state [:projects project-path :pane])]
       (when-let [system (get-selected-build-system pane)]
         (let [tab-content (.getContent (get-tab pane system))]
           (.lookup tab-content "#build_webview"))))))
 
 (defn start-builder! [pref-state runtime-state-atom start-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
-    (when-let [pane (get-in @runtime-state-atom [:project-panes project-path])]
+    (when-let [pane (get-in @runtime-state-atom [:projects project-path :pane])]
       (when-let [system (get-selected-build-system pane)]
         (let [tab-content (.getContent (get-tab pane system))
               webview (.lookup tab-content "#build_webview")

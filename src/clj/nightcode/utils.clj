@@ -171,8 +171,9 @@ requisite project files, or empty if neither exists."
                  (.initModality Modality/WINDOW_MODAL))]
     (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
 
-(defn update-webviews! [pref-state {:keys [editor-panes project-panes]}]
-  (doseq [pane (concat (vals editor-panes) (vals project-panes))]
+(defn update-webviews! [pref-state {:keys [editor-panes projects]}]
+  (doseq [pane (concat (vals editor-panes) (map :pane (vals projects)))
+          :when pane]
     (doseq [webview (.lookupAll pane "WebView")]
       (try
         (doto (.getEngine webview)
