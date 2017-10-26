@@ -45,21 +45,21 @@
                               :stage nil
                               :prefs nil}))
 
-(defn init-pref-state! []
-  (reset! pref-state
-    {:project-set (read-pref :project-set #{})
-     :expansion-set (u/filter-paths (read-pref :expansion-set #{}))
-     :selection (read-pref :selection)
-     :theme (read-pref :theme :dark)
-     :text-size (read-pref :text-size 16)
-     :auto-save? (read-pref :auto-save? true)})
+(defn init-pref-state! [defaults]
+  (->> defaults
+       (map (fn [[k v]]
+              [k (read-pref k v)]))
+       flatten
+       (apply hash-map)
+       (reset! pref-state))
   (add-watch pref-state :write-prefs
     (fn [_ _ old-state new-state]
-      (doseq [key [:project-set :expansion-set :selection :theme :text-size :auto-save?]]
+      (doseq [key (keys defaults)]
         (let [old-val (get old-state key)
               new-val (get new-state key)]
           (when (not= old-val new-val)
-            (write-pref! key new-val)))))))
+            (write-pref! key new-val))))))
+  (swap! pref-state update :expansion-set u/filter-paths))
 
 ; specs
 

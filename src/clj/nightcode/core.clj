@@ -40,7 +40,12 @@
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
     (swap! runtime-state assoc :stage stage :prefs (.node (Preferences/userRoot) "nightcode"))
-    (init-pref-state!)
+    (init-pref-state! {:project-set #{}
+                       :expansion-set #{}
+                       :selection nil
+                       :theme :dark
+                       :text-size 16
+                       :auto-save? true})
     (doto stage
       (.setTitle "Nightcode 2.4.0")
       (.setScene scene)
