@@ -4,7 +4,8 @@
             [nightcode.editors :as e]
             [nightcode.projects :as p]
             [nightcode.shortcuts :as shortcuts]
-            [nightcode.state :refer [pref-state runtime-state init-pref-state!]])
+            [nightcode.state :refer [pref-state runtime-state init-pref-state!]]
+            [nightcode.utils :as u])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage]
@@ -46,6 +47,7 @@
                        :theme :dark
                        :text-size 16
                        :auto-save? true})
+    (swap! pref-state update :expansion-set u/filter-paths)
     (doto stage
       (.setTitle "Nightcode 2.4.0")
       (.setScene scene)

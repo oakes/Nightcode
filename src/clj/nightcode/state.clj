@@ -1,7 +1,6 @@
 (ns nightcode.state
   (:require [clojure.edn :as edn]
-            [clojure.spec.alpha :as s :refer [fdef]]
-            [nightcode.utils :as u]))
+            [clojure.spec.alpha :as s :refer [fdef]]))
 
 ; preferences
 
@@ -58,8 +57,7 @@
         (let [old-val (get old-state key)
               new-val (get new-state key)]
           (when (not= old-val new-val)
-            (write-pref! key new-val))))))
-  (swap! pref-state update :expansion-set u/filter-paths))
+            (write-pref! key new-val)))))))
 
 ; specs
 
