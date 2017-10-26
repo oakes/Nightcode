@@ -1,59 +1,65 @@
 (ns nightcode.state
   (:require [clojure.edn :as edn]
             [clojure.spec.alpha :as s :refer [fdef]]
-            [nightcode.utils :as u])
-  (:import [java.util.prefs Preferences]))
+            [nightcode.utils :as u]))
 
 ; preferences
 
-(def ^Preferences prefs (.node (Preferences/userRoot) "nightcode"))
+(declare runtime-state)
 
 (defn write-pref!
   "Writes a key-value pair to the preference file."
   [k v]
-  (doto prefs
-    (.put (name k) (pr-str v))
-    .flush))
+  (when-let [prefs (:prefs @runtime-state)]
+    (doto prefs
+      (.put (name k) (pr-str v))
+      .flush)))
 
 (defn remove-pref!
   "Removes a key-value pair from the preference file."
   [k]
-  (doto prefs
-    (.remove (name k))
-    .flush))
+  (when-let [prefs (:prefs @runtime-state)]
+    (doto prefs
+      (.remove (name k))
+      .flush)))
 
 (defn read-pref
   "Reads value from the given key in the preference file."
   ([k]
    (read-pref k nil))
   ([k default-val]
-   (if-let [string (.get prefs (name k) nil)]
-     (edn/read-string string)
-     default-val)))
+   (when-let [prefs (:prefs @runtime-state)]
+     (if-let [string (.get prefs (name k) nil)]
+       (edn/read-string string)
+       default-val))))
 
 ; state
 
-(defonce pref-state (atom {:project-set (read-pref :project-set #{})
-                           :expansion-set (u/filter-paths (read-pref :expansion-set #{}))
-                           :selection (read-pref :selection)
-                           :theme (read-pref :theme :dark)
-                           :text-size (read-pref :text-size 16)
-                           :auto-save? (read-pref :auto-save? true)}))
+(defonce pref-state (atom {}))
 
 (defonce runtime-state (atom {:web-port nil
                               :projects {}
                               :editor-panes {}
                               :bridges {}
                               :processes {}
-                              :stage nil}))
+                              :stage nil
+                              :prefs nil}))
 
-(add-watch pref-state :write-prefs
-  (fn [_ _ old-state new-state]
-    (doseq [key [:project-set :expansion-set :selection :theme :text-size :auto-save?]]
-      (let [old-val (get old-state key)
-            new-val (get new-state key)]
-        (when (not= old-val new-val)
-          (write-pref! key new-val))))))
+(defn init-pref-state! []
+  (reset! pref-state
+    {:project-set (read-pref :project-set #{})
+     :expansion-set (u/filter-paths (read-pref :expansion-set #{}))
+     :selection (read-pref :selection)
+     :theme (read-pref :theme :dark)
+     :text-size (read-pref :text-size 16)
+     :auto-save? (read-pref :auto-save? true)})
+  (add-watch pref-state :write-prefs
+    (fn [_ _ old-state new-state]
+      (doseq [key [:project-set :expansion-set :selection :theme :text-size :auto-save?]]
+        (let [old-val (get old-state key)
+              new-val (get new-state key)]
+          (when (not= old-val new-val)
+            (write-pref! key new-val)))))))
 
 ; specs
 

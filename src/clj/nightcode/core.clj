@@ -4,11 +4,12 @@
             [nightcode.editors :as e]
             [nightcode.projects :as p]
             [nightcode.shortcuts :as shortcuts]
-            [nightcode.state :refer [pref-state runtime-state]])
+            [nightcode.state :refer [pref-state runtime-state init-pref-state!]])
   (:import [javafx.application Application]
            [javafx.fxml FXMLLoader]
            [javafx.stage Stage]
-           [javafx.scene Scene])
+           [javafx.scene Scene]
+           [java.util.prefs Preferences])
   (:gen-class :extends javafx.application.Application))
 
 (def actions {:#start c/show-start-menu!
@@ -38,7 +39,8 @@
         scene (Scene. root 1242 768)
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
-    (swap! runtime-state assoc :stage stage)
+    (swap! runtime-state assoc :stage stage :prefs (.node (Preferences/userRoot) "nightcode"))
+    (init-pref-state!)
     (doto stage
       (.setTitle "Nightcode 2.4.0")
       (.setScene scene)
