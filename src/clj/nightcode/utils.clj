@@ -37,12 +37,11 @@
 
 (defn delete-children-recursively!
   "Deletes the children of the given dir along with the dir itself."
-  [path]
-  (let [f (io/file path)]
-    (when (.isDirectory f)
-      (doseq [f2 (.listFiles f)]
-        (delete-children-recursively! f2)))
-    (io/delete-file f))
+  [f]
+  (when (.isDirectory f)
+    (doseq [f2 (.listFiles f)]
+      (delete-children-recursively! f2)))
+  (io/delete-file f)
   nil)
 
 (defn get-project-root-path
@@ -203,7 +202,7 @@ requisite project files, or empty if neither exists."
   :args (s/cat :project-set set? :path string?))
 
 (fdef delete-children-recursively!
-  :args (s/cat :path string?))
+  :args (s/cat :path file?))
 
 (fdef get-project-root-path
   :args (s/cat :pref-state map?)
