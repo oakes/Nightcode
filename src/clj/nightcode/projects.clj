@@ -9,7 +9,8 @@
             [hawk.core :as hawk]
             [clojure.spec.alpha :as s :refer [fdef]])
   (:import [java.io File FilenameFilter]
-           [javafx.scene.control TreeItem TreeCell]
+           [javafx.scene.control Button ContentDisplay Label TreeItem TreeCell]
+           [javafx.scene.image ImageView]
            [javafx.collections FXCollections]
            [javafx.beans.value ChangeListener]
            [javafx.event EventHandler]
@@ -25,7 +26,7 @@
   (getPane [pref-state-atom runtime-state-atom parent-path] "The pane for the given item")
   (focus [pane] "Focuses on something inside the pane"))
 
-(declare get-children)
+(declare get-children update-project-tree!)
 
 (defn project-pane [path pref-state runtime-state-atom]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
@@ -33,9 +34,41 @@
     (b/init-builder! builder path pref-state runtime-state-atom)
     pane))
 
-(defn dir-pane []
-  (let [pane (FXMLLoader/load (io/resource "dir.fxml"))]
+(defn get-icon-path
+  [f]
+  (when-not (.isDirectory f)
+    (case (u/get-extension (.getName f))
+      "clj" "images/file-clj.png"
+      "cljc" "images/file-cljc.png"
+      "cljs" "images/file-cljs.png"
+      "java" "images/file-java.png"
+      "images/file.png")))
+
+(defn dir-pane [f pref-state-atom runtime-state-atom]
+  (let [pane (FXMLLoader/load (io/resource "dir.fxml"))
+        file-grid (.lookup pane "#filegrid")]
     (shortcuts/add-tooltips! pane [:#up :#new_file :#open_in_file_browser :#close])
+    (doseq [file (.listFiles f)
+            :when (-> file .getName (.startsWith ".") not)]
+      (-> file-grid
+          .getChildren
+          (.add (doto (if-let [icon (get-icon-path file)]
+                        (Button. "" (doto (Label. (.getName file)
+                                            (doto (ImageView. icon)
+                                              (.setFitWidth 100)
+                                              (.setPreserveRatio true)))
+                                      (.setContentDisplay ContentDisplay/TOP)))
+                        (Button. (.getName file)))
+                  (.setPrefWidth 150)
+                  (.setPrefHeight 150)
+                  (.setOnAction (reify EventHandler
+                                  (handle [this event]
+                                    (when-let [project-tree (-> @runtime-state-atom
+                                                                :stage
+                                                                .getScene
+                                                                (.lookup "#project_tree"))]
+                                      (->> file .getCanonicalPath
+                                           (update-project-tree! pref-state-atom project-tree))))))))))
     pane))
 
 (defn home-pane [pref-state-atom runtime-state-atom]
@@ -110,7 +143,7 @@
             (-> editors .getChildren .clear)
             (cond
               (.isDirectory file)
-              (-> editors .getChildren (.add (dir-pane)))
+              (-> editors .getChildren (.add (dir-pane file pref-state-atom runtime-state-atom)))
               (.isFile file)
               (when-let [pane (or (get-in runtime-state [:editor-panes path])
                                   (e/editor-pane pref-state-atom runtime-state-atom file))]
@@ -326,8 +359,12 @@
   :args (s/cat :path string? :pref-state map? :runtime-state-atom spec/atom?)
   :ret spec/pane?)
 
+(fdef get-icon-path
+  :args (s/cat :file spec/file?)
+  :ret (s/nilable string?))
+
 (fdef dir-pane
-  :args (s/cat)
+  :args (s/cat :file spec/file? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?)
   :ret spec/pane?)
 
 (fdef home-pane

@@ -40,7 +40,9 @@
         scene (Scene. root 1242 768)
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
-    (swap! runtime-state assoc :stage stage :prefs (.node (Preferences/userRoot) "nightcode"))
+    (swap! runtime-state assoc
+      :stage stage
+      :prefs (.node (Preferences/userRoot) "nightcode"))
     (init-pref-state! {:project-set #{}
                        :expansion-set #{}
                        :selection nil
