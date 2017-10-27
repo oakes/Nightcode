@@ -9,7 +9,7 @@
                   [mistakes-were-made "1.7.3" :scope "test"]
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.9.0-beta2"]
+                  [org.clojure/clojure "1.9.0-beta3"]
                   [leiningen "2.8.0" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
                   [hawk "0.2.11"]
