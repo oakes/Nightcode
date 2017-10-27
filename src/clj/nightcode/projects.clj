@@ -45,7 +45,7 @@
           (.add (doto (if-let [icon (u/get-icon-path file)]
                         (Button. "" (doto (Label. (.getName file)
                                             (doto (ImageView. icon)
-                                              (.setFitWidth 100)
+                                              (.setFitWidth 90)
                                               (.setPreserveRatio true)))
                                       (.setContentDisplay ContentDisplay/TOP)))
                         (Button. (.getName file)))
