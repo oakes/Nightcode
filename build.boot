@@ -28,7 +28,11 @@
 (task-options!
   sift {:include #{#"\.jar$"}}
   pom {:project 'nightcode
-       :version "2.5.0"}
+       :version "2.5.0"
+       :description "An IDE for Clojure"
+       :url "https://github.com/oakes/Nightcode"
+       :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
+  push {:repo "clojars"}
   aot {:namespace '#{nightcode.core
                      nightcode.lein}}
   jar {:main 'nightcode.core
