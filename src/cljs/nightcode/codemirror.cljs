@@ -51,6 +51,9 @@
 (defn get-text-content []
   (some-> @state :editor .getValue))
 
+(defn get-saved-text []
+  (:text-content @state))
+
 (defn get-selected-text [])
 
 (defn mark-clean []
@@ -116,6 +119,7 @@
   (gobj/set "canRedo" can-redo?)
   (gobj/set "setTextContent" set-text-content)
   (gobj/set "getTextContent" get-text-content)
+  (gobj/set "getSavedText" get-saved-text)
   (gobj/set "getSelectedText" get-selected-text)
   (gobj/set "markClean" mark-clean)
   (gobj/set "isClean" clean?)

@@ -142,15 +142,17 @@
 (defn create-file-watcher [project-dir runtime-state-atom]
   (hawk/watch! [{:paths [project-dir]
                  :handler (fn [ctx {:keys [file]}]
-                            (when-let [editor (get-in @runtime-state-atom [:editor-panes (.getCanonicalPath file)])]
-                              (Platform/runLater
-                                (fn []
-                                  (when-let [webview (.lookup editor "#webview")]
-                                    (when (-> (.getEngine webview)
-                                              (.executeScript "getTextContent()")
-                                              (not= (u/remove-returns (slurp file))))
-                                      (-> (.getEngine webview)
-                                          (.executeScript "openModal()")))))))
+                            (when (.exists file)
+                              (when-let [editor (get-in @runtime-state-atom [:editor-panes (.getCanonicalPath file)])]
+                                (Platform/runLater
+                                  (fn []
+                                    (when-let [webview (.lookup editor "#webview")]
+                                      (when (-> (.getEngine webview)
+                                                (.executeScript "getSavedText()")
+                                                u/remove-returns
+                                                (not= (u/remove-returns (slurp file))))
+                                        (-> (.getEngine webview)
+                                            (.executeScript "openModal()"))))))))
                             ctx)}]))
 
 ; specs

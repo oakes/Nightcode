@@ -37,6 +37,9 @@
 (defn get-text-content []
   (.-textContent (.querySelector js/document "#content")))
 
+(defn get-saved-text []
+  (:text-content @state))
+
 (defn get-selected-text []
   (when-let [text (or (p/selected-text) (p/focused-text))]
     (:text (cp/mode :both text 0 0))))
@@ -172,6 +175,7 @@
   (gobj/set "setTextContent" set-text-content)
   (gobj/set "getTextContent" get-text-content)
   (gobj/set "getSelectedText" get-selected-text)
+  (gobj/set "getSavedText" get-saved-text)
   (gobj/set "markClean" mark-clean)
   (gobj/set "isClean" clean?)
   (gobj/set "append" append)
