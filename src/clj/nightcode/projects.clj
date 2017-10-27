@@ -34,16 +34,6 @@
     (b/init-builder! builder path pref-state runtime-state-atom)
     pane))
 
-(defn get-icon-path
-  [f]
-  (when-not (.isDirectory f)
-    (case (u/get-extension (.getName f))
-      "clj" "images/file-clj.png"
-      "cljc" "images/file-cljc.png"
-      "cljs" "images/file-cljs.png"
-      "java" "images/file-java.png"
-      "images/file.png")))
-
 (defn dir-pane [f pref-state-atom runtime-state-atom]
   (let [pane (FXMLLoader/load (io/resource "dir.fxml"))
         file-grid (.lookup pane "#filegrid")]
@@ -52,7 +42,7 @@
             :when (-> file .getName (.startsWith ".") not)]
       (-> file-grid
           .getChildren
-          (.add (doto (if-let [icon (get-icon-path file)]
+          (.add (doto (if-let [icon (u/get-icon-path file)]
                         (Button. "" (doto (Label. (.getName file)
                                             (doto (ImageView. icon)
                                               (.setFitWidth 100)
@@ -358,10 +348,6 @@
 (fdef project-pane
   :args (s/cat :path string? :pref-state map? :runtime-state-atom spec/atom?)
   :ret spec/pane?)
-
-(fdef get-icon-path
-  :args (s/cat :file spec/file?)
-  :ret (s/nilable string?))
 
 (fdef dir-pane
   :args (s/cat :file spec/file? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?)

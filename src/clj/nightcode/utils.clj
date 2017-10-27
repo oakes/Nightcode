@@ -183,6 +183,16 @@ requisite project files, or empty if neither exists."
           (.executeScript (format "setTextSize(%s)" (:text-size pref-state))))
         (catch Exception _)))))
 
+(defn get-icon-path
+  [f]
+  (when-not (.isDirectory f)
+    (case (get-extension (.getName f))
+      "clj" "images/file-clj.png"
+      "cljc" "images/file-cljc.png"
+      "cljs" "images/file-cljs.png"
+      "java" "images/file-java.png"
+      "images/file.png")))
+
 ; specs
 
 (fdef get-relative-path
@@ -259,4 +269,8 @@ requisite project files, or empty if neither exists."
 
 (fdef update-webviews!
   :args (s/cat :pref-state map? :runtime-state map?))
+
+(fdef get-icon-path
+  :args (s/cat :file spec/file?)
+  :ret (s/nilable string?))
 
