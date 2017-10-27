@@ -35,12 +35,12 @@
     pane))
 
 (defn dir-pane [f pref-state-atom runtime-state-atom]
-  (let [pane (FXMLLoader/load (io/resource "dir.fxml"))
-        file-grid (.lookup pane "#filegrid")]
+  (let [pane (FXMLLoader/load (io/resource "dir.fxml"))]
     (shortcuts/add-tooltips! pane [:#up :#new_file :#open_in_file_browser :#close])
     (doseq [file (.listFiles f)
             :when (-> file .getName (.startsWith ".") not)]
-      (-> file-grid
+      (-> (.lookup pane "#filegrid")
+          .getContent
           .getChildren
           (.add (doto (if-let [icon (u/get-icon-path file)]
                         (Button. "" (doto (Label. (.getName file)
