@@ -120,7 +120,10 @@
                        (catch Exception e (.printStackTrace e))))
                    (onenter [this text])
                    (oneval [this code]
-                     (when eval-fn
+                     (when (and eval-fn
+                                (-> pane
+                                    (.lookup "#instarepl")
+                                    .isSelected))
                        (try
                          (eval-fn code)
                          (catch Exception e (.printStackTrace e))))))]
