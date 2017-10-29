@@ -13,7 +13,8 @@
   (onload [])
   (onautosave [])
   (onchange [])
-  (onenter [text]))
+  (onenter [text])
+  (oneval [code]))
 
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
@@ -202,7 +203,7 @@ requisite project files, or empty if neither exists."
   :args (s/cat :project-set set? :path string?))
 
 (fdef delete-children-recursively!
-  :args (s/cat :path file?))
+  :args (s/cat :path spec/file?))
 
 (fdef get-project-root-path
   :args (s/cat :pref-state map?)
