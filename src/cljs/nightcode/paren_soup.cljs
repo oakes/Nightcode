@@ -79,19 +79,11 @@
       (set! "block")))
 
 (defn compiler-fn [forms cb]
-  (try
-    (.send XhrIo
-      "/eval"
-      (fn [e]
-        (if (.isSuccess (.-target e))
-          (->> (.. e -target getResponseText)
-               read-string
-               (mapv #(if (vector? %) (into-array %) %))
-               cb)
-          (cb [])))
-      "POST"
-      (pr-str (into [] forms)))
-    (catch js/Error _ (cb []))))
+  (->> (pr-str (into [] forms))
+       (.oneval js/window.java)
+       read-string
+       (mapv #(if (vector? %) (into-array %) %))
+       cb))
 
 (defn init []
   (mark-clean)

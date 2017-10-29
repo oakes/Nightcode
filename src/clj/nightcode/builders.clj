@@ -80,17 +80,18 @@
     (.setOnStatusChanged engine
       (reify EventHandler
         (handle [this event]
-          (let [bridge (proxy [Bridge] []
-                         (onload []
+          (let [bridge (reify Bridge
+                         (onload [this]
                            (try
                              (cb)
                              (catch Exception e (.printStackTrace e))))
-                         (onautosave [])
-                         (onchange [])
-                         (onenter [text]
+                         (onautosave [this])
+                         (onchange [this])
+                         (onenter [this text]
                            (doto (:out-pipe pipes)
                              (.write text)
-                             (.flush))))]
+                             (.flush)))
+                         (oneval [this code]))]
             ; prevent bridge from being GC'ed
             (swap! runtime-state-atom update :bridges assoc project-path bridge)
             (-> engine

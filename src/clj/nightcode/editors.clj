@@ -31,14 +31,6 @@
 (defn handler [request]
   (case (:uri request)
     "/" (redirect "/paren-soup.html")
-    "/eval" {:status 200
-             :headers {"Content-Type" "text/plain"}
-             :body (->> request
-                        body-string
-                        edn/read-string
-                        es/code->results
-                        (mapv form->serializable)
-                        pr-str)}
     nil))
 
 (defn start-web-server! []
@@ -121,7 +113,15 @@
                      (try
                        (update-editor-buttons! pane engine)
                        (catch Exception e (.printStackTrace e))))
-                   (onenter [this text]))]
+                   (onenter [this text])
+                   (oneval [this code]
+                     (try
+                       (->> code
+                            edn/read-string
+                            es/code->results
+                            (mapv form->serializable)
+                            pr-str)
+                       (catch Exception e (.printStackTrace e)))))]
       (.setContextMenuEnabled webview false)
       (-> pane (.lookup "#instarepl") (.setManaged instarepl?))
       (shortcuts/add-tooltips! pane ids)
