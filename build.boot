@@ -10,7 +10,7 @@
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
                   [org.clojure/clojure "1.9.0-beta3"]
-                  [javax.xml.bind/jaxb-api "2.3.0"] ; necessary for Java 9 compatibility
+                  [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
                   [leiningen "2.8.1" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
                   [hawk "0.2.11"]
