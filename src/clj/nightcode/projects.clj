@@ -136,7 +136,9 @@
               (-> editors .getChildren (.add (dir-pane file pref-state-atom runtime-state-atom)))
               (.isFile file)
               (when-let [pane (or (get-in runtime-state [:editor-panes path])
-                                  (e/editor-pane pref-state-atom runtime-state-atom file))]
+                                  (e/editor-pane pref-state-atom runtime-state-atom file
+                                    (when (#{"clj" "cljc"} (-> file .getName u/get-extension))
+                                      e/eval-code)))]
                 (-> editors .getChildren (.add pane))
                 (swap! runtime-state-atom update :editor-panes assoc path pane)))
             (swap! runtime-state-atom update-in [:projects parent-path]

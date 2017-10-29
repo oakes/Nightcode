@@ -19,7 +19,6 @@
            [nightcode.utils Bridge]))
 
 (def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
-(def ^:const instarepl-exts #{"clj" "cljc"})
 (def ^:const wrap-exts #{"md" "txt"})
 (def ^:const max-file-size (* 1024 1024 2))
 
@@ -88,14 +87,20 @@
   (spit (io/file path) (.executeScript engine "getTextContent()"))
   (.executeScript engine "markClean()"))
 
-(defn editor-pane [pref-state-atom runtime-state-atom ^File file]
+(defn eval-code [code]
+  (->> code
+       edn/read-string
+       es/code->results
+       (mapv form->serializable)
+       pr-str))
+
+(defn editor-pane [pref-state-atom runtime-state-atom ^File file eval-fn]
   (when (should-open? file)
     (let [runtime-state @runtime-state-atom
           pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
           engine (.getEngine webview)
           clojure? (-> file .getName u/get-extension clojure-exts some?)
-          instarepl? (-> file .getName u/get-extension instarepl-exts some?)
           path (.getCanonicalPath file)
           bridge (reify Bridge
                    (onload [this]
@@ -115,15 +120,12 @@
                        (catch Exception e (.printStackTrace e))))
                    (onenter [this text])
                    (oneval [this code]
-                     (try
-                       (->> code
-                            edn/read-string
-                            es/code->results
-                            (mapv form->serializable)
-                            pr-str)
-                       (catch Exception e (.printStackTrace e)))))]
+                     (when eval-fn
+                       (try
+                         (eval-fn code)
+                         (catch Exception e (.printStackTrace e))))))]
       (.setContextMenuEnabled webview false)
-      (-> pane (.lookup "#instarepl") (.setManaged instarepl?))
+      (-> pane (.lookup "#instarepl") (.setManaged (some? eval-fn)))
       (shortcuts/add-tooltips! pane ids)
       ; prevent bridge from being GC'ed
       (swap! runtime-state-atom update :bridges assoc path bridge)
@@ -194,8 +196,12 @@
 (fdef save-file!
   :args (s/cat :path string? :engine any?))
 
+(fdef eval-code
+  :args (s/cat :code string?)
+  :ret string?)
+
 (fdef editor-pane
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file?)
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file? :eval-fn fn?)
   :ret spec/pane?)
 
 (fdef get-bridge
