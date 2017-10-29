@@ -201,7 +201,7 @@
   :ret string?)
 
 (fdef editor-pane
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file? :eval-fn fn?)
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file? :eval-fn (s/nilable fn?))
   :ret spec/pane?)
 
 (fdef get-bridge
