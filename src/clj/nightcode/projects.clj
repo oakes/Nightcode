@@ -28,11 +28,19 @@
 
 (declare get-children update-project-tree!)
 
+(fdef project-pane
+  :args (s/cat :path string? :pref-state map? :runtime-state-atom spec/atom?)
+  :ret spec/pane?)
+
 (defn project-pane [path pref-state runtime-state-atom]
   (let [pane (FXMLLoader/load (io/resource "project.fxml"))
         builder (-> pane .getItems (.get 1))]
     (b/init-builder! builder path pref-state runtime-state-atom)
     pane))
+
+(fdef dir-pane
+  :args (s/cat :file spec/file? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?)
+  :ret spec/pane?)
 
 (defn dir-pane [f pref-state-atom runtime-state-atom]
   (let [pane (FXMLLoader/load (io/resource "dir.fxml"))]
@@ -60,6 +68,10 @@
                                       (->> file .getCanonicalPath
                                            (update-project-tree! pref-state-atom project-tree))))))))))
     pane))
+
+(fdef home-pane
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom?)
+  :ret spec/pane?)
 
 (defn home-pane [pref-state-atom runtime-state-atom]
   (let [pane (FXMLLoader/load (io/resource "home.fxml"))
@@ -102,6 +114,10 @@
                 (.setDisable forward-btn (-> history .getEntries count dec (= (.getCurrentIndex history)))))))))
     ; return the pane
     pane))
+
+(fdef file-node
+  :args (s/cat :file spec/file?)
+  :ret spec/tree-item?)
 
 (defn file-node [file]
   (let [path (.getCanonicalPath file)
@@ -151,6 +167,10 @@
       (focus [pane]
         (some-> (.lookup pane "#webview") .requestFocus)))))
 
+(fdef home-node
+  :args (s/cat)
+  :ret spec/tree-item?)
+
 (defn home-node []
   (let [path "*Home*"
         value (proxy [Object] []
@@ -169,6 +189,10 @@
       (focus [pane]
         (some-> (.lookup pane "#repl") .requestFocus)))))
 
+(fdef root-node
+  :args (s/cat :pref-state map?)
+  :ret spec/tree-item?)
+
 (defn root-node [pref-state]
   (let [project-files (->> (:project-set pref-state)
                            (map #(io/file %))
@@ -184,10 +208,17 @@
       (isLeaf []
         false))))
 
+(fdef get-children
+  :args (s/cat :files :nightcode.spec/files)
+  :ret spec/obs-list?)
+
 (defn get-children [files]
   (let [children (FXCollections/observableArrayList)]
     (run! #(.add children (file-node %)) files)
     children))
+
+(fdef set-expanded-listener!
+  :args (s/cat :pref-state-atom spec/atom? :tree spec/pane?))
 
 (defn set-expanded-listener! [pref-state-atom tree]
   (let [root-item (.getRoot tree)]
@@ -203,6 +234,11 @@
         (handle [this event]
           (when-let [path (-> event .getTreeItem .getPath)]
             (swap! pref-state-atom update :expansion-set disj path)))))))
+
+(fdef update-project-tree!
+  :args (s/alt
+          :args2 (s/cat :pref-state-atom spec/atom? :tree spec/pane?)
+          :args3 (s/cat :pref-state-atom spec/atom? :tree spec/pane? :selection (s/nilable string?))))
 
 (defn update-project-tree!
   ([pref-state-atom tree]
@@ -231,6 +267,9 @@
      ; update scroll position
      (.scrollTo tree (.getSelectedIndex selection-model)))))
 
+(fdef update-project-tree-selection!
+  :args (s/cat :tree spec/pane? :selection string?))
+
 (defn update-project-tree-selection! [tree new-selection]
   (let [selection-model (.getSelectionModel tree)]
     (loop [tree-items (-> tree .getRoot .getChildren seq)]
@@ -243,6 +282,9 @@
           :else
           (recur (rest tree-items)))))))
 
+(fdef update-project-buttons!
+  :args (s/cat :pref-state map? :scene spec/scene?))
+
 (defn update-project-buttons! [pref-state ^Scene scene]
   (when-let [path (:selection pref-state)]
     (let [rename-button (.lookup scene "#rename")
@@ -253,6 +295,9 @@
         (and (not (contains? (:project-set pref-state) path))
              (not (.isFile file)))))))
 
+(fdef move-project-tree-selection!
+  :args (s/cat :scene spec/scene? :diff integer?))
+
 (defn move-project-tree-selection! [^Scene scene diff]
   (let [project-tree (.lookup scene "#project_tree")
         selection-model (.getSelectionModel project-tree)
@@ -260,11 +305,17 @@
     (when (>= index 0)
       (.select selection-model index))))
 
+(fdef toggle-project-tree-selection!
+  :args (s/cat :scene spec/scene?))
+
 (defn toggle-project-tree-selection! [^Scene scene]
   (let [project-tree (.lookup scene "#project_tree")
         selection-model (.getSelectionModel project-tree)]
     (when-let [item (.getSelectedItem selection-model)]
       (.setExpanded item (not (.isExpanded item))))))
+
+(fdef move-tab-selection!
+  :args (s/cat :scene spec/scene? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :diff integer?))
 
 (defn move-tab-selection!
   [scene pref-state-atom runtime-state-atom diff]
@@ -280,6 +331,9 @@
           project-tree (.lookup scene "#project_tree")]
       (when (pos? (count paths))
         (update-project-tree-selection! project-tree (nth paths new-index))))))
+
+(fdef set-selection-listener!
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage?))
 
 (defn set-selection-listener! [pref-state-atom runtime-state-atom ^Stage stage]
   (let [scene (.getScene stage)
@@ -303,6 +357,9 @@
                   (fn []
                     (.focus new-value new-pane)))))))))))
 
+(fdef set-focused-listener!
+  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
+
 (defn set-focused-listener! [pref-state-atom runtime-state-atom ^Stage stage project-tree]
   (.addListener (.focusedProperty stage)
     (reify ChangeListener
@@ -311,11 +368,17 @@
           (e/remove-non-existing-editors! runtime-state-atom)
           (update-project-tree! pref-state-atom project-tree))))))
 
+(fdef remove-from-project-tree!
+  :args (s/cat :pref-state-atom spec/atom? :path string?))
+
 (defn remove-from-project-tree! [pref-state-atom ^String path]
   (let [{:keys [project-set]} @pref-state-atom]
     (if (contains? project-set path)
       (swap! pref-state-atom update :project-set disj path)
       (u/delete-parents-recursively! project-set path))))
+
+(fdef set-project-key-listener!
+  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?))
 
 (defn set-project-key-listener! [^Stage stage pref-state-atom runtime-state-atom]
   (let [^Scene scene (.getScene stage)]
@@ -335,6 +398,9 @@
               (= (.getCode e) KeyCode/PAGE_DOWN)
               (move-tab-selection! scene pref-state-atom runtime-state-atom 1))))))))
 
+(fdef remove-project!
+  :args (s/cat :path string? :runtime-state-atom spec/atom?))
+
 (defn remove-project! [^String path runtime-state-atom]
   (when-let [{:keys [pane file-watcher]} (get-in @runtime-state-atom [:projects path])]
     (swap! runtime-state-atom update :projects dissoc path)
@@ -344,75 +410,4 @@
   (when-let [process (get-in @runtime-state-atom [:processes path])]
     (proc/stop-process! process)
     (swap! runtime-state-atom update :processes dissoc path)))
-
-; specs
-
-(fdef project-pane
-  :args (s/cat :path string? :pref-state map? :runtime-state-atom spec/atom?)
-  :ret spec/pane?)
-
-(fdef dir-pane
-  :args (s/cat :file spec/file? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?)
-  :ret spec/pane?)
-
-(fdef home-pane
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom?)
-  :ret spec/pane?)
-
-(fdef file-node
-  :args (s/cat :file spec/file?)
-  :ret spec/tree-item?)
-
-(fdef home-node
-  :args (s/cat)
-  :ret spec/tree-item?)
-
-(fdef root-node
-  :args (s/cat :pref-state map?)
-  :ret spec/tree-item?)
-
-(fdef get-children
-  :args (s/cat :files :nightcode.spec/files)
-  :ret spec/obs-list?)
-
-(fdef set-expanded-listener!
-  :args (s/cat :pref-state-atom spec/atom? :tree spec/pane?))
-
-(fdef update-project-tree!
-  :args (s/alt
-          :args2 (s/cat :pref-state-atom spec/atom? :tree spec/pane?)
-          :args3 (s/cat :pref-state-atom spec/atom? :tree spec/pane? :selection (s/nilable string?))))
-
-(fdef update-project-tree-selection!
-  :args (s/cat :tree spec/pane? :selection string?))
-
-(fdef update-project-buttons!
-  :args (s/cat :pref-state map? :scene spec/scene?))
-
-(fdef move-project-tree-selection!
-  :args (s/cat :scene spec/scene? :diff integer?))
-
-(fdef toggle-project-tree-selection!
-  :args (s/cat :scene spec/scene?))
-
-(fdef move-tab-selection!
-  :args (s/cat :scene spec/scene? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :diff integer?))
-
-(fdef set-selection-listener!
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage?))
-
-(fdef set-focused-listener!
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :stage spec/stage? :project-tree spec/pane?))
-
-(fdef remove-from-project-tree!
-  :args (s/cat :pref-state-atom spec/atom? :path string?))
-
-(fdef set-project-key-listener!
-  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom?))
-
-(fdef set-close-listener!
-  :args (s/cat :stage spec/stage?))
-
-(fdef remove-project!
-  :args (s/cat :path string? :runtime-state-atom spec/atom?))
 

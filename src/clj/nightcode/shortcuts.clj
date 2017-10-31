@@ -43,11 +43,17 @@
 
 (def key-char->id (set/map-invert id->key-char))
 
+(fdef add-tooltip!
+  :args (s/cat :node spec/node? :text string?))
+
 (defn add-tooltip! [^Node node ^String text]
   (.setTooltip node
     (doto (Tooltip.)
       (.setOpacity 0)
       (.setText text))))
+
+(fdef add-tooltips!
+  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :ids (s/coll-of keyword?)))
 
 (defn add-tooltips!
   [node ids]
@@ -57,13 +63,24 @@
       (when (and node text)
         (add-tooltip! node text)))))
 
+(fdef remove-tooltip!
+  :args (s/cat :node spec/node?))
+
 (defn remove-tooltip! [node]
   (.setTooltip node nil))
+
+(fdef remove-tooltips!
+  :args (s/cat :node spec/node? :ids (s/coll-of keyword?)))
 
 (defn remove-tooltips! [node ids]
   (doseq [id ids]
     (when-let [node (.lookup node (name id))]
       (remove-tooltip! node))))
+
+(fdef show-tooltip!
+  :args (s/alt
+          :two-args (s/cat :stage spec/stage? :node spec/node?)
+          :three-args (s/cat :stage spec/stage? :node spec/node? :relative-node (s/nilable spec/node?))))
 
 (defn show-tooltip!
   ([^Stage stage ^Node node]
@@ -85,10 +102,16 @@
              (double (+ (.getX point) (.getX scene) (-> scene .getWindow .getX) half-width))
              (double (+ (.getY point) (.getY scene) (-> scene .getWindow .getY) half-height)))))))))
 
+(fdef show-tooltips!
+  :args (s/cat :stage spec/stage? :node spec/node?))
+
 (defn show-tooltips! [^Stage stage ^Node node]
   (doseq [id (keys id->key-char)]
     (doseq [node (.lookupAll node (name id))]
       (show-tooltip! stage node))))
+
+(fdef hide-tooltip!
+  :args (s/cat :node spec/node?))
 
 (defn hide-tooltip! [^Node node]
   (when-let [tooltip (.getTooltip node)]
@@ -96,15 +119,24 @@
       (.setOpacity 0)
       (.hide))))
 
+(fdef hide-tooltips!
+  :args (s/cat :node spec/node?))
+
 (defn hide-tooltips! [^Node node]
   (doseq [id (keys id->key-char)]
     (doseq [node (.lookupAll node (name id))]
       (hide-tooltip! node))))
 
+(fdef init-tabs!
+  :args (s/cat :scene spec/scene?))
+
 (defn init-tabs! [^Scene scene]
   (doto (.lookup scene "#tabs")
     (.setManaged false)
     (add-tooltip! "")))
+
+(fdef update-tabs!
+  :args (s/cat :scene spec/scene? :pref-state map? :runtime-state map?))
 
 (defn update-tabs! [^Scene scene pref-state runtime-state]
   (when-let [tabs (.lookup scene "#tabs")]
@@ -118,14 +150,23 @@
           names (str/join "\n" names)]
       (.setText tooltip (str "   PgUp PgDn   \n\n" names)))))
 
+(fdef show-tabs!
+  :args (s/cat :stage spec/stage? :node spec/node?))
+
 (defn show-tabs! [^Stage stage ^Node node]
   (when-let [tabs (.lookup node "#tabs")]
     (when-let [content (.lookup node "#content")]
       (show-tooltip! stage tabs content))))
 
+(fdef hide-tabs!
+  :args (s/cat :node spec/node?))
+
 (defn hide-tabs! [^Node node]
   (when-let [tabs (.lookup node "#tabs")]
     (hide-tooltip! tabs)))
+
+(fdef run-shortcut!
+  :args (s/cat :scene spec/scene? :actions map? :text string? :shift? boolean?))
 
 (defn run-shortcut! [^Scene scene actions ^String text shift?]
   (when-let [id (key-char->id (if shift? text (.toLowerCase text)))]
@@ -138,6 +179,9 @@
         (Platform/runLater
           (fn []
             (action scene)))))))
+
+(fdef set-shortcut-listeners!
+  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :actions map?))
 
 (defn set-shortcut-listeners! [^Stage stage pref-state-atom runtime-state-atom actions]
   (let [^Scene scene (.getScene stage)]
@@ -191,50 +235,4 @@
             (doto (.getRoot scene)
               hide-tooltips!
               hide-tabs!)))))))
-
-; specs
-
-(fdef add-tooltip!
-  :args (s/cat :node spec/node? :text string?))
-
-(fdef add-tooltips!
-  :args (s/cat :node (s/or :node spec/node? :stage spec/scene?) :ids (s/coll-of keyword?)))
-
-(fdef remove-tooltip!
-  :args (s/cat :node spec/node?))
-
-(fdef remove-tooltips!
-  :args (s/cat :node spec/node? :ids (s/coll-of keyword?)))
-
-(fdef show-tooltip!
-  :args (s/alt
-          :two-args (s/cat :stage spec/stage? :node spec/node?)
-          :three-args (s/cat :stage spec/stage? :node spec/node? :relative-node (s/nilable spec/node?))))
-
-(fdef show-tooltips!
-  :args (s/cat :stage spec/stage? :node spec/node?))
-
-(fdef hide-tooltip!
-  :args (s/cat :node spec/node?))
-
-(fdef hide-tooltips!
-  :args (s/cat :node spec/node?))
-
-(fdef init-tabs!
-  :args (s/cat :scene spec/scene?))
-
-(fdef update-tabs!
-  :args (s/cat :scene spec/scene? :pref-state map? :runtime-state map?))
-
-(fdef show-tabs!
-  :args (s/cat :stage spec/stage? :node spec/node?))
-
-(fdef hide-tabs!
-  :args (s/cat :node spec/node?))
-
-(fdef run-shortcut!
-  :args (s/cat :scene spec/scene? :actions map? :text string? :shift? boolean?))
-
-(fdef set-shortcut-listeners!
-  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :actions map?))
 

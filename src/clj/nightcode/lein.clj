@@ -13,9 +13,17 @@
 
 (def class-name (str *ns*))
 
+(fdef get-project-clj-path
+  :args (s/cat :path string?)
+  :ret string?)
+
 (defn get-project-clj-path
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
+
+(fdef read-project-clj
+  :args (s/cat :path string?)
+  :ret map?)
 
 (defn read-project-clj
   [path]
@@ -23,6 +31,9 @@
       get-project-clj-path
       leiningen.core.project/read-raw
       (assoc-in [:repl-options :subsequent-prompt] (fn [ns] ""))))
+
+(fdef lein!
+  :args (s/cat :args (s/coll-of string?)))
 
 (defn lein! [[cmd & args]]
   (let [path "."
@@ -34,28 +45,15 @@
       "test" (leiningen.test/test project)
       "clean" (leiningen.clean/clean project))))
 
-(defn -main [& args]
-  (System/setProperty "jline.terminal" "dumb")
-  (lein! args)
-  (System/exit 0))
+(fdef new!
+  :args (s/cat :parent-path string? :project-type keyword? :project-name string?))
 
 (defn new! [parent-path project-type project-name]
   (System/setProperty "leiningen.original.pwd" parent-path)
   (leiningen.new/new {} (name project-type) project-name (str project-name ".core")))
 
-; specs
-
-(fdef get-project-clj-path
-  :args (s/cat :path string?)
-  :ret string?)
-
-(fdef read-project-clj
-  :args (s/cat :path string?)
-  :ret map?)
-
-(fdef lein!
-  :args (s/cat :args (s/coll-of string?)))
-
-(fdef new!
-  :args (s/cat :parent-path string? :project-type keyword? :project-name string?))
+(defn -main [& args]
+  (System/setProperty "jline.terminal" "dumb")
+  (lein! args)
+  (System/exit 0))
 

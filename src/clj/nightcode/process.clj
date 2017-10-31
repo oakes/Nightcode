@@ -5,6 +5,9 @@
             [clojure.spec.alpha :as s :refer [fdef]])
   (:import [com.hypirion.io ClosingPipe Pipe]))
 
+(fdef start-process!
+  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string?)))
+
 (defn start-process!
   [process path args]
   (reset! process (.exec (Runtime/getRuntime)
@@ -24,6 +27,9 @@
       (.waitFor @process)
       (reset! process nil))))
 
+(fdef start-java-process!
+  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string?)))
+
 (defn start-java-process!
   [process path args]
   (let [java-cmd (or (System/getenv "JAVA_CMD") "java")
@@ -36,6 +42,9 @@
                   (u/uri->str jar-uri))
                 args]))))
 
+(fdef stop-process!
+  :args (s/cat :process spec/atom?))
+
 (defn stop-process!
   [process]
   (when-let [p @process]
@@ -45,15 +54,4 @@
         (.destroyForcibly child)))
     (.destroyForcibly p))
   (reset! process nil))
-
-; specs
-
-(fdef start-process!
-  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string?)))
-
-(fdef start-java-process!
-  :args (s/cat :process spec/atom? :path string? :args (s/coll-of string?)))
-
-(fdef stop-process!
-  :args (s/cat :process spec/atom?))
 

@@ -16,12 +16,19 @@
   (onenter [text])
   (oneval [code]))
 
+(fdef get-relative-path
+  :args (s/cat :project-path string? :selected-path string?)
+  :ret string?)
+
 (defn get-relative-path
   "Returns the selected path as a relative URI to the project path."
   [project-path selected-path]
   (-> (Paths/get (.toURI (io/file project-path)))
       (.relativize (Paths/get (.toURI (io/file selected-path))))
       (.toString)))
+
+(fdef delete-parents-recursively!
+  :args (s/cat :project-set set? :path string?))
 
 (defn delete-parents-recursively!
   "Deletes the given file along with all empty parents unless they are in project-set."
@@ -36,6 +43,9 @@
            (delete-parents-recursively! project-set))))
   nil)
 
+(fdef delete-children-recursively!
+  :args (s/cat :path spec/file?))
+
 (defn delete-children-recursively!
   "Deletes the children of the given dir along with the dir itself."
   [f]
@@ -45,6 +55,10 @@
   (io/delete-file f)
   nil)
 
+(fdef get-project-root-path
+  :args (s/cat :pref-state map?)
+  :ret (s/nilable string?))
+
 (defn get-project-root-path
   "Returns the root path that the selected path is contained within."
   [pref-state]
@@ -53,6 +67,10 @@
            (= selected-path %))
         (filter (:project-set pref-state))
         first)))
+
+(fdef build-systems
+  :args (s/cat :path string?)
+  :ret (s/coll-of keyword?))
 
 (defn build-systems
   "Returns a set containing :boot and/or :lein if the given path contains the
@@ -69,6 +87,12 @@ requisite project files, or empty if neither exists."
                 types)]
     types))
 
+(fdef get-project-path
+  :args (s/alt
+          :one-arg (s/cat :pref-state map?)
+          :two-args (s/cat :path string? :pref-state map?))
+  :ret (s/nilable string?))
+
 (defn get-project-path
   "Returns the project path that the given path is contained within."
   ([pref-state]
@@ -83,6 +107,10 @@ requisite project files, or empty if neither exists."
          (get-project-path (.getCanonicalPath parent-file) pref-state)))
      path)))
 
+(fdef parent-path?
+  :args (s/cat :parent-path string? :child-path (s/nilable string?))
+  :ret boolean?)
+
 (defn parent-path?
   "Determines if the given parent path is equal to or a parent of the child."
   [^String parent-path ^String child-path]
@@ -93,6 +121,10 @@ requisite project files, or empty if neither exists."
            (.startsWith child-path (str parent-path File/separator)))
       false))
 
+(fdef get-extension
+  :args (s/cat :path string?)
+  :ret string?)
+
 (defn get-extension
   "Returns the extension in the given path name."
   [^String path]
@@ -101,10 +133,18 @@ requisite project files, or empty if neither exists."
        (subs path)
        str/lower-case))
 
+(fdef uri->str
+  :args (s/cat :uri #(instance? java.net.URI %))
+  :ret string?)
+
 (defn uri->str
   "Converts a java.net.URI to a String."
   [uri]
   (-> uri Paths/get .normalize .toString))
+
+(fdef get-exec-uri
+  :args (s/cat :class-name string?)
+  :ret #(instance? java.net.URI %))
 
 (defn get-exec-uri
   "Returns the executable as a java.net.URI."
@@ -115,10 +155,18 @@ requisite project files, or empty if neither exists."
       .getLocation
       .toURI))
 
+(fdef remove-returns
+  :args (s/cat :s string?)
+  :ret string?)
+
 (defn remove-returns [^String s]
   (-> s
       (str/escape {\return ""})
       (str/replace #"\u001b[^\n]*" "")))
+
+(fdef get-boot-path
+  :args (s/cat)
+  :ret string?)
 
 (defn get-boot-path []
   (let [windows? (.startsWith (System/getProperty "os.name") "Windows")
@@ -135,6 +183,10 @@ requisite project files, or empty if neither exists."
                 (java.util.HashSet.)))))
     (.getCanonicalPath file)))
 
+(fdef get-boot-tasks
+  :args (s/cat :project-path string?)
+  :ret (s/coll-of string?))
+
 (defn get-boot-tasks [project-path]
   (try
     (let [path (.getCanonicalPath (io/file project-path "build.boot"))
@@ -148,6 +200,10 @@ requisite project files, or empty if neither exists."
           tasks)))
     (catch Exception _ [])))
 
+(fdef normalize-text-size
+  :args (s/cat :num number?)
+  :ret (s/and number? even?))
+
 (defn normalize-text-size [n]
   (-> n
       (/ 2)
@@ -156,11 +212,19 @@ requisite project files, or empty if neither exists."
       (max 12)
       (min 24)))
 
+(fdef filter-paths
+  :args (s/cat :paths (s/coll-of string?))
+  :ret (s/coll-of string?))
+
 (defn filter-paths [paths]
   (set (filter (fn [path]
                  (try (-> path io/file .exists)
                    (catch Exception _ false)))
          paths)))
+
+(fdef show-warning!
+  :args (s/cat :scene spec/scene? :title string? :header-text string?)
+  :ret boolean?)
 
 (defn show-warning! [^Scene scene ^String title ^String header-text]
   (let [dialog (doto (Alert. Alert$AlertType/CONFIRMATION)
@@ -170,6 +234,9 @@ requisite project files, or empty if neither exists."
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))]
     (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))))
+
+(fdef update-webviews!
+  :args (s/cat :pref-state map? :runtime-state map?))
 
 (defn update-webviews! [pref-state {:keys [editor-panes projects]}]
   (doseq [pane (concat (vals editor-panes) (map :pane (vals projects)))
@@ -183,6 +250,10 @@ requisite project files, or empty if neither exists."
           (.executeScript (format "setTextSize(%s)" (:text-size pref-state))))
         (catch Exception _)))))
 
+(fdef get-icon-path
+  :args (s/cat :file spec/file?)
+  :ret (s/nilable string?))
+
 (defn get-icon-path
   [f]
   (when-not (.isDirectory f)
@@ -192,85 +263,4 @@ requisite project files, or empty if neither exists."
       "cljs" "images/file-cljs.png"
       "java" "images/file-java.png"
       "images/file.png")))
-
-; specs
-
-(fdef get-relative-path
-  :args (s/cat :project-path string? :selected-path string?)
-  :ret string?)
-
-(fdef delete-parents-recursively!
-  :args (s/cat :project-set set? :path string?))
-
-(fdef delete-children-recursively!
-  :args (s/cat :path spec/file?))
-
-(fdef get-project-root-path
-  :args (s/cat :pref-state map?)
-  :ret (s/nilable string?))
-
-(fdef build-systems
-  :args (s/cat :path string?)
-  :ret (s/coll-of keyword?))
-
-(fdef get-project-path
-  :args (s/alt
-          :one-arg (s/cat :pref-state map?)
-          :two-args (s/cat :path string? :pref-state map?))
-  :ret (s/nilable string?))
-
-(fdef parent-path?
-  :args (s/cat :parent-path string? :child-path (s/nilable string?))
-  :ret boolean?)
-
-(fdef get-extension
-  :args (s/cat :path string?)
-  :ret string?)
-
-(fdef uri->str
-  :args (s/cat :uri #(instance? java.net.URI %))
-  :ret string?)
-
-(fdef get-exec-uri
-  :args (s/cat :class-name string?)
-  :ret #(instance? java.net.URI %))
-
-(fdef remove-returns
-  :args (s/cat :s string?)
-  :ret string?)
-
-(fdef windows?
-  :args (s/cat)
-  :ret boolean?)
-
-(fdef get-shell
-  :args (s/cat)
-  :ret (s/nilable string?))
-
-(fdef get-boot-path
-  :args (s/cat)
-  :ret string?)
-
-(fdef get-boot-tasks
-  :args (s/cat :project-path string?)
-  :ret (s/coll-of string?))
-
-(fdef normalize-text-size
-  :args (s/cat :num number?)
-  :ret (s/and number? even?))
-
-(fdef filter-paths
-  :args (s/cat :paths (s/coll-of string?))
-  :ret (s/coll-of string?))
-
-(fdef show-warning!
-  :args (s/cat :scene spec/scene? :title string? :header-text string?)
-  :ret boolean?)
-
-(fdef update-webviews!
-  :args (s/cat :pref-state map? :runtime-state map?))
-
-(fdef get-icon-path
-  :args (s/cat :file spec/file?)
-  :ret (s/nilable string?))
 
