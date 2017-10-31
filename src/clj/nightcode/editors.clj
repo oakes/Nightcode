@@ -4,7 +4,7 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
-            [ring.util.response :refer [redirect]]
+            [ring.util.response :refer [redirect not-found]]
             [ring.util.request :refer [body-string]]
             [clojure.spec.alpha :as s :refer [fdef]]
             [nightcode.shortcuts :as shortcuts]
@@ -38,7 +38,7 @@
 (defn handler [request]
   (case (:uri request)
     "/" (redirect "/paren-soup.html")
-    nil))
+    (not-found "")))
 
 (fdef start-web-server!
   :args (s/cat)
