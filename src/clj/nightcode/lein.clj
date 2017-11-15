@@ -1,6 +1,6 @@
 (ns nightcode.lein
   (:require [clojure.java.io :as io]
-            [leiningen.core.project]
+            [leiningen.core.project :as project]
             [leiningen.clean]
             [leiningen.repl]
             [leiningen.run]
@@ -36,6 +36,9 @@
   :args (s/cat :args (s/coll-of string?)))
 
 (defn lein! [[cmd & args]]
+  (try
+    (project/ensure-dynamic-classloader)
+    (catch Exception _))
   (let [path "."
         project (-> path read-project-clj leiningen.core.project/init-project)]
     (case cmd
