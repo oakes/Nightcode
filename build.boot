@@ -14,7 +14,7 @@
                   [leiningen "2.8.1" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
                   [hawk "0.2.11"]
-                  [play-cljs/lein-template "0.10.2"]
+                  [play-cljs/lein-template "0.11.0"]
                   [eval-soup "1.2.3" :exclusions [org.clojure/core.async]]
                   [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]]
   :repositories (conj (get-env :repositories)
