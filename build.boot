@@ -5,11 +5,11 @@
                   [adzerk/boot-cljs "2.1.4" :scope "test"]
                   ; cljs deps
                   [org.clojure/clojurescript "1.9.946" :scope "test"]
-                  [paren-soup "2.9.1" :scope "test"]
+                  [paren-soup "2.9.2" :scope "test"]
                   [mistakes-were-made "1.7.3" :scope "test"]
                   [cljsjs/codemirror "5.24.0-1" :scope "test"]
                   ; clj deps
-                  [org.clojure/clojure "1.9.0-RC1"]
+                  [org.clojure/clojure "1.9.0-RC2"]
                   [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
                   [leiningen "2.8.1" :exclusions [leiningen.search]]
                   [ring "1.6.1"]
