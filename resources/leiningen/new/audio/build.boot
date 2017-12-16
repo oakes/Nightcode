@@ -1,7 +1,8 @@
 (set-env!
   :source-paths #{"src"}
   :resource-paths #{"resources"}
-  :dependencies '[[org.clojure/clojure "1.8.0"]
+  :dependencies '[[javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
+                  [org.clojure/clojure "1.9.0"]
                   [alda "1.0.0-rc50"]])
 
 (task-options!
