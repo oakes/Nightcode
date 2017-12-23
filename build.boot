@@ -1,22 +1,7 @@
 (set-env!
-  :source-paths #{"src/clj" "src/cljs"}
-  :resource-paths #{"resources"}
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   [adzerk/boot-cljs "2.1.4" :scope "test"]
-                  ; cljs deps
-                  [org.clojure/clojurescript "1.9.946" :scope "test"]
-                  [paren-soup "2.9.3" :scope "test"]
-                  [mistakes-were-made "1.7.3" :scope "test"]
-                  [cljsjs/codemirror "5.24.0-1" :scope "test"]
-                  ; clj deps
-                  [org.clojure/clojure "1.9.0"]
-                  [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
-                  [leiningen "2.8.1" :exclusions [leiningen.search]]
-                  [ring "1.6.1"]
-                  [hawk "0.2.11"]
-                  [play-cljs/lein-template "0.11.2.1"]
-                  [eval-soup "1.2.3" :exclusions [org.clojure/core.async]]
-                  [org.eclipse.jgit/org.eclipse.jgit "4.6.0.201612231935-r"]]
+                  [org.clojars.oakes/boot-tools-deps "0.1.4" :scope "test"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
@@ -24,7 +9,8 @@
 
 (require
   '[adzerk.boot-cljs :refer [cljs]]
-  '[clojure.java.io :as io])
+  '[clojure.java.io :as io]
+  '[boot-tools-deps.core :refer [deps]])
 
 (task-options!
   sift {:include #{#"\.jar$"}}
@@ -43,6 +29,7 @@
 
 (deftask run []
   (comp
+    (deps)
     (aot)
     (with-pass-thru _
       (require
@@ -59,10 +46,11 @@
     #"(?i)^META-INF\\INDEX.LIST$"))
 
 (deftask build []
-  (comp (aot) (pom) (uber :exclude jar-exclusions) (jar) (sift) (target)))
+  (comp (deps) (aot) (pom) (uber :exclude jar-exclusions) (jar) (sift) (target)))
 
 (deftask build-cljs []
   (comp
+    (deps)
     (cljs :optimizations :advanced)
     (target)
     (with-pass-thru _
@@ -71,9 +59,9 @@
 
 (deftask local []
   (set-env! :resource-paths #{"src/clj" "src/cljs"})
-  (comp (pom) (jar) (install)))
+  (comp (deps) (pom) (jar) (install)))
 
 (deftask deploy []
   (set-env! :resource-paths #{"src/clj" "src/cljs"})
-  (comp (pom) (jar) (push)))
+  (comp (deps) (pom) (jar) (push)))
 
