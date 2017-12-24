@@ -4,7 +4,7 @@
                                    :scope "test"}
         paren-soup {:mvn/version "2.9.3"
                     :scope "test"}
-        mistakes-were-made {:mvn/version "1.7.3"
+        mistakes-were-made {:mvn/version "1.7.4"
                             :scope "test"}
         cljsjs/codemirror {:mvn/version "5.24.0-1"
                            :scope "test"}
