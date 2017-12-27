@@ -1,7 +1,8 @@
 (set-env!
   :dependencies '[[org.clojure/test.check "0.9.0" :scope "test"]
                   [adzerk/boot-cljs "2.1.4" :scope "test"]
-                  [org.clojars.oakes/boot-tools-deps "0.1.4" :scope "test"]]
+                  [javax.xml.bind/jaxb-api "2.3.0" :scope "test"]
+                  [org.clojars.oakes/boot-tools-deps "0.1.4.1" :scope "test"]]
   :repositories (conj (get-env :repositories)
                   ["clojars" {:url "https://clojars.org/repo/"
                               :username (System/getenv "CLOJARS_USER")
@@ -50,7 +51,7 @@
 
 (deftask build-cljs []
   (comp
-    (deps)
+    (deps :aliases [:cljs])
     (cljs :optimizations :advanced)
     (target)
     (with-pass-thru _
