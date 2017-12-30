@@ -4,7 +4,7 @@
         ring {:mvn/version "1.6.1"}
         hawk {:mvn/version "0.2.11"}
         play-cljs/lein-template {:mvn/version "0.11.2.1"}
-        eval-soup {:mvn/version "1.2.3" :exclusions [org.clojure/core.async]}
+        eval-soup {:mvn/version "1.2.4" :exclusions [org.clojure/core.async]}
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.9.946"}
                                paren-soup {:mvn/version "2.9.3"}
