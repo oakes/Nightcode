@@ -90,5 +90,7 @@
   (swap! runtime-state assoc :web-port (e/start-web-server!))
   (Application/launch nightcode.core (into-array String args)))
 
-(defn dev-main [] (-main))
+(defn dev-main []
+  (swap! runtime-state assoc :dev? true)
+  (-main))
 

@@ -62,14 +62,18 @@
     (when-let [file (.showSaveDialog chooser (.getWindow scene))]
       (let [dir (-> file .getParentFile .getCanonicalPath)
             project-name (-> file .getName str/lower-case)
-            file (io/file dir project-name)]
-        (try
-          (es/with-security
-            (lein/new! dir project-type project-name)
-            (when (.exists file)
-              (swap! pref-state update :project-set conj (.getCanonicalPath file))
-              (p/update-project-tree! pref-state project-tree (.getCanonicalPath file))))
-          (catch Exception _))))))
+            file (io/file dir project-name)
+            new-fn (fn []
+                     (lein/new! dir project-type project-name)
+                     (when (.exists file)
+                       (swap! pref-state update :project-set conj (.getCanonicalPath file))
+                       (p/update-project-tree! pref-state project-tree (.getCanonicalPath file))))]
+        (if (:dev? @runtime-state)
+          (new-fn)
+          (try
+            (es/with-security
+              (new-fn))
+            (catch Exception _)))))))
 
 (defn -onNewConsoleProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
