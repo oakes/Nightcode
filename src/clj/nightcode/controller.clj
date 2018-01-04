@@ -7,7 +7,7 @@
             [nightcode.lein :as lein]
             [nightcode.process :as proc]
             [nightcode.projects :as p]
-            [nightcode.state :refer [pref-state runtime-state]]
+            [nightcode.state :refer [*pref-state *runtime-state]]
             [nightcode.utils :as u]
             [eval-soup.core :as es])
   (:import [javafx.event ActionEvent]
@@ -66,9 +66,9 @@
             new-fn (fn []
                      (lein/new! dir project-type project-name)
                      (when (.exists file)
-                       (swap! pref-state update :project-set conj (.getCanonicalPath file))
-                       (p/update-project-tree! pref-state project-tree (.getCanonicalPath file))))]
-        (if (:dev? @runtime-state)
+                       (swap! *pref-state update :project-set conj (.getCanonicalPath file))
+                       (p/update-project-tree! *pref-state project-tree (.getCanonicalPath file))))]
+        (if (:dev? @*runtime-state)
           (new-fn)
           (try
             (es/with-security
@@ -94,8 +94,8 @@
 
 (defn clone-from-git! [^Scene scene]
   (when-let [path (git/clone-with-dialog! scene)]
-    (swap! pref-state update :project-set conj path)
-    (p/update-project-tree! pref-state (.lookup scene "#project_tree") path)))
+    (swap! *pref-state update :project-set conj path)
+    (p/update-project-tree! *pref-state (.lookup scene "#project_tree") path)))
 
 (defn -onCloneFromGit [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene clone-from-git!))
@@ -108,8 +108,8 @@
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showDialog chooser (.getWindow scene))]
       (let [path (.getCanonicalPath file)]
-        (swap! pref-state update :project-set conj path)
-        (p/update-project-tree! pref-state project-tree path)))))
+        (swap! *pref-state update :project-set conj path)
+        (p/update-project-tree! *pref-state project-tree path)))))
 
 (defn -onImport [this ^ActionEvent event]
   (-> event .getSource .getScene import!))
@@ -123,8 +123,8 @@
                  (.setGraphic nil)
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
-        project-root-path (u/get-project-root-path @pref-state)
-        selected-path (:selection @pref-state)
+        project-root-path (u/get-project-root-path @*pref-state)
+        selected-path (:selection @*pref-state)
         relative-path (u/get-relative-path project-root-path selected-path)]
     (-> dialog .getEditor (.setText relative-path))
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
@@ -134,9 +134,9 @@
               project-tree (.lookup scene "#project_tree")]
           (.mkdirs (.getParentFile new-file))
           (.renameTo (io/file selected-path) new-file)
-          (u/delete-parents-recursively! (:project-set @pref-state) selected-path)
-          (e/remove-editors! selected-path runtime-state)
-          (p/update-project-tree! pref-state project-tree new-path))))))
+          (u/delete-parents-recursively! (:project-set @*pref-state) selected-path)
+          (e/remove-editors! selected-path *runtime-state)
+          (p/update-project-tree! *pref-state project-tree new-path))))))
 
 (defn -onRename [this ^ActionEvent event]
   (-> event .getSource .getScene rename!))
@@ -144,8 +144,8 @@
 ; remove
 
 (defn should-remove? [^Scene scene ^String path]
-  (let [paths-to-delete (->> @runtime-state :editor-panes keys (filter #(u/parent-path? path %)))
-        get-pane #(get-in @runtime-state [:editor-panes %])
+  (let [paths-to-delete (->> @*runtime-state :editor-panes keys (filter #(u/parent-path? path %)))
+        get-pane #(get-in @*runtime-state [:editor-panes %])
         get-engine #(-> % get-pane (.lookup "#webview") .getEngine)
         unsaved? #(-> % get-engine (.executeScript "isClean()") not)
         unsaved-paths (filter unsaved? paths-to-delete)]
@@ -156,7 +156,7 @@
              (u/show-warning! scene "Unsaved Files")))))
 
 (defn remove! [^Scene scene]
-  (let [{:keys [project-set selection]} @pref-state
+  (let [{:keys [project-set selection]} @*pref-state
         message (if (contains? project-set selection)
                   "Remove this project? It WILL NOT be deleted from the disk."
                   "Remove this file? It WILL be deleted from the disk.")
@@ -169,10 +169,10 @@
         project-tree (.lookup scene "#project_tree")]
     (when (and (-> dialog .showAndWait (.orElse nil) (= ButtonType/OK))
                (should-remove? scene selection))
-      (p/remove-from-project-tree! pref-state selection)
-      (e/remove-editors! selection runtime-state)
-      (p/remove-project! selection runtime-state)
-      (p/update-project-tree! pref-state project-tree))))
+      (p/remove-from-project-tree! *pref-state selection)
+      (e/remove-editors! selection *runtime-state)
+      (p/remove-project! selection *runtime-state)
+      (p/update-project-tree! *pref-state project-tree))))
 
 (defn -onRemove [this ^ActionEvent event]
   (-> event .getSource .getScene remove!))
@@ -180,10 +180,10 @@
 ; up
 
 (defn up! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
+  (when-let [path (:selection @*pref-state)]
     (let [project-tree (.lookup scene "#project_tree")]
       (->> path io/file .getParentFile .getCanonicalPath
-           (p/update-project-tree! pref-state project-tree)))))
+           (p/update-project-tree! *pref-state project-tree)))))
 
 (defn -onUp [this ^ActionEvent event]
   (-> event .getSource .getScene up!))
@@ -191,8 +191,8 @@
 ; save
 
 (defn save! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
-    (when-let [pane (get-in @runtime-state [:editor-panes path])]
+  (when-let [path (:selection @*pref-state)]
+    (when-let [pane (get-in @*runtime-state [:editor-panes path])]
       (when-let [engine (some-> pane (.lookup "#webview") .getEngine)]
         (e/save-file! path engine)))
     ; if saving a build.boot file, refresh the build buttons
@@ -200,7 +200,7 @@
           parent-path (-> file .getParentFile .getCanonicalPath)]
       (when (-> file .getName (= "build.boot"))
         (when-let [pane (.lookup scene "#content")]
-          (b/show-boot-buttons! pane parent-path @pref-state runtime-state))))))
+          (b/show-boot-buttons! pane parent-path @*pref-state *runtime-state))))))
 
 (defn -onSave [this ^ActionEvent event]
   (-> event .getSource .getScene save!))
@@ -208,8 +208,8 @@
 ; undo
 
 (defn undo! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
-    (when-let [pane (get-in @runtime-state [:editor-panes path])]
+  (when-let [path (:selection @*pref-state)]
+    (when-let [pane (get-in @*runtime-state [:editor-panes path])]
       (let [webview (.lookup pane "#webview")
             engine (.getEngine webview)]
         (.executeScript engine "undo()")
@@ -221,8 +221,8 @@
 ; redo
 
 (defn redo! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
-    (when-let [pane (get-in @runtime-state [:editor-panes path])]
+  (when-let [path (:selection @*pref-state)]
+    (when-let [pane (get-in @*runtime-state [:editor-panes path])]
       (let [webview (.lookup pane "#webview")
             engine (.getEngine webview)]
         (.executeScript engine "redo()")
@@ -234,8 +234,8 @@
 ; instaREPL
 
 (defn toggle-instarepl! [^Scene scene & [from-button?]]
-  (when-let [path (:selection @pref-state)]
-    (when-let [pane (get-in @runtime-state [:editor-panes path])]
+  (when-let [path (:selection @*pref-state)]
+    (when-let [pane (get-in @*runtime-state [:editor-panes path])]
       (let [webview (.lookup pane "#webview")
             instarepl (.lookup pane "#instarepl")]
         (when-not from-button?
@@ -248,15 +248,15 @@
 ; find
 
 (defn focus-on-find! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
-    (when-let [pane (get-in @runtime-state [:editor-panes path])]
+  (when-let [path (:selection @*pref-state)]
+    (when-let [pane (get-in @*runtime-state [:editor-panes path])]
       (when-let [find (.lookup pane "#find")]
         (doto find .requestFocus .selectAll)))))
 
 (defn find! [^Scene scene ^KeyEvent event]
   (when (= KeyCode/ENTER (.getCode event))
-    (when-let [path (:selection @pref-state)]
-      (when-let [pane (get-in @runtime-state [:editor-panes path])]
+    (when-let [path (:selection @*pref-state)]
+      (when-let [pane (get-in @*runtime-state [:editor-panes path])]
         (let [webview (.lookup pane "#webview")
               engine (.getEngine webview)
               find (.lookup pane "#find")
@@ -271,16 +271,16 @@
 ; close
 
 (defn close! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
+  (when-let [path (:selection @*pref-state)]
     (when (should-remove? scene path)
       (let [file (io/file path)
             new-path (if (.isDirectory file)
                        path
                        (.getCanonicalPath (.getParentFile file)))
             project-tree (.lookup scene "#project_tree")]
-        (e/remove-editors! path runtime-state)
+        (e/remove-editors! path *runtime-state)
         (p/update-project-tree-selection! project-tree new-path))
-      (p/remove-project! path runtime-state))))
+      (p/remove-project! path *runtime-state))))
 
 (defn -onClose [this ^ActionEvent event]
   (-> event .getSource .getScene close!))
@@ -288,7 +288,7 @@
 ; run
 
 (defn run-normal! [^Scene scene]
-  (b/start-builder! @pref-state runtime-state "Running..." "run"))
+  (b/start-builder! @*pref-state *runtime-state "Running..." "run"))
 
 (defn -onRun [this ^ActionEvent event]
   (-> event .getSource .getScene run-normal!))
@@ -296,7 +296,7 @@
 ; run with repl
 
 (defn run-with-repl! [^Scene scene]
-  (b/start-builder! @pref-state runtime-state "Running with REPL..." "repl"))
+  (b/start-builder! @*pref-state *runtime-state "Running with REPL..." "repl"))
 
 (defn -onRunWithRepl [this ^ActionEvent event]
   (-> event .getSource .getScene run-with-repl!))
@@ -307,7 +307,7 @@
   (when-let [webview (.lookup scene "#webview")]
     (let [text (.executeScript (.getEngine webview) "getTextContent()")
           text (str "(do" \newline text \newline ")" \newline)
-          bridge (e/get-bridge @pref-state @runtime-state)]
+          bridge (e/get-bridge @*pref-state @*runtime-state)]
       (.onenter bridge text))))
 
 (defn -onReloadFile [this ^ActionEvent event]
@@ -319,7 +319,7 @@
   (when-let [webview (.lookup scene "#webview")]
     (when-let [text (.executeScript (.getEngine webview) "getSelectedText()")]
       (let [text (str "(do" \newline text \newline ")" \newline)
-            bridge (e/get-bridge @pref-state @runtime-state)]
+            bridge (e/get-bridge @*pref-state @*runtime-state)]
         (.onenter bridge text)))))
 
 (defn -onReloadSelection [this ^ActionEvent event]
@@ -328,7 +328,7 @@
 ; build
 
 (defn build! [^Scene scene]
-  (b/start-builder! @pref-state runtime-state "Building..." "build"))
+  (b/start-builder! @*pref-state *runtime-state "Building..." "build"))
 
 (defn -onBuild [this ^ActionEvent event]
   (-> event .getSource .getScene build!))
@@ -336,7 +336,7 @@
 ; clean
 
 (defn clean! [^Scene scene]
-  (b/start-builder! @pref-state runtime-state "Cleaning..." "clean"))
+  (b/start-builder! @*pref-state *runtime-state "Cleaning..." "clean"))
 
 (defn -onClean [this ^ActionEvent event]
   (-> event .getSource .getScene clean!))
@@ -344,7 +344,7 @@
 ; test
 
 (defn test! [^Scene scene]
-  (b/start-builder! @pref-state runtime-state "Testing..." "test"))
+  (b/start-builder! @*pref-state *runtime-state "Testing..." "test"))
 
 (defn -onTest [this ^ActionEvent event]
   (-> event .getSource .getScene test!))
@@ -352,7 +352,7 @@
 ; stop
 
 (defn stop! [^Scene scene]
-  (b/stop-builder! @pref-state @runtime-state))
+  (b/stop-builder! @*pref-state @*runtime-state))
 
 (defn -onStop [this ^ActionEvent event]
   (-> event .getSource .getScene stop!))
@@ -360,45 +360,45 @@
 ; theme
 
 (defn dark-theme! [^Scene scene]
-  (swap! pref-state assoc :theme :dark)
+  (swap! *pref-state assoc :theme :dark)
   (-> scene .getStylesheets (.add "dark.css"))
-  (u/update-webviews! @pref-state @runtime-state))
+  (u/update-webviews! @*pref-state @*runtime-state))
 
 (defn -onDarkTheme [this ^ActionEvent event]
-  (-> @runtime-state :stage .getScene dark-theme!))
+  (-> @*runtime-state :stage .getScene dark-theme!))
 
 (defn light-theme! [^Scene scene]
-  (swap! pref-state assoc :theme :light)
+  (swap! *pref-state assoc :theme :light)
   (-> scene .getStylesheets .clear)
-  (u/update-webviews! @pref-state @runtime-state))
+  (u/update-webviews! @*pref-state @*runtime-state))
 
 (defn -onLightTheme [this ^ActionEvent event]
-  (-> @runtime-state :stage .getScene light-theme!))
+  (-> @*runtime-state :stage .getScene light-theme!))
 
 ; font
 
 (defn font! [^Scene scene]
-  (-> scene .getRoot (.setStyle (str "-fx-font-size: " (u/normalize-text-size (:text-size @pref-state)))))
-  (u/update-webviews! @pref-state @runtime-state))
+  (-> scene .getRoot (.setStyle (str "-fx-font-size: " (u/normalize-text-size (:text-size @*pref-state)))))
+  (u/update-webviews! @*pref-state @*runtime-state))
 
 (defn font-dec! [^Scene scene]
-  (swap! pref-state update :text-size #(-> % (- 2) u/normalize-text-size))
+  (swap! *pref-state update :text-size #(-> % (- 2) u/normalize-text-size))
   (font! scene))
 
 (defn -onFontDec [this ^ActionEvent event]
-  (-> @runtime-state :stage .getScene font-dec!))
+  (-> @*runtime-state :stage .getScene font-dec!))
 
 (defn font-inc! [^Scene scene]
-  (swap! pref-state update :text-size #(-> % (+ 2) u/normalize-text-size))
+  (swap! *pref-state update :text-size #(-> % (+ 2) u/normalize-text-size))
   (font! scene))
 
 (defn -onFontInc [this ^ActionEvent event]
-  (-> @runtime-state :stage .getScene font-inc!))
+  (-> @*runtime-state :stage .getScene font-inc!))
 
 ; auto save
 
 (defn -onAutoSave [this ^ActionEvent event]
-  (swap! pref-state assoc :auto-save? (-> event .getTarget .isSelected)))
+  (swap! *pref-state assoc :auto-save? (-> event .getTarget .isSelected)))
 
 ; new file
 
@@ -409,7 +409,7 @@
                  (.setGraphic nil)
                  (.initOwner (.getWindow scene))
                  (.initModality Modality/WINDOW_MODAL))
-        selected-path (:selection @pref-state)]
+        selected-path (:selection @*pref-state)]
     (-> dialog .getEditor (.setText "example.clj"))
     (when-let [new-relative-path (-> dialog .showAndWait (.orElse nil))]
       (let [new-file (io/file selected-path new-relative-path)
@@ -417,7 +417,7 @@
             project-tree (.lookup scene "#project_tree")]
         (.mkdirs (.getParentFile new-file))
         (.createNewFile new-file)
-        (p/update-project-tree! pref-state project-tree new-path)))))
+        (p/update-project-tree! *pref-state project-tree new-path)))))
 
 (defn -onNewFile [this ^ActionEvent event]
   (-> event .getSource .getScene new-file!))
@@ -425,7 +425,7 @@
 ; open in file browser
 
 (defn open-in-file-browser! [^Scene scene]
-  (when-let [path (:selection @pref-state)]
+  (when-let [path (:selection @*pref-state)]
     (javax.swing.SwingUtilities/invokeLater
       (fn []
         (when (Desktop/isDesktopSupported)

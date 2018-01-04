@@ -69,15 +69,15 @@
 
 (fdef start-builder-process!
   :args (s/alt
-          :args (s/cat  :webview spec/node? :pipes map? :process spec/atom? :start-str (s/nilable string?) :project-path string? :args (s/coll-of string?))
-          :start-fn (s/cat :webview spec/node? :pipes map? :process spec/atom? :start-str (s/nilable string?) :start-fn fn?)))
+          :args (s/cat  :webview spec/node? :pipes map? :*process spec/atom? :start-str (s/nilable string?) :project-path string? :args (s/coll-of string?))
+          :start-fn (s/cat :webview spec/node? :pipes map? :*process spec/atom? :start-str (s/nilable string?) :start-fn fn?)))
 
 (defn start-builder-process!
-  ([webview pipes process start-str project-path args]
-   (start-builder-process! webview pipes process start-str
-     #(proc/start-java-process! process project-path args)))
-  ([webview pipes process start-str start-fn]
-   (proc/stop-process! process)
+  ([webview pipes *process start-str project-path args]
+   (start-builder-process! webview pipes *process start-str
+     #(proc/start-java-process! *process project-path args)))
+  ([webview pipes *process start-str start-fn]
+   (proc/stop-process! *process)
    (start-builder-thread! webview pipes "\n=== Finished ==="
      (fn []
        (some-> start-str println)
@@ -87,13 +87,13 @@
   :args (s/cat :runtime-state map? :project-path string?))
 
 (defn stop-builder-process! [runtime-state project-path]
-  (when-let [process (get-in runtime-state [:processes project-path])]
-    (proc/stop-process! process)))
+  (when-let [*process (get-in runtime-state [:processes project-path])]
+    (proc/stop-process! *process)))
 
 (fdef init-console!
-  :args (s/cat :project-path string? :runtime-state-atom spec/atom? :webview spec/node? :pipes map? :web-port number? :callback fn?))
+  :args (s/cat :project-path string? :*runtime-state spec/atom? :webview spec/node? :pipes map? :web-port number? :callback fn?))
 
-(defn init-console! [project-path runtime-state-atom webview pipes web-port cb]
+(defn init-console! [project-path *runtime-state webview pipes web-port cb]
   (doto webview
     (.setVisible true)
     (.setContextMenuEnabled false))
@@ -114,7 +114,7 @@
                              (.flush)))
                          (oneval [this code]))]
             ; prevent bridge from being GC'ed
-            (swap! runtime-state-atom update :bridges assoc project-path bridge)
+            (swap! *runtime-state update :bridges assoc project-path bridge)
             (-> engine
                 (.executeScript "window")
                 (.setMember "java" bridge))))))
@@ -185,28 +185,28 @@
           (.lookup tab-content "#build_webview"))))))
 
 (fdef start-builder!
-  :args (s/cat :pref-state map? :runtime-state-atom spec/atom? :start-str string? :cmd string?))
+  :args (s/cat :pref-state map? :*runtime-state spec/atom? :start-str string? :cmd string?))
 
-(defn start-builder! [pref-state runtime-state-atom start-str cmd]
+(defn start-builder! [pref-state *runtime-state start-str cmd]
   (when-let [project-path (u/get-project-path pref-state)]
-    (when-let [pane (get-in @runtime-state-atom [:projects project-path :pane])]
+    (when-let [pane (get-in @*runtime-state [:projects project-path :pane])]
       (when-let [system (get-selected-build-system pane)]
         (let [tab-content (.getContent (get-tab pane system))
               webview (.lookup tab-content "#build_webview")
               pipes (create-pipes)
-              process (or (get-in @runtime-state-atom [:processes project-path])
+              *process (or (get-in @*runtime-state [:processes project-path])
                           (doto (atom nil)
                             (add-watch :process-changed
                               (fn [_ _ _ new-process]
                                 (update-when-process-changes! pane (some? new-process))))))]
-          (init-console! project-path runtime-state-atom webview pipes (:web-port @runtime-state-atom)
+          (init-console! project-path *runtime-state webview pipes (:web-port @*runtime-state)
             (fn []
               (refresh-builder! webview (= cmd "repl") pref-state)
-              (start-builder-process! webview pipes process start-str
+              (start-builder-process! webview pipes *process start-str
                 (case system
-                  :lein #(proc/start-java-process! process project-path [l/class-name cmd])
-                  :boot #(proc/start-process! process project-path [(u/get-boot-path) "--no-colors" cmd])))))
-          (swap! runtime-state-atom assoc-in [:processes project-path] process))))))
+                  :lein #(proc/start-java-process! *process project-path [l/class-name cmd])
+                  :boot #(proc/start-process! *process project-path [(u/get-boot-path) "--no-colors" cmd])))))
+          (swap! *runtime-state assoc-in [:processes project-path] *process))))))
 
 (fdef stop-builder!
   :args (s/cat :pref-state map? :runtime-state map?))
@@ -216,9 +216,9 @@
     (stop-builder-process! runtime-state project-path)))
 
 (fdef show-boot-buttons!
-  :args (s/cat :pane spec/pane? :path string? :pref-state map? :runtime-state-atom spec/atom?))
+  :args (s/cat :pane spec/pane? :path string? :pref-state map? :*runtime-state spec/atom?))
 
-(defn show-boot-buttons! [pane path pref-state runtime-state-atom]
+(defn show-boot-buttons! [pane path pref-state *runtime-state]
   (when-let [task-buttons (some-> (get-tab pane :boot) .getContent (.lookup "#tasks"))]
     (when-let [perm-tasks (.lookup task-buttons "#permanent_tasks")]
       (doto task-buttons
@@ -237,7 +237,7 @@
             (.setOnAction
               (reify EventHandler
                 (handle [this event]
-                  (start-builder! pref-state runtime-state-atom (str "Starting " task-name " task...") task-name)))))
+                  (start-builder! pref-state *runtime-state (str "Starting " task-name " task...") task-name)))))
           (-> task-buttons .getChildren (.add btn))))
       (-> task-buttons .getChildren (.add perm-tasks))
       ; for certain custom tasks, add tooltips
@@ -246,9 +246,9 @@
         shortcuts/hide-tooltips!))))
 
 (fdef init-builder!
-  :args (s/cat :pane spec/pane? :path string? :pref-state map? :runtime-state-atom spec/atom?))
+  :args (s/cat :pane spec/pane? :path string? :pref-state map? :*runtime-state spec/atom?))
 
-(defn init-builder! [pane path pref-state runtime-state-atom]
+(defn init-builder! [pane path pref-state *runtime-state]
   (let [systems (u/build-systems path)]
     ; add/remove tooltips
     (.addListener (-> (.lookup pane "#build_tabs") .getSelectionModel .selectedItemProperty)
@@ -261,7 +261,7 @@
     (cond
       (:boot systems) (do
                         (select-build-system! pane :boot ids)
-                        (show-boot-buttons! pane path pref-state runtime-state-atom))
+                        (show-boot-buttons! pane path pref-state *runtime-state))
       (:lein systems) (select-build-system! pane :lein ids))
     (.setDisable (get-tab pane :boot) (not (:boot systems)))
     (.setDisable (get-tab pane :lein) (not (:lein systems)))

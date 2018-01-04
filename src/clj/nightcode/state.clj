@@ -4,7 +4,7 @@
 
 ; preferences
 
-(declare runtime-state)
+(declare *runtime-state)
 
 (fdef write-pref!
   :args (s/cat :key keyword? :val any?))
@@ -12,7 +12,7 @@
 (defn write-pref!
   "Writes a key-value pair to the preference file."
   [k v]
-  (when-let [prefs (:prefs @runtime-state)]
+  (when-let [prefs (:prefs @*runtime-state)]
     (doto prefs
       (.put (name k) (pr-str v))
       .flush)))
@@ -23,7 +23,7 @@
 (defn remove-pref!
   "Removes a key-value pair from the preference file."
   [k]
-  (when-let [prefs (:prefs @runtime-state)]
+  (when-let [prefs (:prefs @*runtime-state)]
     (doto prefs
       (.remove (name k))
       .flush)))
@@ -38,22 +38,22 @@
   ([k]
    (read-pref k nil))
   ([k default-val]
-   (when-let [prefs (:prefs @runtime-state)]
+   (when-let [prefs (:prefs @*runtime-state)]
      (if-let [string (.get prefs (name k) nil)]
        (edn/read-string string)
        default-val))))
 
 ; state
 
-(defonce pref-state (atom {}))
+(defonce *pref-state (atom {}))
 
-(defonce runtime-state (atom {:web-port nil
-                              :projects {}
-                              :editor-panes {}
-                              :bridges {}
-                              :processes {}
-                              :stage nil
-                              :prefs nil}))
+(defonce *runtime-state (atom {:web-port nil
+                               :projects {}
+                               :editor-panes {}
+                               :bridges {}
+                               :processes {}
+                               :stage nil
+                               :prefs nil}))
 
 (defn init-pref-state! [defaults]
   (->> defaults
@@ -61,8 +61,8 @@
               [k (read-pref k v)]))
        flatten
        (apply hash-map)
-       (reset! pref-state))
-  (add-watch pref-state :write-prefs
+       (reset! *pref-state))
+  (add-watch *pref-state :write-prefs
     (fn [_ _ old-state new-state]
       (doseq [key (keys defaults)]
         (let [old-val (get old-state key)

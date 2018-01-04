@@ -8,7 +8,7 @@
             [goog.object :as gobj])
   (:import goog.net.XhrIo))
 
-(def state (atom {:text-content "" :editor nil}))
+(def *state (atom {:text-content "" :editor nil}))
 
 (def modal (.querySelector js/document "#modal"))
 
@@ -18,18 +18,18 @@
     1000))
 
 (defn undo []
-  (some-> @state :editor p/undo)
+  (some-> @*state :editor p/undo)
   (.onautosave js/window.java))
 
 (defn redo []
-  (some-> @state :editor p/redo)
+  (some-> @*state :editor p/redo)
   (.onautosave js/window.java))
 
 (defn can-undo? []
-  (some-> @state :editor p/can-undo?))
+  (some-> @*state :editor p/can-undo?))
 
 (defn can-redo? []
-  (some-> @state :editor p/can-redo?))
+  (some-> @*state :editor p/can-redo?))
 
 (defn set-text-content [content]
   (gdom/setTextContent (.querySelector js/document "#content") content))
@@ -38,21 +38,21 @@
   (.-textContent (.querySelector js/document "#content")))
 
 (defn get-saved-text []
-  (:text-content @state))
+  (:text-content @*state))
 
 (defn get-selected-text []
   (when-let [text (or (p/selected-text) (p/focused-text))]
     (:text (cp/mode :both text 0 0))))
 
 (defn mark-clean []
-  (swap! state assoc :text-content (get-text-content))
+  (swap! *state assoc :text-content (get-text-content))
   (.onchange js/window.java))
 
 (defn clean? []
-  (some-> @state :text-content (= (get-text-content))))
+  (some-> @*state :text-content (= (get-text-content))))
 
 (defn append [text]
-  (some-> @state :editor (p/append-text! text))
+  (some-> @*state :editor (p/append-text! text))
   (let [paren-soup (.querySelector js/document "#paren-soup")]
     (set! (.-scrollTop paren-soup) (.-scrollHeight paren-soup))))
 
@@ -98,7 +98,7 @@
                                   (= (.-keyCode e) 0)))
                            :change-callback
                            (fn [e]
-                             (let [{:keys [text-after-parinfer]} @state]
+                             (let [{:keys [text-after-parinfer]} @*state]
                                (when (= (.-type e) "keyup")
                                  (cond
                                    (nil? text-after-parinfer)
@@ -108,15 +108,15 @@
                                    ; the text afterwards
                                    (not= text-after-parinfer (get-text-content))
                                    (do
-                                     (swap! state dissoc :text-after-parinfer)
+                                     (swap! *state dissoc :text-after-parinfer)
                                      (auto-save)))))
                              (.onchange js/window.java))
                            :disable-undo-redo? true
                            :compiler-fn compiler-fn
-                           :edit-history (:edit-history @state)}))
+                           :edit-history (:edit-history @*state)}))
         text-after-parinfer (when-not (clean?)
                               (get-text-content))]
-    (swap! state assoc
+    (swap! *state assoc
       :editor editor
       :text-after-parinfer text-after-parinfer
       :edit-history (mwm/create-edit-history))
@@ -126,7 +126,7 @@
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")]
     (-> content .-style .-whiteSpace (set! "pre-wrap"))
-    (swap! state assoc :editor
+    (swap! *state assoc :editor
       (p/init paren-soup
         (clj->js {:before-change-callback
                   (fn [e]

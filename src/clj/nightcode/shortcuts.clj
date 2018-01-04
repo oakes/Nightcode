@@ -181,9 +181,9 @@
             (action scene)))))))
 
 (fdef set-shortcut-listeners!
-  :args (s/cat :stage spec/stage? :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :actions map?))
+  :args (s/cat :stage spec/stage? :*pref-state spec/atom? :*runtime-state spec/atom? :actions map?))
 
-(defn set-shortcut-listeners! [^Stage stage pref-state-atom runtime-state-atom actions]
+(defn set-shortcut-listeners! [^Stage stage *pref-state *runtime-state actions]
   (let [^Scene scene (.getScene stage)]
     ; show exit dialog
     (.setOnCloseRequest stage
@@ -195,9 +195,9 @@
               (System/exit 0))
             (.consume e)))))
     ; update tabs when editor panes change
-    (add-watch runtime-state-atom :runtime-state-changed
+    (add-watch *runtime-state :runtime-state-changed
       (fn [_ _ _ new-runtime-state]
-        (update-tabs! scene @pref-state-atom new-runtime-state)))
+        (update-tabs! scene @*pref-state new-runtime-state)))
     ; show tooltips on key pressed
     (.addEventHandler scene KeyEvent/KEY_PRESSED
       (reify EventHandler

@@ -53,29 +53,29 @@
       .getLocalPort))
 
 (fdef remove-editor!
-  :args (s/cat :path string? :pane spec/pane? :runtime-state-atom spec/atom?))
+  :args (s/cat :path string? :pane spec/pane? :*runtime-state spec/atom?))
 
-(defn remove-editor! [^String path pane runtime-state-atom]
-  (swap! runtime-state-atom update :editor-panes dissoc path)
-  (swap! runtime-state-atom update :bridges dissoc path)
+(defn remove-editor! [^String path pane *runtime-state]
+  (swap! *runtime-state update :editor-panes dissoc path)
+  (swap! *runtime-state update :bridges dissoc path)
   (shortcuts/hide-tooltips! pane)
   (some-> pane .getParent .getChildren (.remove pane)))
 
 (fdef remove-editors!
-  :args (s/cat :path string? :runtime-state-atom spec/atom?))
+  :args (s/cat :path string? :*runtime-state spec/atom?))
 
-(defn remove-editors! [^String path runtime-state-atom]
-  (doseq [[editor-path pane] (:editor-panes @runtime-state-atom)]
+(defn remove-editors! [^String path *runtime-state]
+  (doseq [[editor-path pane] (:editor-panes @*runtime-state)]
     (when (u/parent-path? path editor-path)
-      (remove-editor! editor-path pane runtime-state-atom))))
+      (remove-editor! editor-path pane *runtime-state))))
 
 (fdef remove-non-existing-editors!
-  :args (s/cat :runtime-state-atom spec/atom?))
+  :args (s/cat :*runtime-state spec/atom?))
 
-(defn remove-non-existing-editors! [runtime-state-atom]
-  (doseq [[editor-path pane] (:editor-panes @runtime-state-atom)]
+(defn remove-non-existing-editors! [*runtime-state]
+  (doseq [[editor-path pane] (:editor-panes @*runtime-state)]
     (when-not (.exists (io/file editor-path))
-      (remove-editor! editor-path pane runtime-state-atom))))
+      (remove-editor! editor-path pane *runtime-state))))
 
 (fdef toggle-instarepl!
   :args (s/cat :engine any? :selected? boolean?))
@@ -135,12 +135,12 @@
        pr-str))
 
 (fdef editor-pane
-  :args (s/cat :pref-state-atom spec/atom? :runtime-state-atom spec/atom? :file spec/file? :eval-fn (s/nilable fn?))
+  :args (s/cat :*pref-state spec/atom? :*runtime-state spec/atom? :file spec/file? :eval-fn (s/nilable fn?))
   :ret spec/pane?)
 
-(defn editor-pane [pref-state-atom runtime-state-atom ^File file eval-fn]
+(defn editor-pane [*pref-state *runtime-state ^File file eval-fn]
   (when (should-open? file)
-    (let [runtime-state @runtime-state-atom
+    (let [runtime-state @*runtime-state
           pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
           engine (.getEngine webview)
@@ -149,12 +149,12 @@
           bridge (reify Bridge
                    (onload [this]
                      (try
-                       (onload engine file @pref-state-atom)
+                       (onload engine file @*pref-state)
                        (catch Exception e (.printStackTrace e))))
                    (onautosave [this]
                      (try
                        (let [save-btn (.lookup pane "#save")]
-                         (when (and (:auto-save? @pref-state-atom)
+                         (when (and (:auto-save? @*pref-state)
                                     (not (.isDisabled save-btn)))
                            (save-file! path engine)))
                        (catch Exception e (.printStackTrace e))))
@@ -175,7 +175,7 @@
       (-> pane (.lookup "#instarepl") (.setManaged (some? eval-fn)))
       (shortcuts/add-tooltips! pane ids)
       ; prevent bridge from being GC'ed
-      (swap! runtime-state-atom update :bridges assoc path bridge)
+      (swap! *runtime-state update :bridges assoc path bridge)
       (-> engine
           (.executeScript "window")
           (.setMember "java" bridge))
@@ -193,13 +193,13 @@
     (get-in runtime-state [:bridges project-path])))
 
 (fdef create-file-watcher
-  :args (s/cat :project-dir string? :runtime-state-atom spec/atom?))
+  :args (s/cat :project-dir string? :*runtime-state spec/atom?))
 
-(defn create-file-watcher [project-dir runtime-state-atom]
+(defn create-file-watcher [project-dir *runtime-state]
   (hawk/watch! [{:paths [project-dir]
                  :handler (fn [ctx {:keys [file]}]
                             (when (.exists file)
-                              (when-let [editor (get-in @runtime-state-atom [:editor-panes (.getCanonicalPath file)])]
+                              (when-let [editor (get-in @*runtime-state [:editor-panes (.getCanonicalPath file)])]
                                 (Platform/runLater
                                   (fn []
                                     (when-let [webview (.lookup editor "#webview")]
