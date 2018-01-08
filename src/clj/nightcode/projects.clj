@@ -154,7 +154,7 @@
               (when-let [pane (or (get-in runtime-state [:editor-panes path])
                                   (e/editor-pane *pref-state *runtime-state file
                                     (when (#{"clj" "cljc"} (-> file .getName u/get-extension))
-                                      e/eval-code)))]
+                                      (partial e/eval-code (:dev? runtime-state)))))]
                 (-> editors .getChildren (.add pane))
                 (swap! *runtime-state update :editor-panes assoc path pane)))
             (swap! *runtime-state update-in [:projects parent-path]

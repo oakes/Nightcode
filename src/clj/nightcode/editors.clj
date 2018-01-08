@@ -124,13 +124,12 @@
   (.executeScript engine "markClean()"))
 
 (fdef eval-code
-  :args (s/cat :code string?)
+  :args (s/cat :disable-security? boolean? :code string?)
   :ret string?)
 
-(defn eval-code [code]
-  (->> code
-       edn/read-string
-       es/code->results
+(defn eval-code [disable-security? code]
+  (->> (es/code->results (edn/read-string code)
+         {:disable-security? disable-security?})
        (mapv form->serializable)
        pr-str))
 
