@@ -210,7 +210,8 @@ requisite project files, or empty if neither exists."
       (Math/ceil)
       (* 2)
       (max 12)
-      (min 24)))
+      (min 24)
+      int))
 
 (fdef filter-paths
   :args (s/cat :paths (s/coll-of string?))
