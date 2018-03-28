@@ -129,7 +129,8 @@
 
 (defn eval-code [disable-security? code]
   (->> (es/code->results (edn/read-string code)
-         {:disable-security? disable-security?})
+         {:disable-security? disable-security?
+          :disable-timeout? true})
        (mapv form->serializable)
        pr-str))
 
