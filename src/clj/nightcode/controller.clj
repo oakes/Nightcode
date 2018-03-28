@@ -22,7 +22,7 @@
              [onNewGraphicsProject [javafx.event.ActionEvent] void]
              [onNewWebProject [javafx.event.ActionEvent] void]
              [onNewGameProject [javafx.event.ActionEvent] void]
-             [onNewAudioProject [javafx.event.ActionEvent] void]
+             [onNewMusicProject [javafx.event.ActionEvent] void]
              [onCloneFromGit [javafx.event.ActionEvent] void]
              [onImport [javafx.event.ActionEvent] void]
              [onRename [javafx.event.ActionEvent] void]
@@ -87,7 +87,7 @@
 (defn -onNewGameProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :play-cljs)))
 
-(defn -onNewAudioProject [this ^ActionEvent event]
+(defn -onNewMusicProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :edna)))
 
 ; clone from git
