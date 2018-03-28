@@ -88,7 +88,7 @@
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :play-cljs)))
 
 (defn -onNewAudioProject [this ^ActionEvent event]
-  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :audio)))
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :edna)))
 
 ; clone from git
 
