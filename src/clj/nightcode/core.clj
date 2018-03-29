@@ -51,7 +51,7 @@
                        :auto-save? true})
     (swap! *pref-state update :expansion-set u/filter-paths)
     (doto stage
-      (.setTitle "Nightcode 2.5.7")
+      (.setTitle "Nightcode 2.5.8")
       (.setScene scene)
       (.show))
     (shortcuts/init-tabs! scene)
