@@ -68,13 +68,15 @@
   (comp (aot) (pom) (uber :exclude jar-exclusions) (jar) (sift) (target)))
 
 (deftask build-cljs []
-  (set-env! :dependencies #(into (set %) (:dependencies (read-deps-edn [:cljs]))))
+  (set-env!
+    :resource-paths #(conj % "dev-resources")
+    :dependencies #(into (set %) (:dependencies (read-deps-edn [:cljs]))))
   (comp
     (cljs :optimizations :advanced)
     (target)
     (with-pass-thru _
-      (.renameTo (io/file "target/public/paren-soup.js") (io/file "resources/public/paren-soup.js"))
-      (.renameTo (io/file "target/public/codemirror.js") (io/file "resources/public/codemirror.js")))))
+      (io/copy (io/file "target/public/paren-soup.js") (io/file "resources/public/paren-soup.js"))
+      (io/copy (io/file "target/public/codemirror.js") (io/file "resources/public/codemirror.js")))))
 
 (deftask local []
   (comp (pom) (jar) (install)))
