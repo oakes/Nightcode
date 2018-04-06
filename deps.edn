@@ -6,8 +6,8 @@
         play-cljs/lein-template {:mvn/version "1.1.0"}
         edna {:mvn/version "0.3.0"}
         edna/lein-template {:mvn/version "0.3.0"}
-        eval-soup {:mvn/version "1.4.2" :exclusions [org.clojure/core.async]}
+        eval-soup {:mvn/version "1.4.3" :exclusions [org.clojure/core.async]}
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.238"}
-                               paren-soup {:mvn/version "2.11.2"}
+                               paren-soup {:mvn/version "2.12.2"}
                                cljsjs/codemirror {:mvn/version "5.24.0-1"}}}}}
