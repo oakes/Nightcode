@@ -265,3 +265,17 @@ requisite project files, or empty if neither exists."
       "java" "images/file-java.png"
       "images/file.png")))
 
+(fdef sanitize-name
+  :args (s/cat :s string?)
+  :ret string?)
+
+(defn sanitize-name [s]
+  (as-> s $
+        (str/trim $)
+        (str/lower-case $)
+        (str/replace $ "'" "")
+        (str/replace $ #"[^a-z0-9]" " ")
+        (str/split $ #" ")
+        (remove empty? $)
+        (str/join "-" $)))
+

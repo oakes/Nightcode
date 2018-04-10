@@ -61,7 +61,7 @@
         project-tree (.lookup scene "#project_tree")]
     (when-let [file (.showSaveDialog chooser (.getWindow scene))]
       (let [dir (-> file .getParentFile .getCanonicalPath)
-            project-name (-> file .getName str/lower-case)
+            project-name (-> file .getName u/sanitize-name)
             file (io/file dir project-name)]
         (try
           (cond-> (fn []
