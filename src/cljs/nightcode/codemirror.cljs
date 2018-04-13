@@ -22,6 +22,8 @@
    "html" "xml"
    "xml" "xml"})
 
+(def ^:const wrap-exts #{"md" "txt"})
+
 (def *state (atom {:text-content "" :editor nil}))
 
 (def modal (.querySelector js/document "#modal"))
@@ -92,7 +94,8 @@
             js/document.body
             (clj->js {:value (.-textContent content)
                       :lineNumbers true
-                      :mode (extension->mode extension)}))
+                      :mode (extension->mode extension)
+                      :lineWrapping (contains? wrap-exts extension)}))
           (.on "change"
             (fn [editor-object change]
               (auto-save)

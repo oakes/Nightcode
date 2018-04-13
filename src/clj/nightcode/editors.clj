@@ -17,8 +17,6 @@
            [java.io File]
            [nightcode.utils Bridge]))
 
-(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl"})
-(def ^:const wrap-exts #{"md" "txt"})
 (def ^:const max-file-size (* 1024 1024 2))
 
 (fdef form->serializable
@@ -144,7 +142,7 @@
           pane (FXMLLoader/load (io/resource "editor.fxml"))
           webview (-> pane .getChildren (.get 1))
           engine (.getEngine webview)
-          clojure? (-> file .getName u/get-extension clojure-exts some?)
+          clojure? (-> file .getName u/get-extension u/clojure-exts some?)
           path (.getCanonicalPath file)
           bridge (reify Bridge
                    (onload [this]

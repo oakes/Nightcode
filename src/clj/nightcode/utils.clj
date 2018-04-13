@@ -9,6 +9,8 @@
            [javafx.scene Scene]
            [javafx.stage Modality]))
 
+(def ^:const clojure-exts #{"boot" "clj" "cljc" "cljs" "cljx" "edn" "pxi" "hl" "carp"})
+
 (definterface Bridge
   (onload [])
   (onautosave [])
@@ -258,12 +260,15 @@ requisite project files, or empty if neither exists."
 (defn get-icon-path
   [f]
   (when-not (.isDirectory f)
-    (case (get-extension (.getName f))
-      "clj" "images/file-clj.png"
-      "cljc" "images/file-cljc.png"
-      "cljs" "images/file-cljs.png"
-      "java" "images/file-java.png"
-      "images/file.png")))
+    (let [ext (get-extension (.getName f))]
+      (case ext
+        "clj" "images/file-clj.png"
+        "cljc" "images/file-cljc.png"
+        "cljs" "images/file-cljs.png"
+        "java" "images/file-java.png"
+        (if (clojure-exts ext)
+          "images/file-clj.png"
+          "images/file.png")))))
 
 (fdef sanitize-name
   :args (s/cat :s string?)

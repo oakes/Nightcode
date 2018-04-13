@@ -10,4 +10,4 @@
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.238"}
                                paren-soup {:mvn/version "2.12.3"}
-                               cljsjs/codemirror {:mvn/version "5.24.0-1"}}}}}
+                               cljsjs/codemirror {:mvn/version "5.31.0-0"}}}}}
