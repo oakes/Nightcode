@@ -166,22 +166,15 @@ requisite project files, or empty if neither exists."
       (str/escape {\return ""})
       (str/replace #"\u001b[^\n]*" "")))
 
-(fdef get-boot-path
+(fdef get-boot-path!
   :args (s/cat)
   :ret string?)
 
-(defn get-boot-path []
+(defn get-boot-path! []
   (let [file-name "boot-2.7.2.jar"
         file (io/file (System/getProperty "user.home") (str ".nightcode-" file-name))]
     (when-not (.exists file)
       (-> file-name io/resource io/input-stream (io/copy file)))
-    (when-not (.startsWith (System/getProperty "os.name") "Windows")
-      (-> file
-          .toPath
-          (java.nio.file.Files/setPosixFilePermissions
-            (-> (java.nio.file.attribute.PosixFilePermission/values)
-                (java.util.Arrays/asList)
-                (java.util.HashSet.)))))
     (.getCanonicalPath file)))
 
 (fdef get-boot-tasks
