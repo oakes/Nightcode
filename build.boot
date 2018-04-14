@@ -35,7 +35,7 @@
   '[clojure.java.io :as io])
 
 (task-options!
-  sift {:include #{#"\.jar$"}}
+  sift {:include #{#"project.jar$"}}
   pom {:project 'nightcode
        :version "2.6.0"
        :description "An IDE for Clojure"
