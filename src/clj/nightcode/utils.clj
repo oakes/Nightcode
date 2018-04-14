@@ -171,12 +171,11 @@ requisite project files, or empty if neither exists."
   :ret string?)
 
 (defn get-boot-path []
-  (let [windows? (.startsWith (System/getProperty "os.name") "Windows")
-        file-name (if windows? "boot-2.7.2.exe" "boot-2.7.2.sh")
+  (let [file-name "boot-2.7.2.jar"
         file (io/file (System/getProperty "user.home") (str ".nightcode-" file-name))]
     (when-not (.exists file)
       (-> file-name io/resource io/input-stream (io/copy file)))
-    (when-not windows?
+    (when-not (.startsWith (System/getProperty "os.name") "Windows")
       (-> file
           .toPath
           (java.nio.file.Files/setPosixFilePermissions
