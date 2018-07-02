@@ -8,6 +8,6 @@
         edna/lein-template {:mvn/version "1.4.0"}
         eval-soup {:mvn/version "1.4.3" :exclusions [org.clojure/core.async]}
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}}
- :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.238"}
-                               paren-soup {:mvn/version "2.12.3"}
+ :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.312"}
+                               paren-soup {:mvn/version "2.13.2"}
                                cljsjs/codemirror {:mvn/version "5.31.0-0"}}}}}
