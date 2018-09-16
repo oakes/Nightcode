@@ -171,7 +171,7 @@ requisite project files, or empty if neither exists."
   :ret string?)
 
 (defn get-boot-path! []
-  (let [file-name "boot-2.7.2.jar"
+  (let [file-name "boot-2.8.2.jar"
         file (io/file (System/getProperty "user.home") (str ".nightcode-" file-name))]
     (when-not (.exists file)
       (-> file-name io/resource io/input-stream (io/copy file)))
