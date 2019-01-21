@@ -42,9 +42,10 @@
        :url "https://github.com/oakes/Nightcode"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
   push {:repo "clojars"}
-  aot {:namespace '#{nightcode.core
+  aot {:namespace '#{nightcode.start
+                     nightcode.core
                      nightcode.lein}}
-  jar {:main 'nightcode.core
+  jar {:main 'nightcode.start
        :manifest {"Description" "An IDE for Clojure and ClojureScript"
                   "Url" "https://github.com/oakes/Nightcode"}
        :file "project.jar"})

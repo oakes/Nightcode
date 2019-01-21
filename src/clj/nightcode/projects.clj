@@ -260,7 +260,7 @@
                    (u/parent-path? path new-selection))
            (.setExpanded item true))
          (when (= selection path)
-           (.select selection-model item))))
+           (.select selection-model (int i)))))
      ; select the first project if there is nothing selected
      (when (= -1 (.getSelectedIndex selection-model))
        (.select selection-model (int 0)))
@@ -272,15 +272,10 @@
 
 (defn update-project-tree-selection! [tree new-selection]
   (let [selection-model (.getSelectionModel tree)]
-    (loop [tree-items (-> tree .getRoot .getChildren seq)]
-      (when-let [tree-item (first tree-items)]
-        (cond
-          (= new-selection (.getPath tree-item))
-          (.select selection-model tree-item)
-          (u/parent-path? (.getPath tree-item) new-selection)
-          (recur (-> tree-item .getChildren seq))
-          :else
-          (recur (rest tree-items)))))))
+    (doseq [i (range) :while (< i (.getExpandedItemCount tree))]
+      (when-let [tree-item (.getTreeItem tree i)]
+        (when (= new-selection (.getPath tree-item))
+          (.select selection-model i))))))
 
 (fdef update-project-buttons!
   :args (s/cat :pref-state map? :scene spec/scene?))
