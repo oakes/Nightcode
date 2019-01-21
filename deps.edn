@@ -8,9 +8,9 @@
         edna/lein-template {:mvn/version "1.6.0"}
         eval-soup {:mvn/version "1.4.3" :exclusions [org.clojure/core.async]}
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}
-        org.openjfx/javafx-base {:mvn/version "11.0.1"}
-        org.openjfx/javafx-fxml {:mvn/version "11.0.1"}
-        org.openjfx/javafx-web {:mvn/version "11.0.1"}}
+        org.openjfx/javafx-base {:mvn/version "11.0.2"}
+        org.openjfx/javafx-fxml {:mvn/version "11.0.2"}
+        org.openjfx/javafx-web {:mvn/version "11.0.2"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.439"}
                                paren-soup {:mvn/version "2.14.2"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}}}}}
