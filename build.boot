@@ -22,7 +22,10 @@
     :resource-paths resource-paths
     :dependencies (into '[[adzerk/boot-cljs "2.1.5" :scope "test"]
                           [javax.xml.bind/jaxb-api "2.3.0" :scope "test"]
-                          [orchestra "2018.12.06-2" :scope "test"]]
+                          [orchestra "2018.12.06-2" :scope "test"]
+			  [org.openjfx/javafx-graphics "11.0.2" :classifier "win"]
+			  [org.openjfx/javafx-graphics "11.0.2" :classifier "linux"]
+			  [org.openjfx/javafx-graphics "11.0.2" :classifier "mac"]]
                         dependencies)
     :repositories (conj (get-env :repositories)
                     ["clojars" {:url "https://clojars.org/repo/"
