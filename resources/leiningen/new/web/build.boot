@@ -1,14 +1,14 @@
 (set-env!
   :source-paths #{"src/clj" "src/cljs"}
   :resource-paths #{"resources"}
-  :dependencies '[[adzerk/boot-cljs "2.1.4" :scope "test"]
-                  [adzerk/boot-reload "0.5.2" :scope "test"]
+  :dependencies '[[adzerk/boot-cljs "2.1.5" :scope "test"]
+                  [adzerk/boot-reload "0.6.0" :scope "test"]
                   [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
                   ; project deps
-                  [org.clojure/clojure "1.9.0"]
-                  [org.clojure/clojurescript "1.9.946" :scope "test"]
-                  [reagent "0.7.0" :scope "test"]
-                  [ring "1.6.3"]])
+                  [org.clojure/clojure "1.10.0"]
+                  [org.clojure/clojurescript "1.10.439" :scope "test"]
+                  [reagent "0.8.1" :scope "test"]
+                  [ring "1.7.1"]])
 
 (task-options!
   pom {:project '{{app-name}}
