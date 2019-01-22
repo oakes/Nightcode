@@ -57,6 +57,7 @@
                                               (.setPreserveRatio true)))
                                       (.setContentDisplay ContentDisplay/TOP)))
                         (Button. (.getName file)))
+                  (.setMnemonicParsing false)
                   (.setPrefWidth 150)
                   (.setPrefHeight 150)
                   (.setOnAction (reify EventHandler
