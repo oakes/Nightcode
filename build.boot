@@ -37,7 +37,7 @@
 (task-options!
   sift {:include #{#"project.jar$"}}
   pom {:project 'nightcode
-       :version "2.6.1-SNAPSHOT"
+       :version "2.7.0"
        :description "An IDE for Clojure"
        :url "https://github.com/oakes/Nightcode"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
