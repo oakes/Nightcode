@@ -43,7 +43,7 @@
 (task-options!
   sift {:include #{#"project.jar$"}}
   pom {:project 'nightcode
-       :version "2.7.0"
+       :version "2.7.1-SNAPSHOT"
        :description "An IDE for Clojure"
        :url "https://github.com/oakes/Nightcode"
        :license {"Public Domain" "http://unlicense.org/UNLICENSE"}}
@@ -69,9 +69,7 @@
     ;; the standard exclusions don't work on windows,
     ;; because we need to use backslashes
     #"(?i)^META-INF\\[^\\]*\.(MF|SF|RSA|DSA)$"
-    #"(?i)^META-INF\\INDEX.LIST$"
-    ;; exclude soundfont file from edna
-    #".*\.sf2$"))
+    #"(?i)^META-INF\\INDEX.LIST$"))
 
 (deftask build []
   (comp (aot) (pom) (uber :exclude jar-exclusions) (jar) (sift) (target)))
