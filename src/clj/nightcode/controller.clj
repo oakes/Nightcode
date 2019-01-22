@@ -194,13 +194,7 @@
   (when-let [path (:selection @*pref-state)]
     (when-let [pane (get-in @*runtime-state [:editor-panes path])]
       (when-let [engine (some-> pane (.lookup "#webview") .getEngine)]
-        (e/save-file! path engine)))
-    ; if saving a build.boot file, refresh the build buttons
-    (let [file (io/file path)
-          parent-path (-> file .getParentFile .getCanonicalPath)]
-      (when (-> file .getName (= "build.boot"))
-        (when-let [pane (.lookup scene "#content")]
-          (b/show-boot-buttons! pane parent-path @*pref-state *runtime-state))))))
+        (e/save-file! path engine)))))
 
 (defn -onSave [this ^ActionEvent event]
   (-> event .getSource .getScene save!))
