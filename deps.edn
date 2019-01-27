@@ -5,7 +5,7 @@
         hawk {:mvn/version "0.2.11"}
         play-cljs/lein-template {:mvn/version "1.3.1"}
         edna/lein-template {:mvn/version "1.6.0-3"}
-        eval-soup {:mvn/version "1.4.3" :exclusions [org.clojure/core.async]}
+        eval-soup {:mvn/version "1.5.0" :exclusions [org.clojure/core.async]}
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}
         org.openjfx/javafx-base {:mvn/version "11.0.2"}
         org.openjfx/javafx-fxml {:mvn/version "11.0.2"}
