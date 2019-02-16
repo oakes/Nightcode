@@ -10,6 +10,6 @@
         org.openjfx/javafx-base {:mvn/version "11.0.2"}
         org.openjfx/javafx-fxml {:mvn/version "11.0.2"}
         org.openjfx/javafx-web {:mvn/version "11.0.2"}}
- :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.439"}
-                               paren-soup {:mvn/version "2.14.2"}
+ :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
+                               paren-soup {:mvn/version "2.14.3"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}}}}}
