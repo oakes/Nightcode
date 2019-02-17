@@ -7,16 +7,16 @@
   (p/ensure-dynamic-classloader)
   (-> "project.clj" load-file var-get))
 
-(def project (p/init-project (read-project-clj)))
+(-> (read-project-clj)
+    p/init-project
+    clean)
 
-(clean project)
 (println "Building paren-soup.js")
 (api/build "src" {:main          'nightcode.paren-soup
                   :optimizations :advanced
                   :output-to     "resources/public/paren-soup.js"
                   :output-dir    "target/public/paren-soup.out"})
 
-(clean project)
 (println "Building codemirror.js")
 (api/build "src" {:main          'nightcode.codemirror
                   :optimizations :advanced
