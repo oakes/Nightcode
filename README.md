@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Nightcode is a simple IDE for Clojure and ClojureScript.
+Nightcode is a simple IDE for Clojure and ClojureScript. See [the website](https://sekao.net/nightcode/) for more information.
 
 ## Development
 
