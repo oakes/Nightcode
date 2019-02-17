@@ -5,4 +5,4 @@
   (:gen-class))
 
 (defn -main [& args]
-  (apply c/-main args))
+  (c/main))

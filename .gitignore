@@ -1,9 +1,6 @@
-data_readers.clj
 hs_err_pid*.log
 pom.xml
 pom.xml.asc
-**/gen
-**/target
+target/
 .*
 !.gitignore
-package/

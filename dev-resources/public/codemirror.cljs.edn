@@ -1,3 +1,0 @@
-{:require  [nightcode.codemirror]
- :init-fns []
- :compiler-options {}}

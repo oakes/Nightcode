@@ -1,3 +1,0 @@
-{:require  [nightcode.paren-soup]
- :init-fns []
- :compiler-options {}}

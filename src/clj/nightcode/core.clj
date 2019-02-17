@@ -83,14 +83,14 @@
                                 first)]
       (.setSelected auto-save-button (:auto-save? @*pref-state)))))
 
-(defn -main [& args]
+(defn main []
   (when (= "Linux" (System/getProperty "os.name"))
     (System/setProperty "prism.lcdtext" "false")
     (System/setProperty "prism.text" "t2k"))
   (swap! *runtime-state assoc :web-port (e/start-web-server!))
-  (Application/launch nightcode.core (into-array String args)))
+  (Application/launch nightcode.core (into-array String [])))
 
 (defn dev-main []
   (swap! *runtime-state assoc :dev? true)
-  (-main))
+  (main))
 

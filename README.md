@@ -2,7 +2,15 @@
 
 ## Introduction
 
-Nightcode is a simple IDE for Clojure and ClojureScript. Do `boot run` for development and `boot build` to make a jar file. To build, JDK 11 or above is required.
+Nightcode is a simple IDE for Clojure and ClojureScript.
+
+## Development
+
+* Install JDK 11 or above
+* Install [the Clojure CLI tool](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools)
+* To develop: `clj -A:dev dev.clj`
+* To build the ClojureScript files: `clj -A:cljs cljs.clj`
+* To build the uberjar: `clj prod.clj uberjar`
 
 ## Licensing
 
