@@ -49,7 +49,8 @@
                               [org.openjfx/javafx-web "11.0.2" :classifier "mac"]])
                     p/init-project)]
     (clean project)
-    (uberjar project)))
+    (uberjar project)
+    (System/exit 0)))
 
 (defmethod task "install"
   [_]
