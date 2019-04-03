@@ -52,13 +52,6 @@
   [_]
   (let [project (-> (read-project-clj)
                     (merge (read-deps-edn []))
-                    (update :dependencies into
-                            '[[org.openjfx/javafx-graphics "11.0.2" :classifier "win"]
-                              [org.openjfx/javafx-graphics "11.0.2" :classifier "linux"]
-                              [org.openjfx/javafx-graphics "11.0.2" :classifier "mac"]
-                              [org.openjfx/javafx-web "11.0.2" :classifier "win"]
-                              [org.openjfx/javafx-web "11.0.2" :classifier "linux"]
-                              [org.openjfx/javafx-web "11.0.2" :classifier "mac"]])
                     p/init-project)]
     (clean project)
     (uberjar project))

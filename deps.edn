@@ -9,7 +9,14 @@
         org.eclipse.jgit/org.eclipse.jgit {:mvn/version "4.6.0.201612231935-r"}
         org.openjfx/javafx-base {:mvn/version "11.0.2"}
         org.openjfx/javafx-fxml {:mvn/version "11.0.2"}
-        org.openjfx/javafx-web {:mvn/version "11.0.2"}}
+        org.openjfx/javafx-graphics {:mvn/version "11.0.2"}
+        org.openjfx/javafx-graphics$win {:mvn/version "11.0.2"}
+        org.openjfx/javafx-graphics$linux {:mvn/version "11.0.2"}
+        org.openjfx/javafx-graphics$mac {:mvn/version "11.0.2"}
+        org.openjfx/javafx-web {:mvn/version "11.0.2"}
+        org.openjfx/javafx-web$win {:mvn/version "11.0.2"}
+        org.openjfx/javafx-web$linux {:mvn/version "11.0.2"}
+        org.openjfx/javafx-web$mac {:mvn/version "11.0.2"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
                                paren-soup {:mvn/version "2.14.3"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}}
