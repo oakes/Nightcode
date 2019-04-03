@@ -1,4 +1,5 @@
 (require
+  '[clojure.string :as str]
   '[leiningen.core.project :as p :refer [defproject]]
   '[leiningen.clean :refer [clean]]
   '[leiningen.install :refer [install]]
@@ -15,14 +16,25 @@
                   vals
                   (mapcat :extra-deps)
                   (into deps)
+                  (map (fn parse-coord [coord]
+                         (let [[artifact info] coord
+                               s (str artifact)]
+                           (if-let [i (str/index-of s "$")]
+                             [(symbol (subs s 0 i))
+                              (assoc info :classifier (subs s (inc i)))]
+                             coord))))
                   (reduce
                     (fn [deps [artifact info]]
                       (if-let [version (:mvn/version info)]
                         (conj deps
                           (transduce cat conj [artifact version]
-                            (select-keys info [:scope :exclusions])))
+                            (select-keys info [:exclusions :classifier])))
                         deps))
-                    []))]
+                    []))
+        paths (->> (select-keys aliases aliases-to-include)
+                   vals
+                   (mapcat :extra-paths)
+                   (into paths))]
     {:dependencies deps
      :source-paths []
      :resource-paths paths}))
