@@ -20,6 +20,9 @@
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
                                paren-soup {:mvn/version "2.14.3"}
                                cljsjs/codemirror {:mvn/version "5.40.2-1"}}
-                  :extra-paths ["src/cljs" "dev-resources"]}
+                  :extra-paths ["src/cljs" "dev-resources"]
+                  :main-opts ["cljs.clj"]}
            :dev {:extra-deps {orchestra {:mvn/version "2018.12.06-2"}
-                              expound {:mvn/version "0.7.2"}}}}}
+                              expound {:mvn/version "0.7.2"}}
+                 :main-opts ["dev.clj"]}
+           :prod {:main-opts ["prod.clj"]}}}
