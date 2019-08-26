@@ -37,7 +37,7 @@
 
 (defn -start [^nightcode.core app ^Stage stage]
   (let [root (FXMLLoader/load (io/resource "main.fxml"))
-        scene (Scene. root 1242 768)
+        scene (Scene. root 1200 600)
         project-tree (.lookup scene "#project_tree")
         content (.lookup scene "#content")]
     (swap! *runtime-state assoc
