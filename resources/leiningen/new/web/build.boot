@@ -5,7 +5,7 @@
                   [adzerk/boot-reload "0.6.0" :scope "test"]
                   [javax.xml.bind/jaxb-api "2.3.0" :scope "test"] ; necessary for Java 9 compatibility
                   ; project deps
-                  [org.clojure/clojure "1.10.0"]
+                  [org.clojure/clojure "1.10.1"]
                   [org.clojure/clojurescript "1.10.439" :scope "test"]
                   [reagent "0.8.1" :scope "test"]
                   [ring "1.7.1"]])
