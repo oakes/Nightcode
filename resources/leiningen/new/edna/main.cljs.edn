@@ -1,0 +1,2 @@
+{:require  [{{name}}.core]
+ :init-fns []}
