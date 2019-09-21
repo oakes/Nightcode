@@ -122,6 +122,29 @@
       :edit-history (mwm/create-edit-history))
     (.focus content)))
 
+(defn init-plain-text []
+  (let [paren-soup (.querySelector js/document "#paren-soup")
+        content (.querySelector js/document "#content")
+        _ (-> content .-style .-whiteSpace (set! "pre"))
+        editor (p/init paren-soup
+                 (clj->js {:before-change-callback
+                           (fn [e]
+                             ; don't refresh editor when this is true
+                             (and (= (.-type e) "keyup")
+                                  (= (.-keyCode e) 0)))
+                           :change-callback
+                           (fn [e]
+                             (when (= (.-type e) "keyup")
+                               (auto-save))
+                             (.onchange js/window.java))
+                           :disable-undo-redo? true
+                           :disable-clj? true
+                           :edit-history (:edit-history @*state)}))]
+    (swap! *state assoc
+      :editor editor
+      :edit-history (mwm/create-edit-history))
+    (.focus content)))
+
 (defn init-console [repl?]
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")]
@@ -175,6 +198,7 @@
   (gobj/set "setTextSize" set-text-size)
   (gobj/set "openModal" open-modal)
   (gobj/set "init" init)
+  (gobj/set "initPlainText" init-plain-text)
   (gobj/set "initConsole" init-console)
   (gobj/set "showInstaRepl" show-instarepl)
   (gobj/set "hideInstaRepl" hide-instarepl))

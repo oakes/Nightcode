@@ -92,14 +92,14 @@
   (.setDisable (.lookup pane "#redo") (not (.executeScript engine "canRedo()"))))
 
 (fdef onload
-  :args (s/cat :engine any? :file spec/file? :pref-state map?))
+  :args (s/cat :engine any? :file spec/file? :pref-state map? :clojure? boolean?))
 
-(defn onload [^WebEngine engine ^File file pref-state]
+(defn onload [^WebEngine engine ^File file pref-state clojure?]
   (-> engine
       (.executeScript "window")
       (.call "setTextContent" (into-array [(u/remove-returns (slurp file))])))
   (doto engine
-    (.executeScript (format "init('%s')" (-> file .getName u/get-extension)))
+    (.executeScript (if clojure? "init()" "initPlainText()"))
     (.executeScript (case (:theme pref-state)
                       :dark "changeTheme(true)"
                       :light "changeTheme(false)"))
@@ -147,7 +147,7 @@
           bridge (reify Bridge
                    (onload [this]
                      (try
-                       (onload engine file @*pref-state)
+                       (onload engine file @*pref-state clojure?)
                        (catch Exception e (.printStackTrace e))))
                    (onautosave [this]
                      (try
@@ -179,7 +179,7 @@
           (.setMember "java" bridge))
       (.load engine (str "http://localhost:"
                       (:web-port runtime-state)
-                      (if clojure? "/paren-soup.html" "/codemirror.html")))
+                      "/paren-soup.html"))
       pane)))
 
 (fdef get-bridge

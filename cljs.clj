@@ -17,8 +17,3 @@
                   :output-to     "resources/public/paren-soup.js"
                   :output-dir    "target/public/paren-soup.out"})
 
-(println "Building codemirror.js")
-(api/build "src" {:main          'nightcode.codemirror
-                  :optimizations :advanced
-                  :output-to     "resources/public/codemirror.js"
-                  :output-dir    "target/public/codemirror.out"})

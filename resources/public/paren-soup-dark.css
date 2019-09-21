@@ -30,6 +30,7 @@
 	word-wrap: break-word;
 	right: 0px;
 	/*opacity: 0.7;*/
+	white-space: break-spaces;
 }
 
 .paren-soup .instarepl .result:hover {
