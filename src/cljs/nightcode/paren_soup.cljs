@@ -123,6 +123,7 @@
     (.focus content)))
 
 (defn init-plain-text []
+  (mark-clean)
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")
         _ (-> content .-style .-whiteSpace (set! "pre"))
