@@ -49,9 +49,11 @@
     (System/exit 1)))
 
 (defmethod task "uberjar"
-  [_]
+  [[_ os-name]]
+  (when-not (#{"windows" "macos" "linux"} os-name)
+    (throw (ex-info "Invalid OS name provided" {})))
   (let [project (-> (read-project-clj)
-                    (merge (read-deps-edn []))
+                    (merge (read-deps-edn [(keyword os-name)]))
                     p/init-project)]
     (clean project)
     (uberjar project))

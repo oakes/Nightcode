@@ -10,7 +10,10 @@ Nightcode is a simple IDE for Clojure and ClojureScript. See [the website](https
 * Install [the Clojure CLI tool](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools)
 * To develop: `clj -A:dev`
 * To build the ClojureScript files: `clj -A:cljs`
-* To build the uberjar: `clj -A:prod uberjar`
+* To build the uberjar for each OS:
+  * `clj -A:prod uberjar windows`
+  * `clj -A:prod uberjar macos`
+  * `clj -A:prod uberjar linux`
 
 ## Licensing
 
