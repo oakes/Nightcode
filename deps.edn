@@ -8,13 +8,7 @@
         org.openjfx/javafx-base {:mvn/version "13"}
         org.openjfx/javafx-fxml {:mvn/version "13"}
         org.openjfx/javafx-graphics {:mvn/version "13"}
-        org.openjfx/javafx-graphics$win {:mvn/version "13"}
-        org.openjfx/javafx-graphics$linux {:mvn/version "13"}
-        org.openjfx/javafx-graphics$mac {:mvn/version "13"}
-        org.openjfx/javafx-web {:mvn/version "13"}
-        org.openjfx/javafx-web$win {:mvn/version "13"}
-        org.openjfx/javafx-web$linux {:mvn/version "13"}
-        org.openjfx/javafx-web$mac {:mvn/version "13"}}
+        org.openjfx/javafx-web {:mvn/version "13"}}
  :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
                                paren-soup {:mvn/version "2.15.6"}}
                   :extra-paths ["dev-resources"]
@@ -22,4 +16,10 @@
            :dev {:extra-deps {orchestra {:mvn/version "2018.12.06-2"}
                               expound {:mvn/version "0.7.2"}}
                  :main-opts ["dev.clj"]}
-           :prod {:main-opts ["prod.clj"]}}}
+           :prod {:main-opts ["prod.clj"]}
+           :windows {:extra-deps {org.openjfx/javafx-graphics$win {:mvn/version "13"}
+                                  org.openjfx/javafx-web$win {:mvn/version "13"}}}
+           :macos {:extra-deps {org.openjfx/javafx-graphics$mac {:mvn/version "13"}
+                                org.openjfx/javafx-web$mac {:mvn/version "13"}}}
+           :linux {:extra-deps {org.openjfx/javafx-graphics$linux {:mvn/version "13"}
+                                org.openjfx/javafx-web$linux {:mvn/version "13"}}}}}
