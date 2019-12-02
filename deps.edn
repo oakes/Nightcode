@@ -9,8 +9,8 @@
         org.openjfx/javafx-fxml {:mvn/version "13"}
         org.openjfx/javafx-graphics {:mvn/version "13"}
         org.openjfx/javafx-web {:mvn/version "13"}}
- :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.520"}
-                               paren-soup {:mvn/version "2.15.6"}}
+ :aliases {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.597"}
+                               paren-soup {:mvn/version "2.16.0"}}
                   :extra-paths ["dev-resources"]
                   :main-opts ["cljs.clj"]}
            :dev {:extra-deps {orchestra {:mvn/version "2018.12.06-2"}
