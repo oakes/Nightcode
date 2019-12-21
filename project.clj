@@ -4,6 +4,4 @@
   :license {:name "Public Domain"
             :url "http://unlicense.org/UNLICENSE"}
   :repositories [["clojars" {:url "https://clojars.org/repo"
-                             :sign-releases false}]]
-  :aot [nightcode.start nightcode.core nightcode.lein]
-  :main nightcode.start)
+                             :sign-releases false}]])

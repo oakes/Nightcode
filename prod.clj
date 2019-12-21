@@ -54,6 +54,9 @@
     (throw (ex-info "Invalid OS name provided" {})))
   (let [project (-> (read-project-clj)
                     (merge (read-deps-edn [(keyword os-name)]))
+                    (assoc
+                      :aot '[nightcode.start nightcode.core nightcode.lein]
+                      :main 'nightcode.start)
                     p/init-project)]
     (clean project)
     (uberjar project))
