@@ -1,2 +1,22 @@
-javapackager -deploy -native rpm -outdir package -outfile Nightcode -srcdir target -appclass nightcode.core -name "Nightcode" -title "Nightcode" -Bicon=package/linux/Nightcode.png -BappVersion=$1
-javapackager -deploy -native deb -outdir package -outfile Nightcode -srcdir target -appclass nightcode.core -name "Nightcode" -title "Nightcode" -Bicon=package/linux/Nightcode.png -BappVersion=$1
+set -e
+
+jpackage --type deb --name Nightcode --app-version $1 --input target --main-jar Nightcode-$1.jar --icon package/linux/Nightcode.png --copyright "Public Domain" --linux-shortcut --linux-app-category Development
+
+jpackage --type app-image --name Nightcode --app-version $1 --input target --main-jar Nightcode-$1.jar --icon package/linux/Nightcode.png --copyright "Public Domain"
+
+echo "#!/bin/sh
+
+cd \"\$(dirname \"\$0\")\"
+./bin/Nightcode" >> Nightcode/AppRun
+
+chmod +x Nightcode/AppRun
+
+echo "[Desktop Entry]
+Name=Nightcode
+Exec=/bin/Nightcode
+Icon=/lib/Nightcode
+Terminal=false
+Type=Application
+Categories=Development;" >> Nightcode/nightcode.desktop
+
+appimagetool Nightcode
