@@ -90,6 +90,8 @@
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")
         _ (-> content .-style .-whiteSpace (set! "pre"))
+        _ (-> content .-style .-paddingBottom (set! "20px"))
+        _ (-> content .-style .-paddingRight (set! "20px"))
         editor (p/init paren-soup
                  (clj->js {:before-change-callback
                            (fn [e]
@@ -127,6 +129,8 @@
   (let [paren-soup (.querySelector js/document "#paren-soup")
         content (.querySelector js/document "#content")
         _ (-> content .-style .-whiteSpace (set! "pre"))
+        _ (-> content .-style .-paddingBottom (set! "20px"))
+        _ (-> content .-style .-paddingRight (set! "20px"))
         editor (p/init paren-soup
                  (clj->js {:before-change-callback
                            (fn [e]
