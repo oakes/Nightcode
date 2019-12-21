@@ -1,8 +1,8 @@
 set -e
 
-jpackage --type deb --name Nightcode --app-version $1 --input target --main-jar Nightcode-$1.jar --icon package/linux/Nightcode.png --copyright "Public Domain" --linux-shortcut --linux-app-category Development
+jpackage --type deb --name Nightcode --app-version $1 --input target --main-jar Nightcode-$1-linux.jar --icon package/linux/Nightcode.png --copyright "Public Domain" --linux-shortcut --linux-app-category Development
 
-jpackage --type app-image --name Nightcode --app-version $1 --input target --main-jar Nightcode-$1.jar --icon package/linux/Nightcode.png --copyright "Public Domain"
+jpackage --type app-image --name Nightcode --app-version $1 --input target --main-jar Nightcode-$1-linux.jar --icon package/linux/Nightcode.png --copyright "Public Domain"
 
 echo "#!/bin/sh
 
