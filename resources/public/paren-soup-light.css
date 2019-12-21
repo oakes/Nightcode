@@ -55,6 +55,8 @@
 .paren-soup .content {
 	margin: 0px;
 	padding: 0px 5px;
+  padding-bottom: 20px;
+  padding-right: 20px;
 	outline: 0px solid transparent;
 	white-space: pre;
 	word-wrap: normal;
