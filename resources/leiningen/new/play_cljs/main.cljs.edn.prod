@@ -1,3 +1,0 @@
-{:require  [{{name}}.core]
- :init-fns []
- :compiler-options {:infer-externs true}}

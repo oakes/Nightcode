@@ -86,7 +86,7 @@
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :web)))
 
 (defn -onNewGameProject [this ^ActionEvent event]
-  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :play-cljs)))
+  (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :play-cljc)))
 
 (defn -onNewMusicProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :edna)))
