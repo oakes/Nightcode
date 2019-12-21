@@ -73,7 +73,8 @@
                   es/wrap-security
                   true
                   (apply []))
-          (catch Exception _))))))
+          (catch Exception e
+            (.printStackTrace e)))))))
 
 (defn -onNewConsoleProject [this ^ActionEvent event]
   (-> event .getSource .getParentPopup .getOwnerWindow .getScene (new-project! :console)))
