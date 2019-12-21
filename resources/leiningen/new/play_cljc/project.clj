@@ -21,6 +21,8 @@
                  [org.lwjgl/lwjgl-glfw "3.2.3" :classifier "natives-windows"]
                  [org.lwjgl/lwjgl-opengl "3.2.3" :classifier "natives-windows"]
                  [org.lwjgl/lwjgl-stb "3.2.3" :classifier "natives-windows"]]
+  ; on Mac OS, you need to uncomment this!
+  ;:jvm-opts ["-XstartOnFirstThread"]
   :profiles {:dev {:main {{name}}.start-dev
                    :dependencies [[paravim "RELEASE"]
                                   [orchestra "2018.12.06-2"]
