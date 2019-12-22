@@ -4,8 +4,9 @@
   :clean-targets ^{:protect false} ["target"]
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [edna "1.6.0"]]
-  ; on Mac OS, you need to uncomment this!
-  ;:jvm-opts ["-XstartOnFirstThread"]
+  :jvm-opts ~(if (= "Mac OS X" (System/getProperty "os.name"))
+               ["-XstartOnFirstThread"]
+               [])
   :profiles {:dev {:main {{name}}.start-dev
                    :dependencies [[paravim "RELEASE"]
                                   [orchestra "2018.12.06-2"]
