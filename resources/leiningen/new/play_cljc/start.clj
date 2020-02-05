@@ -4,7 +4,7 @@
             [play-cljc.gl.core :as pc])
   (:import  [org.lwjgl.glfw GLFW Callbacks
              GLFWCursorPosCallbackI GLFWKeyCallbackI GLFWMouseButtonCallbackI
-             GLFWCharCallbackI GLFWWindowSizeCallbackI]
+             GLFWCharCallbackI GLFWFramebufferSizeCallbackI]
             [org.lwjgl.opengl GL GL41]
             [org.lwjgl.system MemoryUtil]
             [javax.sound.sampled AudioSystem Clip])
@@ -109,8 +109,8 @@
       (reify GLFWCharCallbackI
         (invoke [this _ codepoint]
           (on-char window codepoint))))
-    (GLFW/glfwSetWindowSizeCallback
-      (reify GLFWWindowSizeCallbackI
+    (GLFW/glfwSetFramebufferSizeCallback
+      (reify GLFWFramebufferSizeCallbackI
         (invoke [this _ width height]
           (on-resize window width height))))))
 

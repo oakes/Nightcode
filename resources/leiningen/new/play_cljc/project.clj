@@ -13,7 +13,7 @@
                                   [expound "0.7.2"]]}
              :uberjar {:main {{name}}.start
                        :aot [{{name}}.start]
-                       :dependencies [[play-cljc "0.8.4"]
+                       :dependencies [[play-cljc "0.8.5"]
                                       [org.lwjgl/lwjgl "3.2.3"]
                                       [org.lwjgl/lwjgl-glfw "3.2.3"]
                                       [org.lwjgl/lwjgl-opengl "3.2.3"]
