@@ -13,7 +13,6 @@
             [leiningen.run]
             [leiningen.test]
             [leiningen.uberjar]
-            [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe])
   (:gen-class))
@@ -96,8 +95,8 @@
 (defn start-process!
   [process path & args]
   (reset! process (.exec (Runtime/getRuntime)
-                         (into-array (sandbox/add-dir (flatten args)))
-                         (sandbox/get-env)
+                         (into-array (flatten args))
+                         nil
                          (io/file path)))
   (.addShutdownHook (Runtime/getRuntime)
                     (Thread. #(when @process (.destroy @process))))
@@ -204,7 +203,6 @@
 
 (defn -main
   [cmd & args]
-  (sandbox/set-properties!)
   (System/setProperty "jline.terminal" "dumb")
   (let [path "."
         project (-> (read-project-clj path)

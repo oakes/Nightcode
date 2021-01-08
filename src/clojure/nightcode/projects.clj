@@ -5,7 +5,6 @@
             [nightcode.editors :as editors]
             [nightcode.git :as git]
             [nightcode.lein :as lein]
-            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -58,8 +57,7 @@
   [path]
   (->> (conj (utils/read-pref :project-set) path)
        set
-       (utils/write-pref! :project-set))
-  (sandbox/save-file-permission! path))
+       (utils/write-pref! :project-set)))
 
 (defn remove-from-project-tree!
   [path]

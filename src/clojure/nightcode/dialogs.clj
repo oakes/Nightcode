@@ -1,7 +1,6 @@
 (ns nightcode.dialogs
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [nightcode.sandbox :as sandbox]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
             [seesaw.chooser :as chooser]
@@ -78,20 +77,20 @@
 
 (defn show-save-dialog!
   []
-  (if (sandbox/get-dir)
-    (show-native-dialog! nil FileDialog/SAVE)
-    (chooser/choose-file :type :save)))
+  ;; TODO: use native dialog?
+  ;(show-native-dialog! nil FileDialog/SAVE)
+  (chooser/choose-file :type :save))
 
 (defn show-open-dialog!
   ([]
    (show-open-dialog! nil))
   ([dir]
-   (if (sandbox/get-dir)
-     (show-native-dialog! dir FileDialog/LOAD)
-     (chooser/choose-file :type :open
-                          :dir dir
-                          :selection-mode :dirs-only
-                          :remember-directory? (nil? dir)))))
+  ;; TODO: use native dialog?
+   ;(show-native-dialog! dir FileDialog/LOAD)
+   (chooser/choose-file :type :open
+                        :dir dir
+                        :selection-mode :dirs-only
+                        :remember-directory? (nil? dir))))
 
 (defn show-remove-dialog!
   [project?]

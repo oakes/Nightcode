@@ -1,7 +1,6 @@
 (ns nightcode.repl
   (:require [nightcode.editors :as editors]
             [nightcode.lein :as lein]
-            [nightcode.sandbox :as sandbox]
             [nightcode.shortcuts :as shortcuts]
             [nightcode.ui :as ui]
             [nightcode.utils :as utils]
@@ -19,8 +18,6 @@
     ; start the repl
     (run!)
     ; create a shortcut to restart the repl
-    (when-not (sandbox/get-dir)
-      (shortcuts/create-hints! pane)
-      (shortcuts/create-mappings! pane {:repl-console run!}))
+    (shortcuts/create-mappings! pane {:repl-console run!})
     ; return the repl pane
     pane))
