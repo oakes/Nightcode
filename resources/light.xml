@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE RSyntaxTheme SYSTEM "theme.dtd">
+
+<!--
+	Dark theme based off of Notepad++'s Obsidian theme.
+-->
+<RSyntaxTheme version="1.0">
+
+   <!-- Specify family="..." attribute to override system default monospaced. -->
+   <baseFont size="12"/>
+   
+   <!--  General editor colors. -->
+   <background color="d6cecb"/> <!-- 293134 -->
+   <caret color="3e343d"/> <!-- c1cbc2 -->
+   <selection bg="bfb1ae" roundedEdges="false"/> <!-- 404E51 -->
+   <currentLineHighlight color="d0c6c3" fade="false"/> <!-- 2F393C -->
+   <marginLine fg="c6bbb7"/> <!-- 394448 -->
+   <markAllHighlight color="947e76"/> <!-- TODO: Fix me --> <!-- 6b8189 -->
+   <markOccurrencesHighlight color="947e76" border="false"/> <!-- 6b8189 -->
+   <matchedBracket fg="6A8088" bg="947e76" highlightBoth="false" animate="true"/> <!-- 6b8189 -->
+   <hyperlinks fg="5f7d42"/> <!-- A082BD -->
+   <secondaryLanguages>
+      <language index="1" bg="ccbbaa"/> <!-- 334455 -->
+      <language index="2" bg="ddccdd"/> <!-- 223322 -->
+      <language index="3" bg="001f0f"/> <!-- ffe0f0 -->
+   </secondaryLanguages>
+   
+   <!-- Gutter styling. -->
+   <gutterBorder color="7e6965"/> <!-- 81969A -->
+   <lineNumbers fg="7e6965"/> <!-- 81969A -->
+   <foldIndicator fg="957f77" iconBg="2f383c"/> <!-- 6A8088 -->
+   <iconRowHeader activeLineRange="cc6600"/> <!-- 3399ff -->
+   
+   <!-- Syntax tokens. -->
+   <tokenStyles>
+      <style token="IDENTIFIER" fg="1f1d1b"/> <!-- E0E2E4 -->
+      <style token="RESERVED_WORD" fg="6c389c" bold="true"/> <!-- 93C763 -->
+      <style token="RESERVED_WORD_2" fg="6c389c" bold="true"/> <!-- 93C763 -->
+      <style token="ANNOTATION" fg="171d48"/> <!-- E8E2B7 -->
+      <style token="COMMENT_DOCUMENTATION" fg="938773"/> <!-- 6C788C -->
+      <style token="COMMENT_EOL" fg="998b84"/> <!-- 66747B -->
+      <style token="COMMENT_MULTILINE" fg="998b84"/> <!-- 66747B -->
+      <style token="COMMENT_KEYWORD" fg="516040"/> <!-- ae9fbf -->
+      <style token="COMMENT_MARKUP" fg="516040"/> <!-- ae9fbf -->
+      <style token="FUNCTION" fg="1f1d1b"/> <!-- E0E2E4 -->
+      <style token="DATA_TYPE" fg="98734e" bold="true"/> <!-- 678CB1 -->
+      <style token="LITERAL_BOOLEAN" fg="6c389c" bold="true"/> <!-- 93C763 -->
+      <style token="LITERAL_NUMBER_DECIMAL_INT" fg="0032dd"/> <!-- FFCD22 -->
+      <style token="LITERAL_NUMBER_FLOAT" fg="0032dd"/> <!-- FFCD22 -->
+      <style token="LITERAL_NUMBER_HEXADECIMAL" fg="0032dd"/> <!-- FFCD22 -->
+      <style token="LITERAL_STRING_DOUBLE_QUOTE" fg="1389ff"/> <!-- EC7600 -->
+      <style token="LITERAL_CHAR" fg="1389ff"/> <!-- EC7600 -->
+      <style token="LITERAL_BACKQUOTE" fg="1389ff"/> <!-- EC7600 -->
+      <style token="MARKUP_TAG_DELIMITER" fg="98734e"/> <!-- 678CB1 -->
+      <style token="MARKUP_TAG_NAME" fg="54402c"/> <!-- ABBFD3 -->
+      <style token="MARKUP_TAG_ATTRIBUTE" fg="4c4976"/> <!-- B3B689 -->
+      <style token="MARKUP_TAG_ATTRIBUTE_VALUE" fg="1e1d30"/> <!-- e1e2cf -->
+      <style token="MARKUP_PROCESSING_INSTRUCTION" fg="5f7d42"/> <!-- A082BD -->
+      <style token="MARKUP_CDATA" fg="516040"/> <!-- ae9fbf -->
+      <style token="OPERATOR" fg="171d48"/> <!-- E8E2B7 -->
+      <style token="PREPROCESSOR" fg="5f7d42"/> <!-- A082BD -->
+      <style token="REGEX" fg="2c68ba"/> <!-- d39745 -->
+      <style token="SEPARATOR" fg="171d48"/> <!-- E8E2B7 -->
+      <style token="VARIABLE" fg="516040" bold="true"/> <!-- ae9fbf -->
+      <style token="WHITESPACE" fg="1f1d1b"/> <!-- E0E2E4 -->
+      
+      <style token="ERROR_IDENTIFIER" fg="1f1d1b" bg="fb86f1"/> <!-- E0E2E4, 04790e -->
+      <style token="ERROR_NUMBER_FORMAT" fg="1f1d1b" bg="fb86f1"/> <!-- E0E2E4, 04790e -->
+      <style token="ERROR_STRING_DOUBLE" fg="1f1d1b" bg="fb86f1"/> <!-- E0E2E4, 04790e -->
+      <style token="ERROR_CHAR" fg="1f1d1b" bg="fb86f1"/> <!-- E0E2E4, 04790e -->
+   </tokenStyles>
+
+</RSyntaxTheme>

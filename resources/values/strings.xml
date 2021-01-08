@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="project_tree">Project Tree</string>
+  <string name="repl_console">REPL Console</string>
+  <string name="build_console">Build Console</string>
+  <string name="parent_directory">Parent Directory</string>
+  <string name="close">Close</string>
+  <string name="paredit_help">Paredit Help</string>
+
+  <string name="new_project">New Project</string>
+  <string name="rename">Rename</string>
+  <string name="import">Import</string>
+  <string name="remove">Remove</string>
+
+  <string name="run">Run</string>
+  <string name="run_with_repl">Run with REPL</string>
+  <string name="reload">Reload</string>
+  <string name="eval">Eval Selection</string>
+  <string name="build">Build</string>
+  <string name="test">Test</string>
+  <string name="clean">Clean</string>
+  <string name="stop">Stop</string>
+  <string name="start">Start</string>
+  <string name="auto_build">Auto Build</string>
+  <string name="check_versions">Check Versions</string>
+
+  <string name="android_sdk">Android SDK</string>
+  <string name="robovm">RoboVM</string>
+  <string name="android_devices">Android Devices</string>
+
+  <string name="ok">OK</string>
+  <string name="cancel">Cancel</string>
+  <string name="yes">Yes</string>
+  <string name="no">No</string>
+
+  <string name="remove_project_warning">Remove this project? It WILL NOT be deleted from the disk.</string>
+  <string name="remove_file_warning">Remove this file? It WILL be deleted from the disk.</string>
+  <string name="remove_project">Remove Project</string>
+  <string name="remove_file">Remove File</string>
+
+  <string name="file_exists">File already exists.</string>
+  <string name="project_clj_required">You need a project.clj file to build this project.</string>
+  <string name="create_project_clj">Create project.clj</string>
+  <string name="continue">Continue</string>
+  <string name="unsaved_changes">You will lose your unsaved changes.</string>
+  <string name="quit_confirm">Are you sure you want to quit?</string>
+  <string name="quit">Quit</string>
+
+  <string name="console">Console</string>
+  <string name="game">Game</string>
+  <string name="android">Android</string>
+  <string name="ios">iOS</string>
+  <string name="desktop">Desktop</string>
+  <string name="web">Web</string>
+  <string name="database">Database</string>
+  <string name="graphics">Graphics</string>
+  <string name="sounds">Sounds</string>
+  <string name="download">Download</string>
+  
+  <string name="package_prompt">Package name</string>
+  <string name="download_prompt">Git address</string>
+
+  <string name="clojure">Clojure</string>
+  <string name="java">Java</string>
+  <string name="clojurescript">ClojureScript</string>
+  <string name="javascript">JavaScript</string>
+  <string name="specify_project_type">Specify Project Type</string>
+  <string name="create_project">Create Project</string>
+  <string name="clone_project">Clone Project</string>
+
+  <string name="no_project_clj">Can\'t find project.clj</string>
+  <string name="finished">Finished</string>
+  <string name="running">Running...</string>
+  <string name="running_with_repl">Running with REPL...</string>
+  <string name="building">Building...</string>
+  <string name="testing">Testing...</string>
+  <string name="cleaning">Cleaning...</string>
+  <string name="checking_versions">Checking Versions...</string>
+
+  <string name="save">Save</string>
+  <string name="undo">Undo</string>
+  <string name="redo">Redo</string>
+  <string name="font_dec">Font -</string>
+  <string name="font_inc">Font +</string>
+  <string name="paredit">Paredit</string>
+  <string name="doc">Doc</string>
+  <string name="find">Find</string>
+  <string name="replace">Replace</string>
+  
+  <string name="new_file">New File</string>
+  <string name="edit">Edit</string>
+  <string name="open_in_file_browser">Open in File Browser</string>
+  <string name="delete">Delete</string>
+  <string name="toggle_window">Toggle Window</string>
+
+  <string name="ctrl">Ctrl</string>
+  <string name="alt">Alt</string>
+
+  <string name="enter_file_name">Enter a file name.</string>
+  <string name="enter_relative_path">Enter a path relative to the project root.</string>
+  <string name="enter_project_name">Enter a name for your project.</string>
+  <string name="invalid_name">Invalid name.</string>
+
+  <string name="arcade">Arcade</string>
+  <string name="platformer">Platformer</string>
+  <string name="orthogonal">Orthogonal</string>
+  <string name="isometric">Isometric</string>
+  <string name="barebones">Barebones</string>
+
+  <string name="error_load">Error during load</string>
+  <string name="error_in">Error in %s</string>
+  <string name="stack_trace">Stack Trace</string>
+  <string name="copy">Copy</string>
+
+  <string name="new">New</string>
+  <string name="load">Load</string>
+
+  <string name="home">Home</string>
+  <string name="restart">Restart</string>
+  <string name="screenshot">Screenshot</string>
+  <string name="files">Files</string>
+  <string name="docs">Docs</string>
+  <string name="repl">REPL</string>
+
+  <string name="search">Search</string>
+
+  <string name="pull">Pull</string>
+  <string name="push">Push</string>
+  <string name="changes">Changes</string>
+
+  <string name="message">Message (optional)</string>
+  <string name="commit">Commit</string>
+
+  <string name="loading">Loading...</string>
+  <string name="author">Author: %s</string>
+  <string name="committer">Committer: %s</string>
+  <string name="commit_time">Commit Time: %s</string>
+
+  <string name="invalid_git_address">Invalid Git address. You need to copy it before clicking here.</string>
+</resources>

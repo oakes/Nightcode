@@ -1,3 +1,0 @@
-{:require  [{{namespace}}]
- :init-fns []
- :compiler-options {}}

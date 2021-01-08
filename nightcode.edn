@@ -1,0 +1,55 @@
+; Place this file in your home directory before running Nightcode.
+; Either ~/nightcode.edn or ~/.config/nightcode.edn are acceptable.
+
+
+{; Light skins:
+ ; :autumn :business :business-blue-steel :business-black-steel
+ ; :creme :creme-coffee :dust :dust-coffee :gemini
+ ; :mariner :mist-aqua :mist-silver :moderate :nebula :nebula-brick-wall :sahara
+ ; Dark skins:
+ ; :challenger-deep :emerald-dusk :graphite :graphite-glass :graphite-aqua
+ ; :magellan :raven :twilight
+ :skin :graphite
+
+ ; Points to a file which provides a theme to the text panes, following this format:
+ ; https://raw.githubusercontent.com/oakes/Nightcode/master/resources/dark.xml
+ ; :theme-resource "/path/to/theme.xml"
+ 
+ ; The layout of the editor and build panes, either :vertical or :horizontal
+ :panel :vertical
+ 
+ ; Shortcuts, following the convention of KeyStroke.getKeyStroke(String):
+ ; http://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke(java.lang.String)
+ :keys {:new-project "P"
+        :rename "M"
+        :import "O"
+        :remove "G"
+        :run "R"
+        :run-repl "shift X"
+        :reload "shift S"
+        :eval "E"
+        :build "B"
+        :test "T"
+        :clean "L"
+        :check-versions "shift I"
+        :stop "I"
+        :sdk "shift K"
+        :auto "shift O"
+        :up "U"
+        :save "S"
+        :undo "Z"
+        :redo "Y"
+        :font-dec "MINUS"
+        :font-inc "EQUALS"
+        :find "F"
+        :replace "shift R"
+        :close "W"
+        :repl-console "shift E"
+        :toggle-logcat "S"
+        :new-file "N"
+        :edit "shift M"
+        :open-in-browser "shift F"
+        :cancel "shift C"
+        :build-console "shift A"
+        :pull "shift L"
+        :push "shift H"}}

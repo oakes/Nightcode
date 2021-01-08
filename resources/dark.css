@@ -1,9 +1,0 @@
-.root {
-    -fx-base: rgb(50, 50, 50);
-    -fx-background: rgb(50, 50, 50);
-    -fx-control-inner-background: rgb(50, 50, 50);
-}
-
-.tooltip {
-    -fx-effect: null;
-}
