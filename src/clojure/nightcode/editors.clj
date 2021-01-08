@@ -558,7 +558,7 @@
        :should-remove-fn #(not (.exists (io/file path)))
        :edit-history edit-history})))
 
-(def ^:dynamic *types* [:text :logcat :git])
+(def ^:dynamic *types* [:text :git])
 
 (defn show-editor!
   [path]

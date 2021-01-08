@@ -123,7 +123,7 @@
 
 ; data for the project tree
 
-(def ^:dynamic *node-adjustment-types* [:logcat :git])
+(def ^:dynamic *node-adjustment-types* [:git])
 
 (defmulti adjust-nodes (fn [type _ _] type) :default nil)
 

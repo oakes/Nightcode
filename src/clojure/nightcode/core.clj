@@ -4,7 +4,6 @@
             [nightcode.customizations :as custom]
             [nightcode.editors :as editors]
             [nightcode.git :as git]
-            [nightcode.logcat :as logcat]
             [nightcode.projects :as projects]
             [nightcode.repl :as repl]
             [nightcode.sandbox :as sandbox]
@@ -61,10 +60,10 @@
   [& args]
   (let [parsed-args (custom/parse-args args)]
     (window/set-icon! "images/logo_launcher.png")
-    (window/set-theme! parsed-args)
     (sandbox/create-profiles-clj!)
     (sandbox/read-file-permissions!)
     (s/invoke-later
+      (window/set-theme! parsed-args)
       ; listen for keys while modifier is down
       (shortcuts/listen-for-shortcuts!
         (fn [key-code]

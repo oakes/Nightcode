@@ -1,26 +1,18 @@
 (ns nightcode.lein
   (:require [clojure.java.io :as io]
             [clojure.main]
-            [leiningen.ancient]
-            [leiningen.clr]
             [leiningen.core.eval]
             [leiningen.core.main]
             [leiningen.core.project]
             [leiningen.clean]
-            [leiningen.cljsbuild]
-            [leiningen.droid]
-            [leiningen.gwt]
             [leiningen.javac]
             [leiningen.new]
-            [leiningen.new.play-clj]
             [leiningen.new.templates]
             [leiningen.trampoline]
             [leiningen.repl]
             [leiningen.run]
             [leiningen.test]
-            [leiningen.typed]
             [leiningen.uberjar]
-            [leiningen.ring]
             [nightcode.sandbox :as sandbox]
             [nightcode.utils :as utils])
   (:import [com.hypirion.io ClosingPipe Pipe])
@@ -49,13 +41,6 @@
   [path]
   (.getCanonicalPath (io/file path "project.clj")))
 
-(defn add-sdk-path
-  [project]
-  (assoc-in project
-            [:android :sdk-path]
-            (or (utils/read-pref :android-sdk)
-                (get-in project [:android :sdk-path]))))
-
 ; this is necessary because the Reload and Eval buttons cause the REPL
 ; to show a bunch of => symbols for each newline
 (defn add-custom-subsequent-prompt
@@ -71,17 +56,8 @@
       (if-not (.exists (io/file project-clj-path))
         (println (utils/get-string :no-project-clj))
         (-> (leiningen.core.project/read-raw project-clj-path)
-            add-sdk-path
             add-custom-subsequent-prompt
             (try (catch Exception e {})))))))
-
-(defn read-android-project
-  [project]
-  (leiningen.droid.classpath/init-hooks)
-  (some-> project
-          (leiningen.core.project/unmerge-profiles [:base])
-          leiningen.droid.utils/android-parameters
-          add-sdk-path))
 
 (defn create-file-from-template!
   [dir file-name template-namespace data]
@@ -91,44 +67,6 @@
       (->> [file-name (render file-name data)]
            (leiningen.new.templates/->files data)
            io!))))
-
-; check project types
-
-(defn android-project?
-  [path]
-  (or (.exists (io/file path "AndroidManifest.xml"))
-      (.exists (io/file path "AndroidManifest.template.xml"))))
-
-(defn ios-project?
-  [path]
-  (.exists (io/file path "Info.plist.xml")))
-
-(defn java-project?
-  [path]
-  (some-> path read-project-clj java-project-map?))
-
-(defn clojurescript-project?
-  [path]
-  (-> path read-project-clj :cljsbuild some?))
-
-(defn gwt-project?
-  [path]
-  (-> path read-project-clj :gwt some?))
-
-(defn clr-project?
-  [path]
-  (-> path read-project-clj :clr some?))
-
-(defn ring-project?
-  [path]
-  (let [{:keys [ring main]} (read-project-clj path)]
-    (and (some? ring) (nil? main))))
-
-(defn valid-project?
-  [path]
-  (and (not (ios-project? path))
-       (or (not (android-project? path))
-           (not (sandbox/get-dir)))))
 
 ; start/stop thread/processes
 
@@ -198,79 +136,23 @@
 
 (defn run-project-task
   [path project]
-  (when (clojurescript-project? path)
-    (leiningen.cljsbuild/cljsbuild project "once"))
-  (cond
-    (android-project? path)
-    (some-> (read-android-project project)
-            (leiningen.droid/doall []))
-    (ios-project? path)
-    nil
-    (clr-project? path)
-    (leiningen.clr/clr project "run")
-    (ring-project? path)
-    (leiningen.ring/ring project "server")
-    :else
-    (leiningen.run/run project)))
+  (leiningen.run/run project))
 
 (defn run-repl-project-task
   [path project]
-  (cond
-    (android-project? path)
-    (when-let [project (read-android-project project)]
-      (doseq [cmd ["deploy" "repl"]]
-        (leiningen.droid/execute-subtask project cmd [])
-        (Thread/sleep 10000)))
-    (clr-project? path)
-    (leiningen.clr/clr project "repl")
-    :else
-    (leiningen.repl/repl project)))
+  (leiningen.repl/repl project))
 
 (defn build-project-task
   [path project]
-  (cond
-    (android-project? path)
-    (some-> project
-            read-android-project
-            (assoc-in [:android :build-type] :release)
-            leiningen.droid/doall)
-    (ios-project? path)
-    nil
-    (clr-project? path)
-    (leiningen.clr/clr project "compile")
-    (gwt-project? path)
-    (leiningen.gwt/gwt project "compile")
-    :else
-    (leiningen.uberjar/uberjar project)))
+  (leiningen.uberjar/uberjar project))
 
 (defn test-project-task
   [path project]
-  (when (:core.typed project)
-    (try
-      (leiningen.typed/typed project
-                             (if (:cljsbuild project) "check-cljs" "check"))
-      (catch Exception _)))
-  (cond
-    (clr-project? path)
-    (leiningen.clr/clr project "test")
-    :else
-    (leiningen.test/test project)))
+  (leiningen.test/test project))
 
 (defn clean-project-task
   [path project]
-  (cond
-    (clr-project? path)
-    (leiningen.clr/clr project "clean")
-    :else
-    (leiningen.clean/clean project)))
-
-(defn cljsbuild-project-task
-  [path project]
-  (leiningen.cljsbuild/cljsbuild project "auto"))
-
-(defn check-versions-in-project-task
-  [path project]
-  (leiningen.ancient/ancient project ":all" ":no-colors"))
+  (leiningen.clean/clean project))
 
 ; high-level commands
 
@@ -309,27 +191,9 @@
          (start-process-indirectly! process path class-name "clean"))
        (start-thread! in-out)))
 
-(defn cljsbuild-project!
-  [process in-out path]
-  (->> (start-process-indirectly! process path class-name "cljsbuild")
-       (start-thread! in-out)))
-
-(defn check-versions-in-project!
-  [process in-out path]
-  (stop-process! process)
-  (->> (do (println (utils/get-string :checking-versions))
-         (start-process-indirectly! process path class-name "check-versions"))
-       (start-thread! in-out)))
-
 (defn new-project!
   [in-out parent-path project-type project-name package-name]
-  (->> (cond
-         (= project-type :android-clojure)
-         (leiningen.droid.new/new project-name package-name)
-         (= project-type :game-clojure)
-         (leiningen.new.play-clj/play-clj project-name package-name)
-         :else
-         (leiningen.new/new {} (name project-type) project-name package-name))
+  (->> (leiningen.new/new {} (name project-type) project-name package-name)
        (binding [leiningen.core.main/*info* false])
        (fn []
          (System/setProperty "leiningen.original.pwd" parent-path))
@@ -351,7 +215,5 @@
       "build" (build-project-task path project)
       "test" (test-project-task path project)
       "clean" (clean-project-task path project)
-      "cljsbuild" (cljsbuild-project-task path project)
-      "check-versions" (check-versions-in-project-task path project)
       nil))
   (System/exit 0))

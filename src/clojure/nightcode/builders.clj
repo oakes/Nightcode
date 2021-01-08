@@ -29,12 +29,6 @@
 
 ; actions for builder buttons
 
-(defn set-android-sdk!
-  [& _]
-  (when-let [d (dialogs/show-open-dialog! (utils/read-pref :android-sdk))]
-    (utils/write-pref! :android-sdk (.getCanonicalPath d))
-    (show-builder! (ui/get-project-path @ui/tree-selection))))
-
 (defn add-path
   [paths path]
   (if (and path (.endsWith path ".clj") (not (contains? (set paths) path)))
@@ -70,37 +64,21 @@
 
 (defn toggle-visible!
   [{:keys [view]} path]
-  (let [android-project? (lein/android-project? path)
-        java-project? (lein/java-project? path)
-        gwt-project? (lein/gwt-project? path)
-        clojurescript-project? (lein/clojurescript-project? path)
-        project-clj? (-> @ui/tree-selection
+  (let [project-clj? (-> @ui/tree-selection
                          io/file
                          .getName
                          (= "project.clj"))
-        buttons {:#run (not gwt-project?)
-                 :#run-repl (not java-project?)
-                 :#reload (not java-project?)
-                 :#eval (not java-project?)
-                 :#test (not java-project?)
-                 :#sdk android-project?
-                 :#auto clojurescript-project?
-                 :#check-versions project-clj?}]
+        buttons {:#run project-clj?
+                 :#run-repl project-clj?
+                 :#reload project-clj?
+                 :#eval project-clj?
+                 :#test project-clj?}]
     (doseq [[id should-show?] buttons]
       (ui/config! view id :visible? should-show?))))
 
-(defn toggle-color!
-  [{:keys [view]} path]
-  (let [project-map (lein/read-project-clj path)
-        sdk (get-in project-map [:android :sdk-path])
-        id :#sdk
-        set? (and sdk (.exists (io/file sdk)))]
-    (ui/config! view id :background (when-not set? (color/color :red)))))
-
 (defn toggle-enable!
   [{:keys [view process last-reload]} path]
-  (let [java-project? (lein/java-project? path)
-        running? (not (nil? @process))
+  (let [running? (not (nil? @process))
         buttons {:#run (not running?)
                  :#run-repl (not running?)
                  :#reload (not (nil? @last-reload))
@@ -108,27 +86,22 @@
                  :#build (not running?)
                  :#test (not running?)
                  :#clean (not running?)
-                 :#stop running?
-                 :#check-versions (not running?)}]
+                 :#stop running?}]
     (doseq [[id should-enable?] buttons]
       (ui/config! view id :enabled? should-enable?))))
 
 ; create and show/hide builders for each project
 
 (def ^:dynamic *widgets* [:run :run-repl :reload :eval :build :test
-                          :clean :check-versions :stop
-                          :sdk :auto])
+                          :clean :stop])
 
 (defn create-actions
   [path console build-pane process auto-process last-reload]
   {:run (fn [& _]
-          (lein/run-project! process (ui/get-io! console) path)
-          (when (lein/java-project? path)
-            (reset! last-reload (System/currentTimeMillis))))
+          (lein/run-project! process (ui/get-io! console) path))
    :run-repl (fn [& _]
                (lein/run-repl-project! process (ui/get-io! console) path)
-               (when (not (lein/java-project? path))
-                 (reset! last-reload (System/currentTimeMillis))))
+               (reset! last-reload (System/currentTimeMillis)))
    :reload (fn [& _]
              (reload! console)
              (reset! last-reload (System/currentTimeMillis)))
@@ -140,18 +113,8 @@
            (lein/test-project! process (ui/get-io! console) path))
    :clean (fn [& _]
             (lein/clean-project! process (ui/get-io! console) path))
-   :check-versions (fn [& _]
-                     (lein/check-versions-in-project!
-                       process (ui/get-io! console) path))
    :stop (fn [& _]
-           (lein/stop-process! process))
-   :sdk set-android-sdk!
-   :auto (fn [& _]
-           (ui/config! build-pane :#auto :selected? (nil? @auto-process))
-           (if (nil? @auto-process)
-             (lein/cljsbuild-project!
-               auto-process (ui/get-io! console) path)
-             (lein/stop-process! auto-process)))})
+           (lein/stop-process! process))})
 
 (defn create-widgets
   [actions]
@@ -176,18 +139,9 @@
    :clean (s/button :id :clean
                     :text (utils/get-string :clean)
                     :listen [:action (:clean actions)])
-   :check-versions (s/button :id :check-versions
-                             :text (utils/get-string :check-versions)
-                             :listen [:action (:check-versions actions)])
    :stop (s/button :id :stop
                    :text (utils/get-string :stop)
-                   :listen [:action (:stop actions)])
-   :sdk (s/button :id :sdk
-                  :text (utils/get-string :android-sdk)
-                  :listen [:action (:sdk actions)])
-   :auto (s/toggle :id :auto
-                   :text (utils/get-string :auto-build)
-                   :listen [:action (:auto actions)])})
+                   :listen [:action (:stop actions)])})
 
 (defn create-builder
   [path]
@@ -234,8 +188,7 @@
     ; create new builder if necessary
     (when (and path
                (utils/project-path? path)
-               (not (contains? @builders path))
-               (lein/valid-project? path))
+               (not (contains? @builders path)))
       (when-let [builder (create-builder path)]
         (swap! builders assoc path builder)
         (.add pane (:view builder) path)))
@@ -245,7 +198,6 @@
     (when-let [builder (get @builders path)]
       (doto builder
         (toggle-visible! path)
-        (toggle-color! path)
         (toggle-enable! path)))))
 
 (defn remove-builders!

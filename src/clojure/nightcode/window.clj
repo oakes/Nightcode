@@ -10,8 +10,8 @@
   (:import [java.awt Window]
            [java.awt.event WindowAdapter]
            [java.lang.reflect InvocationHandler Proxy]
-           [org.pushingpixels.substance.api SubstanceLookAndFeel]
-           [org.pushingpixels.substance.api.skin GraphiteSkin]))
+           [javax.swing UIManager]
+           [org.pushingpixels.substance.api.skin SubstanceGraphiteLookAndFeel]))
 
 (defn set-theme!
   "Sets the theme based on the command line arguments."
@@ -19,7 +19,7 @@
   (s/native!)
   (let [{:keys [shade skin-object theme-resource]} args]
     (when theme-resource (reset! ui/theme-resource theme-resource))
-    (SubstanceLookAndFeel/setSkin (or skin-object (GraphiteSkin.)))))
+    (UIManager/setLookAndFeel (SubstanceGraphiteLookAndFeel.))))
 
 (defn show-shut-down-dialog!
   "Displays a dialog confirming whether the program should shut down."

@@ -3,16 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.cli :as cli])
-  (:import [org.pushingpixels.substance.api.skin
-            ;; light skin classes
-            AutumnSkin BusinessSkin BusinessBlueSteelSkin BusinessBlackSteelSkin
-            CremeSkin CremeCoffeeSkin DustSkin DustCoffeeSkin GeminiSkin
-            MarinerSkin MistAquaSkin MistSilverSkin ModerateSkin
-            NebulaSkin NebulaBrickWallSkin SaharaSkin
-            ;; dark skin classes
-            ChallengerDeepSkin EmeraldDuskSkin
-            GraphiteSkin GraphiteGlassSkin GraphiteAquaSkin MagellanSkin 
-            RavenSkin TwilightSkin]))
+  (:import [org.pushingpixels.substance.api.skin SubstanceGraphiteLookAndFeel]))
 
 (def edn-prefs (or (try
                      (-> (System/getProperty "user.home")
@@ -28,34 +19,9 @@
                      (catch Exception _))))
 
 (defn make-skin-map []
-  {;; light skins
-   "autumn"               [(AutumnSkin.)             :light]
-   "business"             [(BusinessSkin.)           :light]
-   "business-blue-steel"  [(BusinessBlueSteelSkin.)  :light]
-   "business-black-steel" [(BusinessBlackSteelSkin.) :light]
-   "creme"                [(CremeSkin.)              :light]
-   "creme-coffee"         [(CremeCoffeeSkin.)        :light]
-   "dust"                 [(DustSkin.)               :light]
-   "dust-coffee"          [(DustCoffeeSkin.)         :light]
-   "gemini"               [(GeminiSkin.)             :light]
-   "light"                [(DustSkin.)               :light]  ; default light
-   "mariner"              [(MarinerSkin.)            :light]
-   "mist-aqua"            [(MistAquaSkin.)           :light]
-   "mist-silver"          [(MistSilverSkin.)         :light]
-   "moderate"             [(ModerateSkin.)           :light]
-   "nebula"               [(NebulaSkin.)             :light]
-   "nebula-brick-wall"    [(NebulaBrickWallSkin.)    :light]
-   "sahara"               [(SaharaSkin.)             :light]
-   ;; dark skins
-   "challenger-deep" [(ChallengerDeepSkin.) :dark]
-   "dark"            [(GraphiteSkin.)       :dark]  ; default dark
-   "emerald-dusk"    [(EmeraldDuskSkin.)    :dark]
-   "graphite"        [(GraphiteSkin.)       :dark]
-   "graphite-glass"  [(GraphiteGlassSkin.)  :dark]
-   "graphite-aqua"   [(GraphiteAquaSkin.)   :dark]
-   "magellan"        [(MagellanSkin.)       :dark]
-   "raven"           [(RavenSkin.)          :dark]
-   "twilight"        [(TwilightSkin.)       :dark]})
+  {;; dark skins
+   "dark"            [(SubstanceGraphiteLookAndFeel.)       :dark]  ; default dark
+   "graphite"        [(SubstanceGraphiteLookAndFeel.)       :dark]})
 
 (defn abort
   [& msgs]

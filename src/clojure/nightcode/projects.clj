@@ -137,9 +137,7 @@
             :target-sdk "15"}
            (lein/create-file-from-template! dir
                                             "project.clj"
-                                            (if (lein/android-project? dir)
-                                              "android-java"
-                                              "console-java"))))
+                                            "console-java")))
     ; show project root in the tree
     (let [dir-path (.getCanonicalPath dir)]
       (add-to-project-tree! dir-path)
