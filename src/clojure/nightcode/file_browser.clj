@@ -12,6 +12,7 @@
 (declare update-card!)
 
 (def ^:const tile-size 150)
+(def ^:const icon-size 100)
 (def edit-mode? (atom false))
 
 (defn go-up!
@@ -129,9 +130,10 @@
   [f]
   (when-not (.isDirectory f)
     (case (utils/get-extension (.getName f))
-      "clj" "images/file-clojure.png"
-      "cljc" "images/file-clojure.png"
-      "cljs" "images/file-clojure.png"
+      "clj" "images/file-clj.png"
+      "cljc" "images/file-cljc.png"
+      "cljs" "images/file-cljs.png"
+      "edn" "images/file-clj.png"
       "java" "images/file-java.png"
       "git" "images/git.png"
       "images/file.png")))
@@ -148,6 +150,9 @@
              (not (protect-file? (.getCanonicalPath file))))
       (doto (s/border-panel :class :edit
                             :north (some-> (get-icon-path file)
+                                           io/resource
+                                           javax.imageio.ImageIO/read
+                                           (.getScaledInstance icon-size icon-size java.awt.Image/SCALE_SMOOTH)
                                            icon/icon
                                            JLabel.)
                             :center (s/checkbox :class :delete
@@ -158,7 +163,11 @@
                                            :editable? true)
                             :size [tile-size :by tile-size])
         (.setName (.getCanonicalPath file)))
-      (doto (s/button :icon (some-> (get-icon-path file) icon/icon)
+      (doto (s/button :icon (some-> (get-icon-path file)
+                                    io/resource
+                                    javax.imageio.ImageIO/read
+                                    (.getScaledInstance icon-size icon-size java.awt.Image/SCALE_SMOOTH)
+                                    icon/icon)
                       :text (or html name)
                       :size [tile-size :by tile-size]
                       :listen [:action (->> (.getCanonicalPath file)
