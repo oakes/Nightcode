@@ -3,8 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as string]
             [clojure.tools.namespace.file :as file]
-            [clojure.tools.namespace.parse :as parse]
-            [clojure.xml :as xml])
+            [clojure.tools.namespace.parse :as parse])
   (:import [java.io File]
            [java.math BigInteger]
            [java.net URL]
@@ -44,24 +43,18 @@
 
 ; language
 
-(def lang-files {"en" "values/strings.xml"})
+(def lang-files {"en" "values/strings.edn"})
 (def lang-strings (-> (get lang-files (.getLanguage (Locale/getDefault)))
                       (or (get lang-files "en"))
                       io/resource
-                      .toString
-                      xml/parse
-                      :content))
+                      slurp
+                      edn/read-string))
 
 (defn get-string
   "Returns the localized string for the given keyword."
   [res-name]
-  (-> #(= (get-in % [:attrs :name]) (-> res-name name (string/replace "-" "_")))
-      (filter lang-strings)
-      first
-      :content
-      first
-      (or (name res-name))
-      (clojure.string/replace "\\" "")))
+  (or (res-name lang-strings)
+      (name res-name)))
 
 (defn set-accessible-name!
   [widget name]
